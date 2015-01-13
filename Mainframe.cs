@@ -2615,6 +2615,8 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
             #endregion paintbrush
             #region fill
             else if (VisibleEditingTool == FillButton)
+            {
+                if (MouseTileX < J2L.Layers[CurrentLayer].Width && MouseTileY < J2L.Layers[CurrentLayer].Height)
                 {
                     foreach (bool[] col in ShouldEachTileBeFilledIn) for (ushort y = 0; y < col.Length; y++) col[y] = false;
                     ushort[,] TileMap = J2L.Layers[CurrentLayer].TileMap;
@@ -2646,6 +2648,7 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
                                 ActOnATile(x, y, CurrentStamp[DrawPoint.X][DrawPoint.Y].Tile, CurrentStamp[DrawPoint.X][DrawPoint.Y].Event, ActionCenter, shiftPressed | ShowBlankTileInStamp);*/
                             }
                 }
+            }
                 #endregion fill
                 #region rectangles
                 else if (VisibleEditingTool == RectangleButton || VisibleEditingTool == RectangleOutlineButton)
