@@ -539,7 +539,7 @@
             // 
             // saveAsImageToolStripMenuItem
             // 
-            this.saveAsImageToolStripMenuItem.Enabled = false;
+            //this.saveAsImageToolStripMenuItem.Enabled = false;
             this.saveAsImageToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("saveAsImageToolStripMenuItem.Image")));
             this.saveAsImageToolStripMenuItem.Name = "saveAsImageToolStripMenuItem";
             this.saveAsImageToolStripMenuItem.Size = new System.Drawing.Size(179, 22);

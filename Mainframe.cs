@@ -769,6 +769,7 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
         private void saveAsImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _suspendEvent.Reset();
+            byte OriginalTileSize = ZoomTileSize;
             LDScrollH.Value = LDScrollV.Value = 0;
             Zoom((byte)(4096/Math.Max(J2L.Layers[3].Width, J2L.Layers[3].Height)/4*4));
             LevelDisplay.Width = (int)J2L.Layers[3].Width * ZoomTileSize + LDScrollH.Location.X;
@@ -789,7 +790,7 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
             }
             LevelDisplay.Width = Width - LDScrollV.Width;
             LevelDisplay.Height = LDScrollV.Height + LDScrollH.Height;
-            ResizeDisplay();
+            Zoom(OriginalTileSize);
             _suspendEvent.Set();
        } // this doesn't work right now
 
