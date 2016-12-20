@@ -113,7 +113,18 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
         internal byte ParallaxEventDisplayType = 0;
         internal uint PlusTriggerZone = 0;
 
-        internal bool LevelHasBeenModified = false;
+        private bool levelHasBeenModified = false;
+        internal bool LevelHasBeenModified
+        {
+            get { return levelHasBeenModified; }
+            set {
+                if (value != levelHasBeenModified)
+                {
+                    UpdateTitle(value);
+                }
+                levelHasBeenModified = value;
+            }
+        }
 
         ManualResetEvent _suspendEvent = new ManualResetEvent(true);
         Stopwatch sw = new Stopwatch();
@@ -1071,7 +1082,7 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
                     CheckCurrentVersion();
                     ProcessIni(J2L.VersionType);
                 }
-                Text = "MLLE - " + J2L.Name + " - " + J2L.FilenameOnly;
+                SetTitle(J2L.Name, J2L.FilenameOnly);
                 enablePitsToolStripMenuItem.Text = (J2L.EventMap[J2L.EventMap.GetLength(0) - 1, J2L.EventMap.GetLength(1) - 1] == 255) ? "Disable Pits" : "Enable Pits";
                 J2L.Generate_Textures(TransparencySource.JJ2_Style, true);
                 GL.BindTexture(TextureTarget.Texture2D, J2L.Atlases[0]);
@@ -1096,7 +1107,7 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
             if (version == null) J2L.NewLevel(J2L.VersionType);
             else J2L.NewLevel((Version)version);
             J2L.FullFilePath = Path.Combine(DefaultDirectories[J2L.VersionType], J2L.FilenameOnly = "Made in MLLE.j2l");
-            Text = "MLLE - " + J2L.Name;
+            SetTitle(J2L.Name);
             CheckCurrentVersion();
             ProcessIni(J2L.VersionType);
             J2L.Generate_Blank_Tile_Texture();
@@ -1213,12 +1224,29 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
                     DialogResult result2 = MessageBox.Show("References were found to unknown tiles. These references must be deleted in order to save this level.", "Undefined Tiles", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
                     if (result2 == DialogResult.OK) { _suspendEvent.Set(); return SaveJ2L(filename, true, allowDifferentTilesetVersion, storeGivenFilename); }
                 }
-            Text = "MLLE - " + J2L.Name + " - " + Path.GetFileName(J2L.FilenameOnly);
+            SetTitle(J2L.Name, Path.GetFileName(J2L.FilenameOnly));
             LevelHasBeenModified = false;
             _suspendEvent.Set(); 
             return result;
         }
         #endregion Save
+
+        private void UpdateTitle(bool modified)
+        {
+            string title = Text.StartsWith("*") ? Text.Substring(1) : Text;
+            SetTitle(title, modified);
+        }
+
+        private void SetTitle(string name, string filename = null, bool modified = false)
+        {
+            string title = name + (filename == null ? "" : " \u2013 " + filename) + " \u2013 MLLE";
+            SetTitle(title, modified);
+        }
+
+        private void SetTitle(string title, bool modified)
+        {
+            Text = modified ? "*" + title : title;
+        }
 
         #endregion J2L Extensions
 
