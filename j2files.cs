@@ -7,7 +7,7 @@ using Ionic.Zlib;
 
 public enum Version { JJ2, TSF, O, GorH, BC, AGA, AmbiguousBCO };
 public enum VersionChangeResults { Success, TilesetTooBig, TooManyAnimatedTiles, UnsupportedConversion };
-public enum SavingResults { Success, UndefinedTiles, TilesetIsDifferentVersion, Error };
+public enum SavingResults { Success, UndefinedTiles, NoTilesetSelected, TilesetIsDifferentVersion, Error };
 public enum OpeningResults { Success, SuccessfulButAmbiguous, PasswordNeeded, WrongPassword, UnexpectedFourCC, Error };
 public enum InsertFrameResults { Success, Full, StackOverflow };
 
@@ -1255,7 +1255,14 @@ class J2LFile : J2File
     public SavingResults Save(bool eraseUndefinedTiles = false, bool allowDifferentTilesetVersion = false, bool storeGivenFilename = true) { return Save(FullFilePath, eraseUndefinedTiles, allowDifferentTilesetVersion, storeGivenFilename); }
     public SavingResults Save(string filename, bool eraseUndefinedTiles = false, bool allowDifferentTilesetVersion = false, bool storeGivenFilename = true)
     {
-        if (!allowDifferentTilesetVersion && J2T.VersionType != VersionType && !((VersionType == Version.GorH) || ((VersionType == Version.BC || VersionType == Version.O) && J2T.VersionType == Version.AmbiguousBCO) || (VersionType == Version.TSF && J2T.VersionType == Version.JJ2))) return SavingResults.TilesetIsDifferentVersion;
+        if (J2T == null)
+        {
+            return SavingResults.NoTilesetSelected;
+        }
+        if (!allowDifferentTilesetVersion && J2T.VersionType != VersionType && !((VersionType == Version.GorH) || ((VersionType == Version.BC || VersionType == Version.O) && J2T.VersionType == Version.AmbiguousBCO) || (VersionType == Version.TSF && J2T.VersionType == Version.JJ2)))
+        {
+            return SavingResults.TilesetIsDifferentVersion;
+        }
         if (!eraseUndefinedTiles)
         {
             foreach (Layer CurrentLayer in Layers) foreach (ushort tile in CurrentLayer.TileMap) if (IsAnUndefinedTile(tile)) return SavingResults.UndefinedTiles;

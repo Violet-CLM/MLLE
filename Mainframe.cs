@@ -1191,14 +1191,17 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
             if (LevelHasBeenModified)
             {
                 _suspendEvent.Reset();
-                DialogResult result = MessageBox.Show("Save changes to" + Path.GetFileName(J2L.FilenameOnly) + "?", "Level has been modified!", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Stop);
+                DialogResult result = MessageBox.Show("Save changes to " + Path.GetFileName(J2L.FilenameOnly) + "?", "Level has been modified!", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Stop);
                 if (result == DialogResult.Yes && SaveJ2L() == SavingResults.Success) { _suspendEvent.Reset(); return true; }
                 else if (result == DialogResult.No) return true;
                 else return false;
             }
             else return true;
         }
-        internal SavingResults SaveJ2L(bool eraseUndefinedTiles = false, bool allowDifferentTilesetVersion = false, bool storeGivenFilename = true) { return SaveJ2L(J2L.FullFilePath, eraseUndefinedTiles, allowDifferentTilesetVersion, storeGivenFilename); }
+        internal SavingResults SaveJ2L(bool eraseUndefinedTiles = false, bool allowDifferentTilesetVersion = false, bool storeGivenFilename = true)
+        {
+            return SaveJ2L(J2L.FullFilePath, eraseUndefinedTiles, allowDifferentTilesetVersion, storeGivenFilename);
+        }
         internal SavingResults SaveJ2L(string filename, bool eraseUndefinedTiles = false, bool allowDifferentTilesetVersion = false, bool storeGivenFilename = true)
         {
             _suspendEvent.Reset();
@@ -1206,26 +1209,43 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
             J2L.JCSHorizontalFocus = (ushort)LDScrollH.Value;
             J2L.JCSVerticalFocus = (ushort)LDScrollV.Value;
             SavingResults result = J2L.Save(filename, eraseUndefinedTiles, allowDifferentTilesetVersion, storeGivenFilename);
-            if (result == SavingResults.TilesetIsDifferentVersion)
+            if (result == SavingResults.Success)
+            {
+                SetTitle(J2L.Name, Path.GetFileName(J2L.FilenameOnly));
+                LevelHasBeenModified = false;
+            }
+            else if (result == SavingResults.NoTilesetSelected)
+            {
+                MessageBox.Show("The level cannot be saved without a tileset.", "No Tileset Selected", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            else if (result == SavingResults.TilesetIsDifferentVersion)
             {
                 if (J2L.J2T.VersionType == Version.GorH)
                 {
-                    DialogResult result2 = MessageBox.Show("This level was originally saved as a Jazz 2 OEM v1.00g/h level, and does not have an external tileset file. Please choose an existing tileset file in order to save this level as any other version, or else it will not be playable. This level will not be saved.", "Tileset File Needed", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    if (result2 == DialogResult.OK) { return SaveJ2L(filename, eraseUndefinedTiles, true, storeGivenFilename); }
+                    MessageBox.Show("This level was originally saved as a Jazz 2 OEM v1.00g/h level, and does not have an external tileset file. Please choose an existing tileset file in order to save this level as any other version, or else it will not be playable. This level will not be saved.", "Tileset File Needed", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
                 else
                 {
-                    DialogResult result2 = MessageBox.Show(String.Format("You are saving this level as a {0} level, but {2} is only compatible with {1}. In order for the level to be playable, you will need to have and make available a {0}-compatible version of {2}. MLLE will not do this for you. Press 'OK' to continue saving or 'Cancel' to choose a different tileset.", J2File.FullVersionNames[J2L.VersionType], J2File.FullVersionNames[J2L.J2T.VersionType], J2L.Tileset), "Version Difference", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
-                    if (result2 == DialogResult.OK) { return SaveJ2L(filename, eraseUndefinedTiles, true, storeGivenFilename); }
+                    DialogResult dialogResult = MessageBox.Show(String.Format("You are saving this level as a {0} level, but {2} is only compatible with {1}. In order for the level to be playable, you will need to have and make available a {0}-compatible version of {2}. MLLE will not do this for you. Press 'OK' to continue saving or 'Cancel' to choose a different tileset.", J2File.FullVersionNames[J2L.VersionType], J2File.FullVersionNames[J2L.J2T.VersionType], J2L.Tileset), "Version Difference", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+                    if (dialogResult == DialogResult.OK)
+                    {
+                        result = SaveJ2L(filename, eraseUndefinedTiles, true, storeGivenFilename);
+                    }
                 }
             }
             else if (result == SavingResults.UndefinedTiles)
+            {
+                DialogResult dialogResult = MessageBox.Show("References were found to unknown tiles. These references must be deleted in order to save this level.", "Undefined Tiles", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+                if (dialogResult == DialogResult.OK)
                 {
-                    DialogResult result2 = MessageBox.Show("References were found to unknown tiles. These references must be deleted in order to save this level.", "Undefined Tiles", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
-                    if (result2 == DialogResult.OK) { _suspendEvent.Set(); return SaveJ2L(filename, true, allowDifferentTilesetVersion, storeGivenFilename); }
+                    result = SaveJ2L(filename, true, allowDifferentTilesetVersion, storeGivenFilename);
                 }
-            SetTitle(J2L.Name, Path.GetFileName(J2L.FilenameOnly));
-            LevelHasBeenModified = false;
+            }
+            else
+            {
+                //A more specific error must be added instead of using this one. This is only here for troubleshooting purposes.
+                MessageBox.Show("There was an error while saving.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
             _suspendEvent.Set(); 
             return result;
         }
@@ -1627,7 +1647,7 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
                 {
                     EmborderSelectedTiles(LDScrollH.Value, LDScrollV.Value, ZoomTileSize, LevelDisplayViewportWidth, LevelDisplayViewportHeight);
                 }
-                if (LastFocusedZone == FocusedZone.Level && VisibleEditingTool != SelectionButton && CurrentStamp.Length > 0)
+                if (LastFocusedZone == FocusedZone.Level && VisibleEditingTool != SelectionButton && CurrentStamp.Length > 0 && J2L.J2T != null)
                 {
                     int x = MouseTileX * ZoomTileSize - LDScrollH.Value;
                     int y = MouseTileY * ZoomTileSize - LDScrollV.Value;
@@ -1997,12 +2017,12 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
         
         internal void DetermineVisibilityOfAnimatedTiles()
         {
-            try
+            if (J2L.J2T != null)
             {
                 AnimatedTilesDrawHeight = (int)(J2L.J2T.TileCount * 3.2) - TilesetScrollbar.Value;
                 AnimatedTilesVisibleOnLeft = AnimatedTilesDrawHeight < LevelDisplay.Height;
             }
-            catch { AnimatedTilesVisibleOnLeft = false; }
+            else { AnimatedTilesVisibleOnLeft = false; }
         }
 
         private void TilesetScrollbar_ValueChanged(object sender, EventArgs e)
