@@ -63,6 +63,7 @@
       <DependentUpon>AboutBox1.cs</DependentUpon>
     </Compile>
     <Compile Include="AGAfiles.cs" />
+    <Compile Include="ArrayMap.cs" />
     <Compile Include="EventForm.cs">
       <SubType>Form</SubType>
     </Compile>

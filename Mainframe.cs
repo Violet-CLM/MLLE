@@ -17,6 +17,7 @@ using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using Ini;
 using Un4seen.Bass;
+using Extra.Collections;
 
 public enum EnableableTitles { SecretLevelName, BonusLevelName, Lighting, Splitscreen, HideInHCL, Multiplayer, BoolDevelopingForPlus, UseText, SaveAndRun, Illuminate, DiffLabel, Diff1, Diff2, Diff3, Diff4}
 public enum FocusedZone { None, Tileset, Level, AnimationEditing }
@@ -2466,7 +2467,6 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
                     DialogResult result = MessageBox.Show(String.Format("Are you sure you want to delete the contents of layer {0}?", LayerNumber + 1), "Clear Layer", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
                     if (result == DialogResult.OK)
                     {
-                        J2L.Layers[LayerNumber].HasTiles = LayerNumber == 3;
                         for (ushort x = 0; x < J2L.Layers[LayerNumber].TileMap.GetLength(0); x++) for (ushort y = 0; y < J2L.Layers[LayerNumber].TileMap.GetLength(1); y++) ActOnATile(x, y, 0, 0, ActionCenter, true);
                     }
                     _suspendEvent.Set();
@@ -2644,7 +2644,6 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
         {
             if (WhereSelected == FocusedZone.Tileset) DeselectAll();
             LayerAndSpecificTiles ActionCenter = new LayerAndSpecificTiles(CurrentLayer);
-            J2L.Layers[CurrentLayer].HasTiles = true;
             bool shiftPressed = Control.ModifierKeys == Keys.Shift || Control.ModifierKeys == (Keys.Control | Keys.Shift);
             #region paintbrush
             if (VisibleEditingTool == PaintbrushButton)
@@ -2668,7 +2667,7 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
                 if (MouseTileX < J2L.Layers[CurrentLayer].Width && MouseTileY < J2L.Layers[CurrentLayer].Height)
                 {
                     foreach (bool[] col in ShouldEachTileBeFilledIn) for (ushort y = 0; y < col.Length; y++) col[y] = false;
-                    ushort[,] TileMap = J2L.Layers[CurrentLayer].TileMap;
+                    ArrayMap<ushort> TileMap = J2L.Layers[CurrentLayer].TileMap;
                     ushort TargetTileID = TileMap[MouseTileX, MouseTileY];
                     bool SelectedOnly = IsEachTileSelected[MouseTileX+1][MouseTileY+1];
                     TryToFillTile(MouseTileX, MouseTileY, TileMap, ref TargetTileID, ref SelectedOnly, ref shiftPressed, ref ActionCenter);
@@ -2757,7 +2756,7 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
                     LevelHasBeenModified = true;
                 }
         }
-        private void TryToFillTile(int x, int y, ushort[,] tileMap, ref ushort TargetTileID, ref bool select, ref bool shiftPressed, ref LayerAndSpecificTiles ActionCenter)
+        private void TryToFillTile(int x, int y, ArrayMap<ushort> tileMap, ref ushort TargetTileID, ref bool select, ref bool shiftPressed, ref LayerAndSpecificTiles ActionCenter)
         {
                 if (ShouldEachTileBeFilledIn[x][y] == false && IsEachTileSelected[x+1][y+1] == select && tileMap[x, y] == TargetTileID)
                 {

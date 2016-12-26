@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using Extra.Collections;
 
 public partial class LayerPropertiesForm : Form
 {
@@ -98,7 +99,7 @@ public partial class LayerPropertiesForm : Form
                 #region Old Size Change code
                 //if (newrectangle != null || (DataSource.TileWidth == false && TileWidth.Checked == true && DataSource.Width % 4 > 0))
                 //{
-                //    ushort[,] newTileMap = new ushort[DataSource.RealWidth, DataSource.Height];
+                //    ArrayMap<ushort> newTileMap = new ArrayMap<ushort>(DataSource.RealWidth, DataSource.Height);
                 //    for (ushort x = 0; x < DataSource.Width; x++) for (ushort y = 0; y < DataSource.Height; y++)
                 //        {
                 //            newTileMap[x, y] = (
@@ -143,7 +144,7 @@ public partial class LayerPropertiesForm : Form
                 #endregion
                 if (newrectangle != null)
                 {
-                    ushort[,] newTileMap = new ushort[DataSource.Width, DataSource.Height];
+                    ArrayMap<ushort> newTileMap = new ArrayMap<ushort>(DataSource.Width, DataSource.Height);
                     for (ushort x = 0; x < DataSource.Width; x++) for (ushort y = 0; y < DataSource.Height; y++)
                         {
                             newTileMap[x, y] = (

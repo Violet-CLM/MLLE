@@ -4,6 +4,7 @@ using System.Linq;
 using System.IO;
 using System.Text;
 using Ionic.Zlib;
+using Extra.Collections;
 
 public enum Version { JJ2, TSF, O, GorH, BC, AGA, AmbiguousBCO };
 public enum VersionChangeResults { Success, TilesetTooBig, TooManyAnimatedTiles, UnsupportedConversion };
@@ -212,7 +213,11 @@ class Layer
     public bool IsTextured;
     public bool HasStars;
     public byte unknown1;
-    public bool HasTiles;
+    public bool HasTiles
+    {
+        get { return id == 3 || TileMap.Count != 0; }
+    }
+
     public uint Width;
     public uint RealWidth;
     public uint Height;
@@ -226,7 +231,7 @@ class Layer
     public byte TexturParam1;
     public byte TexturParam2;
     public byte TexturParam3;
-    public ushort[,] TileMap;
+    public ArrayMap<ushort> TileMap;
 
     public Layer(uint raw, bool LEVstyle = false)
     {
@@ -234,7 +239,7 @@ class Layer
         TileHeight = (raw & 2) == 2;
         if (LEVstyle)
         {
-            HasTiles = (raw & 4) == 4;
+            //HasTiles = (raw & 4) == 4; //not needed since maintained with TileMap.Count
             LimitVisibleRegion = (raw & 8) == 8;
             IsTextured = (raw & 16) == 16;
         }
@@ -610,6 +615,7 @@ class J2LFile : J2File
         using (BinaryReader binreader = new BinaryReader(File.Open(filename, FileMode.Open, FileAccess.Read)))
         {
             FilenameOnly = Path.GetFileName(FullFilePath = filename);
+            bool[] hasTiles = new bool[8]; //only needed for loading; Layer has its own read-only HasTiles
             if (binreader.PeekChar() != 'D') // not a .LEV file
             {
                 #region header
@@ -706,7 +712,7 @@ class J2LFile : J2File
                     }
                     for (byte i = 0; i < 8; i++) Layers[i] = new Layer(data1reader.ReadUInt32());
                     for (byte i = 0; i < 8; i++) { Layers[i].unknown1 = data1reader.ReadByte(); Layers[i].id = i; }
-                    for (byte i = 0; i < 8; i++) Layers[i].HasTiles = data1reader.ReadBoolean();
+                    for (byte i = 0; i < 8; i++) hasTiles[i] = data1reader.ReadBoolean();
                     for (byte i = 0; i < 8; i++) Layers[i].Width = data1reader.ReadUInt32();
                     for (byte i = 0; i < 8; i++) Layers[i].RealWidth = data1reader.ReadUInt32();
                     for (byte i = 0; i < 8; i++) Layers[i].Height = data1reader.ReadUInt32();
@@ -843,11 +849,11 @@ class J2LFile : J2File
                 {
                     for (byte i = 0; i < 8; i++)
                     {
-                        if (Layers[i].HasTiles)
+                        if (hasTiles[i])
                         {
                             uint w4 = (Layers[i].Width + 3) / 4;
                             uint w = w4 * 4;
-                            Layers[i].TileMap = new ushort[w, Layers[i].Height];
+                            Layers[i].TileMap = new ArrayMap<ushort>(w, Layers[i].Height);
                             for (uint y = 0; y < Layers[i].Height; y++) for (uint x = 0; x < w4; x++)
                                 {
                                     ushort nuword = data4reader.ReadUInt16();
@@ -857,7 +863,7 @@ class J2LFile : J2File
                         }
                         else
                         {
-                            Layers[i].TileMap = new ushort[Layers[i].Width, Layers[i].Height];
+                            Layers[i].TileMap = new ArrayMap<ushort>(Layers[i].Width, Layers[i].Height);
                         }
                     }
                 }
@@ -1033,7 +1039,9 @@ class J2LFile : J2File
                 Layers = new Layer[8];
                 for (byte i = 0; i < 8; i++)
                 {
-                    Layers[i] = new Layer((byte)binreader.ReadInt32(), true);
+                    byte raw = (byte)binreader.ReadInt32();
+                    hasTiles[i] = (raw & 4) == 4;
+                    Layers[i] = new Layer(raw, true);
                     Layers[i].id = i;
                     Layers[i].Width = binreader.ReadUInt16();
                     if (Layers[i].TileWidth) switch (Layers[i].Width % 4)
@@ -1065,11 +1073,11 @@ class J2LFile : J2File
                     Dictionary[i] = new ushort[16];
                     for (byte j = 0; j < 16; j++) Dictionary[i][j] = binreader.ReadUInt16();
                 } SectionOffset += Dictionary.Length * 32;
-                for (byte i = 0; i < 8; i++) if (Layers[i].HasTiles)
+                for (byte i = 0; i < 8; i++) if (hasTiles[i])
                     {
                         uint w16 = (Layers[i].Width + 15) / 16;
                         uint w = w16 * 16;
-                        Layers[i].TileMap = new ushort[w, Layers[i].Height];
+                        Layers[i].TileMap = new ArrayMap<ushort>(w, Layers[i].Height);
                         for (uint y = 0; y < Layers[i].Height; y++) for (uint x = 0; x < w16; x++)
                             {
                                 ushort nuword = binreader.ReadUInt16(); SectionOffset += 2;
@@ -1078,7 +1086,7 @@ class J2LFile : J2File
                     }
                     else
                     {
-                        Layers[i].TileMap = new ushort[Layers[i].Width, Layers[i].Height];
+                        Layers[i].TileMap = new ArrayMap<ushort>(Layers[i].Width, Layers[i].Height);
                     }
                 while (binreader.PeekChar() == 0) binreader.ReadByte(); //padding
                 Console.WriteLine(binreader.ReadChars(4)); //EVNT
@@ -1170,7 +1178,6 @@ class J2LFile : J2File
             Layers[i] = (i == 7) ? new Layer(3) : new Layer(0);
             Layers[i].unknown1 = 0;
             Layers[i].id = i;
-            Layers[i].HasTiles = i == 3;
             Layers[i].unknown2 = 0;
             Layers[i].AutoXSpeed = Layers[i].AutoYSpeed = 0;
             Layers[i].TextureMode = Layers[i].TexturParam1 = Layers[i].TexturParam2 = Layers[i].TexturParam3 = 0;
@@ -1208,7 +1215,7 @@ class J2LFile : J2File
         Layers[7].Height = 8;
         Layers[7].XSpeed = Layers[7].YSpeed = 0;
 
-        for (byte i = 0; i < 8; i++) { Layers[i].TileMap = new ushort[Layers[i].Width, Layers[i].Height]; }
+        for (byte i = 0; i < 8; i++) { Layers[i].TileMap = new ArrayMap<ushort>(Layers[i].Width, Layers[i].Height); }
 
         unknownsection = new byte[64];
         AnimOffset = (ushort)MaxTiles;
@@ -1247,7 +1254,16 @@ class J2LFile : J2File
                 if (isLayer3) tilesUsed[frame % MaxTiles] = true;
                 if (isFlipped || frame >= MaxTiles) tilesFlipped[frame % MaxTiles] = true;
             }
-            else { isFlipped |= frame > MaxTiles; FlipMaskEvaluateAnimation(Animations[NumberOfAnimations - (MaxTiles - frame % MaxTiles)], isLayer3, ref isFlipped, ref tilesUsed, ref tilesFlipped); }
+            else
+            {
+                isFlipped |= frame > MaxTiles;
+                FlipMaskEvaluateAnimation(
+                    Animations[NumberOfAnimations - (MaxTiles - frame % MaxTiles)],
+                    isLayer3,
+                    ref isFlipped,
+                    ref tilesUsed,
+                    ref tilesFlipped);
+            }
         }
     }
     //public SavingResults Save() { return Save(FullFilePath, false); }
@@ -1818,20 +1834,28 @@ class J2LFile : J2File
     private void DiscoverTilesThatAreFlippedAndOrUsedInLayer3()
     {
         for (ushort i = 0; i < MaxTiles; i++) IsEachTileUsed[i] = IsEachTileFlipped[i] = false;
+        IsEachTileUsed[0] = true;
         bool isFlipped;
         foreach (Layer CurrentLayer in Layers)
         {
-            CurrentLayer.HasTiles = CurrentLayer.id == 3;
             foreach (ushort tileUsed in CurrentLayer.TileMap)
             {
                 isFlipped = false;
-                if (tileUsed != 0) CurrentLayer.HasTiles = true;
                 if (tileUsed % MaxTiles < J2T.TileCount)
                 {
                     if (CurrentLayer.id == 3) IsEachTileUsed[tileUsed % MaxTiles] = true; // ignore this; it's only useful for .LEV saving
                     if (tileUsed >= MaxTiles) IsEachTileFlipped[tileUsed % MaxTiles] = true;
                 }
-                else { isFlipped = tileUsed > MaxTiles; FlipMaskEvaluateAnimation(Animations[NumberOfAnimations - (MaxTiles - tileUsed % MaxTiles)], CurrentLayer.id == 3, ref isFlipped, ref IsEachTileUsed, ref IsEachTileFlipped); }
+                else
+                {
+                    isFlipped = tileUsed > MaxTiles;
+                    FlipMaskEvaluateAnimation(
+                        Animations[NumberOfAnimations - (MaxTiles - tileUsed % MaxTiles)],
+                        CurrentLayer.id == 3,
+                        ref isFlipped,
+                        ref IsEachTileUsed,
+                        ref IsEachTileFlipped);
+                }
             }
         }
     }
@@ -1846,9 +1870,21 @@ class J2LFile : J2File
         }
         NumberOfAnimations--;
         int threshhold = (adjustLaterAnims) ? AnimOffset + id : MaxTiles - 1;
-        foreach (Layer CurrentLayer in Layers) if (CurrentLayer.HasTiles) for (ushort x = 0; x < CurrentLayer.Width; x++) for (ushort y = 0; y < CurrentLayer.Height; y++) IncreaseAnimationInstanceIfNeeded(ref CurrentLayer.TileMap[x, y], ref threshhold);
-        for (byte i = 0; i < NumberOfAnimations; i++) for (byte j = 0; j < Animations[i].FrameCount; j++) IncreaseAnimationInstanceIfNeeded(ref Animations[i].Sequence[j], ref threshhold);
+        foreach (Layer CurrentLayer in Layers)
+            if (CurrentLayer.HasTiles)
+                for (ushort x = 0; x < CurrentLayer.Width; x++)
+                    for (ushort y = 0; y < CurrentLayer.Height; y++)
+                        IncreaseAnimationInstanceIfNeeded(CurrentLayer.TileMap, x, y, ref threshhold);
+        for (byte i = 0; i < NumberOfAnimations; i++)
+            for (byte j = 0; j < Animations[i].FrameCount; j++)
+                IncreaseAnimationInstanceIfNeeded(ref Animations[i].Sequence[j], ref threshhold);
         AnimOffset++;
+    }
+    private void IncreaseAnimationInstanceIfNeeded(ArrayMap<ushort> tileMap, int x, int y, ref int threshhold)
+    {
+        ushort tile = tileMap[x, y];
+        IncreaseAnimationInstanceIfNeeded(ref tile, ref threshhold);
+        tileMap[x, y] = tile;
     }
     private void IncreaseAnimationInstanceIfNeeded(ref ushort tile, ref int threshhold)
     {
@@ -1867,10 +1903,22 @@ class J2LFile : J2File
         Animations[location] = nuAnim;
         NumberOfAnimations++;
         int threshhold = AnimOffset + location;
-        foreach (Layer CurrentLayer in Layers) if (CurrentLayer.HasTiles) for (ushort x = 0; x < CurrentLayer.Width; x++) for (ushort y = 0; y < CurrentLayer.Height; y++) DecreaseAnimationInstanceIfNeeded(ref CurrentLayer.TileMap[x, y], ref threshhold);
-        for (byte i = 0; i < NumberOfAnimations; i++) for (byte j = 0; j < Animations[i].FrameCount; j++) DecreaseAnimationInstanceIfNeeded(ref Animations[i].Sequence[j], ref threshhold);
+        foreach (Layer CurrentLayer in Layers)
+            if (CurrentLayer.HasTiles)
+                for (ushort x = 0; x < CurrentLayer.Width; x++)
+                    for (ushort y = 0; y < CurrentLayer.Height; y++)
+                        DecreaseAnimationInstanceIfNeeded(CurrentLayer.TileMap, x, y, ref threshhold);
+        for (byte i = 0; i < NumberOfAnimations; i++)
+            for (byte j = 0; j < Animations[i].FrameCount; j++)
+                DecreaseAnimationInstanceIfNeeded(ref Animations[i].Sequence[j], ref threshhold);
         AnimOffset--;
         return InsertFrameResults.Success;
+    }
+    private void DecreaseAnimationInstanceIfNeeded(ArrayMap<ushort> tileMap, int x, int y, ref int threshhold)
+    {
+        ushort tile = tileMap[x, y];
+        DecreaseAnimationInstanceIfNeeded(ref tile, ref threshhold);
+        tileMap[x, y] = tile;
     }
     private void DecreaseAnimationInstanceIfNeeded(ref ushort tile, ref int threshhold)
     {
