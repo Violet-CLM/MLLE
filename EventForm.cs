@@ -519,7 +519,7 @@ public partial class EventForm : Form
     {
         if (j2a == null)
         {
-            j2a = new BinaryReader(File.Open(Path.Combine(SourceForm.DefaultDirectories[version], "Anims.j2a"), FileMode.Open, FileAccess.Read));
+            j2a = new BinaryReader(File.Open(Path.Combine(SourceForm.DefaultDirectories[version], "Anims.j2a"), FileMode.Open, FileAccess.Read), J2File.FileEncoding);
             j2a.ReadBytes(24);
             sets = j2a.ReadInt32();
         }
@@ -544,7 +544,7 @@ public partial class EventForm : Form
                 int[] size = new int[8]; for (i = 0; i < 8; i++) size[i] = j2a.ReadInt32();
                 j2a.ReadBytes(size[0] + size[2] + size[4] + 2);
 
-                using (var bz = new BinaryReader(new System.IO.Compression.DeflateStream(j2a.BaseStream, 0, true)))
+                using (var bz = new BinaryReader(new System.IO.Compression.DeflateStream(j2a.BaseStream, 0, true), J2File.FileEncoding))
                 {
                     for (i = 0; i < s; i++) bz.ReadBytes(bz.ReadInt32() - 4);
                     bz.ReadBytes(64);
@@ -554,7 +554,7 @@ public partial class EventForm : Form
                     //Console.WriteLine("Length: {0:0.000}s", (double)length / rate);
                     length *= mul;
 
-                    var bw = new BinaryWriter(stream);
+                    var bw = new BinaryWriter(stream, J2File.FileEncoding);
                     {
                         bw.Write(magic, 0, 4);
                         bw.Write(length + 36);

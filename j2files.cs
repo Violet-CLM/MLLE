@@ -9,11 +9,12 @@ using Extra.Collections;
 public enum Version { JJ2, TSF, O, GorH, BC, AGA, AmbiguousBCO };
 public enum VersionChangeResults { Success, TilesetTooBig, TooManyAnimatedTiles, UnsupportedConversion };
 public enum SavingResults { Success, UndefinedTiles, NoTilesetSelected, TilesetIsDifferentVersion, Error };
-public enum OpeningResults { Success, SuccessfulButAmbiguous, PasswordNeeded, WrongPassword, UnexpectedFourCC, Error };
+public enum OpeningResults { Success, SuccessfulButAmbiguous, PasswordNeeded, WrongPassword, UnexpectedFourCC, IncorrectEncoding, Error };
 public enum InsertFrameResults { Success, Full, StackOverflow };
 
 abstract class J2File //The fields shared by .j2l and .j2t files. No methods/interface just yet, though that would be cool too.
 {
+    internal static Encoding FileEncoding = Encoding.GetEncoding(1252); //Windows-1252
     internal static string StandardHeader = "                      Jazz Jackrabbit 2 Data File\x0D\x0A\x0D\x0A         Retail distribution of this data is prohibited without\x0D\x0A             written permission from Epic MegaGames, Inc.\x0D\x0A\x0D\x0A\x1A";
     internal string Header; //The copyright notice
     internal string Magic; //"LEVL" or "TILE," depending
@@ -99,7 +100,8 @@ class J2TFile : J2File
     public J2TFile(string filename)
     {
         FilenameOnly = Path.GetFileName(FullFilePath = filename);
-        using (BinaryReader binreader = new BinaryReader(File.Open(filename, FileMode.Open, FileAccess.Read)))
+        Encoding encoding = FileEncoding;
+        using (BinaryReader binreader = new BinaryReader(File.Open(filename, FileMode.Open, FileAccess.Read), encoding))
         {
             #region header
             Header = (binreader.PeekChar() == 32) ? new string(binreader.ReadChars(180)) : "";
@@ -154,7 +156,7 @@ class J2TFile : J2File
             for (byte i = 0; i < 4; i++) UncompressedData[i] = new MemoryStream(ZlibStream.UncompressBuffer(binreader.ReadBytes(CompressedDataLength[i])));
             #endregion header
             #region data1
-            BinaryReader data1reader = new BinaryReader(UncompressedData[0]);
+            BinaryReader data1reader = new BinaryReader(UncompressedData[0], encoding);
             for (short i = 0; i < 256; i++) Palette[i] = data1reader.ReadBytes(4);
             TileCount = data1reader.ReadUInt32();
             for (short i = 0; i < MaxTiles; i++) IsFullyOpaque[i] = data1reader.ReadBoolean();
@@ -167,12 +169,12 @@ class J2TFile : J2File
             for (short i = 0; i < MaxTiles; i++) FlippedMaskAddress[i] = data1reader.ReadUInt32() / 128;
             #endregion data1
             #region data2
-            BinaryReader data2reader = new BinaryReader(UncompressedData[1]);
+            BinaryReader data2reader = new BinaryReader(UncompressedData[1], encoding);
             Images = new byte[UncompressedDataLength[1] / 1024][];
             for (short i = 0; i < UncompressedDataLength[1] / 1024; i++) Images[i] = data2reader.ReadBytes(1024);
             #endregion
             #region data3
-            BinaryReader data3reader = new BinaryReader(UncompressedData[2]);
+            BinaryReader data3reader = new BinaryReader(UncompressedData[2], encoding);
             while (data3Pointer < UncompressedDataLength[2])
             {
                 TransparencyMaskOffset[data3Counter] = data3Pointer;
@@ -193,7 +195,7 @@ class J2TFile : J2File
             }
             #endregion data3
             #region data4
-            BinaryReader data4reader = new BinaryReader(UncompressedData[3]);
+            BinaryReader data4reader = new BinaryReader(UncompressedData[3], encoding);
             Masks = new byte[UncompressedDataLength[3] / 128][];
             for (short i = 0; i < UncompressedDataLength[3] / 128; i++) Masks[i] = Convert128BitsToByteMask(data4reader.ReadBytes(128));
             #endregion data4
@@ -610,9 +612,10 @@ class J2LFile : J2File
 
     int[] AGAMostValues = new int[256], AGAMostStrings = new int[256];
 
-    public OpeningResults OpenLevel(string filename, string password=null, Dictionary<Version, string> defaultDirectories = null)
+    public OpeningResults OpenLevel(string filename, string password = null, Dictionary<Version, string> defaultDirectories = null, Encoding encoding = null)
     {
-        using (BinaryReader binreader = new BinaryReader(File.Open(filename, FileMode.Open, FileAccess.Read)))
+        encoding = encoding ?? FileEncoding;
+        using (BinaryReader binreader = new BinaryReader(File.Open(filename, FileMode.Open, FileAccess.Read), encoding))
         {
             FilenameOnly = Path.GetFileName(FullFilePath = filename);
             bool[] hasTiles = new bool[8]; //only needed for loading; Layer has its own read-only HasTiles
@@ -668,12 +671,12 @@ class J2LFile : J2File
                 for (byte i = 0; i < 4; i++) UncompressedData[i] = new MemoryStream(ZlibStream.UncompressBuffer(binreader.ReadBytes(CompressedDataLength[i])));
                 if (VersionType == Version.AGA)
                 {
-                    BinaryWriter stream2 = new BinaryWriter(File.Open("AGA" + Path.GetFileNameWithoutExtension(filename) + "Data2.dat", FileMode.Create)); stream2.Write(UncompressedData[1].ToArray()); stream2.Close();
-                    //BinaryWriter stream1 = new BinaryWriter(File.Open("AGA" + Path.GetFileNameWithoutExtension(filename) + "Data1.dat", FileMode.Create)); stream1.Write(UncompressedData[0].ToArray()); stream1.Close();
+                    BinaryWriter stream2 = new BinaryWriter(File.Open("AGA" + Path.GetFileNameWithoutExtension(filename) + "Data2.dat", FileMode.Create), FileEncoding); stream2.Write(UncompressedData[1].ToArray()); stream2.Close();
+                    //BinaryWriter stream1 = new BinaryWriter(File.Open("AGA" + Path.GetFileNameWithoutExtension(filename) + "Data1.dat", FileMode.Create), FileEncoding); stream1.Write(UncompressedData[0].ToArray()); stream1.Close();
                 }
                 #endregion header
                 #region data1
-                using (BinaryReader data1reader = new BinaryReader(UncompressedData[0]))
+                using (BinaryReader data1reader = new BinaryReader(UncompressedData[0], encoding))
                 {
                     JCSHorizontalFocus = data1reader.ReadUInt16();
                     Secure1 = data1reader.ReadUInt16();
@@ -698,7 +701,23 @@ class J2LFile : J2File
                     NextLevel = new string(data1reader.ReadChars(32)).TrimEnd('\0');
                     SecretLevel = new string(data1reader.ReadChars(32)).TrimEnd('\0');
                     Music = new string(data1reader.ReadChars(32)).TrimEnd('\0');
-                    for (byte i = 0; i < 16; i++) Text[i] = new string(data1reader.ReadChars(512)).TrimEnd('\0');
+                    for (byte i = 0; i < 16; i++)
+                    {
+                        Text[i] = new string(data1reader.ReadChars(512)).TrimEnd('\0');
+                        if (encoding == FileEncoding)
+                        {
+                            if (Text[i].Contains("\u00EF\u00BF\u00BD")) //check if text contains the UTF-8 replacement character encoded in Windows-1252
+                            {
+                                return OpeningResults.IncorrectEncoding;
+                            }
+                        }
+                        else //we're here to fix the encoding
+                        {
+                            //the original character was most likely a section sign, so replace the replacement character with '§'
+                            Text[i] = Text[i].Replace('\uFFFD', '§');
+                        }
+                    }
+
                     if (VersionNumber == 256) //AGA .lvl files have a series of resource pointers here rather than let JJ2 figure it out by scanning the events
                     {
                         AGA_SoundPointer = new string[48][];
@@ -754,7 +773,7 @@ class J2LFile : J2File
                 #endregion data1
                 #region data2
                 EventMap = new uint[Layers[3].Width, Layers[3].Height];
-                using (BinaryReader data2reader = new BinaryReader(UncompressedData[1]))
+                using (BinaryReader data2reader = new BinaryReader(UncompressedData[1], encoding))
                 {
                     //ParameterMap = new uint[Layers[3].Width, Layers[3].Height];
                     if (VersionNumber != 256) // not AGA
@@ -834,7 +853,7 @@ class J2LFile : J2File
                 Console.WriteLine();
                 #endregion data2
                 #region data3
-                using (BinaryReader data3reader = new BinaryReader(UncompressedData[2]))
+                using (BinaryReader data3reader = new BinaryReader(UncompressedData[2], encoding))
                 {
                     Dictionary = new ushort[UncompressedDataLength[2] / 8][];
                     for (uint i = 0; i < UncompressedDataLength[2] / 8; i++)
@@ -845,7 +864,7 @@ class J2LFile : J2File
                 }
                 #endregion data3
                 #region data4
-                using (BinaryReader data4reader = new BinaryReader(UncompressedData[3]))
+                using (BinaryReader data4reader = new BinaryReader(UncompressedData[3], encoding))
                 {
                     for (byte i = 0; i < 8; i++)
                     {
@@ -1285,28 +1304,29 @@ class J2LFile : J2File
             for (byte i = 0; i < NumberOfAnimations; i++) foreach (ushort tile in Animations[i].Sequence) if (IsAnUndefinedTile(tile)) return SavingResults.UndefinedTiles;
         }
         if (storeGivenFilename) FilenameOnly = Path.GetFileName(FullFilePath = filename);
-        using(BinaryWriter binwriter = new BinaryWriter(File.Open(filename, FileMode.Create, FileAccess.Write))) if (VersionType == Version.GorH)
+        Encoding encoding = FileEncoding;
+        using(BinaryWriter binwriter = new BinaryWriter(File.Open(filename, FileMode.Create, FileAccess.Write), encoding)) if (VersionType == Version.GorH)
             {
                 #region LEV_Save
                 binwriter.Write(new char[] { 'D', 'D', 'C', 'F', '&', 's','s','f' });
             using (BinaryWriter
-                EDIT = new BinaryWriter(new MemoryStream()),
-                EDI2 = new BinaryWriter(new MemoryStream()),
-                LINF = new BinaryWriter(new MemoryStream()),
-                HSTR = new BinaryWriter(new MemoryStream()),
-                TILE = new BinaryWriter(new MemoryStream()),
-                TINFO = new BinaryWriter(new MemoryStream()),
-                TDATA = new BinaryWriter(new MemoryStream()),
-                EMSK = new BinaryWriter(new MemoryStream()),
-                MASK = new BinaryWriter(new MemoryStream()),
-                ANIM = new BinaryWriter(new MemoryStream()),
-                FLIP = new BinaryWriter(new MemoryStream()),
-                LAYR = new BinaryWriter(new MemoryStream()),
-                LINFO = new BinaryWriter(new MemoryStream()),
-                LDATA = new BinaryWriter(new MemoryStream()),
-                EVNT = new BinaryWriter(new MemoryStream()),
-                TMAP = new BinaryWriter(new MemoryStream()),
-                CMAP = new BinaryWriter(new MemoryStream()))
+                EDIT = new BinaryWriter(new MemoryStream(), encoding),
+                EDI2 = new BinaryWriter(new MemoryStream(), encoding),
+                LINF = new BinaryWriter(new MemoryStream(), encoding),
+                HSTR = new BinaryWriter(new MemoryStream(), encoding),
+                TILE = new BinaryWriter(new MemoryStream(), encoding),
+                TINFO = new BinaryWriter(new MemoryStream(), encoding),
+                TDATA = new BinaryWriter(new MemoryStream(), encoding),
+                EMSK = new BinaryWriter(new MemoryStream(), encoding),
+                MASK = new BinaryWriter(new MemoryStream(), encoding),
+                ANIM = new BinaryWriter(new MemoryStream(), encoding),
+                FLIP = new BinaryWriter(new MemoryStream(), encoding),
+                LAYR = new BinaryWriter(new MemoryStream(), encoding),
+                LINFO = new BinaryWriter(new MemoryStream(), encoding),
+                LDATA = new BinaryWriter(new MemoryStream(), encoding),
+                EVNT = new BinaryWriter(new MemoryStream(), encoding),
+                TMAP = new BinaryWriter(new MemoryStream(), encoding),
+                CMAP = new BinaryWriter(new MemoryStream(), encoding))
             {
                 EDIT.Write((byte)3);
                 EDIT.Write(Path.GetFileNameWithoutExtension(J2T.FilenameOnly));
@@ -1522,8 +1542,8 @@ class J2LFile : J2File
                     if (CurrentLayer.AutoXSpeed != 0 || CurrentLayer.AutoYSpeed != 0) { LINFO.Write((int)(CurrentLayer.AutoXSpeed * 65536)); LINFO.Write((int)(CurrentLayer.AutoYSpeed * 65536)); }
                 }
                 
-                using (BinaryWriter data3writer = new BinaryWriter(new MemoryStream()))
-                using (BinaryWriter data4writer = new BinaryWriter(new MemoryStream()))
+                using (BinaryWriter data3writer = new BinaryWriter(new MemoryStream(), encoding))
+                using (BinaryWriter data4writer = new BinaryWriter(new MemoryStream(), encoding))
                 {
                     List<ushort[]> attestedWords = new List<ushort[]>(2048);
                     attestedWords.Add(new ushort[16] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
@@ -1637,19 +1657,19 @@ class J2LFile : J2File
             }
         else
         {
-            binwriter.Write(Header.ToCharArray()); // In Jazz 2 levels, the copyright notice. Otherwise a blank string.
-            binwriter.Write(Magic.ToCharArray()); // 'LEVL'
+            binwriter.Write(encoding.GetBytes(Header)); // In Jazz 2 levels, the copyright notice. Otherwise a blank string.
+            binwriter.Write(encoding.GetBytes(Magic)); // 'LEVL'
             binwriter.Write(PasswordHash); // The password hash is calculated in SetPassword(), not here
             binwriter.Write(IsHiddenInHCL);
-            binwriter.Write(Name.PadRight(32, '\0').ToCharArray());
+            binwriter.Write(getBytes(encoding, Name, 32));
             binwriter.Write((ushort)((VersionType == Version.AGA) ? 256 : (VersionType==Version.TSF) ? 515 : 514));
             binwriter.Write(new byte[40]); // To be filled in later with filesize, CRC32, and the compressed and uncompressed data lengths, for a total of 10 longs or 40 bytes.
             CRC32 CRCCalculator = new CRC32();
             for (byte i = 0; i < 4; i++) CompressedData[i] = new MemoryStream();
-            using (BinaryWriter data1writer = new BinaryWriter(CompressedData[0])) //since Data3 and Data4 are written simultaneously, they use separate BinaryWriters. Data1 and Data2 get their own just for symmetry.
-            using (BinaryWriter data2writer = new BinaryWriter(CompressedData[1]))
-            using (BinaryWriter data3writer = new BinaryWriter(CompressedData[2]))
-            using (BinaryWriter data4writer = new BinaryWriter(CompressedData[3]))
+            using (BinaryWriter data1writer = new BinaryWriter(CompressedData[0], encoding)) //since Data3 and Data4 are written simultaneously, they use separate BinaryWriters. Data1 and Data2 get their own just for symmetry.
+            using (BinaryWriter data2writer = new BinaryWriter(CompressedData[1], encoding))
+            using (BinaryWriter data3writer = new BinaryWriter(CompressedData[2], encoding))
+            using (BinaryWriter data4writer = new BinaryWriter(CompressedData[3], encoding))
             {
                 #region data1
                 data1writer.Write(JCSHorizontalFocus);
@@ -1665,17 +1685,17 @@ class J2LFile : J2File
                 else if (VersionType == Version.O) data1writer.Write((byte)1);
                 else data1writer.Write(LevelMode);
                 data1writer.Write(StreamSize); // this gets replaced later with an actual calculation
-                data1writer.Write(Name.PadRight(32, '\0').ToCharArray());
-                data1writer.Write(Tileset.PadRight(32, '\0').ToCharArray());
-                data1writer.Write(BonusLevel.PadRight(32, '\0').ToCharArray());
-                data1writer.Write(NextLevel.PadRight(32, '\0').ToCharArray());
-                data1writer.Write(SecretLevel.PadRight(32, '\0').ToCharArray());
-                data1writer.Write(Music.PadRight(32, '\0').ToCharArray());
-                for (byte i = 0; i < 16; i++) data1writer.Write(Text[i].PadRight(512, '\0').ToCharArray());
+                data1writer.Write(getBytes(encoding, Name, 32));
+                data1writer.Write(getBytes(encoding, Tileset, 32));
+                data1writer.Write(getBytes(encoding, BonusLevel, 32));
+                data1writer.Write(getBytes(encoding, NextLevel, 32));
+                data1writer.Write(getBytes(encoding, SecretLevel, 32));
+                data1writer.Write(getBytes(encoding, Music, 32));
+                for (byte i = 0; i < 16; i++) data1writer.Write(getBytes(encoding, Text[i], 512));
                 if (VersionType == Version.AGA) for (byte i = 0; i < 48; i++)
                     {
                         if (AGA_SoundPointer[i] == null) for (byte j = 0; j < 16; j++) data1writer.Write(0); //16 longs = 64 bytes
-                        else data1writer.Write((AGA_SoundPointer[i][0] + "\\" + AGA_SoundPointer[i][1]).PadRight(64, '\0').ToCharArray());
+                        else data1writer.Write(getBytes(encoding, (AGA_SoundPointer[i][0] + "\\" + AGA_SoundPointer[i][1]), 64));
                     }
                 for (byte i = 0; i < 8; i++) data1writer.Write((Layers[i].TileWidth?1:0) + (Layers[i].TileHeight?2:0) + (Layers[i].LimitVisibleRegion?4:0) + (Layers[i].IsTextured?8:0) + (Layers[i].HasStars?16:0));
                 for (byte i = 0; i < 8; i++) data1writer.Write(Layers[i].unknown1);
@@ -1726,7 +1746,7 @@ class J2LFile : J2File
                         if (saveProspectiveEvent.ID != 0 && !AGA_LocalEvents.Contains(AGA_GlobalEvents[(int)saveProspectiveEvent.ID])) AGA_LocalEvents.Add(AGA_GlobalEvents[(int)saveProspectiveEvent.ID]);
                     }
                     data2writer.Write((ushort)AGA_LocalEvents.Count);
-                    for (ushort i = 0; i < AGA_LocalEvents.Count; i++) data2writer.Write(AGA_LocalEvents[i].PadRight(64, '\0').ToCharArray());
+                    for (ushort i = 0; i < AGA_LocalEvents.Count; i++) data2writer.Write(getBytes(encoding, AGA_LocalEvents[i], 64));
                     for (ushort y = 0; y < AGA_EventMap.GetLength(1); y++) for (ushort x = 0; x < AGA_EventMap.GetLength(0); x++) if (AGA_EventMap[x, y].ID != 0)
                     {
                         data2writer.Write((ushort)x); data2writer.Write((ushort)y);
@@ -1752,18 +1772,18 @@ class J2LFile : J2File
                             for (byte i = 0; i < AGA_EventMap[x, y].GetNumberOfParameters(); i++) data2writer.Write(AGA_EventMap[x, y].Longs[i]);
                             if ((AGA_EventMap[x, y].Strings[0] ?? "") != "" || (AGA_EventMap[x, y].Strings[1] ?? "") != "" || (AGA_EventMap[x, y].Strings[2] ?? "") != "") //needs to be updated in light of the reflection that some events use more than three strings
                             {
-                                data2writer.Write(AGA_EventMap[x, y].Strings[0].Length+1);
-                                data2writer.Write(AGA_EventMap[x, y].Strings[0].ToCharArray());
+                                data2writer.Write(encoding.GetByteCount(AGA_EventMap[x, y].Strings[0]) + 1);
+                                data2writer.Write(encoding.GetBytes(AGA_EventMap[x, y].Strings[0]));
                                 data2writer.Write((byte)0);
                                 if ((AGA_EventMap[x, y].Strings[1] ?? "") != "" || (AGA_EventMap[x, y].Strings[2] ?? "") != "")
                                 {
-                                    data2writer.Write(AGA_EventMap[x, y].Strings[1].Length+1);
-                                    data2writer.Write(AGA_EventMap[x, y].Strings[1].ToCharArray());
+                                    data2writer.Write(encoding.GetByteCount(AGA_EventMap[x, y].Strings[1]) + 1);
+                                    data2writer.Write(encoding.GetBytes(AGA_EventMap[x, y].Strings[1]));
                                     data2writer.Write((byte)0);
                                     if ((AGA_EventMap[x, y].Strings[2] ?? "") != "")
                                     {
-                                        data2writer.Write(AGA_EventMap[x, y].Strings[2].Length+1);
-                                        data2writer.Write(AGA_EventMap[x, y].Strings[2].ToCharArray());
+                                        data2writer.Write(encoding.GetByteCount(AGA_EventMap[x, y].Strings[2]) + 1);
+                                        data2writer.Write(encoding.GetBytes(AGA_EventMap[x, y].Strings[2]));
                                         data2writer.Write((byte)0);
                                     }
                                 }
@@ -1820,17 +1840,25 @@ class J2LFile : J2File
                     CRCCalculator.SlurpBlock(zcomparray, 0, zcomparray.Length);
                 }
             }
-            binwriter.Seek(Header.Length + 42,0);
+            binwriter.Seek(encoding.GetByteCount(Header) + 42, 0);
             binwriter.Write((int)(binwriter.BaseStream.Length));
-            binwriter.Write((int)CRCCalculator.Crc32Result); Crc32 = CRCCalculator.Crc32Result;
+            binwriter.Write(CRCCalculator.Crc32Result); Crc32 = CRCCalculator.Crc32Result;
             for (byte i = 0; i < 4; i++)
             {
-                binwriter.Write((int)CompressedDataLength[i]);
-                binwriter.Write((int)UncompressedDataLength[i]);
+                binwriter.Write(CompressedDataLength[i]);
+                binwriter.Write(UncompressedDataLength[i]);
             }
         }
         return SavingResults.Success;
     }
+
+    private byte[] getBytes(Encoding encoding, string s, int length)
+    {
+        byte[] bytes = new byte[length];
+        encoding.GetBytes(s, 0, s.Length, bytes, 0);
+        return bytes;
+    }
+
     private void DiscoverTilesThatAreFlippedAndOrUsedInLayer3()
     {
         for (ushort i = 0; i < MaxTiles; i++) IsEachTileUsed[i] = IsEachTileFlipped[i] = false;

@@ -259,7 +259,7 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
             AllTilesetLists[version] = new NameAndFilename[AllTilesets.Count];
             for (int i = 0; i < AllTilesets.Count; i++)
                 {
-                    BinaryReader file = new BinaryReader(File.Open(AllTilesets[i], FileMode.Open, FileAccess.Read));
+                    BinaryReader file = new BinaryReader(File.Open(AllTilesets[i], FileMode.Open, FileAccess.Read), J2File.FileEncoding);
                     file.ReadBytes((file.PeekChar() == 32) ? 188 : 8);
                     AllTilesetLists[version][i] = new NameAndFilename(new string(file.ReadChars(32)).TrimEnd('\0'), AllTilesets[i]);
                     file.Close();
@@ -1054,15 +1054,31 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
             SafeToDisplay = false;
             //TexturedJ2L TentativeJ2L = new TexturedJ2L();
             string newPassword = null;
+            Encoding encoding = null;
             TRYTOOPEN:
-            OpeningResults openResults = J2L.OpenLevel(filename, newPassword, DefaultDirectories);
+            OpeningResults openResults = J2L.OpenLevel(filename, newPassword, DefaultDirectories, encoding);
             if (openResults == OpeningResults.PasswordNeeded || openResults == OpeningResults.WrongPassword)
             {
                 _suspendEvent.Reset();
                 newPassword = PasswordInputForm.ShowForm(openResults);
                 _suspendEvent.Set();
-                if (newPassword == null) { SafeToDisplay = true; return; }
-                else goto TRYTOOPEN;
+                if (newPassword == null)
+                {
+                    SafeToDisplay = true;
+                    return;
+                }
+                goto TRYTOOPEN;
+            }
+            else if (openResults == OpeningResults.IncorrectEncoding)
+            {
+                DialogResult result = MessageBox.Show("This level was saved with an incorrect encoding. Do you want to automatically fix this level's encoding?", "Incorrect Encoding", MessageBoxButtons.OKCancel, MessageBoxIcon.Hand);
+                if (result != DialogResult.OK)
+                {
+                    SafeToDisplay = true;
+                    return;
+                }
+                encoding = Encoding.UTF8;
+                goto TRYTOOPEN;
             }
             else if (openResults == OpeningResults.Success || openResults == OpeningResults.SuccessfulButAmbiguous)
             {
@@ -1090,7 +1106,7 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
                 Undoable.Clear();
                 Redoable.Clear();
                 SafeToDisplay = true;
-                LevelHasBeenModified = false;
+                LevelHasBeenModified = encoding != null;
                 ChangeLayer(J2L.JCSFocusedLayer);
                 MakeProposedScrollbarValueWork(LDScrollH, J2L.JCSHorizontalFocus);
                 MakeProposedScrollbarValueWork(LDScrollV, J2L.JCSVerticalFocus);
