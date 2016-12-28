@@ -19,7 +19,7 @@ using Ini;
 using Un4seen.Bass;
 using Extra.Collections;
 
-public enum EnableableTitles { SecretLevelName, BonusLevelName, Lighting, Splitscreen, HideInHCL, Multiplayer, BoolDevelopingForPlus, UseText, SaveAndRun, Illuminate, DiffLabel, Diff1, Diff2, Diff3, Diff4}
+public enum EnableableTitles { SecretLevelName, BonusLevelName, Lighting, Splitscreen, HideInHCL, Multiplayer, BoolDevelopingForPlus, UseText, SaveAndRun, SaveAndRunArgs, Illuminate, DiffLabel, Diff1, Diff2, Diff3, Diff4}
 public enum FocusedZone { None, Tileset, Level, AnimationEditing }
 public enum SelectionType { New, Add, Subtract, Rectangle, HollowRectangle }
 public enum AtlasID { Null, Image, Mask, EventNames, Selection, Generator, TileTypes }
@@ -172,6 +172,7 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
                 Strings.Add(EnableableTitles.HideInHCL, ini.IniReadValue("Enableable", "HideInHCL") ?? "");
                 Strings.Add(EnableableTitles.Multiplayer, ini.IniReadValue("Enableable", "Multiplayer") ?? "");
                 Strings.Add(EnableableTitles.SaveAndRun, ini.IniReadValue("Enableable", "SaveAndRun") ?? "");
+                Strings.Add(EnableableTitles.SaveAndRunArgs, ini.IniReadValue("Enableable", "SaveAndRunArgs") ?? "");
                 Strings.Add(EnableableTitles.Illuminate, ini.IniReadValue("Enableable", "Illuminate") ?? "");
                 Strings.Add(EnableableTitles.DiffLabel, ini.IniReadValue("EventTypes", "Label") ?? "");
                 Strings.Add(EnableableTitles.Diff1, ini.IniReadValue("EventTypes", "0") ?? "1");
@@ -1166,10 +1167,11 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
                             .ToString()
                             .Replace('/', Path.DirectorySeparatorChar)
                     );
+                    string extraArgs = EnableableStrings[J2L.VersionType][EnableableTitles.SaveAndRunArgs];
                     var pro = new System.Diagnostics.Process();
                     pro.StartInfo.WorkingDirectory = DefaultDirectories[J2L.VersionType];
                     pro.StartInfo.FileName = EnableableStrings[J2L.VersionType][EnableableTitles.SaveAndRun];
-                    pro.StartInfo.Arguments = relativeFilepath;
+                    pro.StartInfo.Arguments = (extraArgs + " " + relativeFilepath).TrimStart();
                     pro.EnableRaisingEvents = true;
                     pro.Exited += new EventHandler(SaveAndRunProgramHasExited);
                     if (MusicIsPlaying) Bass.BASS_Pause();
