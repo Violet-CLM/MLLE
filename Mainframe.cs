@@ -1156,13 +1156,20 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
         {
             if (SaveJ2L(filepath, false, false, storeGivenFilename) == SavingResults.Success)
             {
-                string exe = Path.Combine(DefaultDirectories[J2L.VersionType], EnableableStrings[J2L.VersionType][EnableableTitles.SaveAndRun]);
+                string exe = Path.GetFullPath(Path.Combine(DefaultDirectories[J2L.VersionType], EnableableStrings[J2L.VersionType][EnableableTitles.SaveAndRun]));
                 if (File.Exists(exe))
                 {
+                    string exeFolder = Path.GetDirectoryName(exe) + Path.DirectorySeparatorChar;
+                    string relativeFilepath = Uri.UnescapeDataString(
+                        new Uri(exeFolder)
+                            .MakeRelativeUri(new Uri(filepath))
+                            .ToString()
+                            .Replace('/', Path.DirectorySeparatorChar)
+                    );
                     var pro = new System.Diagnostics.Process();
                     pro.StartInfo.WorkingDirectory = DefaultDirectories[J2L.VersionType];
                     pro.StartInfo.FileName = EnableableStrings[J2L.VersionType][EnableableTitles.SaveAndRun];
-                    pro.StartInfo.Arguments = Path.GetFileName(filepath);
+                    pro.StartInfo.Arguments = relativeFilepath;
                     pro.EnableRaisingEvents = true;
                     pro.Exited += new EventHandler(SaveAndRunProgramHasExited);
                     if (MusicIsPlaying) Bass.BASS_Pause();
