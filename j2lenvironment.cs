@@ -204,7 +204,7 @@ class TexturedJ2L : J2LFile
     }
     /*public static string[][] Old_ReadEventIni(string filename)
     {
-        IniFile ini = new IniFile(".\\" + filename);
+        IniFile ini = new IniFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, filename));
         string[][] StringList = new string[256][];
         for (int i = 0; i < 256; i++) if (ini.IniReadValue("Events", i.ToString()) != "")
             {

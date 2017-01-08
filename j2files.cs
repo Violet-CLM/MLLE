@@ -560,7 +560,7 @@ class J2LFile : J2File
         if (AGA_GlobalEvents == null)
         {
             AGA_GlobalEvents = new List<String>();
-            Ini.IniFile ini = new Ini.IniFile(".\\" + "AGAEventPointerList.ini");
+            Ini.IniFile ini = new Ini.IniFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "AGAEventPointerList.ini"));
             for (int i = 0; i < 256; i++) AGA_GlobalEvents.Add(ini.IniReadValue("Pointers", i.ToString()).Trim());
         }
     }

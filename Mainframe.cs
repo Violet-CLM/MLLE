@@ -29,7 +29,7 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
     {
         #region variable declaration
         internal TexturedJ2L J2L;
-        internal IniFile Settings = new IniFile(".\\MLLE.ini");
+        internal IniFile Settings = new IniFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MLLE.ini"));
         bool SafeToDisplay = false;// ResizingOccured = false;
         List<string> AllTilesets;
         static string[][] DefaultHotKolors = new string[3][] { new string[3] { "32", "24", "80" }, new string[3] { "72", "48", "168" }, new string[3] { "79", "48", "168" } };
@@ -160,7 +160,7 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
         }
 
         private void ProcessIni(Version version) {
-            IniFile ini = new IniFile(".\\" + ProfileIniFilename[J2L.VersionType] + ".ini");
+            IniFile ini = new IniFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ProfileIniFilename[J2L.VersionType] + ".ini"));
             if (EnableableStrings[version] == null)
             {
                 Dictionary<EnableableTitles, bool> Bools = EnableableBools[version] = new Dictionary<EnableableTitles, bool>();
@@ -194,9 +194,14 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
                 AmbientSounds[version] = new MemoryStream[512];
             }
             IniFile baseIni;
-            string path = Path.ChangeExtension(Settings.IniReadValue("EventListBases", ini.IniReadValue("Events", "Base")), "ini");
-            if (File.Exists(path)) baseIni = new IniFile(".\\" + path);
-            else baseIni = ini;
+            {
+                string iniFilename = Path.ChangeExtension(Settings.IniReadValue("EventListBases", ini.IniReadValue("Events", "Base")), "ini");
+                string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, iniFilename);
+                if (File.Exists(path))
+                    baseIni = new IniFile(path);
+                else
+                    baseIni = ini;
+            }
             J2L.ProduceEventAndTypeListsFromIni(version, baseIni, ini);
             if (TreeStructure[version] == null)
             {
@@ -376,8 +381,8 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
             for (ushort x = 0; x < ShouldEachTileBeFilledIn.Length; x++) ShouldEachTileBeFilledIn[x] = new bool[1026];
             GL.Disable(EnableCap.DepthTest);
             GL.Disable(EnableCap.CullFace);
-            GeneratorOverlay = TexUtil.CreateTextureFromFile("Generator.png");
-            SelectionOverlay = TexUtil.CreateTextureFromFile("SelectionRectangles.png");
+            GeneratorOverlay = TexUtil.CreateTextureFromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Generator.png"));
+            SelectionOverlay = TexUtil.CreateTextureFromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SelectionRectangles.png"));
             GL.BindTexture(TextureTarget.Texture2D, J2L.Atlases[0]);
             GL.ClearColor(HotKolors[0]);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
