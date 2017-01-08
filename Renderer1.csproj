@@ -8,7 +8,7 @@
     <ProjectGuid>{243DE7F4-D99B-410F-95DE-AE584B7D64F2}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Namespace</RootNamespace>
+    <RootNamespace>MLLE</RootNamespace>
     <AssemblyName>MLLE</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
@@ -49,7 +49,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>MLLE</StartupObject>
+    <StartupObject>MLLE.Program</StartupObject>
   </PropertyGroup>
   <PropertyGroup />
   <PropertyGroup>

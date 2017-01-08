@@ -8,24 +8,27 @@ using System.Text;
 using System.Windows.Forms;
 using Extra.Collections;
 
-public partial class LayerPropertiesForm : Form
+namespace MLLE
 {
-    Mainframe SourceForm;
-    byte CurrentLayer;
-    Layer DataSource;
-    int[] newrectangle;
-    public LayerPropertiesForm(Mainframe parent, byte Layer)
+    public partial class LayerPropertiesForm : Form
     {
-        SourceForm = parent;
-        CurrentLayer = Layer;
+        Mainframe SourceForm;
+        byte CurrentLayer;
+        Layer DataSource;
+        int[] newrectangle;
+        public LayerPropertiesForm(Mainframe parent, byte Layer)
+        {
+            SourceForm = parent;
+            CurrentLayer = Layer;
             InitializeComponent();
         }
         private void LayerPropertiesForm_Load(object sender, EventArgs e)
         {
             if (SourceForm.TextureTypes.Count == 0) { TextureMode.Parent = groupBox3; TextureMode.Location = new Point(TileHeight.Location.X, LimitVisibleRegion.Location.Y); ClientSize = new Size(ClientSize.Width, ClientSize.Height - (groupBox4.Bottom - groupBox3.Bottom)); }
-            else if (SourceForm.TextureTypes.Count == 1) {
+            else if (SourceForm.TextureTypes.Count == 1)
+            {
                 TextureModeSelect.Visible = false;
-                foreach (Control foo in new Control[] { Param1, Param2, Param3, RedLabel, GreenLabel, BlueLabel, Stars, ColorBox, ColorLabel})
+                foreach (Control foo in new Control[] { Param1, Param2, Param3, RedLabel, GreenLabel, BlueLabel, Stars, ColorBox, ColorLabel })
                 { foo.Location = new Point(foo.Location.X, foo.Location.Y - TextureModeSelect.Height); }
                 /*Param1.Location = new Point(Param1.Location.X, Param1.Location.Y - TextureModeSelect.Height);
                 Param2.Location = new Point(Param2.Location.X, Param2.Location.Y - TextureModeSelect.Height);
@@ -36,7 +39,8 @@ public partial class LayerPropertiesForm : Form
                 Stars.Location = new Point(Stars.Location.X, Stars.Location.Y - TextureModeSelect.Height);
                 ColorBox.Location = new Point(ColorBox.Location.X, ColorBox.Location.Y - TextureModeSelect.Height);
                 ColorLabel.Location = new Point(ColorLabel.Location.X, ColorLabel.Location.Y - TextureModeSelect.Height);*/
-                if (SourceForm.TextureTypes[0][1] == "+") {
+                if (SourceForm.TextureTypes[0][1] == "+")
+                {
                     groupBox4.Height -= TextureModeSelect.Height + (Param3.Location.Y - Param1.Location.Y);
                     Height -= TextureModeSelect.Height + (Param3.Location.Y - Param1.Location.Y);
                 }
@@ -89,12 +93,13 @@ public partial class LayerPropertiesForm : Form
                 }
                 DataSource.Width = (uint)WidthBox.Value;
                 DataSource.Height = (uint)HeightBox.Value;
-                if (TileWidth.Checked) switch (DataSource.Width %4)
-                {
-                    case 0: DataSource.RealWidth = DataSource.Width; break;
-                    case 2: DataSource.RealWidth = DataSource.Width*2; break;
-                    default: DataSource.RealWidth = DataSource.Width*4; break;
-                }
+                if (TileWidth.Checked)
+                    switch (DataSource.Width % 4)
+                    {
+                        case 0: DataSource.RealWidth = DataSource.Width; break;
+                        case 2: DataSource.RealWidth = DataSource.Width * 2; break;
+                        default: DataSource.RealWidth = DataSource.Width * 4; break;
+                    }
                 else DataSource.RealWidth = DataSource.Width;
                 #region Old Size Change code
                 //if (newrectangle != null || (DataSource.TileWidth == false && TileWidth.Checked == true && DataSource.Width % 4 > 0))
@@ -208,7 +213,8 @@ public partial class LayerPropertiesForm : Form
             {
                 Stars.Text = properties[2].Trim();
                 Stars.Visible = true;
-            } else { Stars.Visible = false; }
+            }
+            else { Stars.Visible = false; }
 
             Param1.Visible = Param2.Visible = Param3.Visible = RedLabel.Visible = GreenLabel.Visible = BlueLabel.Visible = false;
             if (properties.Length > 1 && properties[1] == "+")
@@ -267,3 +273,4 @@ public partial class LayerPropertiesForm : Form
         }
 
     }
+}

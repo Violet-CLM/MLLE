@@ -1,4 +1,6 @@
-﻿partial class Mainframe
+﻿namespace MLLE
+{
+    partial class Mainframe
     {
         /// <summary>
         /// Required designer variable.
@@ -631,7 +633,7 @@
             // 
             // TilesetScrollbar
             // 
-            this.TilesetScrollbar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.TilesetScrollbar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
             | System.Windows.Forms.AnchorStyles.Left)));
             this.TilesetScrollbar.LargeChange = 256;
             this.TilesetScrollbar.Location = new System.Drawing.Point(320, 49);
@@ -645,7 +647,7 @@
             // DrawingTools
             // 
             this.DrawingTools.AllowItemReorder = true;
-            this.DrawingTools.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.DrawingTools.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
             | System.Windows.Forms.AnchorStyles.Left)));
             this.DrawingTools.AutoSize = false;
             this.DrawingTools.BackColor = System.Drawing.SystemColors.ControlLightLight;
@@ -819,7 +821,7 @@
             // DisplayToolstrip
             // 
             this.DisplayToolstrip.AllowItemReorder = true;
-            this.DisplayToolstrip.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.DisplayToolstrip.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.DisplayToolstrip.AutoSize = false;
             this.DisplayToolstrip.BackColor = System.Drawing.SystemColors.ControlLightLight;
@@ -1166,7 +1168,7 @@
             // 
             // LDScrollV
             // 
-            this.LDScrollV.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.LDScrollV.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.LDScrollV.LargeChange = 256;
             this.LDScrollV.Location = new System.Drawing.Point(827, 49);
@@ -1179,7 +1181,7 @@
             // 
             // LDScrollH
             // 
-            this.LDScrollH.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            this.LDScrollH.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.LDScrollH.LargeChange = 256;
             this.LDScrollH.Location = new System.Drawing.Point(361, 257);
@@ -1193,8 +1195,8 @@
             // 
             // LevelDisplay
             // 
-            this.LevelDisplay.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.LevelDisplay.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.LevelDisplay.AutoScrollMargin = new System.Drawing.Size(17, 17);
             this.LevelDisplay.BackColor = System.Drawing.Color.Black;
@@ -2036,3 +2038,4 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator21;
 
     }
+}

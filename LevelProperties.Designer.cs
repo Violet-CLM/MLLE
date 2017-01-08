@@ -1,4 +1,6 @@
-﻿partial class LevelProperties
+﻿namespace MLLE
+{
+    partial class LevelProperties
     {
         /// <summary>
         /// Required designer variable.
@@ -411,3 +413,4 @@
         private System.Windows.Forms.CheckBox IsMultiplayer;
         private System.Windows.Forms.OpenFileDialog OpenMusicDialog;
     }
+}

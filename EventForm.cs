@@ -8,9 +8,11 @@ using System.Text;
 using System.Windows.Forms;
 using System.IO;
 
-enum InputControlType { Numbox, Checkbox, Dropdown, DropdownUsedForStrings, Textbox }
+namespace MLLE
+{
+    enum InputControlType { Numbox, Checkbox, Dropdown, DropdownUsedForStrings, Textbox }
 
-public partial class EventForm : Form
+    public partial class EventForm : Form
     {
         const int ParameterVerticalMargin = -37;
         byte MostParametersSeenThusFar = 1;
@@ -34,7 +36,8 @@ public partial class EventForm : Form
         TextBox[] ParamTextboxes;
         Dictionary<ComboBox, List<ComboBox>> CombosPointingToCombos;
         bool SafeToCalculate = false, SafeToCacheOldParameters = false;
-        public EventForm(Mainframe parent, TreeNode[] nodes, Version theVersion, AGAEvent inputevent) {
+        public EventForm(Mainframe parent, TreeNode[] nodes, Version theVersion, AGAEvent inputevent)
+        {
             WorkingEvent = inputevent;
             SourceForm = parent;
             parent.SelectReturnAGAEvent = null;
@@ -52,7 +55,7 @@ public partial class EventForm : Form
                 ParamTextboxes = new TextBox[24]; ParamTextboxes[0] = textBox1;
             }
             else textBox1.Dispose();
-            CombosPointingToCombos = new Dictionary<ComboBox, List<ComboBox>> { {comboBox1, new List<ComboBox>()} };
+            CombosPointingToCombos = new Dictionary<ComboBox, List<ComboBox>> { { comboBox1, new List<ComboBox>() } };
             Tree.Nodes.AddRange(nodes);
             Tree.Sort();
         }
@@ -65,7 +68,7 @@ public partial class EventForm : Form
                 this.panel1.Controls.Add(ParamLabels[id]);
                 ParamLabels[id].AutoSize = true;
                 ParamLabels[id].Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-                ParamLabels[id].Location = new System.Drawing.Point(3, ParamLabels[0].Location.Y - ParameterVerticalMargin*id);
+                ParamLabels[id].Location = new System.Drawing.Point(3, ParamLabels[0].Location.Y - ParameterVerticalMargin * id);
                 ParamLabels[id].Size = new System.Drawing.Size(10, 13);
             }
             ParamLabels[id].Text = text;
@@ -120,8 +123,9 @@ public partial class EventForm : Form
 
         int GetParamValue(byte id)
         {
-            switch (ParameterInputType[id]) {
-                case InputControlType.Checkbox: return ((CheckBox)RetrieveAndPossiblyCreateControl(ParamCheckboxes,id))/*ParamCheckboxes[id]*/.Checked ? 1 : 0;
+            switch (ParameterInputType[id])
+            {
+                case InputControlType.Checkbox: return ((CheckBox)RetrieveAndPossiblyCreateControl(ParamCheckboxes, id))/*ParamCheckboxes[id]*/.Checked ? 1 : 0;
                 case InputControlType.Dropdown: return ((ComboBox)RetrieveAndPossiblyCreateControl(ParamDropdowns, id))/*ParamDropdowns[id]*/.SelectedIndex;
                 case InputControlType.Numbox: return (int)((NumericUpDown)RetrieveAndPossiblyCreateControl(ParamBoxes, id)).Value;
                 default: return 0;
@@ -138,7 +142,8 @@ public partial class EventForm : Form
             }
         }
 
-        private void EventForm_Load(object sender, EventArgs e) {
+        private void EventForm_Load(object sender, EventArgs e)
+        {
             CurrentEventID = (byte)(WorkingEvent.ID & 255);
             CurrentEvent = SourceForm.J2L.IniEventListing[SourceForm.J2L.VersionType][CurrentEventID];
             MostParametersSeenThusFar = (byte)(Math.Max(1, CurrentEvent.Length - 5));
@@ -161,7 +166,7 @@ public partial class EventForm : Form
             {
                 for (byte i = 0; i < WorkingEvent.Longs.Length; i++)
                 {
-                    if (i < WorkingEvent.Strings.Length) {LastParameterStrings[i] = WorkingEvent.Strings[i] ?? ""; }
+                    if (i < WorkingEvent.Strings.Length) { LastParameterStrings[i] = WorkingEvent.Strings[i] ?? ""; }
                     if (i < WorkingEvent.Bits.Length) { BitBoxes[i].Checked = WorkingEvent.Bits[i]; }
                     LastParameterValues[i] = WorkingEvent.Longs[i];
                 }
@@ -196,7 +201,8 @@ public partial class EventForm : Form
 
         private void Tree_AfterSelect(object sender, TreeViewEventArgs e)
         {
-            if (Tree.SelectedNode.GetNodeCount(false) == 0) {
+            if (Tree.SelectedNode.GetNodeCount(false) == 0)
+            {
                 if (Generator.Checked)
                 {
                     numericUpDown1.Value = Convert.ToByte(Tree.SelectedNode.Name);
@@ -229,176 +235,176 @@ public partial class EventForm : Form
         }
 
         internal void SetupEvent()
-            {
-                CurrentEvent = SourceForm.J2L.IniEventListing[SourceForm.J2L.VersionType][CurrentEventID];
-                int[] range;
-                string mode;
-                SafeToCalculate = false;
-                ReadCycledValues = ReadCycledStrings = WriteCycledValues = WriteCycledStrings = 0;
-                if (SafeToCacheOldParameters) for (byte i = 0; i < MostParametersSeenThusFar; i++)
+        {
+            CurrentEvent = SourceForm.J2L.IniEventListing[SourceForm.J2L.VersionType][CurrentEventID];
+            int[] range;
+            string mode;
+            SafeToCalculate = false;
+            ReadCycledValues = ReadCycledStrings = WriteCycledValues = WriteCycledStrings = 0;
+            if (SafeToCacheOldParameters) for (byte i = 0; i < MostParametersSeenThusFar; i++)
                 {
                     switch (ParameterInputType[i])
-                        {
-                            case InputControlType.Textbox:
-                                LastParameterStrings[WriteCycledStrings] = ParamTextboxes[i].Text;
-                                WriteCycledStrings++;
-                                break;
-                            case InputControlType.DropdownUsedForStrings:
-                                LastParameterStrings[WriteCycledStrings] = (string)ParamDropdowns[i].SelectedItem;
-                                WriteCycledStrings++;
-                                break;
-                            default:
-                                LastParameterValues[WriteCycledValues] = GetParamValue(i);
-                                WriteCycledValues++;
-                                break;
-                        }
-                }
-                MostParametersSeenThusFar = (byte)Math.Max(MostParametersSeenThusFar, CurrentEvent.Length - 5);
-                for (byte i = 0; i < MostParametersSeenThusFar; i++)
-                {
-                    RetrieveAndPossiblyCreateControl(ParamDropdowns, i);
-                    RetrieveAndPossiblyCreateControl(ParamBoxes, i);
-                    RetrieveAndPossiblyCreateControl(ParamSoundPlayerButtons, i);
-                    RetrieveAndPossiblyCreateControl(ParamCheckboxes, i);
-                    if (version == Version.AGA) RetrieveAndPossiblyCreateControl(ParamTextboxes, i);
-                    if (ParamDropdowns[i] != null) CombosPointingToCombos[ParamDropdowns[i]].Clear();
-                    if (CurrentEvent.Length - 5 > i)
                     {
-                        mode = CurrentEvent[i + 5].Split(':')[1];
-                        switch (mode.Substring(0, 1))
-                        {
-                            case "B":
-                            case "b":
-                            case "C":
-                            case "c":
-                                ParameterInputType[i] = InputControlType.Checkbox;
-                                ParamCheckboxes[i].Checked = LastParameterValues[ReadCycledValues] != 0;
-                                ParamCheckboxes[i].Text = CurrentEvent[i + 5].Split(':')[0];
-                                SetTextOfAndPossiblyCreateLabel(i, ParamCheckboxes[i].Text);
-                                ParamLabels[i].Visible = ParamCheckboxes[i].Visible = true; ParamSoundPlayerButtons[i].Visible = ParamBoxes[i].Visible = ParamDropdowns[i].Visible = false;
-                                if (version == Version.AGA) ParamTextboxes[i].Visible = false;
-                                ReadCycledValues++;
-                                break;
-                            case "T":
-                            case "t":
-                                ParameterInputType[i] = InputControlType.Dropdown;
-                                SetTextOfAndPossiblyCreateLabel(i, CurrentEvent[5 + i].Split(':')[0]);
-                                ParamLabels[i].Visible = ParamDropdowns[i].Visible = true; ParamSoundPlayerButtons[i].Visible = ParamBoxes[i].Visible = ParamCheckboxes[i].Visible = false;
-                                if (version == Version.AGA) ParamTextboxes[i].Visible = false;
-                                ParamDropdowns[i].Items.Clear();
-                                ParamDropdowns[i].Items.AddRange(SourceForm.J2L.Text);
-                                ParamDropdowns[i].SelectedIndex = LastParameterValues[ReadCycledValues];
-                                ReadCycledValues++;
-                                break;
-                            case "P":
-                            case "p":
-                                ParameterInputType[i] = InputControlType.Dropdown;
-                                SetTextOfAndPossiblyCreateLabel(i, CurrentEvent[5 + i].Split(':')[0]);
-                                ParamLabels[i].Visible = ParamDropdowns[i].Visible = true; ParamSoundPlayerButtons[i].Visible = ParamBoxes[i].Visible = ParamCheckboxes[i].Visible = false;
-                                if (version == Version.AGA) ParamTextboxes[i].Visible = false;
-                                ParamDropdowns[i].Items.Clear();
-                                CombosPointingToCombos[ParamDropdowns[Convert.ToByte(mode.Substring(1, 1))]].Add(ParamDropdowns[i]);
-                                ParamDropdowns[i].Items.AddRange(((string)ParamDropdowns[Convert.ToByte(mode.Substring(1, 1))].SelectedItem).Split('|'));
-                                if (ParamDropdowns[i].Items.Count == 0) ParamDropdowns[i].Items.Add("");
-                                ParamDropdowns[i].SelectedIndex = Math.Min(ParamDropdowns[i].Items.Count - 1, LastParameterValues[ReadCycledValues]);
-                                ReadCycledValues++;
-                                break;
-                            case "{":
-                                ParameterInputType[i] = InputControlType.Dropdown;
-                                SetTextOfAndPossiblyCreateLabel(i, CurrentEvent[5 + i].Split(':')[0]);
-                                ParamLabels[i].Visible = ParamDropdowns[i].Visible = true; ParamSoundPlayerButtons[i].Visible = ParamBoxes[i].Visible = ParamCheckboxes[i].Visible = false;
-                                if (version == Version.AGA) ParamTextboxes[i].Visible = false;
-                                ParamDropdowns[i].Items.Clear();
-                                ParamDropdowns[i].Items.AddRange(mode.Substring(1, mode.LastIndexOf('}') - 1).Split(','));
-                                ParamDropdowns[i].SelectedIndex = Math.Min(ParamDropdowns[i].Items.Count - 1, LastParameterValues[ReadCycledValues]);
-                                ReadCycledValues++;
-                                break;
-                            case "s":
-                            case "S":
-                                ParameterInputType[i] = InputControlType.Numbox;
-                                SetTextOfAndPossiblyCreateLabel(i, CurrentEvent[5 + i].Split(':')[0]);
-                                ParamLabels[i].Visible = ParamSoundPlayerButtons[i].Visible = ParamBoxes[i].Visible = true; ParamCheckboxes[i].Visible = ParamDropdowns[i].Visible = false;
-                                if (version == Version.AGA) ParamTextboxes[i].Visible = false;
-                                range = GetParameterRange(Convert.ToInt32(mode.Substring(1)));
-                                ParamBoxes[i].Minimum = range[0]; ParamBoxes[i].Maximum = range[1];
-                                foreach (Control c in ParamBoxes[i].Controls)
-                                    toolTip.SetToolTip(c, String.Format("Enter a number between {0} and {1}.", range[0], range[1]));
-                                ParamBoxes[i].Value = LastParameterValues[ReadCycledValues];
-                                ReadCycledValues++;
-                                break;
-                            case "A":
-                            case "a":
-                                switch (mode.Substring(1, 1))
-                                {
-                                    case "T":
-                                    case "t":
-                                        ParameterInputType[i] = InputControlType.Dropdown;
-                                        SetTextOfAndPossiblyCreateLabel(i, CurrentEvent[5 + i].Split(':')[0]);
-                                        ParamLabels[i].Visible = ParamDropdowns[i].Visible = true; ParamSoundPlayerButtons[i].Visible = ParamBoxes[i].Visible = ParamCheckboxes[i].Visible = false;
-                                        if (version == Version.AGA) ParamTextboxes[i].Visible = false;
-                                        ParamDropdowns[i].Items.Clear();
-                                        ParamDropdowns[i].Items.AddRange(SourceForm.J2L.Text);
-                                        ParamDropdowns[i].SelectedIndex = LastParameterValues[ReadCycledValues];
-                                        ReadCycledValues++;
-                                        break;
-                                    case "{":
-                                        ParameterInputType[i] = InputControlType.DropdownUsedForStrings;
-                                        SetTextOfAndPossiblyCreateLabel(i, CurrentEvent[5 + i].Split(':')[0]);
-                                        ParamLabels[i].Visible = ParamDropdowns[i].Visible = true; ParamSoundPlayerButtons[i].Visible = ParamBoxes[i].Visible = ParamCheckboxes[i].Visible = false;
-                                        if (version == Version.AGA) ParamTextboxes[i].Visible = false;
-                                        ParamDropdowns[i].Items.Clear();
-                                        ParamDropdowns[i].Items.AddRange(mode.Substring(2, mode.LastIndexOf('}') - 2).Split(','));
-                                        try { ParamDropdowns[i].SelectedIndex = ParamDropdowns[i].FindStringExact(LastParameterStrings[ReadCycledStrings], 0); }
-                                        catch { ParamDropdowns[i].SelectedIndex = 0; }
-                                        ReadCycledStrings++;
-                                        break;
-                                    case "h":
-                                    case "H":
-                                        ParameterInputType[i] = InputControlType.Textbox;
-                                        SetTextOfAndPossiblyCreateLabel(i, CurrentEvent[5 + i].Split(':')[0]);
-                                        ParamSoundPlayerButtons[i].Visible = ParamBoxes[i].Visible = ParamCheckboxes[i].Visible = ParamDropdowns[i].Visible = false;
-                                        if (version == Version.AGA) ParamLabels[i].Visible = ParamTextboxes[i].Visible = true;
-                                        ParamTextboxes[i].Text = LastParameterStrings[ReadCycledStrings];
-                                        ReadCycledStrings++;
-                                        break;
-                                    case "l":
-                                    case "L":
-                                    default:
-                                        ParameterInputType[i] = InputControlType.Numbox;
-                                        SetTextOfAndPossiblyCreateLabel(i, CurrentEvent[5 + i].Split(':')[0]);
-                                        ParamLabels[i].Visible = ParamBoxes[i].Visible = true; ParamSoundPlayerButtons[i].Visible = ParamCheckboxes[i].Visible = ParamDropdowns[i].Visible = false;
-                                        if (version == Version.AGA) ParamTextboxes[i].Visible = false;
-                                        ParamBoxes[i].Minimum = int.MinValue; ParamBoxes[i].Maximum = int.MaxValue;
-                                        foreach (Control c in ParamBoxes[i].Controls)
-                                            toolTip.SetToolTip(c, String.Format("Enter a number between {0} and {1}.", int.MinValue, int.MaxValue));
-                                        ParamBoxes[i].Value = LastParameterValues[ReadCycledValues];
-                                        ReadCycledValues++;
-                                        break;
-                                }
-                                break;
-                            default:
-                                ParameterInputType[i] = InputControlType.Numbox;
-                                SetTextOfAndPossiblyCreateLabel(i, CurrentEvent[5 + i].Split(':')[0]);
-                                ParamLabels[i].Visible = ParamBoxes[i].Visible = true; ParamSoundPlayerButtons[i].Visible = ParamCheckboxes[i].Visible = ParamDropdowns[i].Visible = false;
-                                if (version == Version.AGA) ParamTextboxes[i].Visible = false;
-                                range = GetParameterRange(Convert.ToInt32(mode));
-                                ParamBoxes[i].Minimum = range[0]; ParamBoxes[i].Maximum = range[1];
-                                foreach (Control c in ParamBoxes[i].Controls)
-                                    toolTip.SetToolTip(c, String.Format("Enter a number between {0} and {1}.", range[0], range[1]));
-                                ParamBoxes[i].Value = LastParameterValues[ReadCycledValues];
-                                ReadCycledValues++;
-                                break;
-                        }
+                        case InputControlType.Textbox:
+                            LastParameterStrings[WriteCycledStrings] = ParamTextboxes[i].Text;
+                            WriteCycledStrings++;
+                            break;
+                        case InputControlType.DropdownUsedForStrings:
+                            LastParameterStrings[WriteCycledStrings] = (string)ParamDropdowns[i].SelectedItem;
+                            WriteCycledStrings++;
+                            break;
+                        default:
+                            LastParameterValues[WriteCycledValues] = GetParamValue(i);
+                            WriteCycledValues++;
+                            break;
                     }
-                    else { ParamLabels[i].Visible = ParamBoxes[i].Visible = ParamCheckboxes[i].Visible = ParamDropdowns[i].Visible = false; if (version == Version.AGA) ParamTextboxes[i].Visible = false; }
                 }
-                SafeToCalculate = true;
-                if (!(version == Version.AGA))
+            MostParametersSeenThusFar = (byte)Math.Max(MostParametersSeenThusFar, CurrentEvent.Length - 5);
+            for (byte i = 0; i < MostParametersSeenThusFar; i++)
+            {
+                RetrieveAndPossiblyCreateControl(ParamDropdowns, i);
+                RetrieveAndPossiblyCreateControl(ParamBoxes, i);
+                RetrieveAndPossiblyCreateControl(ParamSoundPlayerButtons, i);
+                RetrieveAndPossiblyCreateControl(ParamCheckboxes, i);
+                if (version == Version.AGA) RetrieveAndPossiblyCreateControl(ParamTextboxes, i);
+                if (ParamDropdowns[i] != null) CombosPointingToCombos[ParamDropdowns[i]].Clear();
+                if (CurrentEvent.Length - 5 > i)
                 {
-                    WorkingEvent.ID = CalculateOutputEvent();
-                    Bitfield.Text = Convert.ToString((int)WorkingEvent.ID, 2).PadLeft(32, '0');
+                    mode = CurrentEvent[i + 5].Split(':')[1];
+                    switch (mode.Substring(0, 1))
+                    {
+                        case "B":
+                        case "b":
+                        case "C":
+                        case "c":
+                            ParameterInputType[i] = InputControlType.Checkbox;
+                            ParamCheckboxes[i].Checked = LastParameterValues[ReadCycledValues] != 0;
+                            ParamCheckboxes[i].Text = CurrentEvent[i + 5].Split(':')[0];
+                            SetTextOfAndPossiblyCreateLabel(i, ParamCheckboxes[i].Text);
+                            ParamLabels[i].Visible = ParamCheckboxes[i].Visible = true; ParamSoundPlayerButtons[i].Visible = ParamBoxes[i].Visible = ParamDropdowns[i].Visible = false;
+                            if (version == Version.AGA) ParamTextboxes[i].Visible = false;
+                            ReadCycledValues++;
+                            break;
+                        case "T":
+                        case "t":
+                            ParameterInputType[i] = InputControlType.Dropdown;
+                            SetTextOfAndPossiblyCreateLabel(i, CurrentEvent[5 + i].Split(':')[0]);
+                            ParamLabels[i].Visible = ParamDropdowns[i].Visible = true; ParamSoundPlayerButtons[i].Visible = ParamBoxes[i].Visible = ParamCheckboxes[i].Visible = false;
+                            if (version == Version.AGA) ParamTextboxes[i].Visible = false;
+                            ParamDropdowns[i].Items.Clear();
+                            ParamDropdowns[i].Items.AddRange(SourceForm.J2L.Text);
+                            ParamDropdowns[i].SelectedIndex = LastParameterValues[ReadCycledValues];
+                            ReadCycledValues++;
+                            break;
+                        case "P":
+                        case "p":
+                            ParameterInputType[i] = InputControlType.Dropdown;
+                            SetTextOfAndPossiblyCreateLabel(i, CurrentEvent[5 + i].Split(':')[0]);
+                            ParamLabels[i].Visible = ParamDropdowns[i].Visible = true; ParamSoundPlayerButtons[i].Visible = ParamBoxes[i].Visible = ParamCheckboxes[i].Visible = false;
+                            if (version == Version.AGA) ParamTextboxes[i].Visible = false;
+                            ParamDropdowns[i].Items.Clear();
+                            CombosPointingToCombos[ParamDropdowns[Convert.ToByte(mode.Substring(1, 1))]].Add(ParamDropdowns[i]);
+                            ParamDropdowns[i].Items.AddRange(((string)ParamDropdowns[Convert.ToByte(mode.Substring(1, 1))].SelectedItem).Split('|'));
+                            if (ParamDropdowns[i].Items.Count == 0) ParamDropdowns[i].Items.Add("");
+                            ParamDropdowns[i].SelectedIndex = Math.Min(ParamDropdowns[i].Items.Count - 1, LastParameterValues[ReadCycledValues]);
+                            ReadCycledValues++;
+                            break;
+                        case "{":
+                            ParameterInputType[i] = InputControlType.Dropdown;
+                            SetTextOfAndPossiblyCreateLabel(i, CurrentEvent[5 + i].Split(':')[0]);
+                            ParamLabels[i].Visible = ParamDropdowns[i].Visible = true; ParamSoundPlayerButtons[i].Visible = ParamBoxes[i].Visible = ParamCheckboxes[i].Visible = false;
+                            if (version == Version.AGA) ParamTextboxes[i].Visible = false;
+                            ParamDropdowns[i].Items.Clear();
+                            ParamDropdowns[i].Items.AddRange(mode.Substring(1, mode.LastIndexOf('}') - 1).Split(','));
+                            ParamDropdowns[i].SelectedIndex = Math.Min(ParamDropdowns[i].Items.Count - 1, LastParameterValues[ReadCycledValues]);
+                            ReadCycledValues++;
+                            break;
+                        case "s":
+                        case "S":
+                            ParameterInputType[i] = InputControlType.Numbox;
+                            SetTextOfAndPossiblyCreateLabel(i, CurrentEvent[5 + i].Split(':')[0]);
+                            ParamLabels[i].Visible = ParamSoundPlayerButtons[i].Visible = ParamBoxes[i].Visible = true; ParamCheckboxes[i].Visible = ParamDropdowns[i].Visible = false;
+                            if (version == Version.AGA) ParamTextboxes[i].Visible = false;
+                            range = GetParameterRange(Convert.ToInt32(mode.Substring(1)));
+                            ParamBoxes[i].Minimum = range[0]; ParamBoxes[i].Maximum = range[1];
+                            foreach (Control c in ParamBoxes[i].Controls)
+                                toolTip.SetToolTip(c, String.Format("Enter a number between {0} and {1}.", range[0], range[1]));
+                            ParamBoxes[i].Value = LastParameterValues[ReadCycledValues];
+                            ReadCycledValues++;
+                            break;
+                        case "A":
+                        case "a":
+                            switch (mode.Substring(1, 1))
+                            {
+                                case "T":
+                                case "t":
+                                    ParameterInputType[i] = InputControlType.Dropdown;
+                                    SetTextOfAndPossiblyCreateLabel(i, CurrentEvent[5 + i].Split(':')[0]);
+                                    ParamLabels[i].Visible = ParamDropdowns[i].Visible = true; ParamSoundPlayerButtons[i].Visible = ParamBoxes[i].Visible = ParamCheckboxes[i].Visible = false;
+                                    if (version == Version.AGA) ParamTextboxes[i].Visible = false;
+                                    ParamDropdowns[i].Items.Clear();
+                                    ParamDropdowns[i].Items.AddRange(SourceForm.J2L.Text);
+                                    ParamDropdowns[i].SelectedIndex = LastParameterValues[ReadCycledValues];
+                                    ReadCycledValues++;
+                                    break;
+                                case "{":
+                                    ParameterInputType[i] = InputControlType.DropdownUsedForStrings;
+                                    SetTextOfAndPossiblyCreateLabel(i, CurrentEvent[5 + i].Split(':')[0]);
+                                    ParamLabels[i].Visible = ParamDropdowns[i].Visible = true; ParamSoundPlayerButtons[i].Visible = ParamBoxes[i].Visible = ParamCheckboxes[i].Visible = false;
+                                    if (version == Version.AGA) ParamTextboxes[i].Visible = false;
+                                    ParamDropdowns[i].Items.Clear();
+                                    ParamDropdowns[i].Items.AddRange(mode.Substring(2, mode.LastIndexOf('}') - 2).Split(','));
+                                    try { ParamDropdowns[i].SelectedIndex = ParamDropdowns[i].FindStringExact(LastParameterStrings[ReadCycledStrings], 0); }
+                                    catch { ParamDropdowns[i].SelectedIndex = 0; }
+                                    ReadCycledStrings++;
+                                    break;
+                                case "h":
+                                case "H":
+                                    ParameterInputType[i] = InputControlType.Textbox;
+                                    SetTextOfAndPossiblyCreateLabel(i, CurrentEvent[5 + i].Split(':')[0]);
+                                    ParamSoundPlayerButtons[i].Visible = ParamBoxes[i].Visible = ParamCheckboxes[i].Visible = ParamDropdowns[i].Visible = false;
+                                    if (version == Version.AGA) ParamLabels[i].Visible = ParamTextboxes[i].Visible = true;
+                                    ParamTextboxes[i].Text = LastParameterStrings[ReadCycledStrings];
+                                    ReadCycledStrings++;
+                                    break;
+                                case "l":
+                                case "L":
+                                default:
+                                    ParameterInputType[i] = InputControlType.Numbox;
+                                    SetTextOfAndPossiblyCreateLabel(i, CurrentEvent[5 + i].Split(':')[0]);
+                                    ParamLabels[i].Visible = ParamBoxes[i].Visible = true; ParamSoundPlayerButtons[i].Visible = ParamCheckboxes[i].Visible = ParamDropdowns[i].Visible = false;
+                                    if (version == Version.AGA) ParamTextboxes[i].Visible = false;
+                                    ParamBoxes[i].Minimum = int.MinValue; ParamBoxes[i].Maximum = int.MaxValue;
+                                    foreach (Control c in ParamBoxes[i].Controls)
+                                        toolTip.SetToolTip(c, String.Format("Enter a number between {0} and {1}.", int.MinValue, int.MaxValue));
+                                    ParamBoxes[i].Value = LastParameterValues[ReadCycledValues];
+                                    ReadCycledValues++;
+                                    break;
+                            }
+                            break;
+                        default:
+                            ParameterInputType[i] = InputControlType.Numbox;
+                            SetTextOfAndPossiblyCreateLabel(i, CurrentEvent[5 + i].Split(':')[0]);
+                            ParamLabels[i].Visible = ParamBoxes[i].Visible = true; ParamSoundPlayerButtons[i].Visible = ParamCheckboxes[i].Visible = ParamDropdowns[i].Visible = false;
+                            if (version == Version.AGA) ParamTextboxes[i].Visible = false;
+                            range = GetParameterRange(Convert.ToInt32(mode));
+                            ParamBoxes[i].Minimum = range[0]; ParamBoxes[i].Maximum = range[1];
+                            foreach (Control c in ParamBoxes[i].Controls)
+                                toolTip.SetToolTip(c, String.Format("Enter a number between {0} and {1}.", range[0], range[1]));
+                            ParamBoxes[i].Value = LastParameterValues[ReadCycledValues];
+                            ReadCycledValues++;
+                            break;
+                    }
                 }
+                else { ParamLabels[i].Visible = ParamBoxes[i].Visible = ParamCheckboxes[i].Visible = ParamDropdowns[i].Visible = false; if (version == Version.AGA) ParamTextboxes[i].Visible = false; }
             }
+            SafeToCalculate = true;
+            if (!(version == Version.AGA))
+            {
+                WorkingEvent.ID = CalculateOutputEvent();
+                Bitfield.Text = Convert.ToString((int)WorkingEvent.ID, 2).PadLeft(32, '0');
+            }
+        }
 
         private void ButtonOK_Click(object sender, EventArgs e)
         {
@@ -453,130 +459,133 @@ public partial class EventForm : Form
         private int? GetValueOr(int value, byte id, int? def)
         {
             if (value >= 0) return value;
-            else return GetParameterRange(Convert.ToInt32(CurrentEvent[id+5].Split(':')[1]))[0] * -2 + value;
+            else return GetParameterRange(Convert.ToInt32(CurrentEvent[id + 5].Split(':')[1]))[0] * -2 + value;
         }
         static internal int GetNumberAtEndOfString(string str, bool includeNegative)
         {
             return Convert.ToInt32(new System.Text.RegularExpressions.Regex("(?<number>" + (includeNegative ? "-?" : "") + "\\d+)$").Match(str).ToString());
         }
 
-    private uint CalculateOutputEvent()
-    {
-        uint result = (uint)(CurrentEventID | ModeSelect.SelectedIndex << 8 | ((Illuminate.Checked) ? 1024 : 0));
-        bitpush = 12;
-        //string size;
-        for (byte i = 0; i < MostParametersSeenThusFar && i < CurrentEvent.Length - 5; i++)
+        private uint CalculateOutputEvent()
+        {
+            uint result = (uint)(CurrentEventID | ModeSelect.SelectedIndex << 8 | ((Illuminate.Checked) ? 1024 : 0));
+            bitpush = 12;
+            //string size;
+            for (byte i = 0; i < MostParametersSeenThusFar && i < CurrentEvent.Length - 5; i++)
             {
                 result |= (uint)GetValueOr(GetParamValue(i), i, 0) << bitpush;
                 //size = CurrentEvent[i + 5].Split(':')[1];
                 //bitpush += Convert.ToByte(size.Substring(size.Length-1,1));
                 bitpush += GetNumberAtEndOfString(CurrentEvent[i + 5], false);
             }
-        return result;
-    }
+            return result;
+        }
 
-    private void PopulatePointingBoxes(ComboBox sender) {
-        foreach (ComboBox pointer in CombosPointingToCombos[(ComboBox)sender])
+        private void PopulatePointingBoxes(ComboBox sender)
         {
-            pointer.Items.Clear();
-            pointer.Items.AddRange(((string)sender.SelectedItem).Split('|'));
-            if (pointer.Items.Count == 0) pointer.Items.Add("");
-            pointer.SelectedIndex = 0;
-        }
-    }
-    private void comboBox_SelectedIndexChanged(object sender, EventArgs e) {
-        PopulatePointingBoxes((ComboBox)sender);
-        if (SafeToCalculate && version != Version.AGA)
-        {
-            WorkingEvent.ID = CalculateOutputEvent();
-            Bitfield.Text = Convert.ToString((int)WorkingEvent.ID, 2).PadLeft(32, '0');
-        }
-    }
-
-    private void checkBox_CheckStateChanged(object sender, EventArgs e)
-    {
-        if (SafeToCalculate && version != Version.AGA)
-        {
-            WorkingEvent.ID = CalculateOutputEvent();
-            Bitfield.Text = Convert.ToString((int)WorkingEvent.ID, 2).PadLeft(32, '0');
-        }
-    }
-
-    private void numericUpDown_ValueChanged(object sender, EventArgs e)
-    {
-        if (SafeToCalculate && version != Version.AGA)
-        {
-            WorkingEvent.ID = CalculateOutputEvent();
-            Bitfield.Text = Convert.ToString((int)WorkingEvent.ID, 2).PadLeft(32, '0');
-        }
-    }
-
-    BinaryReader j2a; //sound code by Neobeo
-    int i, s, v, sets;
-    static readonly byte[] magic = { 82, 73, 70, 70, 87, 65, 86, 69, 102, 109, 116, 32,
-                                                16, 0, 0, 0, 1, 0, 1, 0, 100, 97, 116, 97 };
-    private void SoundButton_Click(object sender, EventArgs e)
-    {
-        if (j2a == null)
-        {
-            j2a = new BinaryReader(File.Open(Path.Combine(SourceForm.DefaultDirectories[version], "Anims.j2a"), FileMode.Open, FileAccess.Read), J2File.FileEncoding);
-            j2a.ReadBytes(24);
-            sets = j2a.ReadInt32();
-        }
-        v = s = (int)((NumericUpDown)((Button)sender).Tag).Value;
-        ((Button)sender).BackColor = ButtonOK.BackColor;
-        try
-        {
-            if (SourceForm.AmbientSounds[version][v] == null)
+            foreach (ComboBox pointer in CombosPointingToCombos[(ComboBox)sender])
             {
-                MemoryStream stream = SourceForm.AmbientSounds[version][v] = new MemoryStream(65536);
-                for (i = 0; i < sets; i++)
+                pointer.Items.Clear();
+                pointer.Items.AddRange(((string)sender.SelectedItem).Split('|'));
+                if (pointer.Items.Count == 0) pointer.Items.Add("");
+                pointer.SelectedIndex = 0;
+            }
+        }
+        private void comboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            PopulatePointingBoxes((ComboBox)sender);
+            if (SafeToCalculate && version != Version.AGA)
+            {
+                WorkingEvent.ID = CalculateOutputEvent();
+                Bitfield.Text = Convert.ToString((int)WorkingEvent.ID, 2).PadLeft(32, '0');
+            }
+        }
+
+        private void checkBox_CheckStateChanged(object sender, EventArgs e)
+        {
+            if (SafeToCalculate && version != Version.AGA)
+            {
+                WorkingEvent.ID = CalculateOutputEvent();
+                Bitfield.Text = Convert.ToString((int)WorkingEvent.ID, 2).PadLeft(32, '0');
+            }
+        }
+
+        private void numericUpDown_ValueChanged(object sender, EventArgs e)
+        {
+            if (SafeToCalculate && version != Version.AGA)
+            {
+                WorkingEvent.ID = CalculateOutputEvent();
+                Bitfield.Text = Convert.ToString((int)WorkingEvent.ID, 2).PadLeft(32, '0');
+            }
+        }
+
+        BinaryReader j2a; //sound code by Neobeo
+        int i, s, v, sets;
+        static readonly byte[] magic = { 82, 73, 70, 70, 87, 65, 86, 69, 102, 109, 116, 32,
+                                                16, 0, 0, 0, 1, 0, 1, 0, 100, 97, 116, 97 };
+        private void SoundButton_Click(object sender, EventArgs e)
+        {
+            if (j2a == null)
+            {
+                j2a = new BinaryReader(File.Open(Path.Combine(SourceForm.DefaultDirectories[version], "Anims.j2a"), FileMode.Open, FileAccess.Read), J2File.FileEncoding);
+                j2a.ReadBytes(24);
+                sets = j2a.ReadInt32();
+            }
+            v = s = (int)((NumericUpDown)((Button)sender).Tag).Value;
+            ((Button)sender).BackColor = ButtonOK.BackColor;
+            try
+            {
+                if (SourceForm.AmbientSounds[version][v] == null)
                 {
-                    j2a.BaseStream.Position = 28 + i * 4;
-                    j2a.BaseStream.Position = j2a.ReadInt32() + 5;
-                    int samples = j2a.ReadByte();
-                    if (s < samples) break;
-                    else s -= samples;
-                }
-                if (i == sets) return;
-
-                j2a.ReadBytes(6);
-                int[] size = new int[8]; for (i = 0; i < 8; i++) size[i] = j2a.ReadInt32();
-                j2a.ReadBytes(size[0] + size[2] + size[4] + 2);
-
-                using (var bz = new BinaryReader(new System.IO.Compression.DeflateStream(j2a.BaseStream, 0, true), J2File.FileEncoding))
-                {
-                    for (i = 0; i < s; i++) bz.ReadBytes(bz.ReadInt32() - 4);
-                    bz.ReadBytes(64);
-                    int mul = bz.ReadInt16() / 4 + 1; bz.ReadInt16();
-                    int length = bz.ReadInt32(); bz.ReadInt64();
-                    int rate = bz.ReadInt32(); bz.ReadInt64();
-                    //Console.WriteLine("Length: {0:0.000}s", (double)length / rate);
-                    length *= mul;
-
-                    var bw = new BinaryWriter(stream, J2File.FileEncoding);
+                    MemoryStream stream = SourceForm.AmbientSounds[version][v] = new MemoryStream(65536);
+                    for (i = 0; i < sets; i++)
                     {
-                        bw.Write(magic, 0, 4);
-                        bw.Write(length + 36);
-                        bw.Write(magic, 4, 16);
-                        bw.Write(rate);
-                        bw.Write(rate * mul);
-                        bw.Write(mul * 0x80001);
-                        bw.Write(magic, 20, 4);
-                        bw.Write(length);
-                        for (i = 0; i < length; i++) bw.Write((byte)(bz.ReadByte() ^ (mul << 7)));
+                        j2a.BaseStream.Position = 28 + i * 4;
+                        j2a.BaseStream.Position = j2a.ReadInt32() + 5;
+                        int samples = j2a.ReadByte();
+                        if (s < samples) break;
+                        else s -= samples;
+                    }
+                    if (i == sets) return;
+
+                    j2a.ReadBytes(6);
+                    int[] size = new int[8]; for (i = 0; i < 8; i++) size[i] = j2a.ReadInt32();
+                    j2a.ReadBytes(size[0] + size[2] + size[4] + 2);
+
+                    using (var bz = new BinaryReader(new System.IO.Compression.DeflateStream(j2a.BaseStream, 0, true), J2File.FileEncoding))
+                    {
+                        for (i = 0; i < s; i++) bz.ReadBytes(bz.ReadInt32() - 4);
+                        bz.ReadBytes(64);
+                        int mul = bz.ReadInt16() / 4 + 1; bz.ReadInt16();
+                        int length = bz.ReadInt32(); bz.ReadInt64();
+                        int rate = bz.ReadInt32(); bz.ReadInt64();
+                        //Console.WriteLine("Length: {0:0.000}s", (double)length / rate);
+                        length *= mul;
+
+                        var bw = new BinaryWriter(stream, J2File.FileEncoding);
+                        {
+                            bw.Write(magic, 0, 4);
+                            bw.Write(length + 36);
+                            bw.Write(magic, 4, 16);
+                            bw.Write(rate);
+                            bw.Write(rate * mul);
+                            bw.Write(mul * 0x80001);
+                            bw.Write(magic, 20, 4);
+                            bw.Write(length);
+                            for (i = 0; i < length; i++) bw.Write((byte)(bz.ReadByte() ^ (mul << 7)));
+                        }
                     }
                 }
+                SourceForm.AmbientSounds[version][v].Seek(0, 0);
+                new System.Media.SoundPlayer(SourceForm.AmbientSounds[version][v]).PlaySync();
             }
-            SourceForm.AmbientSounds[version][v].Seek(0, 0);
-            new System.Media.SoundPlayer(SourceForm.AmbientSounds[version][v]).PlaySync();
+            catch { ((Button)sender).BackColor = Color.Red; }
         }
-        catch { ((Button)sender).BackColor = Color.Red; }
-    }
 
-    private void EventForm_FormClosing(object sender, FormClosingEventArgs e)
-    {
-        if (j2a != null) { j2a.Dispose(); j2a = null; }
+        private void EventForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (j2a != null) { j2a.Dispose(); j2a = null; }
+        }
     }
 }
 
