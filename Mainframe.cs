@@ -771,7 +771,7 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
             _suspendEvent.Reset();
             byte OriginalTileSize = ZoomTileSize;
             LDScrollH.Value = LDScrollV.Value = 0;
-            Zoom((byte)(4096/Math.Max(J2L.Layers[3].Width, J2L.Layers[3].Height)/4*4));
+            Zoom((byte)(Math.Min(32, 4096 / Math.Max(J2L.Layers[3].Width, J2L.Layers[3].Height)/4*4)));
             LevelDisplay.Width = (int)J2L.Layers[3].Width * ZoomTileSize + LDScrollH.Location.X;
             LevelDisplay.Height = (int)J2L.Layers[3].Height * ZoomTileSize + LDScrollH.Height;
             SafeToDisplay = false;
