@@ -1180,7 +1180,7 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
             if (LevelHasBeenModified)
             {
                 _suspendEvent.Reset();
-                DialogResult result = MessageBox.Show("Save changes to" + Path.GetFileName(J2L.FilenameOnly) + "?", "Level has been modified!", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Stop);
+                DialogResult result = MessageBox.Show("Save changes to " + Path.GetFileName(J2L.FilenameOnly) + "?", "Level has been modified!", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Stop);
                 if (result == DialogResult.Yes && SaveJ2L() == SavingResults.Success) { _suspendEvent.Reset(); return true; }
                 else if (result == DialogResult.No) return true;
                 else return false;
