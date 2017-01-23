@@ -769,6 +769,7 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
         private void saveAsImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _suspendEvent.Reset();
+            byte OriginalTileSize = ZoomTileSize;
             LDScrollH.Value = LDScrollV.Value = 0;
             Zoom((byte)(4096/Math.Max(J2L.Layers[3].Width, J2L.Layers[3].Height)/4*4));
             LevelDisplay.Width = (int)J2L.Layers[3].Width * ZoomTileSize + LDScrollH.Location.X;
@@ -789,7 +790,7 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
             }
             LevelDisplay.Width = Width - LDScrollV.Width;
             LevelDisplay.Height = LDScrollV.Height + LDScrollH.Height;
-            ResizeDisplay();
+            Zoom(OriginalTileSize);
             _suspendEvent.Set();
        } // this doesn't work right now
 
@@ -2615,6 +2616,8 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
             #endregion paintbrush
             #region fill
             else if (VisibleEditingTool == FillButton)
+            {
+                if (MouseTileX < J2L.Layers[CurrentLayer].Width && MouseTileY < J2L.Layers[CurrentLayer].Height)
                 {
                     foreach (bool[] col in ShouldEachTileBeFilledIn) for (ushort y = 0; y < col.Length; y++) col[y] = false;
                     ushort[,] TileMap = J2L.Layers[CurrentLayer].TileMap;
@@ -2623,11 +2626,11 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
                     TryToFillTile(MouseTileX, MouseTileY, TileMap, ref TargetTileID, ref SelectedOnly, ref shiftPressed, ref ActionCenter);
                     while (FillingQ.Count > 0)
                     {
-                        DrawPoint = FillingQ.Dequeue();
-                        TryToFillTile(DrawPoint.X - 1, DrawPoint.Y, TileMap, ref TargetTileID, ref SelectedOnly, ref shiftPressed, ref ActionCenter);
-                        TryToFillTile(DrawPoint.X + 1, DrawPoint.Y, TileMap, ref TargetTileID, ref SelectedOnly, ref shiftPressed, ref ActionCenter);
-                        TryToFillTile(DrawPoint.X, DrawPoint.Y - 1, TileMap, ref TargetTileID, ref SelectedOnly, ref shiftPressed, ref ActionCenter);
-                        TryToFillTile(DrawPoint.X, DrawPoint.Y + 1, TileMap, ref TargetTileID, ref SelectedOnly, ref shiftPressed, ref ActionCenter);
+                        Point FillPoint = FillingQ.Dequeue();
+                        if (FillPoint.X > 0) TryToFillTile(FillPoint.X - 1, FillPoint.Y, TileMap, ref TargetTileID, ref SelectedOnly, ref shiftPressed, ref ActionCenter);
+                        if (FillPoint.X < J2L.Layers[CurrentLayer].Width - 1) TryToFillTile(FillPoint.X + 1, FillPoint.Y, TileMap, ref TargetTileID, ref SelectedOnly, ref shiftPressed, ref ActionCenter);
+                        if (FillPoint.Y > 0) TryToFillTile(FillPoint.X, FillPoint.Y - 1, TileMap, ref TargetTileID, ref SelectedOnly, ref shiftPressed, ref ActionCenter);
+                        if (FillPoint.Y < J2L.Layers[CurrentLayer].Height - 1) TryToFillTile(FillPoint.X, FillPoint.Y + 1, TileMap, ref TargetTileID, ref SelectedOnly, ref shiftPressed, ref ActionCenter);
                     }
                     for (ushort x = 0; x < ShouldEachTileBeFilledIn.Length; x++)
                         for (ushort y = 0; y < ShouldEachTileBeFilledIn.Length; y++)
@@ -2646,6 +2649,7 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
                                 ActOnATile(x, y, CurrentStamp[DrawPoint.X][DrawPoint.Y].Tile, CurrentStamp[DrawPoint.X][DrawPoint.Y].Event, ActionCenter, shiftPressed | ShowBlankTileInStamp);*/
                             }
                 }
+            }
                 #endregion fill
                 #region rectangles
                 else if (VisibleEditingTool == RectangleButton || VisibleEditingTool == RectangleOutlineButton)
@@ -2707,8 +2711,6 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
         }
         private void TryToFillTile(int x, int y, ushort[,] tileMap, ref ushort TargetTileID, ref bool select, ref bool shiftPressed, ref LayerAndSpecificTiles ActionCenter)
         {
-            try
-            {
                 if (ShouldEachTileBeFilledIn[x][y] == false && IsEachTileSelected[x+1][y+1] == select && tileMap[x, y] == TargetTileID)
                 {
                     ShouldEachTileBeFilledIn[x][y] = true;
@@ -2725,8 +2727,6 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
                     }
                     ActOnATile(x, y, CurrentStamp[DrawPoint.X][DrawPoint.Y].Tile, CurrentStamp[DrawPoint.X][DrawPoint.Y].Event, ActionCenter, shiftPressed | ShowBlankTileInStamp);
                 }
-            }
-            catch { }
         }
 
 
