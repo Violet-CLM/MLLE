@@ -965,9 +965,13 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
         }
 
         private void EventsButton_CheckedChanged(object sender, EventArgs e) { EventDisplayMode = DropdownEvents.Checked = EventsButton.Checked; }
-        private void MaskButton_CheckedChanged(object sender, EventArgs e) { MaskDisplayMode = (DropdownMask.Checked = MaskButton.Checked) ? MaskMode.FullMask : MaskMode.NoMask; ParallaxButton.Enabled = !MaskButton.Checked; }
+        private void MaskButton_CheckedChanged(object sender, EventArgs e) { MaskDisplayMode = (DropdownMask.Checked = MaskButton.Checked) ? MaskMode.FullMask : MaskMode.NoMask; DropdownParallax.Enabled = ParallaxButton.Enabled = !MaskButton.Checked; }
         private void ParallaxButton_CheckedChanged(object sender, EventArgs e) { SetParallaxModeTo(DropdownParallax.Checked = ParallaxButton.Checked); }
-        private void SetParallaxModeTo(bool mode)
+        private void DropdownEvents_CheckedChanged(object sender, EventArgs e) { EventDisplayMode = EventsButton.Checked = DropdownEvents.Checked; }
+        private void DropdownMask_CheckedChanged(object sender, EventArgs e) { MaskDisplayMode = (MaskButton.Checked = DropdownMask.Checked) ? MaskMode.FullMask : MaskMode.NoMask; DropdownParallax.Enabled = ParallaxButton.Enabled = !MaskButton.Checked; }
+        private void DropdownParallax_CheckedChanged(object sender, EventArgs e) { SetParallaxModeTo(ParallaxButton.Checked = DropdownParallax.Checked); }
+
+    private void SetParallaxModeTo(bool mode)
         {
             if (mode) { ParallaxDisplayMode = ParallaxMode.FullParallax; GL.Enable(EnableCap.Blend); /*GL.Disable(EnableCap.ScissorTest);*/ }
             else { ParallaxDisplayMode = ParallaxMode.NoParallax; GL.Disable(EnableCap.Blend); /*GL.Enable(EnableCap.ScissorTest);*/ }
