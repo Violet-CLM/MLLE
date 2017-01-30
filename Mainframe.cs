@@ -794,7 +794,7 @@ namespace MLLE
             _suspendEvent.Reset();
             byte OriginalTileSize = ZoomTileSize;
             LDScrollH.Value = LDScrollV.Value = 0;
-            Zoom((byte)(4096 / Math.Max(J2L.Layers[3].Width, J2L.Layers[3].Height) / 4 * 4));
+            Zoom((byte)(Math.Min(32, 4096 / Math.Max(J2L.Layers[3].Width, J2L.Layers[3].Height)/4*4)));
             LevelDisplay.Width = (int)J2L.Layers[3].Width * ZoomTileSize + LDScrollH.Location.X;
             LevelDisplay.Height = (int)J2L.Layers[3].Height * ZoomTileSize + LDScrollH.Height;
             SafeToDisplay = false;
@@ -991,8 +991,12 @@ namespace MLLE
         }
 
         private void EventsButton_CheckedChanged(object sender, EventArgs e) { EventDisplayMode = DropdownEvents.Checked = EventsButton.Checked; }
-        private void MaskButton_CheckedChanged(object sender, EventArgs e) { MaskDisplayMode = (DropdownMask.Checked = MaskButton.Checked) ? MaskMode.FullMask : MaskMode.NoMask; ParallaxButton.Enabled = !MaskButton.Checked; }
+        private void MaskButton_CheckedChanged(object sender, EventArgs e) { MaskDisplayMode = (DropdownMask.Checked = MaskButton.Checked) ? MaskMode.FullMask : MaskMode.NoMask; DropdownParallax.Enabled = ParallaxButton.Enabled = !MaskButton.Checked; }
         private void ParallaxButton_CheckedChanged(object sender, EventArgs e) { SetParallaxModeTo(DropdownParallax.Checked = ParallaxButton.Checked); }
+        private void DropdownEvents_CheckedChanged(object sender, EventArgs e) { EventDisplayMode = EventsButton.Checked = DropdownEvents.Checked; }
+        private void DropdownMask_CheckedChanged(object sender, EventArgs e) { MaskDisplayMode = (MaskButton.Checked = DropdownMask.Checked) ? MaskMode.FullMask : MaskMode.NoMask; DropdownParallax.Enabled = ParallaxButton.Enabled = !MaskButton.Checked; }
+        private void DropdownParallax_CheckedChanged(object sender, EventArgs e) { SetParallaxModeTo(ParallaxButton.Checked = DropdownParallax.Checked); }
+
         private void SetParallaxModeTo(bool mode)
         {
             if (mode) { ParallaxDisplayMode = ParallaxMode.FullParallax; GL.Enable(EnableCap.Blend); /*GL.Disable(EnableCap.ScissorTest);*/ }

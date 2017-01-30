@@ -541,7 +541,6 @@
             // 
             // saveAsImageToolStripMenuItem
             // 
-            //this.saveAsImageToolStripMenuItem.Enabled = false;
             this.saveAsImageToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("saveAsImageToolStripMenuItem.Image")));
             this.saveAsImageToolStripMenuItem.Name = "saveAsImageToolStripMenuItem";
             this.saveAsImageToolStripMenuItem.Size = new System.Drawing.Size(179, 22);
@@ -1243,7 +1242,7 @@
             this.LDContextMenu.Name = "LDContextMenu";
             this.LDContextMenu.ShowCheckMargin = true;
             this.LDContextMenu.ShowImageMargin = false;
-            this.LDContextMenu.Size = new System.Drawing.Size(162, 314);
+            this.LDContextMenu.Size = new System.Drawing.Size(162, 336);
             this.LDContextMenu.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip1_Opening);
             // 
             // SelectLayer
@@ -1417,24 +1416,28 @@
             // DropdownEvents
             // 
             this.DropdownEvents.Checked = true;
+            this.DropdownEvents.CheckOnClick = true;
             this.DropdownEvents.CheckState = System.Windows.Forms.CheckState.Checked;
             this.DropdownEvents.Name = "DropdownEvents";
             this.DropdownEvents.Size = new System.Drawing.Size(161, 22);
             this.DropdownEvents.Text = "Show Events";
+            this.DropdownEvents.CheckedChanged += new System.EventHandler(this.DropdownEvents_CheckedChanged);
             // 
             // DropdownMask
             // 
+            this.DropdownMask.CheckOnClick = true;
             this.DropdownMask.Name = "DropdownMask";
             this.DropdownMask.Size = new System.Drawing.Size(161, 22);
             this.DropdownMask.Text = "Show Mask";
+            this.DropdownMask.CheckedChanged += new System.EventHandler(this.DropdownMask_CheckedChanged);
             // 
             // DropdownParallax
             // 
-            this.DropdownParallax.Checked = true;
-            this.DropdownParallax.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.DropdownParallax.CheckOnClick = true;
             this.DropdownParallax.Name = "DropdownParallax";
             this.DropdownParallax.Size = new System.Drawing.Size(161, 22);
             this.DropdownParallax.Text = "Show Parallax";
+            this.DropdownParallax.CheckedChanged += new System.EventHandler(this.DropdownParallax_CheckedChanged);
             // 
             // DropdownZoom
             // 
