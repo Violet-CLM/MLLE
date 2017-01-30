@@ -882,8 +882,11 @@ namespace MLLE
             {
                 if (!MusicIsPlaying)
                 {
-                    Bass.BASS_Init(-1, 44100, BASSInit.BASS_DEVICE_DEFAULT, IntPtr.Zero);
-                    MusicIsPlaying = true;
+                    MusicIsPlaying = Bass.BASS_Init(-1, 44100, BASSInit.BASS_DEVICE_DEFAULT, IntPtr.Zero);
+                    if (!MusicIsPlaying)
+                    {
+                        Console.WriteLine("BASS: Could not initialize");
+                    }
                 }
                 else
                 {
@@ -893,9 +896,9 @@ namespace MLLE
                 string filename = Path.Combine(DefaultDirectories[J2L.VersionType], J2L.Music);
                 switch (Path.GetExtension(filename))
                 {
-                    case "mp3": stream = Bass.BASS_StreamCreateFile(Path.Combine(DefaultDirectories[J2L.VersionType], J2L.Music), 0, 0, BASSFlag.BASS_DEFAULT | BASSFlag.BASS_MUSIC_LOOP); break;
+                    case "mp3": stream = Bass.BASS_StreamCreateFile(filename, 0, 0, BASSFlag.BASS_DEFAULT | BASSFlag.BASS_MUSIC_LOOP); break;
                     case "": filename = Path.ChangeExtension(filename, "j2b"); break;
-                    default: stream = Bass.BASS_MusicLoad(Path.Combine(DefaultDirectories[J2L.VersionType], J2L.Music), 0, 0, BASSFlag.BASS_DEFAULT | BASSFlag.BASS_MUSIC_LOOP, 0); break;
+                    default: stream = Bass.BASS_MusicLoad(filename, 0, 0, BASSFlag.BASS_DEFAULT | BASSFlag.BASS_MUSIC_LOOP, 0); break;
                 }
                 Console.WriteLine(filename);
 
@@ -905,7 +908,7 @@ namespace MLLE
                 }
                 else
                 {
-                    Console.WriteLine("Stream error: {0}", Bass.BASS_ErrorGetCode());
+                    Console.WriteLine("BASS: Stream error: {0}", Bass.BASS_ErrorGetCode());
                 }
 
                 return true;
