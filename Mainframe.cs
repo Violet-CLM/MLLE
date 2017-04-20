@@ -1,34 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.IO;
 using System.Text;
 using System.Windows.Forms;
-using System.Runtime.InteropServices;
 using System.Diagnostics;
 using System.Threading;
 using TexLib;
-using OpenTK;
-using OpenTK.Input;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using Ini;
 using Un4seen.Bass;
+using Extra.Collections;
 
-public enum EnableableTitles { SecretLevelName, BonusLevelName, Lighting, Splitscreen, HideInHCL, Multiplayer, BoolDevelopingForPlus, UseText, SaveAndRun, Illuminate, DiffLabel, Diff1, Diff2, Diff3, Diff4}
-public enum FocusedZone { None, Tileset, Level, AnimationEditing }
-public enum SelectionType { New, Add, Subtract, Rectangle, HollowRectangle }
-public enum AtlasID { Null, Image, Mask, EventNames, Selection, Generator, TileTypes }
-public enum TilesetOverlay { None, TileTypes, Events, Masks }
+namespace MLLE
+{
+    public enum EnableableTitles { SecretLevelName, BonusLevelName, Lighting, Splitscreen, HideInHCL, Multiplayer, BoolDevelopingForPlus, UseText, SaveAndRun, SaveAndRunArgs, Illuminate, DiffLabel, Diff1, Diff2, Diff3, Diff4 }
+    public enum FocusedZone { None, Tileset, Level, AnimationEditing }
+    public enum SelectionType { New, Add, Subtract, Rectangle, HollowRectangle }
+    public enum AtlasID { Null, Image, Mask, EventNames, Selection, Generator, TileTypes }
+    public enum TilesetOverlay { None, TileTypes, Events, Masks }
 
     public partial class Mainframe : Form
     {
         #region variable declaration
         internal TexturedJ2L J2L;
-        internal IniFile Settings = new IniFile(".\\MLLE.ini");
+        internal IniFile Settings = new IniFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MLLE.ini"));
         bool SafeToDisplay = false;// ResizingOccured = false;
         List<string> AllTilesets;
         static string[][] DefaultHotKolors = new string[3][] { new string[3] { "32", "24", "80" }, new string[3] { "72", "48", "168" }, new string[3] { "79", "48", "168" } };
@@ -98,7 +97,7 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
         {Version.AGA, "MLLEProfile - AGA"},
         {Version.GorH, "MLLEProfile - 100gh"},
         };
-        public static string[] DefaultFileExtensionStrings = new string[]{".j2l", ".lvl", ".lev"};
+        public static string[] DefaultFileExtensionStrings = new string[] { ".j2l", ".lvl", ".lev" };
         public byte? GeneratorEventID = null, StartPositionEventID = null;
 
         //int desiredindex;
@@ -108,12 +107,24 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
 
         internal bool LevelDisplayLoaded = false;
         internal bool EventDisplayMode = true;
-         MaskMode MaskDisplayMode;
-         ParallaxMode ParallaxDisplayMode;
+        MaskMode MaskDisplayMode;
+        ParallaxMode ParallaxDisplayMode;
         internal byte ParallaxEventDisplayType = 0;
         internal uint PlusTriggerZone = 0;
 
-        internal bool LevelHasBeenModified = false;
+        private bool levelHasBeenModified = false;
+        internal bool LevelHasBeenModified
+        {
+            get { return levelHasBeenModified; }
+            set
+            {
+                if (value != levelHasBeenModified)
+                {
+                    UpdateTitle(value);
+                }
+                levelHasBeenModified = value;
+            }
+        }
 
         ManualResetEvent _suspendEvent = new ManualResetEvent(true);
         Stopwatch sw = new Stopwatch();
@@ -147,8 +158,9 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
             InitializeComponent();
         }
 
-        private void ProcessIni(Version version) {
-            IniFile ini = new IniFile(".\\" + ProfileIniFilename[J2L.VersionType] + ".ini");
+        private void ProcessIni(Version version)
+        {
+            IniFile ini = new IniFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ProfileIniFilename[J2L.VersionType] + ".ini"));
             if (EnableableStrings[version] == null)
             {
                 Dictionary<EnableableTitles, bool> Bools = EnableableBools[version] = new Dictionary<EnableableTitles, bool>();
@@ -160,6 +172,7 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
                 Strings.Add(EnableableTitles.HideInHCL, ini.IniReadValue("Enableable", "HideInHCL") ?? "");
                 Strings.Add(EnableableTitles.Multiplayer, ini.IniReadValue("Enableable", "Multiplayer") ?? "");
                 Strings.Add(EnableableTitles.SaveAndRun, ini.IniReadValue("Enableable", "SaveAndRun") ?? "");
+                Strings.Add(EnableableTitles.SaveAndRunArgs, ini.IniReadValue("Enableable", "SaveAndRunArgs") ?? "");
                 Strings.Add(EnableableTitles.Illuminate, ini.IniReadValue("Enableable", "Illuminate") ?? "");
                 Strings.Add(EnableableTitles.DiffLabel, ini.IniReadValue("EventTypes", "Label") ?? "");
                 Strings.Add(EnableableTitles.Diff1, ini.IniReadValue("EventTypes", "0") ?? "1");
@@ -181,9 +194,14 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
                 AmbientSounds[version] = new MemoryStream[512];
             }
             IniFile baseIni;
-            string path = Path.ChangeExtension(Settings.IniReadValue("EventListBases", ini.IniReadValue("Events", "Base")), "ini");
-            if (File.Exists(path)) baseIni = new IniFile(".\\" + path);
-            else baseIni = ini;
+            {
+                string iniFilename = Path.ChangeExtension(Settings.IniReadValue("EventListBases", ini.IniReadValue("Events", "Base")), "ini");
+                string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, iniFilename);
+                if (File.Exists(path))
+                    baseIni = new IniFile(path);
+                else
+                    baseIni = ini;
+            }
             J2L.ProduceEventAndTypeListsFromIni(version, baseIni, ini);
             if (TreeStructure[version] == null)
             {
@@ -193,7 +211,8 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
                 for (ushort i = 0; i < 256; i++)
                 {
                     if (baseIni.IniReadValue("Categories", i.ToString()) == "") break;
-                    else {
+                    else
+                    {
                         CurrentIniLine = baseIni.IniReadValue("Categories", i.ToString()).Split('|');
                         TreeNodeLists[0].Add(new TreeNode(CurrentIniLine[0].TrimEnd()));
                         if (CurrentIniLine.Length == 1 || CurrentIniLine[1] == "+") TreeNodeLists[1].Add(new TreeNode(CurrentIniLine[0].TrimEnd()));
@@ -246,12 +265,12 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
             AllTilesets = (Directory.GetFiles(DefaultDirectories[version], "*.j2t").Concat(Directory.GetFiles(DefaultDirectories[version], "*.til"))).ToList<string>();
             AllTilesetLists[version] = new NameAndFilename[AllTilesets.Count];
             for (int i = 0; i < AllTilesets.Count; i++)
-                {
-                    BinaryReader file = new BinaryReader(File.Open(AllTilesets[i], FileMode.Open, FileAccess.Read));
-                    file.ReadBytes((file.PeekChar() == 32) ? 188 : 8);
-                    AllTilesetLists[version][i] = new NameAndFilename(new string(file.ReadChars(32)).TrimEnd('\0'), AllTilesets[i]);
-                    file.Close();
-                }
+            {
+                BinaryReader file = new BinaryReader(File.Open(AllTilesets[i], FileMode.Open, FileAccess.Read), J2File.FileEncoding);
+                file.ReadBytes((file.PeekChar() == 32) ? 188 : 8);
+                AllTilesetLists[version][i] = new NameAndFilename(new string(file.ReadChars(32)).TrimEnd('\0'), AllTilesets[i]);
+                file.Close();
+            }
         }
 
         void ProcessIniColorsIntoHotKolor(byte id, string group, string key)
@@ -356,15 +375,15 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
                 default:
                     MessageBox.Show("MLLE cannot run if you have none of the games it's built for!", "go download battery check or something", MessageBoxButtons.OK, MessageBoxIcon.Stop);
                     Settings.IniWriteValue("Miscellaneous", "Initialized", "0");
-                    Close(); Dispose(); Application.Exit(); 
+                    Close(); Dispose(); Application.Exit();
                     return;
             }
             for (ushort x = 0; x < IsEachTileSelected.Length; x++) IsEachTileSelected[x] = new bool[1026];
             for (ushort x = 0; x < ShouldEachTileBeFilledIn.Length; x++) ShouldEachTileBeFilledIn[x] = new bool[1026];
             GL.Disable(EnableCap.DepthTest);
             GL.Disable(EnableCap.CullFace);
-            GeneratorOverlay = TexUtil.CreateTextureFromFile("Generator.png");
-            SelectionOverlay = TexUtil.CreateTextureFromFile("SelectionRectangles.png");
+            GeneratorOverlay = TexUtil.CreateTextureFromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Generator.png"));
+            SelectionOverlay = TexUtil.CreateTextureFromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SelectionRectangles.png"));
             GL.BindTexture(TextureTarget.Texture2D, J2L.Atlases[0]);
             GL.ClearColor(HotKolors[0]);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
@@ -566,11 +585,12 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
                         else { EndSelection(); MakeSelectionIntoStamp(); if (WhereSelected == FocusedZone.Level) DeselectAll(); }
                         return true;
                     }
-                case Keys.B: {
-                    if (LastFocusedZone != HowSelecting) BeginSelection(SelectionType.New);
-                    else { EndSelection(); MakeSelectionIntoStamp(); if (WhereSelected == FocusedZone.Level) DeselectAll(); }
-                    return true;
-                }
+                case Keys.B:
+                    {
+                        if (LastFocusedZone != HowSelecting) BeginSelection(SelectionType.New);
+                        else { EndSelection(); MakeSelectionIntoStamp(); if (WhereSelected == FocusedZone.Level) DeselectAll(); }
+                        return true;
+                    }
                 case (Keys.Control | Keys.D):
                     {
                         DeselectAll();
@@ -590,7 +610,7 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
                 default: return base.ProcessCmdKey(ref msg, keyData);
             }
         }
-        private Dictionary<Keys, bool> CurrentModifierKeys = new Dictionary<Keys,bool>{{Keys.Shift, false}, {Keys.Control, false}, {Keys.Alt, false}};
+        private Dictionary<Keys, bool> CurrentModifierKeys = new Dictionary<Keys, bool> { { Keys.Shift, false }, { Keys.Control, false }, { Keys.Alt, false } };
 
         private void Mainframe_KeyUp(object sender, KeyEventArgs e)
         {
@@ -622,21 +642,23 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
                 byte[] oldTile = J2L.J2T.Images[J2L.J2T.ImageAddress[MouseTile]];
                 var tileTrans = J2L.J2T.TransparencyMaskJJ2_Style[Array.BinarySearch(J2L.J2T.TransparencyMaskOffset, 0, (int)J2L.J2T.data3Counter, J2L.J2T.TransparencyMaskAddress[MouseTile])];
                 using (Bitmap bmp = new Bitmap(32, 32)) //using (Graphics gfx = Graphics.FromImage(bmp))
-                    {
-                        for (byte x = 0; x < 32; x++) for (byte y = 0; y < 32; y++) 
+                {
+                    for (byte x = 0; x < 32; x++)
+                        for (byte y = 0; y < 32; y++)
                         {
                             byte[] pixel = J2L.J2T.Palette[oldTile[x + y * 32]];
                             if (tileTrans[x + y * 32] == 0) bmp.SetPixel(x, y, Color.FromArgb(0, J2L.GetLevelFromColor(J2L.TranspColor, 0), J2L.GetLevelFromColor(J2L.TranspColor, 1), J2L.GetLevelFromColor(J2L.TranspColor, 2)));
                             else bmp.SetPixel(x, y, Color.FromArgb((value >= 1 && value <= 3) ? 192 : 255, pixel[0], pixel[1], pixel[2]));
                         }
-                        System.Drawing.Imaging.BitmapData data = bmp.LockBits(new Rectangle(0, 0, 32, 32), System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-                        GL.TexSubImage2D(TextureTarget.Texture2D, 0, MouseTile % J2L.AtlasLength * 32, MouseTile / J2L.AtlasLength * 32, 32, 32, PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
-                        bmp.UnlockBits(data);
-                    }
+                    System.Drawing.Imaging.BitmapData data = bmp.LockBits(new Rectangle(0, 0, 32, 32), System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                    GL.TexSubImage2D(TextureTarget.Texture2D, 0, MouseTile % J2L.AtlasLength * 32, MouseTile / J2L.AtlasLength * 32, 32, 32, PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
+                    bmp.UnlockBits(data);
+                }
                 RedrawTilesetHowManyTimes = 2;
                 LevelHasBeenModified = true;
                 return true;
-            } else return false;
+            }
+            else return false;
         }
         #endregion Form Business
 
@@ -669,7 +691,8 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
             _suspendEvent.Set();
         }
 
-        private void enablePitsToolStripMenuItem_Click(object sender, EventArgs e) {
+        private void enablePitsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
             switch (J2L.EventMap[J2L.EventMap.GetLength(0) - 1, J2L.EventMap.GetLength(1) - 1] & 255)
             {
                 case 255:
@@ -725,7 +748,7 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
             _suspendEvent.Set();
         }
 
-        private void setDeadspaceColorToolStripMenuItem_Click(object sender, EventArgs e) { SetNewColor(ref J2L.DeadspaceColor, "Deadspace", false); GL.ClearColor(J2L.DeadspaceColor);}
+        private void setDeadspaceColorToolStripMenuItem_Click(object sender, EventArgs e) { SetNewColor(ref J2L.DeadspaceColor, "Deadspace", false); GL.ClearColor(J2L.DeadspaceColor); }
         private void setTile0ColorToolStripMenuItem_Click(object sender, EventArgs e) { SetNewColor(ref J2L.Tile0Color, "Tile0", true); }
         private void setTransparentColorToolStripMenuItem_Click(object sender, EventArgs e) { SetNewColor(ref J2L.TranspColor, "Transparent", true); }
 
@@ -757,7 +780,7 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
         {
             DeepEditingTool = VisibleEditingTool = (ToolStripButton)sender;
             for (byte i = 0; i < DrawingTools.Items.Count; i++) if (DrawingTools.Items[i].GetType() == sender.GetType())
-                ((ToolStripButton)DrawingTools.Items[i]).Checked = false;
+                    ((ToolStripButton)DrawingTools.Items[i]).Checked = false;
             DeepEditingTool.Checked = true;
         }
 
@@ -792,7 +815,7 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
             LevelDisplay.Height = LDScrollV.Height + LDScrollH.Height;
             Zoom(OriginalTileSize);
             _suspendEvent.Set();
-       } // this doesn't work right now
+        } // this doesn't work right now
 
         private void L1Button_Click(object sender, EventArgs e) { ChangeLayer(0); }
         private void L2Button_Click(object sender, EventArgs e) { ChangeLayer(1); }
@@ -825,7 +848,7 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
         private void Zoom100_Click(object sender, EventArgs e) { Zoom(32); }
         private void Zoom50_Click(object sender, EventArgs e) { Zoom(16); }
         private void Zoom25_Click(object sender, EventArgs e) { Zoom(8); }
-        private void Zoom12p5_Click(object sender, EventArgs e) { Zoom(4);  }
+        private void Zoom12p5_Click(object sender, EventArgs e) { Zoom(4); }
         private void Zoom(byte newTileSize)
         {
             float Factor = newTileSize / 32F / ZoomTileFactor;
@@ -859,8 +882,11 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
             {
                 if (!MusicIsPlaying)
                 {
-                    Bass.BASS_Init(-1, 44100, BASSInit.BASS_DEVICE_DEFAULT, IntPtr.Zero);
-                    MusicIsPlaying = true;
+                    MusicIsPlaying = Bass.BASS_Init(-1, 44100, BASSInit.BASS_DEVICE_DEFAULT, IntPtr.Zero);
+                    if (!MusicIsPlaying)
+                    {
+                        Console.WriteLine("BASS: Could not initialize");
+                    }
                 }
                 else
                 {
@@ -870,9 +896,9 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
                 string filename = Path.Combine(DefaultDirectories[J2L.VersionType], J2L.Music);
                 switch (Path.GetExtension(filename))
                 {
-                    case "mp3": stream = Bass.BASS_StreamCreateFile(Path.Combine(DefaultDirectories[J2L.VersionType], J2L.Music), 0, 0, BASSFlag.BASS_DEFAULT | BASSFlag.BASS_MUSIC_LOOP); break;
+                    case "mp3": stream = Bass.BASS_StreamCreateFile(filename, 0, 0, BASSFlag.BASS_DEFAULT | BASSFlag.BASS_MUSIC_LOOP); break;
                     case "": filename = Path.ChangeExtension(filename, "j2b"); break;
-                    default: stream = Bass.BASS_MusicLoad(Path.Combine(DefaultDirectories[J2L.VersionType], J2L.Music), 0, 0, BASSFlag.BASS_DEFAULT | BASSFlag.BASS_MUSIC_LOOP, 0); break;
+                    default: stream = Bass.BASS_MusicLoad(filename, 0, 0, BASSFlag.BASS_DEFAULT | BASSFlag.BASS_MUSIC_LOOP, 0); break;
                 }
                 Console.WriteLine(filename);
 
@@ -882,7 +908,7 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
                 }
                 else
                 {
-                    Console.WriteLine("Stream error: {0}", Bass.BASS_ErrorGetCode());
+                    Console.WriteLine("BASS: Stream error: {0}", Bass.BASS_ErrorGetCode());
                 }
 
                 return true;
@@ -971,7 +997,7 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
         private void DropdownMask_CheckedChanged(object sender, EventArgs e) { MaskDisplayMode = (MaskButton.Checked = DropdownMask.Checked) ? MaskMode.FullMask : MaskMode.NoMask; DropdownParallax.Enabled = ParallaxButton.Enabled = !MaskButton.Checked; }
         private void DropdownParallax_CheckedChanged(object sender, EventArgs e) { SetParallaxModeTo(ParallaxButton.Checked = DropdownParallax.Checked); }
 
-    private void SetParallaxModeTo(bool mode)
+        private void SetParallaxModeTo(bool mode)
         {
             if (mode) { ParallaxDisplayMode = ParallaxMode.FullParallax; GL.Enable(EnableCap.Blend); /*GL.Disable(EnableCap.ScissorTest);*/ }
             else { ParallaxDisplayMode = ParallaxMode.NoParallax; GL.Disable(EnableCap.Blend); /*GL.Enable(EnableCap.ScissorTest);*/ }
@@ -987,7 +1013,7 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
                 _suspendEvent.Reset();
                 IdentifyTileset();
                 if (result == VersionChangeResults.UnsupportedConversion) MessageBox.Show(String.Format("Sorry, {0} is not compatible with {1} levels. Please choose a different tileset and try again.", Path.GetFileName(filename), J2File.FullVersionNames[J2L.VersionType]), "Incompatible tileset", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                else if (result == VersionChangeResults.TooManyAnimatedTiles) MessageBox.Show(String.Format("Sorry, using {0} would result in the level having too many tiles (counting animated tiles). Please choose a different tileset or reduce the number of animated tiles in the level.",filename), "Too many animated tiles", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                else if (result == VersionChangeResults.TooManyAnimatedTiles) MessageBox.Show(String.Format("Sorry, using {0} would result in the level having too many tiles (counting animated tiles). Please choose a different tileset or reduce the number of animated tiles in the level.", filename), "Too many animated tiles", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 _suspendEvent.Set();
             }
             else RedrawTilesetHowManyTimes = 2;
@@ -1046,15 +1072,31 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
             SafeToDisplay = false;
             //TexturedJ2L TentativeJ2L = new TexturedJ2L();
             string newPassword = null;
+            Encoding encoding = null;
             TRYTOOPEN:
-            OpeningResults openResults = J2L.OpenLevel(filename, newPassword, DefaultDirectories);
+            OpeningResults openResults = J2L.OpenLevel(filename, newPassword, DefaultDirectories, encoding);
             if (openResults == OpeningResults.PasswordNeeded || openResults == OpeningResults.WrongPassword)
             {
                 _suspendEvent.Reset();
                 newPassword = PasswordInputForm.ShowForm(openResults);
                 _suspendEvent.Set();
-                if (newPassword == null) { SafeToDisplay = true; return; }
-                else goto TRYTOOPEN;
+                if (newPassword == null)
+                {
+                    SafeToDisplay = true;
+                    return;
+                }
+                goto TRYTOOPEN;
+            }
+            else if (openResults == OpeningResults.IncorrectEncoding)
+            {
+                DialogResult result = MessageBox.Show("This level was saved with an incorrect encoding. Do you want to automatically fix this level's encoding?", "Incorrect Encoding", MessageBoxButtons.OKCancel, MessageBoxIcon.Hand);
+                if (result != DialogResult.OK)
+                {
+                    SafeToDisplay = true;
+                    return;
+                }
+                encoding = Encoding.UTF8;
+                goto TRYTOOPEN;
             }
             else if (openResults == OpeningResults.Success || openResults == OpeningResults.SuccessfulButAmbiguous)
             {
@@ -1075,14 +1117,14 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
                     CheckCurrentVersion();
                     ProcessIni(J2L.VersionType);
                 }
-                Text = "MLLE - " + J2L.Name + " - " + J2L.FilenameOnly;
+                SetTitle(J2L.Name, J2L.FilenameOnly);
                 enablePitsToolStripMenuItem.Text = (J2L.EventMap[J2L.EventMap.GetLength(0) - 1, J2L.EventMap.GetLength(1) - 1] == 255) ? "Disable Pits" : "Enable Pits";
                 J2L.Generate_Textures(TransparencySource.JJ2_Style, true);
                 GL.BindTexture(TextureTarget.Texture2D, J2L.Atlases[0]);
                 Undoable.Clear();
                 Redoable.Clear();
                 SafeToDisplay = true;
-                LevelHasBeenModified = false;
+                LevelHasBeenModified = encoding != null;
                 ChangeLayer(J2L.JCSFocusedLayer);
                 MakeProposedScrollbarValueWork(LDScrollH, J2L.JCSHorizontalFocus);
                 MakeProposedScrollbarValueWork(LDScrollV, J2L.JCSVerticalFocus);
@@ -1100,7 +1142,7 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
             if (version == null) J2L.NewLevel(J2L.VersionType);
             else J2L.NewLevel((Version)version);
             J2L.FullFilePath = Path.Combine(DefaultDirectories[J2L.VersionType], J2L.FilenameOnly = "Made in MLLE.j2l");
-            Text = "MLLE - " + J2L.Name;
+            SetTitle(J2L.Name);
             CheckCurrentVersion();
             ProcessIni(J2L.VersionType);
             J2L.Generate_Blank_Tile_Texture();
@@ -1132,13 +1174,21 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
         {
             if (SaveJ2L(filepath, false, false, storeGivenFilename) == SavingResults.Success)
             {
-                string exe = Path.Combine(DefaultDirectories[J2L.VersionType], EnableableStrings[J2L.VersionType][EnableableTitles.SaveAndRun]);
+                string exe = Path.GetFullPath(Path.Combine(DefaultDirectories[J2L.VersionType], EnableableStrings[J2L.VersionType][EnableableTitles.SaveAndRun]));
                 if (File.Exists(exe))
                 {
+                    string exeFolder = Path.GetDirectoryName(exe) + Path.DirectorySeparatorChar;
+                    string relativeFilepath = Uri.UnescapeDataString(
+                        new Uri(exeFolder)
+                            .MakeRelativeUri(new Uri(filepath))
+                            .ToString()
+                            .Replace('/', Path.DirectorySeparatorChar)
+                    );
+                    string extraArgs = EnableableStrings[J2L.VersionType][EnableableTitles.SaveAndRunArgs];
                     var pro = new System.Diagnostics.Process();
                     pro.StartInfo.WorkingDirectory = DefaultDirectories[J2L.VersionType];
                     pro.StartInfo.FileName = EnableableStrings[J2L.VersionType][EnableableTitles.SaveAndRun];
-                    pro.StartInfo.Arguments = Path.GetFileName(filepath);
+                    pro.StartInfo.Arguments = (extraArgs + " " + relativeFilepath).TrimStart();
                     pro.EnableRaisingEvents = true;
                     pro.Exited += new EventHandler(SaveAndRunProgramHasExited);
                     if (MusicIsPlaying) Bass.BASS_Pause();
@@ -1191,7 +1241,10 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
             }
             else return true;
         }
-        internal SavingResults SaveJ2L(bool eraseUndefinedTiles = false, bool allowDifferentTilesetVersion = false, bool storeGivenFilename = true) { return SaveJ2L(J2L.FullFilePath, eraseUndefinedTiles, allowDifferentTilesetVersion, storeGivenFilename); }
+        internal SavingResults SaveJ2L(bool eraseUndefinedTiles = false, bool allowDifferentTilesetVersion = false, bool storeGivenFilename = true)
+        {
+            return SaveJ2L(J2L.FullFilePath, eraseUndefinedTiles, allowDifferentTilesetVersion, storeGivenFilename);
+        }
         internal SavingResults SaveJ2L(string filename, bool eraseUndefinedTiles = false, bool allowDifferentTilesetVersion = false, bool storeGivenFilename = true)
         {
             _suspendEvent.Reset();
@@ -1199,30 +1252,64 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
             J2L.JCSHorizontalFocus = (ushort)LDScrollH.Value;
             J2L.JCSVerticalFocus = (ushort)LDScrollV.Value;
             SavingResults result = J2L.Save(filename, eraseUndefinedTiles, allowDifferentTilesetVersion, storeGivenFilename);
-            if (result == SavingResults.TilesetIsDifferentVersion)
+            if (result == SavingResults.Success)
+            {
+                SetTitle(J2L.Name, Path.GetFileName(J2L.FilenameOnly));
+                LevelHasBeenModified = false;
+            }
+            else if (result == SavingResults.NoTilesetSelected)
+            {
+                MessageBox.Show("The level cannot be saved without a tileset.", "No Tileset Selected", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            else if (result == SavingResults.TilesetIsDifferentVersion)
             {
                 if (J2L.J2T.VersionType == Version.GorH)
                 {
-                    DialogResult result2 = MessageBox.Show("This level was originally saved as a Jazz 2 OEM v1.00g/h level, and does not have an external tileset file. Please choose an existing tileset file in order to save this level as any other version, or else it will not be playable. This level will not be saved.", "Tileset File Needed", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    if (result2 == DialogResult.OK) { return SaveJ2L(filename, eraseUndefinedTiles, true, storeGivenFilename); }
+                    MessageBox.Show("This level was originally saved as a Jazz 2 OEM v1.00g/h level, and does not have an external tileset file. Please choose an existing tileset file in order to save this level as any other version, or else it will not be playable. This level will not be saved.", "Tileset File Needed", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
                 else
                 {
-                    DialogResult result2 = MessageBox.Show(String.Format("You are saving this level as a {0} level, but {2} is only compatible with {1}. In order for the level to be playable, you will need to have and make available a {0}-compatible version of {2}. MLLE will not do this for you. Press 'OK' to continue saving or 'Cancel' to choose a different tileset.", J2File.FullVersionNames[J2L.VersionType], J2File.FullVersionNames[J2L.J2T.VersionType], J2L.Tileset), "Version Difference", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
-                    if (result2 == DialogResult.OK) { return SaveJ2L(filename, eraseUndefinedTiles, true, storeGivenFilename); }
+                    DialogResult dialogResult = MessageBox.Show(String.Format("You are saving this level as a {0} level, but {2} is only compatible with {1}. In order for the level to be playable, you will need to have and make available a {0}-compatible version of {2}. MLLE will not do this for you. Press 'OK' to continue saving or 'Cancel' to choose a different tileset.", J2File.FullVersionNames[J2L.VersionType], J2File.FullVersionNames[J2L.J2T.VersionType], J2L.Tileset), "Version Difference", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+                    if (dialogResult == DialogResult.OK)
+                    {
+                        result = SaveJ2L(filename, eraseUndefinedTiles, true, storeGivenFilename);
+                    }
                 }
             }
             else if (result == SavingResults.UndefinedTiles)
+            {
+                DialogResult dialogResult = MessageBox.Show("References were found to unknown tiles. These references must be deleted in order to save this level.", "Undefined Tiles", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+                if (dialogResult == DialogResult.OK)
                 {
-                    DialogResult result2 = MessageBox.Show("References were found to unknown tiles. These references must be deleted in order to save this level.", "Undefined Tiles", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
-                    if (result2 == DialogResult.OK) { _suspendEvent.Set(); return SaveJ2L(filename, true, allowDifferentTilesetVersion, storeGivenFilename); }
+                    result = SaveJ2L(filename, true, allowDifferentTilesetVersion, storeGivenFilename);
                 }
-            Text = "MLLE - " + J2L.Name + " - " + Path.GetFileName(J2L.FilenameOnly);
-            LevelHasBeenModified = false;
-            _suspendEvent.Set(); 
+            }
+            else
+            {
+                //A more specific error must be added instead of using this one. This is only here for troubleshooting purposes.
+                MessageBox.Show("There was an error while saving.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            _suspendEvent.Set();
             return result;
         }
         #endregion Save
+
+        private void UpdateTitle(bool modified)
+        {
+            string title = Text.StartsWith("*") ? Text.Substring(1) : Text;
+            SetTitle(title, modified);
+        }
+
+        private void SetTitle(string name, string filename = null, bool modified = false)
+        {
+            string title = name + (filename == null ? "" : " \u2013 " + filename) + " \u2013 MLLE";
+            SetTitle(title, modified);
+        }
+
+        private void SetTitle(string title, bool modified)
+        {
+            Text = modified ? "*" + title : title;
+        }
 
         #endregion J2L Extensions
 
@@ -1357,10 +1444,10 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
                             if (anim.Random != 0) anim.Advance(GameTick, _r.Next(anim.Random + 1));
                             else anim.Advance(GameTick);
                         }
-                    if (AnimationSettings.Visible) WorkingAnimation.Advance(GameTick, (WorkingAnimation.Random != 0) ? _r.Next(WorkingAnimation.Random + 1) : 0);
+                        if (AnimationSettings.Visible) WorkingAnimation.Advance(GameTick, (WorkingAnimation.Random != 0) ? _r.Next(WorkingAnimation.Random + 1) : 0);
                     }
                 else GameTick = (int)GameTime;
-                if (SafeToDisplay) Invoke(new MethodInvoker(delegate() { LevelDisplay.Invalidate(); }));
+                if (SafeToDisplay) Invoke(new MethodInvoker(delegate () { LevelDisplay.Invalidate(); }));
             }
         }
 
@@ -1380,7 +1467,7 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
                     GL.Disable(EnableCap.ScissorTest);
                     if (EventDisplayMode || ParallaxButton.Checked) GL.Disable(EnableCap.Blend);
                     if (!(
-                        (PrevAtlas == AtlasID.Image && CurrentTilesetOverlay != TilesetOverlay.Masks) 
+                        (PrevAtlas == AtlasID.Image && CurrentTilesetOverlay != TilesetOverlay.Masks)
                         ||
                         (PrevAtlas == AtlasID.Mask && CurrentTilesetOverlay == TilesetOverlay.Masks)
                         ))
@@ -1603,7 +1690,7 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
                 {
                     EmborderSelectedTiles(LDScrollH.Value, LDScrollV.Value, ZoomTileSize, LevelDisplayViewportWidth, LevelDisplayViewportHeight);
                 }
-                if (LastFocusedZone == FocusedZone.Level && VisibleEditingTool != SelectionButton && CurrentStamp.Length > 0)
+                if (LastFocusedZone == FocusedZone.Level && VisibleEditingTool != SelectionButton && CurrentStamp.Length > 0 && J2L.J2T != null)
                 {
                     int x = MouseTileX * ZoomTileSize - LDScrollH.Value;
                     int y = MouseTileY * ZoomTileSize - LDScrollV.Value;
@@ -1662,49 +1749,49 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
             //xMax += xOffset;
             //yMax += yOffset;
             int xPos, yPos, x, y;
-            for (x = xOffset / TileSize+1, xPos = -(xOffset % TileSize); xPos < xMax; x++, xPos += TileSize)
-            for (y = yOffset / TileSize+1, yPos = -(yOffset % TileSize); yPos < yMax; y++, yPos += TileSize)
-            if (IsEachTileSelected[x][y])
-            {
-                 animFrame = (animFrame + 2) % 4;
-                 if (!IsEachTileSelected[x][y-1]) //top
+            for (x = xOffset / TileSize + 1, xPos = -(xOffset % TileSize); xPos < xMax; x++, xPos += TileSize)
+                for (y = yOffset / TileSize + 1, yPos = -(yOffset % TileSize); yPos < yMax; y++, yPos += TileSize)
+                    if (IsEachTileSelected[x][y])
                     {
-                        GL.Begin(BeginMode.Quads);
-                        GL.TexCoord2(0, .125 * animFrame); GL.Vertex2(xPos, yPos);
-                        GL.TexCoord2(0, minorDrawSize + .125 * animFrame); GL.Vertex2(xPos, yPos + TileSize / 4);
-                        GL.TexCoord2(majorDrawSize, minorDrawSize + .125 * animFrame); GL.Vertex2(xPos + TileSize, yPos + TileSize / 4);
-                        GL.TexCoord2(majorDrawSize, .125 * animFrame); GL.Vertex2(xPos + TileSize, yPos);
-                        GL.End();
+                        animFrame = (animFrame + 2) % 4;
+                        if (!IsEachTileSelected[x][y - 1]) //top
+                        {
+                            GL.Begin(BeginMode.Quads);
+                            GL.TexCoord2(0, .125 * animFrame); GL.Vertex2(xPos, yPos);
+                            GL.TexCoord2(0, minorDrawSize + .125 * animFrame); GL.Vertex2(xPos, yPos + TileSize / 4);
+                            GL.TexCoord2(majorDrawSize, minorDrawSize + .125 * animFrame); GL.Vertex2(xPos + TileSize, yPos + TileSize / 4);
+                            GL.TexCoord2(majorDrawSize, .125 * animFrame); GL.Vertex2(xPos + TileSize, yPos);
+                            GL.End();
+                        }
+                        if (!IsEachTileSelected[x - 1][y]) //left
+                        {
+                            GL.Begin(BeginMode.Quads);
+                            GL.TexCoord2(.5 + .125 * animFrame, 0); GL.Vertex2(xPos, yPos);
+                            GL.TexCoord2(.5 + .125 * animFrame, majorDrawSize); GL.Vertex2(xPos, yPos + TileSize);
+                            GL.TexCoord2(.5 + minorDrawSize + .125 * animFrame, majorDrawSize); GL.Vertex2(xPos + TileSize / 4, yPos + TileSize);
+                            GL.TexCoord2(.5 + minorDrawSize + .125 * animFrame, 0); GL.Vertex2(xPos + TileSize / 4, yPos);
+                            GL.End();
+                        }
+                        animFrame = (animFrame + 2) % 4;
+                        if (!IsEachTileSelected[x][y + 1]) //bottom
+                        {
+                            GL.Begin(BeginMode.Quads);
+                            GL.TexCoord2(0, .125 * animFrame); GL.Vertex2(xPos + TileSize, yPos + TileSize);
+                            GL.TexCoord2(0, minorDrawSize + .125 * animFrame); GL.Vertex2(xPos + TileSize, yPos + TileSize * .75);
+                            GL.TexCoord2(majorDrawSize, minorDrawSize + .125 * animFrame); GL.Vertex2(xPos, yPos + TileSize * .75);
+                            GL.TexCoord2(majorDrawSize, .125 * animFrame); GL.Vertex2(xPos, yPos + TileSize);
+                            GL.End();
+                        }
+                        if (!IsEachTileSelected[x + 1][y]) //right
+                        {
+                            GL.Begin(BeginMode.Quads);
+                            GL.TexCoord2(.5 + .125 * animFrame, 0); GL.Vertex2(xPos + TileSize, yPos + TileSize);
+                            GL.TexCoord2(.5 + .125 * animFrame, majorDrawSize); GL.Vertex2(xPos + TileSize, yPos);
+                            GL.TexCoord2(.5 + minorDrawSize + .125 * animFrame, majorDrawSize); GL.Vertex2(xPos + TileSize * .75, yPos);
+                            GL.TexCoord2(.5 + minorDrawSize + .125 * animFrame, 0); GL.Vertex2(xPos + TileSize * .75, yPos + TileSize);
+                            GL.End();
+                        }
                     }
-                 if (!IsEachTileSelected[x-1][y]) //left
-                    {
-                        GL.Begin(BeginMode.Quads);
-                        GL.TexCoord2(.5 + .125 * animFrame, 0); GL.Vertex2(xPos, yPos);
-                        GL.TexCoord2(.5 + .125 * animFrame, majorDrawSize); GL.Vertex2(xPos, yPos + TileSize);
-                        GL.TexCoord2(.5 + minorDrawSize + .125 * animFrame, majorDrawSize); GL.Vertex2(xPos + TileSize / 4, yPos + TileSize);
-                        GL.TexCoord2(.5 + minorDrawSize + .125 * animFrame, 0); GL.Vertex2(xPos + TileSize / 4, yPos);
-                        GL.End();
-                    }
-                animFrame = (animFrame + 2) % 4;
-                if (!IsEachTileSelected[x][y+1]) //bottom
-                    {
-                        GL.Begin(BeginMode.Quads);
-                        GL.TexCoord2(0, .125 * animFrame); GL.Vertex2(xPos + TileSize, yPos + TileSize);
-                        GL.TexCoord2(0, minorDrawSize + .125 * animFrame); GL.Vertex2(xPos + TileSize, yPos + TileSize * .75);
-                        GL.TexCoord2(majorDrawSize, minorDrawSize + .125 * animFrame); GL.Vertex2(xPos, yPos + TileSize * .75);
-                        GL.TexCoord2(majorDrawSize, .125 * animFrame); GL.Vertex2(xPos, yPos + TileSize);
-                        GL.End();
-                    }
-                if (!IsEachTileSelected[x+1][y]) //right
-                    {
-                        GL.Begin(BeginMode.Quads);
-                        GL.TexCoord2(.5 + .125 * animFrame, 0); GL.Vertex2(xPos + TileSize, yPos + TileSize);
-                        GL.TexCoord2(.5 + .125 * animFrame, majorDrawSize); GL.Vertex2(xPos + TileSize, yPos);
-                        GL.TexCoord2(.5 + minorDrawSize + .125 * animFrame, majorDrawSize); GL.Vertex2(xPos + TileSize * .75, yPos);
-                        GL.TexCoord2(.5 + minorDrawSize + .125 * animFrame, 0); GL.Vertex2(xPos + TileSize * .75, yPos + TileSize);
-                        GL.End();
-                    }
-            }
         }
 
         internal void DrawColorRectangle(ref int x, ref int y, Color4 color, byte tileWidth = 32, byte tileHeight = 32)
@@ -1767,7 +1854,7 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
             uint difficulty = id << 22 >> 30;
             //previd = 40000;
             GL.Color4((byte)255, (difficulty < 2) ? (byte)255 : (byte)0, (difficulty % 3 == 0) ? (byte)255 : (byte)0, (byte)255);
-            byte drawid = (byte)(((id & 255) == GeneratorEventID) ? id<<12>>24 : id & 255);
+            byte drawid = (byte)(((id & 255) == GeneratorEventID) ? id << 12 >> 24 : id & 255);
             float xFrac = (drawid % 16) * 0.0625F, yFrac = (int)(drawid / 16) * 0.0625F;
             GL.Begin(BeginMode.Quads);
             GL.TexCoord2(xFrac, yFrac + 0.0625F); GL.Vertex2(x, y + TileSize);
@@ -1970,20 +2057,20 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
             x = SelectedAnimationFrame*32 + 48 - AnimScrollbar.Value;
             DrawColorTile(ref x, ref y, new Color4(255, 255, 255, 128));
         }*/
-        
+
         internal void DetermineVisibilityOfAnimatedTiles()
         {
-            try
+            if (J2L.J2T != null)
             {
                 AnimatedTilesDrawHeight = (int)(J2L.J2T.TileCount * 3.2) - TilesetScrollbar.Value;
                 AnimatedTilesVisibleOnLeft = AnimatedTilesDrawHeight < LevelDisplay.Height;
             }
-            catch { AnimatedTilesVisibleOnLeft = false; }
+            else { AnimatedTilesVisibleOnLeft = false; }
         }
 
         private void TilesetScrollbar_ValueChanged(object sender, EventArgs e)
         {
-            RedrawTilesetHowManyTimes = 2; DetermineVisibilityOfAnimatedTiles(); 
+            RedrawTilesetHowManyTimes = 2; DetermineVisibilityOfAnimatedTiles();
         }
         /*private void DrawTileset()
         {
@@ -2201,16 +2288,16 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
                         break;
                 }*/
                 if (range >= 0)
-                        {
-                            output[i] = (int)J2LFile.GetRawBits(rawEvent, bitpush, range);
-                            bitpush += range;
-                        }
+                {
+                    output[i] = (int)J2LFile.GetRawBits(rawEvent, bitpush, range);
+                    bitpush += range;
+                }
                 else
-                        {
-                            if ((rawEvent & (1 << (bitpush - range - 1))) > 0) output[i] = (-(1 << (-range - 1)) + (int)J2LFile.GetRawBits(rawEvent, bitpush, -range - 1));
-                            else output[i] = (int)J2LFile.GetRawBits(rawEvent, bitpush, -range - 1);
-                            bitpush -= range;
-                        }
+                {
+                    if ((rawEvent & (1 << (bitpush - range - 1))) > 0) output[i] = (-(1 << (-range - 1)) + (int)J2LFile.GetRawBits(rawEvent, bitpush, -range - 1));
+                    else output[i] = (int)J2LFile.GetRawBits(rawEvent, bitpush, -range - 1);
+                    bitpush -= range;
+                }
             }
             return output;
         }
@@ -2219,8 +2306,9 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
         #region editing functions
         //List<Point> SelectedTileLocations = new List<Point>(512);
         internal bool[][] IsEachTileSelected = new bool[1026][], ShouldEachTileBeFilledIn = new bool[1026][];
-        Point UpperLeftSelectionCorner = new Point(1024,1024), BottomRightSelectionCorner = new Point(0,0);
-        internal struct TileAndEvent{
+        Point UpperLeftSelectionCorner = new Point(1024, 1024), BottomRightSelectionCorner = new Point(0, 0);
+        internal struct TileAndEvent
+        {
             internal ushort Tile;
             internal AGAEvent? Event;
             public TileAndEvent(ushort t, AGAEvent? e) { Event = e; Tile = t; }
@@ -2235,7 +2323,7 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
         {
             internal byte Layer;
             internal Dictionary<Point, TileAndEvent> Specifics;
-            public LayerAndSpecificTiles(byte b) { Layer = b; Specifics = new Dictionary<Point,TileAndEvent>(); }
+            public LayerAndSpecificTiles(byte b) { Layer = b; Specifics = new Dictionary<Point, TileAndEvent>(); }
         }
         Stack<LayerAndSpecificTiles> Undoable = new Stack<LayerAndSpecificTiles>(), Redoable = new Stack<LayerAndSpecificTiles>();
         TileAndEvent[][] CurrentStamp = new TileAndEvent[0][];
@@ -2248,9 +2336,11 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
 
         #region Event Editing
         private void GrabEventAtMouse() { if (J2L.VersionType == Version.AGA) ActiveEvent = MouseAGAEvent; else ActiveEvent.ID = MouseAGAEvent.ID; }
-        private void PasteEventAtMouse() {
+        private void PasteEventAtMouse()
+        {
             /*if (J2L.VersionType == Version.AGA) { if (LastFocusedZone == FocusedZone.Level) J2L.AGA_EventMap[MouseTileX, MouseTileY] = MouseAGAEvent = ActiveEvent; }
-            else*/ if (LastFocusedZone == FocusedZone.Tileset) { J2L.EventTiles[MouseTile] = MouseAGAEvent.ID = ActiveEvent.ID; RedrawTilesetHowManyTimes = 2; }
+            else*/
+            if (LastFocusedZone == FocusedZone.Tileset) { J2L.EventTiles[MouseTile] = MouseAGAEvent.ID = ActiveEvent.ID; RedrawTilesetHowManyTimes = 2; }
             else if (LastFocusedZone == FocusedZone.Level)
             {
                 LayerAndSpecificTiles actionCenter = new LayerAndSpecificTiles(3);
@@ -2365,7 +2455,7 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
                 TilesetScrollbar.Value += HeightOfAnimationEditingSection;
                 AnimationSettings.Visible = AnimScrollbar.Visible = true;
                 AnimScrollbar.Value = 0;
-                AnimScrollbar.Maximum = Math.Max(0,anim.FrameCount * 32 + 80 - AnimScrollbar.Width + AnimScrollbar.LargeChange);
+                AnimScrollbar.Maximum = Math.Max(0, anim.FrameCount * 32 + 80 - AnimScrollbar.Width + AnimScrollbar.LargeChange);
                 AnimScrollbar.Update();
                 DetermineVisibilityOfAnimatedTiles();
                 SelectedAnimationFrame = 0;
@@ -2385,7 +2475,8 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
             RedrawTilesetHowManyTimes = 2;
         }
 
-        private void AnimOK_Click(object sender, EventArgs e) {
+        private void AnimOK_Click(object sender, EventArgs e)
+        {
             if (WorkingAnimation.FrameCount > 0)
             {
                 if (CurrentAnimationID < J2L.MaxTiles) J2L.Animations[CurrentAnimationID - J2L.AnimOffset] = WorkingAnimation;
@@ -2422,7 +2513,6 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
                     DialogResult result = MessageBox.Show(String.Format("Are you sure you want to delete the contents of layer {0}?", LayerNumber + 1), "Clear Layer", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
                     if (result == DialogResult.OK)
                     {
-                        J2L.Layers[LayerNumber].HasTiles = LayerNumber == 3;
                         for (ushort x = 0; x < J2L.Layers[LayerNumber].TileMap.GetLength(0); x++) for (ushort y = 0; y < J2L.Layers[LayerNumber].TileMap.GetLength(1); y++) ActOnATile(x, y, 0, 0, ActionCenter, true);
                     }
                     _suspendEvent.Set();
@@ -2463,7 +2553,7 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
                 VisibleEditingTool.Checked = false;
                 (VisibleEditingTool = DeepEditingTool).Checked = true;
             }
-            int boxWidth = Math.Abs(SelectionBoxCorners[0] - SelectionBoxCorners[2])+1;
+            int boxWidth = Math.Abs(SelectionBoxCorners[0] - SelectionBoxCorners[2]) + 1;
             int boxHeight = Math.Abs(SelectionBoxCorners[1] - SelectionBoxCorners[3]) + 1;
             if (CurrentSelectionType == SelectionType.New)
             {
@@ -2483,13 +2573,13 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
                         if (nuSelectY < UpperLeftSelectionCorner.Y) UpperLeftSelectionCorner.Y = nuSelectY;
                         if (nuSelectX + boxWidth > BottomRightSelectionCorner.X) BottomRightSelectionCorner.X = nuSelectX + boxWidth;
                         if (nuSelectY + boxHeight > BottomRightSelectionCorner.Y) BottomRightSelectionCorner.Y = nuSelectY + boxHeight;
-                        for (int x = nuSelectX, i = 0; i < boxWidth; x++, i++) for (int y = nuSelectY, j = 0; j < boxHeight; y++, j++) IsEachTileSelected[x+1][y+1] = true;
+                        for (int x = nuSelectX, i = 0; i < boxWidth; x++, i++) for (int y = nuSelectY, j = 0; j < boxHeight; y++, j++) IsEachTileSelected[x + 1][y + 1] = true;
                         break;
                     }
                 case SelectionType.Subtract:
                     {
                         for (int x = nuSelectX, i = 0; i < boxWidth; x++, i++) for (int y = nuSelectY, j = 0; j < boxHeight; y++, j++) IsEachTileSelected[x + 1][y + 1] = false;
-                        if ((nuSelectX <= UpperLeftSelectionCorner.X && nuSelectX + boxWidth >= UpperLeftSelectionCorner.X) || (nuSelectY <= UpperLeftSelectionCorner.Y && nuSelectY + boxHeight >= UpperLeftSelectionCorner.Y)) UpperLeftSelectionCorner = new Point(RecalculateSelectionCornerCoordinates(false, false)-1, RecalculateSelectionCornerCoordinates(false, true)-1);
+                        if ((nuSelectX <= UpperLeftSelectionCorner.X && nuSelectX + boxWidth >= UpperLeftSelectionCorner.X) || (nuSelectY <= UpperLeftSelectionCorner.Y && nuSelectY + boxHeight >= UpperLeftSelectionCorner.Y)) UpperLeftSelectionCorner = new Point(RecalculateSelectionCornerCoordinates(false, false) - 1, RecalculateSelectionCornerCoordinates(false, true) - 1);
                         if ((nuSelectX <= BottomRightSelectionCorner.X && nuSelectX + boxWidth >= BottomRightSelectionCorner.X) || (nuSelectY <= BottomRightSelectionCorner.Y && nuSelectY + boxHeight >= BottomRightSelectionCorner.Y)) BottomRightSelectionCorner = new Point(RecalculateSelectionCornerCoordinates(true, false), RecalculateSelectionCornerCoordinates(true, true));
                         break;
                     }
@@ -2503,10 +2593,10 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
         }
         private int RecalculateSelectionCornerCoordinates(bool bottomRight, bool columnsTakePriority)
         {
-            for (int loop1 = 0, pos1 = (bottomRight) ? IsEachTileSelected.Length-1 : 0; loop1 < IsEachTileSelected.Length; loop1++, pos1 += (bottomRight) ? -1 : 1)
-            for (int loop2 = 0, pos2 = (bottomRight) ? IsEachTileSelected.Length-1 : 0; loop2 < IsEachTileSelected.Length; loop2++, pos2 += (bottomRight) ? -1 : 1)
+            for (int loop1 = 0, pos1 = (bottomRight) ? IsEachTileSelected.Length - 1 : 0; loop1 < IsEachTileSelected.Length; loop1++, pos1 += (bottomRight) ? -1 : 1)
+                for (int loop2 = 0, pos2 = (bottomRight) ? IsEachTileSelected.Length - 1 : 0; loop2 < IsEachTileSelected.Length; loop2++, pos2 += (bottomRight) ? -1 : 1)
                 {
-                if (IsEachTileSelected[(columnsTakePriority) ? pos2 : pos1][(columnsTakePriority) ? pos1 : pos2]) return pos1;
+                    if (IsEachTileSelected[(columnsTakePriority) ? pos2 : pos1][(columnsTakePriority) ? pos1 : pos2]) return pos1;
                 }
             return (bottomRight) ? 0 : 1026;
         }
@@ -2563,7 +2653,7 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
             {
                 EndSelection();
                 if (WhereSelected == FocusedZone.Tileset) MakeSelectionIntoStamp();
-                
+
             }
         }
 
@@ -2600,23 +2690,22 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
         {
             if (WhereSelected == FocusedZone.Tileset) DeselectAll();
             LayerAndSpecificTiles ActionCenter = new LayerAndSpecificTiles(CurrentLayer);
-            J2L.Layers[CurrentLayer].HasTiles = true;
             bool shiftPressed = Control.ModifierKeys == Keys.Shift || Control.ModifierKeys == (Keys.Control | Keys.Shift);
             #region paintbrush
             if (VisibleEditingTool == PaintbrushButton)
+            {
+                if (Control.ModifierKeys == Keys.Control)
                 {
-                    if (Control.ModifierKeys == Keys.Control)
-                    {
-                        DrawPoint = MakeUpSomeValidStampCoordinates(shiftPressed, 0, 0, CurrentStamp.Length, CurrentStamp[0].Length);
-                        ActOnATile(MouseTileX, MouseTileY, CurrentStamp[DrawPoint.X][DrawPoint.Y].Tile, CurrentStamp[DrawPoint.X][DrawPoint.Y].Event, ActionCenter, shiftPressed | ShowBlankTileInStamp);
-                    }
-                    else
-                    {
-                        for (ushort x = 0; x < CurrentStamp.Length; x++)
-                            for (ushort y = 0; y < CurrentStamp[0].Length; y++)
-                                if (IsEachTileSelected[MouseTileX + x + 1][MouseTileY + y + 1] == IsEachTileSelected[MouseTileX + 1][MouseTileY + 1]) ActOnATile(MouseTileX + x, MouseTileY + y, CurrentStamp[x][y].Tile, CurrentStamp[x][y].Event, ActionCenter, shiftPressed | ShowBlankTileInStamp);
-                    }
+                    DrawPoint = MakeUpSomeValidStampCoordinates(shiftPressed, 0, 0, CurrentStamp.Length, CurrentStamp[0].Length);
+                    ActOnATile(MouseTileX, MouseTileY, CurrentStamp[DrawPoint.X][DrawPoint.Y].Tile, CurrentStamp[DrawPoint.X][DrawPoint.Y].Event, ActionCenter, shiftPressed | ShowBlankTileInStamp);
                 }
+                else
+                {
+                    for (ushort x = 0; x < CurrentStamp.Length; x++)
+                        for (ushort y = 0; y < CurrentStamp[0].Length; y++)
+                            if (IsEachTileSelected[MouseTileX + x + 1][MouseTileY + y + 1] == IsEachTileSelected[MouseTileX + 1][MouseTileY + 1]) ActOnATile(MouseTileX + x, MouseTileY + y, CurrentStamp[x][y].Tile, CurrentStamp[x][y].Event, ActionCenter, shiftPressed | ShowBlankTileInStamp);
+                }
+            }
             #endregion paintbrush
             #region fill
             else if (VisibleEditingTool == FillButton)
@@ -2624,9 +2713,9 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
                 if (MouseTileX < J2L.Layers[CurrentLayer].Width && MouseTileY < J2L.Layers[CurrentLayer].Height)
                 {
                     foreach (bool[] col in ShouldEachTileBeFilledIn) for (ushort y = 0; y < col.Length; y++) col[y] = false;
-                    ushort[,] TileMap = J2L.Layers[CurrentLayer].TileMap;
+                    ArrayMap<ushort> TileMap = J2L.Layers[CurrentLayer].TileMap;
                     ushort TargetTileID = TileMap[MouseTileX, MouseTileY];
-                    bool SelectedOnly = IsEachTileSelected[MouseTileX+1][MouseTileY+1];
+                    bool SelectedOnly = IsEachTileSelected[MouseTileX + 1][MouseTileY + 1];
                     TryToFillTile(MouseTileX, MouseTileY, TileMap, ref TargetTileID, ref SelectedOnly, ref shiftPressed, ref ActionCenter);
                     while (FillingQ.Count > 0)
                     {
@@ -2654,87 +2743,87 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
                             }
                 }
             }
-                #endregion fill
-                #region rectangles
-                else if (VisibleEditingTool == RectangleButton || VisibleEditingTool == RectangleOutlineButton)
+            #endregion fill
+            #region rectangles
+            else if (VisibleEditingTool == RectangleButton || VisibleEditingTool == RectangleOutlineButton)
+            {
+                if (SelectionBoxCorners[0] > SelectionBoxCorners[2])
                 {
-                    if (SelectionBoxCorners[0] > SelectionBoxCorners[2])
-                    {
-                        SelectionBoxCorners[0] ^= SelectionBoxCorners[2];
-                        SelectionBoxCorners[2] ^= SelectionBoxCorners[0];
-                        SelectionBoxCorners[0] ^= SelectionBoxCorners[2];
-                    }
-                    if (SelectionBoxCorners[1] > SelectionBoxCorners[3])
-                    {
-                        SelectionBoxCorners[1] ^= SelectionBoxCorners[3];
-                        SelectionBoxCorners[3] ^= SelectionBoxCorners[1];
-                        SelectionBoxCorners[1] ^= SelectionBoxCorners[3];
-                    }
-                    ActOnATile(SelectionBoxCorners[0], SelectionBoxCorners[1], CurrentStamp[0][0].Tile, CurrentStamp[0][0].Event, ActionCenter, shiftPressed | ShowBlankTileInStamp);
-                    if (SelectionBoxCorners[2] != SelectionBoxCorners[0]) ActOnATile(SelectionBoxCorners[2], SelectionBoxCorners[1], CurrentStamp[CurrentStamp.Length - 1][0].Tile, CurrentStamp[CurrentStamp.Length - 1][0].Event, ActionCenter, shiftPressed | ShowBlankTileInStamp);
+                    SelectionBoxCorners[0] ^= SelectionBoxCorners[2];
+                    SelectionBoxCorners[2] ^= SelectionBoxCorners[0];
+                    SelectionBoxCorners[0] ^= SelectionBoxCorners[2];
+                }
+                if (SelectionBoxCorners[1] > SelectionBoxCorners[3])
+                {
+                    SelectionBoxCorners[1] ^= SelectionBoxCorners[3];
+                    SelectionBoxCorners[3] ^= SelectionBoxCorners[1];
+                    SelectionBoxCorners[1] ^= SelectionBoxCorners[3];
+                }
+                ActOnATile(SelectionBoxCorners[0], SelectionBoxCorners[1], CurrentStamp[0][0].Tile, CurrentStamp[0][0].Event, ActionCenter, shiftPressed | ShowBlankTileInStamp);
+                if (SelectionBoxCorners[2] != SelectionBoxCorners[0]) ActOnATile(SelectionBoxCorners[2], SelectionBoxCorners[1], CurrentStamp[CurrentStamp.Length - 1][0].Tile, CurrentStamp[CurrentStamp.Length - 1][0].Event, ActionCenter, shiftPressed | ShowBlankTileInStamp);
+                if (SelectionBoxCorners[3] != SelectionBoxCorners[1])
+                {
+                    ActOnATile(SelectionBoxCorners[0], SelectionBoxCorners[3], CurrentStamp[0][CurrentStamp[0].Length - 1].Tile, CurrentStamp[0][CurrentStamp[0].Length - 1].Event, ActionCenter, shiftPressed | ShowBlankTileInStamp);
+                    if (SelectionBoxCorners[2] != SelectionBoxCorners[0]) ActOnATile(SelectionBoxCorners[2], SelectionBoxCorners[3], CurrentStamp[CurrentStamp.Length - 1][CurrentStamp[0].Length - 1].Tile, CurrentStamp[CurrentStamp.Length - 1][CurrentStamp[0].Length - 1].Event, ActionCenter, shiftPressed | ShowBlankTileInStamp);
+                }
+                for (int x = SelectionBoxCorners[0] + 1; x < SelectionBoxCorners[2]; x++)
+                {
+                    DrawPoint = (CurrentStamp.Length > 2) ? MakeUpSomeValidStampCoordinates(shiftPressed | ShowBlankTileInStamp, 1, 0, CurrentStamp.Length - 1, 0) : MakeUpSomeValidStampCoordinates(shiftPressed | ShowBlankTileInStamp, 0, 0, CurrentStamp.Length, 0);
+                    ActOnATile(x, SelectionBoxCorners[1], CurrentStamp[DrawPoint.X][DrawPoint.Y].Tile, CurrentStamp[DrawPoint.X][DrawPoint.Y].Event, ActionCenter, shiftPressed | ShowBlankTileInStamp);
                     if (SelectionBoxCorners[3] != SelectionBoxCorners[1])
                     {
-                        ActOnATile(SelectionBoxCorners[0], SelectionBoxCorners[3], CurrentStamp[0][CurrentStamp[0].Length - 1].Tile, CurrentStamp[0][CurrentStamp[0].Length - 1].Event, ActionCenter, shiftPressed | ShowBlankTileInStamp);
-                        if (SelectionBoxCorners[2] != SelectionBoxCorners[0]) ActOnATile(SelectionBoxCorners[2], SelectionBoxCorners[3], CurrentStamp[CurrentStamp.Length - 1][CurrentStamp[0].Length - 1].Tile, CurrentStamp[CurrentStamp.Length - 1][CurrentStamp[0].Length - 1].Event, ActionCenter, shiftPressed | ShowBlankTileInStamp);
+                        DrawPoint = (CurrentStamp.Length > 2) ? MakeUpSomeValidStampCoordinates(shiftPressed | ShowBlankTileInStamp, 1, CurrentStamp[0].Length - 1, CurrentStamp.Length - 1, CurrentStamp[0].Length - 1) : MakeUpSomeValidStampCoordinates(shiftPressed | ShowBlankTileInStamp, 0, CurrentStamp[0].Length - 1, CurrentStamp.Length, CurrentStamp[0].Length - 1);
+                        ActOnATile(x, SelectionBoxCorners[3], CurrentStamp[DrawPoint.X][DrawPoint.Y].Tile, CurrentStamp[DrawPoint.X][DrawPoint.Y].Event, ActionCenter, shiftPressed | ShowBlankTileInStamp);
                     }
-                    for (int x = SelectionBoxCorners[0] + 1; x < SelectionBoxCorners[2]; x++)
+                }
+                for (int y = SelectionBoxCorners[1] + 1; y < SelectionBoxCorners[3]; y++)
+                {
+                    DrawPoint = (CurrentStamp[0].Length > 2) ? MakeUpSomeValidStampCoordinates(shiftPressed | ShowBlankTileInStamp, 0, 1, 0, CurrentStamp[0].Length - 1) : MakeUpSomeValidStampCoordinates(shiftPressed | ShowBlankTileInStamp, 0, 0, 0, CurrentStamp[0].Length);
+                    ActOnATile(SelectionBoxCorners[0], y, CurrentStamp[DrawPoint.X][DrawPoint.Y].Tile, CurrentStamp[DrawPoint.X][DrawPoint.Y].Event, ActionCenter, shiftPressed | ShowBlankTileInStamp);
+                    if (SelectionBoxCorners[2] != SelectionBoxCorners[0])
                     {
-                        DrawPoint = (CurrentStamp.Length > 2) ? MakeUpSomeValidStampCoordinates(shiftPressed | ShowBlankTileInStamp, 1, 0, CurrentStamp.Length - 1, 0) : MakeUpSomeValidStampCoordinates(shiftPressed | ShowBlankTileInStamp, 0, 0, CurrentStamp.Length, 0);
-                        ActOnATile(x, SelectionBoxCorners[1], CurrentStamp[DrawPoint.X][DrawPoint.Y].Tile, CurrentStamp[DrawPoint.X][DrawPoint.Y].Event, ActionCenter, shiftPressed | ShowBlankTileInStamp);
-                        if (SelectionBoxCorners[3] != SelectionBoxCorners[1])
-                        {
-                            DrawPoint = (CurrentStamp.Length > 2) ? MakeUpSomeValidStampCoordinates(shiftPressed | ShowBlankTileInStamp, 1, CurrentStamp[0].Length - 1, CurrentStamp.Length - 1, CurrentStamp[0].Length - 1) : MakeUpSomeValidStampCoordinates(shiftPressed | ShowBlankTileInStamp, 0, CurrentStamp[0].Length - 1, CurrentStamp.Length, CurrentStamp[0].Length - 1);
-                            ActOnATile(x, SelectionBoxCorners[3], CurrentStamp[DrawPoint.X][DrawPoint.Y].Tile, CurrentStamp[DrawPoint.X][DrawPoint.Y].Event, ActionCenter, shiftPressed | ShowBlankTileInStamp);
-                        }
+                        DrawPoint = (CurrentStamp[0].Length > 2) ? MakeUpSomeValidStampCoordinates(shiftPressed | ShowBlankTileInStamp, CurrentStamp.Length - 1, 1, CurrentStamp.Length - 1, CurrentStamp[0].Length - 1) : MakeUpSomeValidStampCoordinates(shiftPressed | ShowBlankTileInStamp, CurrentStamp.Length - 1, 0, CurrentStamp.Length - 1, CurrentStamp[0].Length);
+                        ActOnATile(SelectionBoxCorners[2], y, CurrentStamp[DrawPoint.X][DrawPoint.Y].Tile, CurrentStamp[DrawPoint.X][DrawPoint.Y].Event, ActionCenter, shiftPressed | ShowBlankTileInStamp);
                     }
-                    for (int y = SelectionBoxCorners[1] + 1; y < SelectionBoxCorners[3]; y++)
-                    {
-                        DrawPoint = (CurrentStamp[0].Length > 2) ? MakeUpSomeValidStampCoordinates(shiftPressed | ShowBlankTileInStamp, 0, 1, 0, CurrentStamp[0].Length - 1) : MakeUpSomeValidStampCoordinates(shiftPressed | ShowBlankTileInStamp, 0, 0, 0, CurrentStamp[0].Length);
-                        ActOnATile(SelectionBoxCorners[0], y, CurrentStamp[DrawPoint.X][DrawPoint.Y].Tile, CurrentStamp[DrawPoint.X][DrawPoint.Y].Event, ActionCenter, shiftPressed | ShowBlankTileInStamp);
-                        if (SelectionBoxCorners[2] != SelectionBoxCorners[0])
-                        {
-                            DrawPoint = (CurrentStamp[0].Length > 2) ? MakeUpSomeValidStampCoordinates(shiftPressed | ShowBlankTileInStamp, CurrentStamp.Length - 1, 1, CurrentStamp.Length - 1, CurrentStamp[0].Length - 1) : MakeUpSomeValidStampCoordinates(shiftPressed | ShowBlankTileInStamp, CurrentStamp.Length - 1, 0, CurrentStamp.Length - 1, CurrentStamp[0].Length);
-                            ActOnATile(SelectionBoxCorners[2], y, CurrentStamp[DrawPoint.X][DrawPoint.Y].Tile, CurrentStamp[DrawPoint.X][DrawPoint.Y].Event, ActionCenter, shiftPressed | ShowBlankTileInStamp);
-                        }
-                    }
-                    if (VisibleEditingTool == RectangleButton) for (int x = SelectionBoxCorners[0] + 1; x < SelectionBoxCorners[2]; x++) for (int y = SelectionBoxCorners[1] + 1; y < SelectionBoxCorners[3]; y++)
+                }
+                if (VisibleEditingTool == RectangleButton) for (int x = SelectionBoxCorners[0] + 1; x < SelectionBoxCorners[2]; x++) for (int y = SelectionBoxCorners[1] + 1; y < SelectionBoxCorners[3]; y++)
                         {
                             if (CurrentStamp.Length > 2 && CurrentStamp[0].Length > 2) DrawPoint = MakeUpSomeValidStampCoordinates(shiftPressed | ShowBlankTileInStamp, 1, 1, CurrentStamp.Length - 1, CurrentStamp[0].Length - 1);
                             else DrawPoint = MakeUpSomeValidStampCoordinates(shiftPressed | ShowBlankTileInStamp, 0, 0, CurrentStamp.Length, CurrentStamp[0].Length);
                             ActOnATile(x, y, CurrentStamp[DrawPoint.X][DrawPoint.Y].Tile, CurrentStamp[DrawPoint.X][DrawPoint.Y].Event, ActionCenter, shiftPressed | ShowBlankTileInStamp);
                         }
-                }
-                #endregion rectangles
+            }
+            #endregion rectangles
 
-                if (ActionCenter.Specifics.Count > 0)
-                {
-                    Undoable.Push(ActionCenter);
-                    Redoable.Clear();
-                    LevelHasBeenModified = true;
-                }
+            if (ActionCenter.Specifics.Count > 0)
+            {
+                Undoable.Push(ActionCenter);
+                Redoable.Clear();
+                LevelHasBeenModified = true;
+            }
         }
-        private void TryToFillTile(int x, int y, ushort[,] tileMap, ref ushort TargetTileID, ref bool select, ref bool shiftPressed, ref LayerAndSpecificTiles ActionCenter)
+        private void TryToFillTile(int x, int y, ArrayMap<ushort> tileMap, ref ushort TargetTileID, ref bool select, ref bool shiftPressed, ref LayerAndSpecificTiles ActionCenter)
         {
-                if (ShouldEachTileBeFilledIn[x][y] == false && IsEachTileSelected[x+1][y+1] == select && tileMap[x, y] == TargetTileID)
+            if (ShouldEachTileBeFilledIn[x][y] == false && IsEachTileSelected[x + 1][y + 1] == select && tileMap[x, y] == TargetTileID)
+            {
+                ShouldEachTileBeFilledIn[x][y] = true;
+                FillingQ.Enqueue(new Point(x, y));
+                if (Control.ModifierKeys == Keys.Control) DrawPoint = MakeUpSomeValidStampCoordinates(shiftPressed, 0, 0, CurrentStamp.Length, CurrentStamp[0].Length);
+                else
                 {
-                    ShouldEachTileBeFilledIn[x][y] = true;
-                    FillingQ.Enqueue(new Point(x, y));
-                    if (Control.ModifierKeys == Keys.Control) DrawPoint = MakeUpSomeValidStampCoordinates(shiftPressed, 0, 0, CurrentStamp.Length, CurrentStamp[0].Length);
-                    else
-                    {
-                        DrawPoint.X = x - MouseTileX;
-                        while (DrawPoint.X < 0) DrawPoint.X += CurrentStamp.Length;
-                        DrawPoint.X %= CurrentStamp.Length;
-                        DrawPoint.Y = y - MouseTileY;
-                        while (DrawPoint.Y < 0) DrawPoint.Y += CurrentStamp[0].Length;
-                        DrawPoint.Y %= CurrentStamp[0].Length;
-                    }
-                    ActOnATile(x, y, CurrentStamp[DrawPoint.X][DrawPoint.Y].Tile, CurrentStamp[DrawPoint.X][DrawPoint.Y].Event, ActionCenter, shiftPressed | ShowBlankTileInStamp);
+                    DrawPoint.X = x - MouseTileX;
+                    while (DrawPoint.X < 0) DrawPoint.X += CurrentStamp.Length;
+                    DrawPoint.X %= CurrentStamp.Length;
+                    DrawPoint.Y = y - MouseTileY;
+                    while (DrawPoint.Y < 0) DrawPoint.Y += CurrentStamp[0].Length;
+                    DrawPoint.Y %= CurrentStamp[0].Length;
                 }
+                ActOnATile(x, y, CurrentStamp[DrawPoint.X][DrawPoint.Y].Tile, CurrentStamp[DrawPoint.X][DrawPoint.Y].Event, ActionCenter, shiftPressed | ShowBlankTileInStamp);
+            }
         }
 
 
-        internal void Undo() {  SwapActionBuffers(Undoable, Redoable); }
+        internal void Undo() { SwapActionBuffers(Undoable, Redoable); }
         internal void Redo() { SwapActionBuffers(Redoable, Undoable); }
         internal void SwapActionBuffers(Stack<LayerAndSpecificTiles> grabFrom, Stack<LayerAndSpecificTiles> putInto)
         {
@@ -2797,14 +2886,9 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
             }
         }
 
-
-
-
-
-
     }
 
-    class MLLE
+    class Program
     {
         [STAThread]
         static void Main()
@@ -2815,3 +2899,4 @@ public enum TilesetOverlay { None, TileTypes, Events, Masks }
             Application.Run(fram);
         }
     }
+}
