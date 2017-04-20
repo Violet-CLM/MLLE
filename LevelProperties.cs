@@ -8,7 +8,8 @@ using System.Text;
 using System.Windows.Forms;
 using System.IO;
 
-
+namespace MLLE
+{
     public partial class LevelProperties : Form
     {
         Mainframe SourceForm;
@@ -84,7 +85,7 @@ using System.IO;
             NextLevel.Text = SourceForm.J2L.NextLevel;
             filename = Path.GetFileNameWithoutExtension(SourceForm.J2L.FilenameOnly);
             int CleverLength = TryToBeClever(filename, 0, 1);
-            if (CleverLength > 0) NextLevel.Items.Insert(0, filename.Substring(0, filename.Length - CleverLength) + (ResultNumber+1).ToString());
+            if (CleverLength > 0) NextLevel.Items.Insert(0, filename.Substring(0, filename.Length - CleverLength) + (ResultNumber + 1).ToString());
             SecretLevel.Text = SourceForm.J2L.SecretLevel;
             BonusLevel.Text = SourceForm.J2L.BonusLevel;
             MusicFile.Text = SourceForm.J2L.Music;
@@ -117,7 +118,7 @@ using System.IO;
             SourceForm.J2L.Music = MusicFile.Text;
             SourceForm.J2L.LevelMode = IsMultiplayer.Checked ? (byte)1 : (byte)0;
             SourceForm.J2L.IsHiddenInHCL = HideHCL.Checked;
-            SourceForm.J2L.StartLight = (byte)Math.Ceiling(StartLight.Value/(decimal)1.5625);
+            SourceForm.J2L.StartLight = (byte)Math.Ceiling(StartLight.Value / (decimal)1.5625);
             SourceForm.J2L.MinLight = (byte)Math.Ceiling(MinLight.Value / (decimal)1.5625);
             SourceForm.J2L.UsesVerticalSplitscreen = radioButton2.Checked;
             SourceForm.LevelHasBeenModified = true;
@@ -147,3 +148,4 @@ using System.IO;
             if (DataLoaded) MusicChanged = true;
         }
     }
+}

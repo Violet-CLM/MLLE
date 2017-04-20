@@ -1,4 +1,6 @@
-﻿partial class LayerPropertiesForm
+﻿namespace MLLE
+{
+    partial class LayerPropertiesForm
     {
         /// <summary>
         /// Required designer variable.
@@ -552,3 +554,4 @@
         private System.Windows.Forms.NumericUpDown Param3;
         private System.Windows.Forms.Button Copy4;
     }
+}

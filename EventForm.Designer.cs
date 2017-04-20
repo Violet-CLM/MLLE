@@ -1,4 +1,6 @@
-﻿partial class EventForm
+﻿namespace MLLE
+{
+    partial class EventForm
     {
         /// <summary>
         /// Required designer variable.
@@ -414,3 +416,4 @@
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Button button1;
     }
+}
