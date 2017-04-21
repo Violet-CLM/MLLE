@@ -1814,10 +1814,10 @@ class J2LFile : J2File
                                 else for (byte j = 0; j < 4; j++) tentativeWord[j] = (x + j < CurrentLayer.Width) ? SanitizeTileValue(CurrentLayer.TileMap[x + j, y]) : (ushort)0;
                                 if (CurrentLayer.id == 3 &&
                                     (
-                                    (tentativeWord[0] % MaxTiles > J2T.TileCount && EventMap[x, y] != 0) ||
-                                    (tentativeWord[1] % MaxTiles > J2T.TileCount && EventMap[x + 1, y] != 0) ||
-                                    (tentativeWord[2] % MaxTiles > J2T.TileCount && EventMap[x + 2, y] != 0) ||
-                                    (tentativeWord[3] % MaxTiles > J2T.TileCount && EventMap[x + 3, y] != 0)
+                                    (tentativeWord[0] % MaxTiles > J2T.TileCount && EventMap[x, y]     != 0 && (EventMap[x, y]     & (1 << 31)) == 0) ||
+                                    (tentativeWord[1] % MaxTiles > J2T.TileCount && EventMap[x + 1, y] != 0 && (EventMap[x + 1, y] & (1 << 31)) == 0) ||
+                                    (tentativeWord[2] % MaxTiles > J2T.TileCount && EventMap[x + 2, y] != 0 && (EventMap[x + 2, y] & (1 << 31)) == 0) ||
+                                    (tentativeWord[3] % MaxTiles > J2T.TileCount && EventMap[x + 3, y] != 0 && (EventMap[x + 3, y] & (1 << 31)) == 0)
                                     )
                                     ) { tentativeIndex = -1; }
                                 else tentativeIndex = attestedWords.FindIndex(delegate(ushort[] current) { return tentativeWord[0] == current[0] && tentativeWord[1] == current[1] && tentativeWord[2] == current[2] && tentativeWord[3] == current[3]; });
