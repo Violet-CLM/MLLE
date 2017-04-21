@@ -251,6 +251,7 @@ namespace MLLE
                     TiletypeDropdown.DropDownItems.Add(option);
                 }
             }
+            TextureTypes.Clear();
             for (ushort i = 0; i < 256; i++)
             {
                 if (ini.IniReadValue("Textures", i.ToString()) == "") break;
