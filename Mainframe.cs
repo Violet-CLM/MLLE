@@ -1205,7 +1205,9 @@ namespace MLLE
         private void SaveAndRunProgramHasExited(object sender, System.EventArgs e)
         {
             if (MusicIsPlaying) Bass.BASS_Start();
-            File.Delete("MLLEGenericFilename.j2l");
+            string directory = Path.GetDirectoryName(J2L.FullFilePath);
+            File.Delete(Path.Combine(directory, "MLLEGenericFilename.j2l"));
+            File.Delete(Path.Combine(directory, "MLLEGenericFilename.j2as"));
         }
         private void saveRunToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -1214,8 +1216,11 @@ namespace MLLE
 
         private void TrialRun()
         {
-            string tempFile;
-            SaveAndRun(tempFile = Path.Combine(DefaultDirectories[J2L.VersionType], Path.ChangeExtension("MLLEGenericFilename", DefaultFileExtensionStrings[DefaultFileExtension[J2L.VersionType]])), "", false);
+            string directory = Path.GetDirectoryName(J2L.FullFilePath);
+            string originalScriptFilePath = Path.ChangeExtension(J2L.FullFilePath, ".j2as");
+            if (File.Exists(originalScriptFilePath))
+                File.Copy(originalScriptFilePath, Path.Combine(directory, "MLLEGenericFilename.j2as"), true);
+            SaveAndRun(Path.Combine(directory, Path.ChangeExtension("MLLEGenericFilename", DefaultFileExtensionStrings[DefaultFileExtension[J2L.VersionType]])), "", false);
         }
         private void PlayFromHere()
         {
