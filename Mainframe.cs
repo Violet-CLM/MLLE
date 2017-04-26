@@ -329,6 +329,24 @@ namespace MLLE
         private void Mainframe_Load(object sender, EventArgs e)
         {
             while (!LevelDisplayLoaded) ;
+
+            {
+                string X = Settings.IniReadValue("Window", "X");
+                string Y = Settings.IniReadValue("Window", "Y");
+                string Width = Settings.IniReadValue("Window", "Width");
+                string Height = Settings.IniReadValue("Window", "Height");
+                string Maximized = Settings.IniReadValue("Window", "Maximized");
+
+                int Xi, Yi, Wi, Hi; bool Mb;
+
+                if (int.TryParse(X, out Xi) && int.TryParse(Y, out Yi))
+                    this.Location = new Point(Xi, Yi);
+                if (int.TryParse(Width, out Wi) && int.TryParse(Height, out Hi))
+                    this.Size = new Size(Wi, Hi);
+                if (bool.TryParse(Maximized, out Mb))
+                    this.WindowState = Mb ? FormWindowState.Maximized : FormWindowState.Normal;
+            }
+
             if ((Settings.IniReadValue("Miscellaneous", "Initialized") ?? "") != "1")
             {
                 MessageBox.Show("Welcome to Multi-Layer Level Editor (MLLE), by Violet CLM! You're going to need to answer a few quick questions so that MLLE can know which supported games are installed on your system. In each case, either a shareware or a registered version of the game counts, and if you have both, choose the folder containing the registered version.", "Welcome to MLLE!", MessageBoxButtons.OK, MessageBoxIcon.Stop);
@@ -425,7 +443,25 @@ namespace MLLE
             DrawThread.IsBackground = true;
             DrawThread.Start();
         }
-        private void Mainframe_FormClosing(object sender, FormClosingEventArgs e) { if (!PromptForSaving()) { e.Cancel = true; _suspendEvent.Set(); } else DrawThread.Abort(); }
+        private void Mainframe_FormClosing(object sender, FormClosingEventArgs e) {
+            if (!PromptForSaving())
+            {
+                e.Cancel = true;
+                _suspendEvent.Set();
+                return;
+            }
+            DrawThread.Abort();
+
+            bool windowIsMaximized = this.WindowState == FormWindowState.Maximized;
+            Settings.IniWriteValue("Window", "Maximized", windowIsMaximized.ToString());
+            if (!windowIsMaximized)
+            {
+                Settings.IniWriteValue("Window", "X", this.Location.X.ToString());
+                Settings.IniWriteValue("Window", "Y", this.Location.Y.ToString());
+                Settings.IniWriteValue("Window", "Width", this.Size.Width.ToString());
+                Settings.IniWriteValue("Window", "Height", this.Size.Height.ToString());
+            }
+        }
         private void Mainframe_Paint(object sender, PaintEventArgs e)
         {
             LDScrollH.Update();
