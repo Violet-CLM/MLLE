@@ -869,38 +869,47 @@ namespace MLLE
         bool MusicIsPlaying = false;
         private void playMusicToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            Console.WriteLine(playMusicToolStripMenuItem.Checked);
             if (playMusicToolStripMenuItem.Checked) { BassNet.Registration("VioletCLM@gmail.com", "2X17292219152222"); PlayMusic(); }
             else
             {
-                Bass.BASS_StreamFree(stream);
-                Bass.BASS_Free();
+                if (stream != 0)
+                {
+                    Bass.BASS_StreamFree(stream);
+                    Bass.BASS_Free();
+                }
                 MusicIsPlaying = false;
             }
         }
         private bool PlayMusic()
         {
-            try
+            if (!MusicIsPlaying)
             {
+                MusicIsPlaying = Bass.BASS_Init(-1, 44100, BASSInit.BASS_DEVICE_DEFAULT, IntPtr.Zero);
                 if (!MusicIsPlaying)
                 {
-                    MusicIsPlaying = Bass.BASS_Init(-1, 44100, BASSInit.BASS_DEVICE_DEFAULT, IntPtr.Zero);
-                    if (!MusicIsPlaying)
-                    {
-                        Console.WriteLine("BASS: Could not initialize");
-                    }
+                    Console.WriteLine("BASS: Could not initialize");
                 }
+            }
+            else
+            {
+                Bass.BASS_StreamFree(stream);
+                Bass.BASS_MusicFree(stream);
+            }
+
+            string filename = Path.Combine(DefaultDirectories[J2L.VersionType], J2L.Music);
+            string fileextension = Path.GetExtension(filename);
+            if (fileextension == "")
+            {
+                filename = Path.ChangeExtension(filename, fileextension = ".j2b");
+                //and then... do nothing.
+            }
+            else if (File.Exists(filename))
+            {
+                if (fileextension == ".mp3")
+                    stream = Bass.BASS_StreamCreateFile(filename, 0, 0, BASSFlag.BASS_DEFAULT | BASSFlag.BASS_MUSIC_LOOP);
                 else
-                {
-                    Bass.BASS_StreamFree(stream);
-                    Bass.BASS_MusicFree(stream);
-                }
-                string filename = Path.Combine(DefaultDirectories[J2L.VersionType], J2L.Music);
-                switch (Path.GetExtension(filename))
-                {
-                    case "mp3": stream = Bass.BASS_StreamCreateFile(filename, 0, 0, BASSFlag.BASS_DEFAULT | BASSFlag.BASS_MUSIC_LOOP); break;
-                    case "": filename = Path.ChangeExtension(filename, "j2b"); break;
-                    default: stream = Bass.BASS_MusicLoad(filename, 0, 0, BASSFlag.BASS_DEFAULT | BASSFlag.BASS_MUSIC_LOOP, 0); break;
-                }
+                    stream = Bass.BASS_MusicLoad(filename, 0, 0, BASSFlag.BASS_DEFAULT | BASSFlag.BASS_MUSIC_LOOP, 0);
                 Console.WriteLine(filename);
 
                 if (stream != 0)
@@ -911,10 +920,9 @@ namespace MLLE
                 {
                     Console.WriteLine("BASS: Stream error: {0}", Bass.BASS_ErrorGetCode());
                 }
-
                 return true;
             }
-            catch { return false; }
+            return false;
         }
 
         private void UndoButton_Click(object sender, EventArgs e) { Undo(); }
