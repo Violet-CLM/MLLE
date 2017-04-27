@@ -64,6 +64,12 @@
     </Compile>
     <Compile Include="AGAfiles.cs" />
     <Compile Include="ArrayMap.cs" />
+    <Compile Include="DirectorySetupForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DirectorySetupForm.Designer.cs">
+      <DependentUpon>DirectorySetupForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="EventForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -157,6 +163,9 @@
   <ItemGroup>
     <EmbeddedResource Include="AboutBox1.resx">
       <DependentUpon>AboutBox1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DirectorySetupForm.resx">
+      <DependentUpon>DirectorySetupForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="EventForm.resx">
       <DependentUpon>EventForm.cs</DependentUpon>

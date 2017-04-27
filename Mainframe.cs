@@ -300,32 +300,10 @@ namespace MLLE
             animaniacsToolStripMenuItem.Enabled = Directory.Exists(Settings.IniReadValue("Paths", "AGA"));
             jazz2V100ghToolStripMenuItem.Enabled = Directory.Exists(Settings.IniReadValue("Paths", "GorH"));
         }
-        private void SetupFolders()
+        private bool SetupFolders()
         {
-            DialogResult result = new DialogResult();
-            AskAboutAGame(ref result, Version.JJ2, "Jazz Jackrabbit 2", "Do you have Jazz Jackrabbit 2 installed on your system in any of the following versions? If so, please select the folder containing the Jazz2.exe executable for that game.\n\n1.20, 1.21, 1.22, 1.23");
-            if (result == DialogResult.No) AskAboutAGame(ref result, Version.JJ2, "Holiday Hare 98", "In that case, how about Jazz Jackrabbit 2: Holiday Hare '98? (version 1.23x) If so, please select the folder containing the Jazz2.exe executable for that game.");
-            AskAboutAGame(ref result, Version.TSF, "The Secret Files", "Do you have Jazz Jackrabbit 2: The Secret Files installed on your system? (version 1.24) If so, please select the folder containing the Jazz2.exe executable for that game.");
-            if (result == DialogResult.No) AskAboutAGame(ref result, Version.TSF, "The Christmas Chronicles", "In that case, how about Jazz Jackrabbit 2: The Christmas Chronicles? (version 1.24x) If so, please select the folder containing the Jazz2.exe executable for that game.");
-            AskAboutAGame(ref result, Version.O, "BETA 2", "Do you have Jazz Jackrabbit 2 BETA 2 installed on your system? (version 1.10o) If so, please select the folder containing the Jazz2.exe executable for that game.");
-            AskAboutAGame(ref result, Version.GorH, "OEM 1.00g or 1.00h", "Do you have Jazz Jackrabbit 2 OEM installed on your system? (version 1.00g or 1.00h)\n\nIf so, please select the folder containing the largest number of Jazz 2 tileset files (.j2t) on your computer. (Do NOT select the folder containing the OEM executable itself.)");
-            AskAboutAGame(ref result, Version.BC, "Battery Check", "Do you have Battery Check installed on your system? If so, please select the folder containing the Battery.exe executable for that game.");
-            AskAboutAGame(ref result, Version.AGA, "Animaniacs", "Do you have Animaniacs: A Gigantic Adventure installed on your system? If so, please select the folder containing the Animaniacs.exe executable for that game.");
-        } //revise this to be a window
-        private void AskAboutAGame(ref DialogResult result, Version iniValueName, string dialogCaption, string dialogString)
-        {
-            Settings.IniWriteValue("Paths", iniValueName.ToString(), "");
-            result = MessageBox.Show(dialogString, dialogCaption, MessageBoxButtons.YesNo, MessageBoxIcon.Information);
-            if (result == DialogResult.Yes)
-            {
-                result = folderBrowserDialog1.ShowDialog();
-                if (result == DialogResult.OK)
-                {
-                    Settings.IniWriteValue("Paths", iniValueName.ToString(), folderBrowserDialog1.SelectedPath);
-                    if ((Settings.IniReadValue("Miscellaneous", "DefaultGame") ?? "") == "") Settings.IniWriteValue("Miscellaneous", "DefaultGame", iniValueName.ToString());
-                }
-            }
-        } //likewise this
+            return DirectorySetupForm.ShowForm(Settings);
+        }
         private void Mainframe_Load(object sender, EventArgs e)
         {
             while (!LevelDisplayLoaded) ;
@@ -347,14 +325,17 @@ namespace MLLE
                     this.WindowState = Mb ? FormWindowState.Maximized : FormWindowState.Normal;
             }
 
-            if ((Settings.IniReadValue("Miscellaneous", "Initialized") ?? "") != "1")
-            {
-                MessageBox.Show("Welcome to Multi-Layer Level Editor (MLLE), by Violet CLM! You're going to need to answer a few quick questions so that MLLE can know which supported games are installed on your system. In each case, either a shareware or a registered version of the game counts, and if you have both, choose the folder containing the registered version.", "Welcome to MLLE!", MessageBoxButtons.OK, MessageBoxIcon.Stop);
-                SetupFolders();
-                MessageBox.Show("That's all! If you think you made any mistakes, or if you later acquire any of the games listed, you may manually edit the folder paths in the MLLE.ini file or else select the \"Paths and Filenames\" item in the dropdown File menu.", "Welcome to MLLE!", MessageBoxButtons.OK, MessageBoxIcon.Stop);
-                Settings.IniWriteValue("Miscellaneous", "Initialized", "1");
+            if ((Settings.IniReadValue("Miscellaneous", "Initialized") ?? "") != "1") {
+                if (SetupFolders())
+                    Settings.IniWriteValue("Miscellaneous", "Initialized", "1");
+                else
+                {
+                    Application.Exit();
+                    return;
+                }
             }
             MakeVersionChangesAvailable();
+
             DefaultDirectories = new Dictionary<Version, string> {
             {Version.BC, Settings.IniReadValue("Paths","BC") },
             {Version.O, Settings.IniReadValue("Paths","O") },
@@ -394,7 +375,7 @@ namespace MLLE
                 default:
                     MessageBox.Show("MLLE cannot run if you have none of the games it's built for!", "go download battery check or something", MessageBoxButtons.OK, MessageBoxIcon.Stop);
                     Settings.IniWriteValue("Miscellaneous", "Initialized", "0");
-                    Close(); Dispose(); Application.Exit();
+                    Application.Exit();
                     return;
             }
             for (ushort x = 0; x < IsEachTileSelected.Length; x++) IsEachTileSelected[x] = new bool[1026];
@@ -450,7 +431,8 @@ namespace MLLE
                 _suspendEvent.Set();
                 return;
             }
-            DrawThread.Abort();
+            if (DrawThread != null)
+                DrawThread.Abort();
 
             bool windowIsMaximized = this.WindowState == FormWindowState.Maximized;
             Settings.IniWriteValue("Window", "Maximized", windowIsMaximized.ToString());
