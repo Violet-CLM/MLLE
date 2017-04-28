@@ -88,6 +88,13 @@
     <Compile Include="PasswordInputForm.Designer.cs">
       <DependentUpon>PasswordInputForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="PlusProperties.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PlusProperties.Designer.cs">
+      <DependentUpon>PlusProperties.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PlusPropertyList.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SetPassword.cs">
       <SubType>Form</SubType>
@@ -175,6 +182,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="PasswordInputForm.resx">
       <DependentUpon>PasswordInputForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PlusProperties.resx">
+      <DependentUpon>PlusProperties.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SetPassword.resx">
       <DependentUpon>SetPassword.cs</DependentUpon>
