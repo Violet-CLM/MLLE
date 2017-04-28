@@ -91,6 +91,7 @@ namespace MLLE
                     newrectangle = LayerAlign.Show(CurrentLayer, (int)WidthBox.Value - (int)DataSource.Width, (int)HeightBox.Value - (int)DataSource.Height);
                     if (newrectangle == null) return;
                 }
+
                 DataSource.Width = (uint)WidthBox.Value;
                 DataSource.Height = (uint)HeightBox.Value;
                 if (TileWidth.Checked)
@@ -101,52 +102,7 @@ namespace MLLE
                         default: DataSource.RealWidth = DataSource.Width * 4; break;
                     }
                 else DataSource.RealWidth = DataSource.Width;
-                #region Old Size Change code
-                //if (newrectangle != null || (DataSource.TileWidth == false && TileWidth.Checked == true && DataSource.Width % 4 > 0))
-                //{
-                //    ArrayMap<ushort> newTileMap = new ArrayMap<ushort>(DataSource.RealWidth, DataSource.Height);
-                //    for (ushort x = 0; x < DataSource.Width; x++) for (ushort y = 0; y < DataSource.Height; y++)
-                //        {
-                //            newTileMap[x, y] = (
-                //                x >= -newrectangle[2] &&
-                //                newrectangle[2] + x < DataSource.TileMap.GetLength(0) &&
-                //                y >= -newrectangle[0] &&
-                //                newrectangle[0] + y < DataSource.TileMap.GetLength(1)
-                //                )
-                //                ? DataSource.TileMap[newrectangle[2] + x, newrectangle[0] + y]
-                //                : (ushort)0;
-                //        }
-                //    if (CurrentLayer == 3)
-                //    {
-                //        uint[,] newEventMap = new uint[DataSource.Width, DataSource.Height];
-                //        for (ushort x = 0; x < DataSource.Width; x++) for (ushort y = 0; y < DataSource.Height; y++)
-                //            {
-                //                newEventMap[x, y] = (
-                //                    x >= -newrectangle[2] &&
-                //                    newrectangle[2] + x < DataSource.TileMap.GetLength(0) &&
-                //                    y >= -newrectangle[0] &&
-                //                    newrectangle[0] + y < DataSource.TileMap.GetLength(1)
-                //                    )
-                //                    ? SourceForm.J2L.EventMap[newrectangle[2] + x, newrectangle[0] + y]
-                //                    : (ushort)0;
-                //            }
-                //        SourceForm.J2L.EventMap = newEventMap;
-                //    }
-                //    if (TileWidth.Checked == true && DataSource.Width % 4 > 0) for (ushort x = 0; x < DataSource.Width; x++) for (ushort y = 0; y < DataSource.Height; y++)
-                //            {
-                //                switch (DataSource.Width % 4)
-                //                {
-                //                    case 2:
-                //                        newTileMap[x + DataSource.Width, y] = newTileMap[x, y];
-                //                        break;
-                //                    default:
-                //                        newTileMap[x + DataSource.Width, y] = newTileMap[x + DataSource.Width * 2, y] = newTileMap[x + DataSource.Width * 3, y] = newTileMap[x, y];
-                //                        break;
-                //                }
-                //            }
-                //    DataSource.TileMap = newTileMap;
-                //} 
-                #endregion
+                
                 if (newrectangle != null)
                 {
                     ArrayMap<ushort> newTileMap = new ArrayMap<ushort>(DataSource.Width, DataSource.Height);
@@ -161,34 +117,74 @@ namespace MLLE
                                 ? DataSource.TileMap[newrectangle[2] + x, newrectangle[0] + y]
                                 : (ushort)0;
                         }
-                    if (CurrentLayer == 3)
+
+                    if (CurrentLayer == 3) //sprite layer, i.e. events are associated with this one
                     {
-                        AGAEvent[,] newAGAMap = null;
-                        if (SourceForm.J2L.VersionType == Version.AGA) newAGAMap = new AGAEvent[DataSource.Width, DataSource.Height];
-                        uint[,] newEventMap = new uint[DataSource.Width, DataSource.Height];
-                        for (ushort x = 0; x < DataSource.Width; x++) for (ushort y = 0; y < DataSource.Height; y++)
+                        if (SourceForm.J2L.VersionType == Version.AGA)
+                        {
+                            AGAEvent[,] newAGAMap = new AGAEvent[DataSource.Width, DataSource.Height];
+                            for (ushort x = 0; x < DataSource.Width; x++) for (ushort y = 0; y < DataSource.Height; y++)
+                                    newAGAMap[x, y] = (
+                                        x >= -newrectangle[2] &&
+                                        newrectangle[2] + x < DataSource.TileMap.GetLength(0) &&
+                                        y >= -newrectangle[0] &&
+                                        newrectangle[0] + y < DataSource.TileMap.GetLength(1)
+                                        )
+                                        ? SourceForm.J2L.AGA_EventMap[newrectangle[2] + x, newrectangle[0] + y]
+                                        : new AGAEvent();
+                            SourceForm.J2L.AGA_EventMap = newAGAMap;
+                        }
+                        else
+                        {
+                            var oldEventMap = SourceForm.J2L.EventMap;
+                            uint[,] newEventMap = new uint[DataSource.Width, DataSource.Height];
+
+                            int oldEventMapRightColumn = oldEventMap.GetLength(0) - 1;
+                            int oldEventMapBottomRow = oldEventMap.GetLength(1) - 1;
+
+                            if (SourceForm.EnableableBools[SourceForm.J2L.VersionType][EnableableTitles.BoolDevelopingForPlus]) //if this is a JJ2+ level, move special trigger zones/pit events if such exist
                             {
-                                newEventMap[x, y] = (
-                                    x >= -newrectangle[2] &&
-                                    newrectangle[2] + x < DataSource.TileMap.GetLength(0) &&
-                                    y >= -newrectangle[0] &&
-                                    newrectangle[0] + y < DataSource.TileMap.GetLength(1)
-                                    )
-                                    ? SourceForm.J2L.EventMap[newrectangle[2] + x, newrectangle[0] + y]
-                                    : (ushort)0;
-                                if (SourceForm.J2L.VersionType == Version.AGA) newAGAMap[x, y] = (
-                                    x >= -newrectangle[2] &&
-                                    newrectangle[2] + x < DataSource.TileMap.GetLength(0) &&
-                                    y >= -newrectangle[0] &&
-                                    newrectangle[0] + y < DataSource.TileMap.GetLength(1)
-                                    )
-                                    ? SourceForm.J2L.AGA_EventMap[newrectangle[2] + x, newrectangle[0] + y]
-                                    : new AGAEvent();
+                                int newEventMapRightColumn = newEventMap.GetLength(0) - 1;
+                                int newEventMapBottomRow = newEventMap.GetLength(1) - 1;
+
+                                for (uint x = 0; x < 3; ++x) //Team, Server, and Overtime triggers
+                                    newEventMap[x, newEventMapBottomRow] = oldEventMap[x, oldEventMapBottomRow];
+                                newEventMap[newEventMapRightColumn, newEventMapBottomRow] = oldEventMap[oldEventMapRightColumn, oldEventMapBottomRow]; //pits
+
+                                //Starts Off trigger zones start at -2,-1 and continue for an unspecified length, so just keep on copying them until hitting a non-trigger-zone event
+                                int oldStartsOffTriggerColumn = oldEventMapRightColumn - 1;
+                                int newStartsOffTriggerColumn = newEventMapRightColumn - 1;
+                                while (oldStartsOffTriggerColumn > 0 && newStartsOffTriggerColumn > 0)
+                                {
+                                    uint startsOffTrigger = oldEventMap[oldStartsOffTriggerColumn, oldEventMapBottomRow];
+                                    if ((startsOffTrigger & 0xFF) != 246) //not a trigger zone
+                                        break;
+                                    else
+                                    {
+                                        newEventMap[newStartsOffTriggerColumn, newEventMapBottomRow] = startsOffTrigger;
+                                        oldStartsOffTriggerColumn -= 1;
+                                        newStartsOffTriggerColumn -= 1;
+                                    }
+                                }
                             }
-                        SourceForm.J2L.EventMap = newEventMap;
+
+                            for (ushort x = 0; x < DataSource.Width; x++) for (ushort y = 0; y < DataSource.Height - 1; y++) //-1 because events in the bottom row don't work, except for a few events parsed by JJ2+ handled in the if{} above.
+                                {
+                                    newEventMap[x, y] = (
+                                        x >= -newrectangle[2] &&
+                                        newrectangle[2] + x <= oldEventMapRightColumn &&
+                                        y >= -newrectangle[0] &&
+                                        newrectangle[0] + y < oldEventMapBottomRow
+                                        )
+                                        ? oldEventMap[newrectangle[2] + x, newrectangle[0] + y]
+                                        : (ushort)0;
+                                }
+                            SourceForm.J2L.EventMap = newEventMap;
+                        }
                     }
                     DataSource.TileMap = newTileMap;
                 }
+
                 DataSource.TileWidth = TileWidth.Checked;
                 DataSource.TileHeight = TileHeight.Checked;
                 try { DataSource.XSpeed = Convert.ToSingle(XSpeed.Text); } catch { DataSource.XSpeed = 0; }
