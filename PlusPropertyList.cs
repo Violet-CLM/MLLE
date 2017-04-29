@@ -5,9 +5,9 @@ using System.Text;
 
 namespace MLLE
 {
-    class PlusPropertyList
+    public struct PlusPropertyList
     {
-        private bool teamTriggerBlue = false;
+        private bool teamTriggerBlue;
         public bool TeamTriggerOnForBlue
         {
             get { return teamTriggerBlue; }

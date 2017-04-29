@@ -12,14 +12,23 @@ namespace MLLE
 {
     public partial class PlusProperties : Form
     {
+        PlusPropertyList? result = null;
         public PlusProperties()
         {
             InitializeComponent();
-            propertyGrid1.SelectedObject = new PlusPropertyList();
+        }
+
+        public PlusPropertyList? ShowForm(ref PlusPropertyList current)
+        {
+            propertyGrid1.SelectedObject = current;
+            ShowDialog();
+            return result;
         }
 
         private void ButtonOK_Click(object sender, EventArgs e)
         {
+            //do I need to do any validation here?
+            result = (PlusPropertyList)propertyGrid1.SelectedObject;
             Dispose();
         }
 

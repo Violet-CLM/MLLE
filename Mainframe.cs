@@ -182,7 +182,7 @@ namespace MLLE
                 Bools.Add(EnableableTitles.BoolDevelopingForPlus, ini.IniReadValue("Enableable", "BoolDevelopingForPlus") != "");
                 Bools.Add(EnableableTitles.UseText, ini.IniReadValue("Enableable", "BoolText") != "");
             }
-            jJ2FunctionsToolStripMenuItem.Enabled = EnableableBools[version][EnableableTitles.BoolDevelopingForPlus];
+            jJ2PropertiesToolStripMenuItem.Enabled = EnableableBools[version][EnableableTitles.BoolDevelopingForPlus];
             textStringsToolStripMenuItem.Enabled = EnableableBools[version][EnableableTitles.UseText];
             saveRunToolStripMenuItem.Enabled = runToolStripMenuItem.Enabled = EnableableStrings[version][EnableableTitles.SaveAndRun] != "";
             soundEffectsToolStripMenuItem.Enabled = (version == Version.AGA);
@@ -707,6 +707,16 @@ namespace MLLE
             SFXForm SFX = new SFXForm(J2L.AGA_SoundPointer, DefaultDirectories[Version.AGA]);
             SFX.ShowDialog();
             if (SFX.result == DialogResult.OK) { J2L.AGA_SoundPointer = SFX.Paths; LevelHasBeenModified = true; }
+            _suspendEvent.Set();
+        }
+
+        private PlusPropertyList currentPlusPropertyList;
+        private void plusLevelPropertiesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _suspendEvent.Reset();
+            PlusPropertyList? newPlusPropertyList = new PlusProperties().ShowForm(ref currentPlusPropertyList);
+            if (newPlusPropertyList.HasValue)
+                currentPlusPropertyList = newPlusPropertyList.Value;
             _suspendEvent.Set();
         }
 
