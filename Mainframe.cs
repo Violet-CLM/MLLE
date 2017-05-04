@@ -710,7 +710,7 @@ namespace MLLE
             _suspendEvent.Set();
         }
 
-        private PlusPropertyList currentPlusPropertyList;
+        private PlusPropertyList currentPlusPropertyList = new PlusPropertyList(null);
         private void plusLevelPropertiesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _suspendEvent.Reset();

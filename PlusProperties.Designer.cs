@@ -42,6 +42,7 @@
             this.propertyGrid1.Name = "propertyGrid1";
             this.propertyGrid1.Size = new System.Drawing.Size(961, 627);
             this.propertyGrid1.TabIndex = 2;
+            this.propertyGrid1.ToolbarVisible = false;
             // 
             // ButtonCancel
             // 
@@ -83,6 +84,7 @@
             this.MinimizeBox = false;
             this.MinimumSize = new System.Drawing.Size(500, 600);
             this.Name = "PlusProperties";
+            this.ShowIcon = false;
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "JJ2+ Level Properties";

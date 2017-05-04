@@ -20,7 +20,7 @@ namespace MLLE
 
         public PlusPropertyList? ShowForm(ref PlusPropertyList current)
         {
-            propertyGrid1.SelectedObject = current;
+            propertyGrid1.SelectedObject = new PlusPropertyList(current);
             ShowDialog();
             return result;
         }
