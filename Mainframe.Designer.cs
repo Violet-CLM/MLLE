@@ -62,13 +62,6 @@
             this.jazz2V123ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.jazz2V124ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
-            this.jJ2FunctionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.setTeamTriggerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.setServerTriggerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.setOvertimeTriggerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.addStartsOffTriggerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.enablePitsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator15 = new System.Windows.Forms.ToolStripSeparator();
             this.playMusicToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveAsImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.packageAsZiptoolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -412,8 +405,6 @@
             this.toolsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.changeVersionToolStripMenuItem,
             this.toolStripSeparator5,
-            this.jJ2FunctionsToolStripMenuItem,
-            this.toolStripSeparator15,
             this.playMusicToolStripMenuItem,
             this.saveAsImageToolStripMenuItem,
             this.packageAsZiptoolStripMenuItem});
@@ -481,59 +472,6 @@
             // 
             this.toolStripSeparator5.Name = "toolStripSeparator5";
             this.toolStripSeparator5.Size = new System.Drawing.Size(176, 6);
-            // 
-            // jJ2FunctionsToolStripMenuItem
-            // 
-            this.jJ2FunctionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.setTeamTriggerToolStripMenuItem,
-            this.setServerTriggerToolStripMenuItem,
-            this.setOvertimeTriggerToolStripMenuItem,
-            this.addStartsOffTriggerToolStripMenuItem,
-            this.enablePitsToolStripMenuItem});
-            this.jJ2FunctionsToolStripMenuItem.Enabled = false;
-            this.jJ2FunctionsToolStripMenuItem.Name = "jJ2FunctionsToolStripMenuItem";
-            this.jJ2FunctionsToolStripMenuItem.Size = new System.Drawing.Size(179, 22);
-            this.jJ2FunctionsToolStripMenuItem.Text = "JJ2+ Functions";
-            // 
-            // setTeamTriggerToolStripMenuItem
-            // 
-            this.setTeamTriggerToolStripMenuItem.Name = "setTeamTriggerToolStripMenuItem";
-            this.setTeamTriggerToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
-            this.setTeamTriggerToolStripMenuItem.Text = "Set Team Trigger...";
-            this.setTeamTriggerToolStripMenuItem.Click += new System.EventHandler(this.setTeamTriggerToolStripMenuItem_Click);
-            // 
-            // setServerTriggerToolStripMenuItem
-            // 
-            this.setServerTriggerToolStripMenuItem.Name = "setServerTriggerToolStripMenuItem";
-            this.setServerTriggerToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
-            this.setServerTriggerToolStripMenuItem.Text = "Set Server Trigger...";
-            this.setServerTriggerToolStripMenuItem.Click += new System.EventHandler(this.setServerTriggerToolStripMenuItem_Click);
-            // 
-            // setOvertimeTriggerToolStripMenuItem
-            // 
-            this.setOvertimeTriggerToolStripMenuItem.Name = "setOvertimeTriggerToolStripMenuItem";
-            this.setOvertimeTriggerToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
-            this.setOvertimeTriggerToolStripMenuItem.Text = "Set Overtime Trigger...";
-            this.setOvertimeTriggerToolStripMenuItem.Click += new System.EventHandler(this.setOvertimeTriggerToolStripMenuItem_Click);
-            // 
-            // addStartsOffTriggerToolStripMenuItem
-            // 
-            this.addStartsOffTriggerToolStripMenuItem.Name = "addStartsOffTriggerToolStripMenuItem";
-            this.addStartsOffTriggerToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
-            this.addStartsOffTriggerToolStripMenuItem.Text = "Add Starts-Off Trigger...";
-            this.addStartsOffTriggerToolStripMenuItem.Click += new System.EventHandler(this.addStartsOffTriggerToolStripMenuItem_Click);
-            // 
-            // enablePitsToolStripMenuItem
-            // 
-            this.enablePitsToolStripMenuItem.Name = "enablePitsToolStripMenuItem";
-            this.enablePitsToolStripMenuItem.Size = new System.Drawing.Size(199, 22);
-            this.enablePitsToolStripMenuItem.Text = "Enable Pits";
-            this.enablePitsToolStripMenuItem.Click += new System.EventHandler(this.enablePitsToolStripMenuItem_Click);
-            // 
-            // toolStripSeparator15
-            // 
-            this.toolStripSeparator15.Name = "toolStripSeparator15";
-            this.toolStripSeparator15.Size = new System.Drawing.Size(176, 6);
             // 
             // playMusicToolStripMenuItem
             // 
@@ -2012,13 +1950,6 @@
         private System.Windows.Forms.ToolStripMenuItem Zoom50;
         private System.Windows.Forms.ToolStripMenuItem Zoom100;
         private System.Windows.Forms.ToolStripMenuItem packageAsZiptoolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem jJ2FunctionsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem setServerTriggerToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem setTeamTriggerToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem setOvertimeTriggerToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem addStartsOffTriggerToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem enablePitsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator15;
         private System.Windows.Forms.ToolStripMenuItem resetLevelPasswordToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem textStringsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem OverTileTypes;
