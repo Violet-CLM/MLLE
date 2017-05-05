@@ -62,16 +62,11 @@
             this.jazz2V123ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.jazz2V124ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
-            this.jJ2FunctionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.setTeamTriggerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.setServerTriggerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.setOvertimeTriggerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.addStartsOffTriggerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.enablePitsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator15 = new System.Windows.Forms.ToolStripSeparator();
             this.playMusicToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveAsImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.packageAsZiptoolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.jJ2PropertiesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.plusLevelPropertiesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.preferencesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.eventsForemostToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator19 = new System.Windows.Forms.ToolStripSeparator();
@@ -219,6 +214,7 @@
             this.fileToolStripMenuItem,
             this.editToolStripMenuItem,
             this.toolsToolStripMenuItem,
+            this.jJ2PropertiesToolStripMenuItem,
             this.preferencesToolStripMenuItem,
             this.helpToolStripMenuItem});
             this.MainMenu.Location = new System.Drawing.Point(0, 0);
@@ -409,13 +405,11 @@
             this.toolsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.changeVersionToolStripMenuItem,
             this.toolStripSeparator5,
-            this.jJ2FunctionsToolStripMenuItem,
-            this.toolStripSeparator15,
             this.playMusicToolStripMenuItem,
             this.saveAsImageToolStripMenuItem,
             this.packageAsZiptoolStripMenuItem});
             this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
-            this.toolsToolStripMenuItem.Size = new System.Drawing.Size(48, 20);
+            this.toolsToolStripMenuItem.Size = new System.Drawing.Size(47, 20);
             this.toolsToolStripMenuItem.Text = "Tools";
             // 
             // changeVersionToolStripMenuItem
@@ -479,58 +473,6 @@
             this.toolStripSeparator5.Name = "toolStripSeparator5";
             this.toolStripSeparator5.Size = new System.Drawing.Size(176, 6);
             // 
-            // jJ2FunctionsToolStripMenuItem
-            // 
-            this.jJ2FunctionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.setTeamTriggerToolStripMenuItem,
-            this.setServerTriggerToolStripMenuItem,
-            this.setOvertimeTriggerToolStripMenuItem,
-            this.addStartsOffTriggerToolStripMenuItem,
-            this.enablePitsToolStripMenuItem});
-            this.jJ2FunctionsToolStripMenuItem.Name = "jJ2FunctionsToolStripMenuItem";
-            this.jJ2FunctionsToolStripMenuItem.Size = new System.Drawing.Size(179, 22);
-            this.jJ2FunctionsToolStripMenuItem.Text = "JJ2+ Functions";
-            // 
-            // setTeamTriggerToolStripMenuItem
-            // 
-            this.setTeamTriggerToolStripMenuItem.Name = "setTeamTriggerToolStripMenuItem";
-            this.setTeamTriggerToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
-            this.setTeamTriggerToolStripMenuItem.Text = "Set Team Trigger...";
-            this.setTeamTriggerToolStripMenuItem.Click += new System.EventHandler(this.setTeamTriggerToolStripMenuItem_Click);
-            // 
-            // setServerTriggerToolStripMenuItem
-            // 
-            this.setServerTriggerToolStripMenuItem.Name = "setServerTriggerToolStripMenuItem";
-            this.setServerTriggerToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
-            this.setServerTriggerToolStripMenuItem.Text = "Set Server Trigger...";
-            this.setServerTriggerToolStripMenuItem.Click += new System.EventHandler(this.setServerTriggerToolStripMenuItem_Click);
-            // 
-            // setOvertimeTriggerToolStripMenuItem
-            // 
-            this.setOvertimeTriggerToolStripMenuItem.Name = "setOvertimeTriggerToolStripMenuItem";
-            this.setOvertimeTriggerToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
-            this.setOvertimeTriggerToolStripMenuItem.Text = "Set Overtime Trigger...";
-            this.setOvertimeTriggerToolStripMenuItem.Click += new System.EventHandler(this.setOvertimeTriggerToolStripMenuItem_Click);
-            // 
-            // addStartsOffTriggerToolStripMenuItem
-            // 
-            this.addStartsOffTriggerToolStripMenuItem.Name = "addStartsOffTriggerToolStripMenuItem";
-            this.addStartsOffTriggerToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
-            this.addStartsOffTriggerToolStripMenuItem.Text = "Add Starts-Off Trigger...";
-            this.addStartsOffTriggerToolStripMenuItem.Click += new System.EventHandler(this.addStartsOffTriggerToolStripMenuItem_Click);
-            // 
-            // enablePitsToolStripMenuItem
-            // 
-            this.enablePitsToolStripMenuItem.Name = "enablePitsToolStripMenuItem";
-            this.enablePitsToolStripMenuItem.Size = new System.Drawing.Size(200, 22);
-            this.enablePitsToolStripMenuItem.Text = "Enable Pits";
-            this.enablePitsToolStripMenuItem.Click += new System.EventHandler(this.enablePitsToolStripMenuItem_Click);
-            // 
-            // toolStripSeparator15
-            // 
-            this.toolStripSeparator15.Name = "toolStripSeparator15";
-            this.toolStripSeparator15.Size = new System.Drawing.Size(176, 6);
-            // 
             // playMusicToolStripMenuItem
             // 
             this.playMusicToolStripMenuItem.CheckOnClick = true;
@@ -554,6 +496,21 @@
             this.packageAsZiptoolStripMenuItem.Size = new System.Drawing.Size(179, 22);
             this.packageAsZiptoolStripMenuItem.Text = "Package in ZIP file...";
             // 
+            // jJ2PropertiesToolStripMenuItem
+            // 
+            this.jJ2PropertiesToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.plusLevelPropertiesToolStripMenuItem});
+            this.jJ2PropertiesToolStripMenuItem.Name = "jJ2PropertiesToolStripMenuItem";
+            this.jJ2PropertiesToolStripMenuItem.Size = new System.Drawing.Size(97, 20);
+            this.jJ2PropertiesToolStripMenuItem.Text = "JJ2+ Properties";
+            // 
+            // plusLevelPropertiesToolStripMenuItem
+            // 
+            this.plusLevelPropertiesToolStripMenuItem.Name = "plusLevelPropertiesToolStripMenuItem";
+            this.plusLevelPropertiesToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
+            this.plusLevelPropertiesToolStripMenuItem.Text = "Level Properties";
+            this.plusLevelPropertiesToolStripMenuItem.Click += new System.EventHandler(this.plusLevelPropertiesToolStripMenuItem_Click);
+            // 
             // preferencesToolStripMenuItem
             // 
             this.preferencesToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -570,33 +527,33 @@
             // 
             this.eventsForemostToolStripMenuItem.CheckOnClick = true;
             this.eventsForemostToolStripMenuItem.Name = "eventsForemostToolStripMenuItem";
-            this.eventsForemostToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
+            this.eventsForemostToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             this.eventsForemostToolStripMenuItem.Text = "Events Foremost";
             this.eventsForemostToolStripMenuItem.CheckedChanged += new System.EventHandler(this.eventsForemostToolStripMenuItem_CheckedChanged);
             // 
             // toolStripSeparator19
             // 
             this.toolStripSeparator19.Name = "toolStripSeparator19";
-            this.toolStripSeparator19.Size = new System.Drawing.Size(194, 6);
+            this.toolStripSeparator19.Size = new System.Drawing.Size(193, 6);
             // 
             // setTransparentColorToolStripMenuItem
             // 
             this.setTransparentColorToolStripMenuItem.Name = "setTransparentColorToolStripMenuItem";
-            this.setTransparentColorToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
+            this.setTransparentColorToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             this.setTransparentColorToolStripMenuItem.Text = "Set Transparent Color...";
             this.setTransparentColorToolStripMenuItem.Click += new System.EventHandler(this.setTransparentColorToolStripMenuItem_Click);
             // 
             // setTile0ColorToolStripMenuItem
             // 
             this.setTile0ColorToolStripMenuItem.Name = "setTile0ColorToolStripMenuItem";
-            this.setTile0ColorToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
+            this.setTile0ColorToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             this.setTile0ColorToolStripMenuItem.Text = "Set Tile 0 Color...";
             this.setTile0ColorToolStripMenuItem.Click += new System.EventHandler(this.setTile0ColorToolStripMenuItem_Click);
             // 
             // setDeadspaceColorToolStripMenuItem
             // 
             this.setDeadspaceColorToolStripMenuItem.Name = "setDeadspaceColorToolStripMenuItem";
-            this.setDeadspaceColorToolStripMenuItem.Size = new System.Drawing.Size(197, 22);
+            this.setDeadspaceColorToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             this.setDeadspaceColorToolStripMenuItem.Text = "Set Deadspace Color...";
             this.setDeadspaceColorToolStripMenuItem.Click += new System.EventHandler(this.setDeadspaceColorToolStripMenuItem_Click);
             // 
@@ -632,7 +589,7 @@
             // 
             // TilesetScrollbar
             // 
-            this.TilesetScrollbar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            this.TilesetScrollbar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
             this.TilesetScrollbar.LargeChange = 256;
             this.TilesetScrollbar.Location = new System.Drawing.Point(320, 49);
@@ -646,7 +603,7 @@
             // DrawingTools
             // 
             this.DrawingTools.AllowItemReorder = true;
-            this.DrawingTools.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            this.DrawingTools.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
             this.DrawingTools.AutoSize = false;
             this.DrawingTools.BackColor = System.Drawing.SystemColors.ControlLightLight;
@@ -820,7 +777,7 @@
             // DisplayToolstrip
             // 
             this.DisplayToolstrip.AllowItemReorder = true;
-            this.DisplayToolstrip.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.DisplayToolstrip.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.DisplayToolstrip.AutoSize = false;
             this.DisplayToolstrip.BackColor = System.Drawing.SystemColors.ControlLightLight;
@@ -1167,7 +1124,7 @@
             // 
             // LDScrollV
             // 
-            this.LDScrollV.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            this.LDScrollV.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.LDScrollV.LargeChange = 256;
             this.LDScrollV.Location = new System.Drawing.Point(827, 49);
@@ -1180,7 +1137,7 @@
             // 
             // LDScrollH
             // 
-            this.LDScrollH.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
+            this.LDScrollH.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.LDScrollH.LargeChange = 256;
             this.LDScrollH.Location = new System.Drawing.Point(361, 257);
@@ -1194,8 +1151,8 @@
             // 
             // LevelDisplay
             // 
-            this.LevelDisplay.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.LevelDisplay.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.LevelDisplay.AutoScrollMargin = new System.Drawing.Size(17, 17);
             this.LevelDisplay.BackColor = System.Drawing.Color.Black;
@@ -1242,7 +1199,7 @@
             this.LDContextMenu.Name = "LDContextMenu";
             this.LDContextMenu.ShowCheckMargin = true;
             this.LDContextMenu.ShowImageMargin = false;
-            this.LDContextMenu.Size = new System.Drawing.Size(162, 336);
+            this.LDContextMenu.Size = new System.Drawing.Size(162, 314);
             this.LDContextMenu.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip1_Opening);
             // 
             // SelectLayer
@@ -1609,28 +1566,28 @@
             // OverNone
             // 
             this.OverNone.Name = "OverNone";
-            this.OverNone.Size = new System.Drawing.Size(127, 22);
+            this.OverNone.Size = new System.Drawing.Size(126, 22);
             this.OverNone.Text = "None";
             this.OverNone.Click += new System.EventHandler(this.OverNone_Click);
             // 
             // OverEvents
             // 
             this.OverEvents.Name = "OverEvents";
-            this.OverEvents.Size = new System.Drawing.Size(127, 22);
+            this.OverEvents.Size = new System.Drawing.Size(126, 22);
             this.OverEvents.Text = "Events";
             this.OverEvents.Click += new System.EventHandler(this.OverEvents_Click);
             // 
             // OverTileTypes
             // 
             this.OverTileTypes.Name = "OverTileTypes";
-            this.OverTileTypes.Size = new System.Drawing.Size(127, 22);
+            this.OverTileTypes.Size = new System.Drawing.Size(126, 22);
             this.OverTileTypes.Text = "Tile Types";
             this.OverTileTypes.Click += new System.EventHandler(this.OverTileTypes_Click);
             // 
             // OverMasks
             // 
             this.OverMasks.Name = "OverMasks";
-            this.OverMasks.Size = new System.Drawing.Size(127, 22);
+            this.OverMasks.Size = new System.Drawing.Size(126, 22);
             this.OverMasks.Text = "Masks";
             this.OverMasks.Click += new System.EventHandler(this.OverMasks_Click);
             // 
@@ -1993,13 +1950,6 @@
         private System.Windows.Forms.ToolStripMenuItem Zoom50;
         private System.Windows.Forms.ToolStripMenuItem Zoom100;
         private System.Windows.Forms.ToolStripMenuItem packageAsZiptoolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem jJ2FunctionsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem setServerTriggerToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem setTeamTriggerToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem setOvertimeTriggerToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem addStartsOffTriggerToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem enablePitsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator15;
         private System.Windows.Forms.ToolStripMenuItem resetLevelPasswordToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem textStringsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem OverTileTypes;
@@ -2039,6 +1989,7 @@
         private System.Windows.Forms.ToolStripMenuItem runToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem DropdownPlayHere;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator21;
-
+        private System.Windows.Forms.ToolStripMenuItem jJ2PropertiesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem plusLevelPropertiesToolStripMenuItem;
     }
 }

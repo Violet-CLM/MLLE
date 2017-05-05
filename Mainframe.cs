@@ -182,7 +182,7 @@ namespace MLLE
                 Bools.Add(EnableableTitles.BoolDevelopingForPlus, ini.IniReadValue("Enableable", "BoolDevelopingForPlus") != "");
                 Bools.Add(EnableableTitles.UseText, ini.IniReadValue("Enableable", "BoolText") != "");
             }
-            jJ2FunctionsToolStripMenuItem.Enabled = EnableableBools[version][EnableableTitles.BoolDevelopingForPlus];
+            jJ2PropertiesToolStripMenuItem.Enabled = EnableableBools[version][EnableableTitles.BoolDevelopingForPlus];
             textStringsToolStripMenuItem.Enabled = EnableableBools[version][EnableableTitles.UseText];
             saveRunToolStripMenuItem.Enabled = runToolStripMenuItem.Enabled = EnableableStrings[version][EnableableTitles.SaveAndRun] != "";
             soundEffectsToolStripMenuItem.Enabled = (version == Version.AGA);
@@ -710,54 +710,21 @@ namespace MLLE
             _suspendEvent.Set();
         }
 
-        private void enablePitsToolStripMenuItem_Click(object sender, EventArgs e)
+        private PlusPropertyList currentPlusPropertyList = new PlusPropertyList(null);
+        private void plusLevelPropertiesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            switch (J2L.EventMap[J2L.EventMap.GetLength(0) - 1, J2L.EventMap.GetLength(1) - 1] & 255)
+            _suspendEvent.Reset();
+            currentPlusPropertyList.ReadFromEventMap(J2L.EventMap);
+            PlusPropertyList? newPlusPropertyList = new PlusProperties().ShowForm(ref currentPlusPropertyList);
+            if (newPlusPropertyList.HasValue)
             {
-                case 255:
-                    J2L.EventMap[J2L.EventMap.GetLength(0) - 1, J2L.EventMap.GetLength(1) - 1] = 0;
-                    enablePitsToolStripMenuItem.Text = "Enable Pits";
-                    break;
-                default:
-                    J2L.EventMap[J2L.EventMap.GetLength(0) - 1, J2L.EventMap.GetLength(1) - 1] = 255;
-                    enablePitsToolStripMenuItem.Text = "Disable Pits";
-                    break;
+                currentPlusPropertyList = newPlusPropertyList.Value;
+                currentPlusPropertyList.WriteToEventMap(J2L.EventMap);
+                LevelHasBeenModified = true;
             }
-            LevelHasBeenModified = true;
-        }
-        private void setTeamTriggerToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            _suspendEvent.Reset();
-            PlusTriggerZone = TriggerSelect.ShowForm(true, J2L.EventMap[0, J2L.EventMap.GetLength(1) - 1]);
-            if (PlusTriggerZone > 0) J2L.EventMap[0, J2L.EventMap.GetLength(1) - 1] = PlusTriggerZone;
-            LevelHasBeenModified = true;
             _suspendEvent.Set();
         }
-        private void setServerTriggerToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            _suspendEvent.Reset();
-            PlusTriggerZone = TriggerSelect.ShowForm(false, J2L.EventMap[1, J2L.EventMap.GetLength(1) - 1]);
-            if (PlusTriggerZone > 0) J2L.EventMap[1, J2L.EventMap.GetLength(1) - 1] = PlusTriggerZone;
-            LevelHasBeenModified = true;
-            _suspendEvent.Set();
-        }
-        private void setOvertimeTriggerToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            _suspendEvent.Reset();
-            PlusTriggerZone = TriggerSelect.ShowForm(false, J2L.EventMap[2, J2L.EventMap.GetLength(1) - 1]);
-            if (PlusTriggerZone > 0) J2L.EventMap[2, J2L.EventMap.GetLength(1) - 1] = PlusTriggerZone;
-            LevelHasBeenModified = true;
-            _suspendEvent.Set();
-        }
-        private void addStartsOffTriggerToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            _suspendEvent.Reset();
-            PlusTriggerZone = TriggerSelect.ShowForm(false, 0);
-            if (PlusTriggerZone > 0) for (ushort x = (ushort)(J2L.EventMap.GetLength(0) - 2); x > 3; x--) if (J2L.EventMap[x, J2L.EventMap.GetLength(1) - 1] == 0) { J2L.EventMap[x, J2L.EventMap.GetLength(1) - 1] = PlusTriggerZone; break; }
-            LevelHasBeenModified = true;
-            _suspendEvent.Set();
-        }
-
+        
 
         private void pathsAndFilenamesToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -1145,7 +1112,6 @@ namespace MLLE
                     ProcessIni(J2L.VersionType);
                 }
                 SetTitle(J2L.Name, J2L.FilenameOnly);
-                enablePitsToolStripMenuItem.Text = (J2L.EventMap[J2L.EventMap.GetLength(0) - 1, J2L.EventMap.GetLength(1) - 1] == 255) ? "Disable Pits" : "Enable Pits";
                 J2L.Generate_Textures(TransparencySource.JJ2_Style, true);
                 GL.BindTexture(TextureTarget.Texture2D, J2L.Atlases[0]);
                 Undoable.Clear();
@@ -1174,7 +1140,6 @@ namespace MLLE
             ProcessIni(J2L.VersionType);
             J2L.Generate_Blank_Tile_Texture();
             GL.BindTexture(TextureTarget.Texture2D, J2L.Atlases[0]);
-            enablePitsToolStripMenuItem.Text = "Enable Pits";
             SafeToDisplay = true;
             LevelHasBeenModified = false;
             Undoable.Clear();
