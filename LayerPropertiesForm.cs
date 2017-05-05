@@ -139,36 +139,14 @@ namespace MLLE
                             var oldEventMap = SourceForm.J2L.EventMap;
                             uint[,] newEventMap = new uint[DataSource.Width, DataSource.Height];
 
+                            PlusPropertyList rememberPlusEventBasedSettings = new PlusPropertyList(null);
+                            rememberPlusEventBasedSettings.ReadFromEventMap(oldEventMap);
+                            rememberPlusEventBasedSettings.WriteToEventMap(newEventMap);
+
                             int oldEventMapRightColumn = oldEventMap.GetLength(0) - 1;
                             int oldEventMapBottomRow = oldEventMap.GetLength(1) - 1;
 
-                            if (SourceForm.EnableableBools[SourceForm.J2L.VersionType][EnableableTitles.BoolDevelopingForPlus]) //if this is a JJ2+ level, move special trigger zones/pit events if such exist
-                            {
-                                int newEventMapRightColumn = newEventMap.GetLength(0) - 1;
-                                int newEventMapBottomRow = newEventMap.GetLength(1) - 1;
-
-                                for (uint x = 0; x < 3; ++x) //Team, Server, and Overtime triggers
-                                    newEventMap[x, newEventMapBottomRow] = oldEventMap[x, oldEventMapBottomRow];
-                                newEventMap[newEventMapRightColumn, newEventMapBottomRow] = oldEventMap[oldEventMapRightColumn, oldEventMapBottomRow]; //pits
-
-                                //Starts Off trigger zones start at -2,-1 and continue for an unspecified length, so just keep on copying them until hitting a non-trigger-zone event
-                                int oldStartsOffTriggerColumn = oldEventMapRightColumn - 1;
-                                int newStartsOffTriggerColumn = newEventMapRightColumn - 1;
-                                while (oldStartsOffTriggerColumn > 0 && newStartsOffTriggerColumn > 0)
-                                {
-                                    uint startsOffTrigger = oldEventMap[oldStartsOffTriggerColumn, oldEventMapBottomRow];
-                                    if ((startsOffTrigger & 0xFF) != 246) //not a trigger zone
-                                        break;
-                                    else
-                                    {
-                                        newEventMap[newStartsOffTriggerColumn, newEventMapBottomRow] = startsOffTrigger;
-                                        oldStartsOffTriggerColumn -= 1;
-                                        newStartsOffTriggerColumn -= 1;
-                                    }
-                                }
-                            }
-
-                            for (ushort x = 0; x < DataSource.Width; x++) for (ushort y = 0; y < DataSource.Height - 1; y++) //-1 because events in the bottom row don't work, except for a few events parsed by JJ2+ handled in the if{} above.
+                            for (ushort x = 0; x < DataSource.Width; x++) for (ushort y = 0; y < DataSource.Height - 1; y++) //-1 because events in the bottom row don't work, except for a few events parsed by JJ2+ that were handled above
                                 {
                                     newEventMap[x, y] = (
                                         x >= -newrectangle[2] &&
