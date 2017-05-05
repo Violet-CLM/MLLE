@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel;
-using System.Runtime.InteropServices;
+using System.Windows.Forms;
 
 namespace MLLE
 {
@@ -143,6 +143,104 @@ namespace MLLE
                 this = other.Value;
 
                 startOffTriggers = new TriggerIDList(other.Value.startOffTriggers);
+            }
+            else
+            {
+                startOffTriggers = new TriggerIDList(null);
+            }
+        }
+
+        const uint TriggerZone = 246;
+        public void ReadFromEventMap(uint[,] EventMap)
+        {
+            var BottomEventRow = EventMap.GetLength(1) - 1;
+            var RightEventColumn = EventMap.GetLength(0) - 1;
+            { //set simple triggers
+                uint PotentialTriggerZone = EventMap[0, BottomEventRow];
+                if ((PotentialTriggerZone & 0xFFu) == TriggerZone)
+                {
+                    teamTrigger = ((PotentialTriggerZone >> 12) & 31) + 1;
+                    TeamTriggerOnForBlue = ((PotentialTriggerZone >> 17) & 1) != 0;
+                }
+                else
+                {
+                    teamTrigger = 0;
+                    TeamTriggerOnForBlue = false; //this line may not be needed but it can't hurt
+                }
+
+                PotentialTriggerZone = EventMap[1, BottomEventRow];
+                if ((PotentialTriggerZone & 0xFFu) == TriggerZone)
+                    serverTrigger = ((PotentialTriggerZone >> 12) & 31) + 1;
+                else
+                    serverTrigger = 0;
+
+                PotentialTriggerZone = EventMap[2, BottomEventRow];
+                if ((PotentialTriggerZone & 0xFFu) == TriggerZone)
+                    overtimeTrigger = ((PotentialTriggerZone >> 12) & 31) + 1;
+                else
+                    overtimeTrigger = 0;
+            } { //set pit style
+                uint PitEvent = EventMap[RightEventColumn, BottomEventRow] & 0xFFu;
+                switch (PitEvent)
+                {
+                    case (uint)PitStyleEnum.InstantDeathPit:
+                    case (uint)PitStyleEnum.StandOnPlatform:
+                        PitStyle = (PitStyleEnum)PitEvent;
+                        break;
+                    default:
+                        PitStyle = PitStyleEnum.FallForever;
+                        break;
+                }
+            } { //set start-off triggers
+                for (uint i = 0; i < 32; ++i)
+                    startOffTriggers.Triggers[i] = false;
+                while (--RightEventColumn > 2) //columns 0,1,2, are reserved for other purposes and may not therefore be interpreted as Starts Off
+                {
+                    uint PotentialTriggerZone = EventMap[RightEventColumn, BottomEventRow];
+                    if ((PotentialTriggerZone & 0xFFu) == TriggerZone)
+                        startOffTriggers.Triggers[(PotentialTriggerZone >> 12) & 31] = true;
+                    //else
+                    //    break;
+                }
+            }
+        }
+        public void WriteToEventMap(uint[,] EventMap)
+        {
+            var BottomEventRow = EventMap.GetLength(1) - 1;
+            var RightEventColumn = EventMap.GetLength(0) - 1;
+            { //set simple triggers
+                EventMap[0, BottomEventRow] =
+                    (teamTrigger == 0) ?
+                        0 :
+                        TriggerZone | ((teamTrigger - 1) << 12) | (uint)(TeamTriggerOnForBlue ? (1 << 17) : 0)
+                ;
+                EventMap[1, BottomEventRow] =
+                    (serverTrigger == 0) ?
+                        0 :
+                        TriggerZone | ((serverTrigger - 1) << 12)
+                ;
+                EventMap[2, BottomEventRow] =
+                    (overtimeTrigger == 0) ?
+                        0 :
+                        TriggerZone | ((overtimeTrigger - 1) << 12)
+                ;
+            }
+            { //set pit style
+                EventMap[RightEventColumn, BottomEventRow] = (uint)PitStyle;
+            }
+            { //set start-off triggers
+                for (uint x = 3; x < RightEventColumn; ++x)
+                    EventMap[x, BottomEventRow] = 0; //remove any old trigger zones before adding the current set
+                for (uint i = 0; i < 32; ++i)
+                    if (startOffTriggers.Triggers[i])
+                    {
+                        if (--RightEventColumn <= 2)
+                        {
+                            MessageBox.Show("Layer 4 is not wide enough to define that many different Start Off triggerIDs.", "Level not wide enough", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            break;
+                        }
+                        EventMap[RightEventColumn, BottomEventRow] = TriggerZone | (i << 12);
+                    }
             }
         }
     }

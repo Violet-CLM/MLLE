@@ -714,9 +714,14 @@ namespace MLLE
         private void plusLevelPropertiesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _suspendEvent.Reset();
+            currentPlusPropertyList.ReadFromEventMap(J2L.EventMap);
             PlusPropertyList? newPlusPropertyList = new PlusProperties().ShowForm(ref currentPlusPropertyList);
             if (newPlusPropertyList.HasValue)
+            {
                 currentPlusPropertyList = newPlusPropertyList.Value;
+                currentPlusPropertyList.WriteToEventMap(J2L.EventMap);
+                LevelHasBeenModified = true;
+            }
             _suspendEvent.Set();
         }
 
