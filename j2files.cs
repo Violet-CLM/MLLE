@@ -280,7 +280,7 @@ class Layer
         yOrigin = -32 - (upperLeftY % 32);
         upperLeftY /= 32;
     }
-    public void GetFixedCornerOriginNumbers(int xPosition, int yPosition, ref int widthReduced, ref int heightReduced, ref int xOrigin, ref int yOrigin, ref int upperLeftX, ref int upperLeftY, ref byte tileSize)
+    public void GetFixedCornerOriginNumbers(int xPosition, int yPosition, int widthReduced, int heightReduced, ref int xOrigin, ref int yOrigin, ref int upperLeftX, ref int upperLeftY, byte tileSize, bool applyWaveAsOffsets)
     {
         /*if (id == 7)
         {
@@ -301,6 +301,11 @@ class Layer
         {
             upperLeftX = (int)Math.Floor(xPosition * XSpeed - widthReduced) - tileSize;
             upperLeftY = (int)(yPosition * YSpeed - ((LimitVisibleRegion && !TileHeight) ? heightReduced * 2 : heightReduced)) - tileSize;
+        }
+        if (applyWaveAsOffsets)
+        {
+            upperLeftX += (int)(WaveX * tileSize / 32);
+            upperLeftY += (int)(WaveY * tileSize / 32);
         }
         xOrigin = -tileSize - (upperLeftX % tileSize);
         upperLeftX /= tileSize;
