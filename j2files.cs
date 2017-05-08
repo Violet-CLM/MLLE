@@ -225,6 +225,8 @@ class Layer
     public uint Height;
     public int ZAxis;
     public byte unknown2;
+    public float WaveX;
+    public float WaveY;
     public float AutoXSpeed;
     public float AutoYSpeed;
     public float XSpeed;
@@ -737,7 +739,8 @@ class J2LFile : J2File
                     for (byte i = 0; i < 8; i++) Layers[i].Height = data1reader.ReadUInt32();
                     for (byte i = 0; i < 8; i++) Layers[i].ZAxis = data1reader.ReadInt32();
                     for (byte i = 0; i < 8; i++) Layers[i].unknown2 = data1reader.ReadByte();
-                    unknownsection = data1reader.ReadBytes(64);
+                    for (byte i = 0; i < 8; i++) Layers[i].WaveX = data1reader.ReadInt32() / 65536.0F;
+                    for (byte i = 0; i < 8; i++) Layers[i].WaveY = data1reader.ReadInt32() / 65536.0F;
                     for (byte i = 0; i < 8; i++) Layers[i].XSpeed = data1reader.ReadInt32() / 65536.0F;
                     for (byte i = 0; i < 8; i++) Layers[i].YSpeed = data1reader.ReadInt32() / 65536.0F;
                     for (byte i = 0; i < 8; i++) Layers[i].AutoXSpeed = data1reader.ReadInt32() / 65536.0F;
@@ -1705,7 +1708,8 @@ class J2LFile : J2File
                 for (byte i = 0; i < 8; i++) data1writer.Write(Layers[i].Height);
                 for (byte i = 0; i < 8; i++) data1writer.Write(Layers[i].ZAxis);
                 for (byte i = 0; i < 8; i++) data1writer.Write(Layers[i].unknown2);
-                data1writer.Write(unknownsection);
+                for (byte i = 0; i < 8; i++) data1writer.Write((int)(Layers[i].WaveX * 65536));
+                for (byte i = 0; i < 8; i++) data1writer.Write((int)(Layers[i].WaveY * 65536));
                 for (byte i = 0; i < 8; i++) data1writer.Write((int)(Layers[i].XSpeed * 65536));
                 for (byte i = 0; i < 8; i++) data1writer.Write((int)(Layers[i].YSpeed * 65536));
                 for (byte i = 0; i < 8; i++) data1writer.Write((int)(Layers[i].AutoXSpeed * 65536));

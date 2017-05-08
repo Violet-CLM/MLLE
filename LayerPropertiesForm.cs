@@ -50,6 +50,14 @@ namespace MLLE
                     Height -= TextureModeSelect.Height;
                 }
             }
+            if (!SourceForm.EnableableBools[SourceForm.J2L.VersionType][EnableableTitles.BoolDevelopingForPlus])
+            {
+                groupBoxPlus.Hide();
+                var amountToShrinkWindow = groupBox3.Location.Y - groupBoxPlus.Location.Y;
+                groupBox3.Location = new Point(groupBox3.Location.X, groupBox3.Location.Y - amountToShrinkWindow);
+                groupBox4.Location = new Point(groupBox4.Location.X, groupBox4.Location.Y - amountToShrinkWindow);
+                Height -= amountToShrinkWindow;
+            }
             TextureModeSelect.Items.Clear();
             for (ushort i = 0; i < SourceForm.TextureTypes.Count; i++) TextureModeSelect.Items.Add(SourceForm.TextureTypes[i][0].Trim());
             LayerSelect.SelectedIndex = CurrentLayer;
@@ -79,6 +87,8 @@ namespace MLLE
             //PHASEParam3.Text = DataSource.TexturParam3.ToString();
             ColorBox.BackColor = Color.FromArgb(DataSource.TexturParam1, DataSource.TexturParam2, DataSource.TexturParam3);
             TextureModeSelect.SelectedIndex = DataSource.TextureMode;
+            XOffset.Text = DataSource.WaveX.ToString();
+            YOffset.Text = DataSource.WaveY.ToString();
         }
 
         private void ApplyChanges()
@@ -165,10 +175,12 @@ namespace MLLE
 
                 DataSource.TileWidth = TileWidth.Checked;
                 DataSource.TileHeight = TileHeight.Checked;
-                try { DataSource.XSpeed = Convert.ToSingle(XSpeed.Text); } catch { DataSource.XSpeed = 0; }
-                try { DataSource.YSpeed = Convert.ToSingle(YSpeed.Text); } catch { DataSource.YSpeed = 0; }
-                try { DataSource.AutoXSpeed = Convert.ToSingle(AutoXSpeed.Text); } catch { DataSource.AutoXSpeed = 0; }
-                try { DataSource.AutoYSpeed = Convert.ToSingle(AutoYSpeed.Text); } catch { DataSource.AutoYSpeed = 0; }
+                Single.TryParse(XSpeed.Text, out DataSource.XSpeed);
+                Single.TryParse(YSpeed.Text, out DataSource.YSpeed);
+                Single.TryParse(AutoXSpeed.Text, out DataSource.AutoXSpeed);
+                Single.TryParse(AutoYSpeed.Text, out DataSource.AutoYSpeed);
+                Single.TryParse(XOffset.Text, out DataSource.WaveX);
+                Single.TryParse(YOffset.Text, out DataSource.WaveY);
                 DataSource.LimitVisibleRegion = LimitVisibleRegion.Checked;
                 DataSource.IsTextured = TextureMode.Checked;
                 DataSource.HasStars = Stars.Checked;
@@ -219,7 +231,12 @@ namespace MLLE
         private void LayerSelect_SelectedIndexChanged(object sender, EventArgs e)
         {
             CurrentLayer = (byte)LayerSelect.SelectedIndex;
-            XSpeed.Enabled = YSpeed.Enabled = AutoXSpeed.Enabled = AutoYSpeed.Enabled = XLabel.Enabled = YLabel.Enabled = AutoXLabel.Enabled = AutoYLabel.Enabled = TextureMode.Enabled = TileWidth.Enabled = TileHeight.Enabled = (CurrentLayer != 3);
+            TileWidth.Enabled = TileHeight.Enabled = (
+                (
+                    groupBoxPlus.Enabled = groupBox2.Enabled = TextureMode.Enabled = (CurrentLayer != 3)
+                ) ||
+                SourceForm.EnableableBools[SourceForm.J2L.VersionType][EnableableTitles.BoolDevelopingForPlus]
+            );
             Copy4.Enabled = (CurrentLayer != 3 && CurrentLayer != 7);
             ReadLayer(CurrentLayer);
         }
