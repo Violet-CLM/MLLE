@@ -1,9 +1,12 @@
 ﻿using System.ComponentModel;
 using System.Windows.Forms;
+using System.Drawing;
+using System.IO;
+using Ionic.Zlib;
 
 namespace MLLE
 {
-    public struct PlusPropertyList
+    public partial struct PlusPropertyList
     {
 
         [DescriptionAttribute("If False, the Team Trigger will be Off for Blue and On for Red.\nIf True, the Team Trigger will be On for Blue and Off for Red."),
@@ -51,15 +54,6 @@ namespace MLLE
             get { return GetStringRepresentationOfTrigger(overtimeTrigger); }
             set { TryToSetTrigger(ref overtimeTrigger, value); }
         }
-
-
-        public enum PitStyleEnum
-        {
-            FallForever = 0, InstantDeathPit = 255, StandOnPlatform = 1
-        }
-        [DescriptionAttribute("What should happen to players who fall to the bottom of the level?"),
-        CategoryAttribute("Miscellaneous")]
-        public PitStyleEnum PitStyle { get; set; }
 
         public class TriggerIDListConverter : ExpandableObjectConverter
         {
@@ -136,6 +130,93 @@ namespace MLLE
         CategoryAttribute("Triggers")]
         public TriggerIDList StartOffTriggers { get { return startOffTriggers; } set { startOffTriggers = value; } }
 
+
+        [DescriptionAttribute("Whether there's any active weather effect at the start of the level."),
+        CategoryAttribute("Snow")]
+        public bool IsSnowing { get; set; }
+
+        [DescriptionAttribute("Whether the starting weather effect is specified to only take effect on transparent tiles, i.e. appear to be limited to outdoors areas."),
+        CategoryAttribute("Snow")]
+        public bool IsSnowingOutdoorsOnly { get; set; }
+
+        [DescriptionAttribute("Intensity of the starting weather effect."),
+        CategoryAttribute("Snow")]
+        public byte SnowingIntensity { get; set; }
+
+        public enum SnowTypeeEnum
+        {
+            Snow, Flower, Rain, Leaf
+        }
+        [DescriptionAttribute("Type of the starting weather effect."),
+        CategoryAttribute("Snow")]
+        public SnowTypeeEnum SnowingType { get; set; }
+
+
+
+        public enum PitStyleEnum
+        {
+            FallForever = 0, InstantDeathPit = 255, StandOnPlatform = 1
+        }
+        [DescriptionAttribute("What should happen to players who fall to the bottom of the level?"),
+        CategoryAttribute("Miscellaneous")]
+        public PitStyleEnum PitStyle { get; set; }
+
+        [DescriptionAttribute("If set to False, using a coin warp in Single Player mode will not turn all remaining coins into red and green gems."),
+        CategoryAttribute("Miscellaneous")]
+        public bool WarpsTransmuteCoins { get; set; }
+
+        [DescriptionAttribute("If set to True, box objects (trigger crates, all wooden crates, bird morph monitors, and also bird cages) spawned from Generator objects will derive their parameters from the tile they begin at, not the tile they are created at. If the Generator object is in the air, the crate will appear on top of the nearest solid tile below the Generator, and will get its parameters from the tile there."),
+        CategoryAttribute("Miscellaneous")]
+        public bool DelayGeneratedCrateOrigins { get; set; }
+
+        [DescriptionAttribute("The current degree of echo, as also can be set by the \"Echo\" event."),
+        CategoryAttribute("Miscellaneous")]
+        public int Echo { get; set; }
+
+        [DescriptionAttribute("The color of darkness used with ambient lighting."),
+        CategoryAttribute("Miscellaneous")]
+        public Color DarknessColor { get; set; }
+
+
+
+
+        [DescriptionAttribute("How fast water moves up or down when the water level is set (by event or AngelScript function) with the \"Instant\" parameter set to false."),
+        CategoryAttribute("Water")]
+        public float WaterChangeSpeed { get; set; }
+
+        public enum WaterInteractionEnum
+        {
+            PositionBased, Swim, LowGravity
+        }
+        [DescriptionAttribute("How local players should react to being underwater. If this property is set to Swim, they will swim; if LowGravity, they will use regular physics but will fall more slowly than usual. If this property is set to PositionBased, the game will choose between the effects of Swim or LowGravity depending on whether the water level is lower or greater than 128 tiles. This property has no effects on other objects or on sound effects, which always move more slowly/sound different underwater."),
+        CategoryAttribute("Water")]
+        public WaterInteractionEnum WaterInteraction { get; set; }
+
+        [DescriptionAttribute("Which layer, 1-8, water is drawn in front of when visible. Set to any non-existing layer number to make water invisible. Note that this is a purely visual setting, and putting water behind the sprite layer will not prevent players from swimming in it.\nIf the order of layers has been changed, this property's distance from 4 is its distance from the sprite layer, e.g. leaving it at 1 means that it will be drawn in front of the third layer in front of the sprite layer. (And therefore, if the sprite layer is the first, second, or third layer in the drawing order, water will not be drawn at all.)"),
+        CategoryAttribute("Water")]
+        public int WaterLayer { get; set; }
+
+        public enum WaterLightingEnum
+        {
+            None, Global, Lagunicus = 3
+        }
+        [DescriptionAttribute("How water and ambient lighting should interact in the level."),
+        CategoryAttribute("Water")]
+        public WaterLightingEnum WaterLighting { get; set; }
+
+        [DescriptionAttribute("How high the water should start at, in pixels."),
+        CategoryAttribute("Water")]
+        public float WaterLevel { get; set; }
+
+        [DescriptionAttribute("Changes the colors used by water in 16-bit color. Leave both this and WaterGradientStop at Black to use the default colors."),
+        CategoryAttribute("Water")]
+        public Color WaterGradientStart { get; set; }
+
+        [DescriptionAttribute("Changes the colors used by water in 16-bit color. Leave both this and WaterGradientStop at Black to use the default colors."),
+        CategoryAttribute("Water")]
+        public Color WaterGradientStop { get; set; }
+
+        const float DefaultWaterLevel = 0x7FFF;
         public PlusPropertyList(PlusPropertyList? other) : this()
         {
             if (other.HasValue)
@@ -147,6 +228,13 @@ namespace MLLE
             else
             {
                 startOffTriggers = new TriggerIDList(null);
+                DarknessColor = Color.Black;
+                WarpsTransmuteCoins = true;
+                WaterChangeSpeed = 1;
+                WaterLayer = 1;
+                WaterLevel = DefaultWaterLevel;
+                WaterGradientStart = Color.Black;
+                WaterGradientStop = Color.Black;
             }
         }
 
@@ -244,11 +332,60 @@ namespace MLLE
             }
         }
 
-        public void CreateData5SectionIfRequiredByLevel(ref byte[] Data5)
+        private bool LevelNeedsData5()
         {
-            if (false)
+            return (
+                IsSnowing ||
+                IsSnowingOutdoorsOnly ||
+                SnowingIntensity != 0 ||
+                SnowingType != SnowTypeeEnum.Snow ||
+                !WarpsTransmuteCoins ||
+                DelayGeneratedCrateOrigins ||
+                Echo != 0 ||
+                DarknessColor != Color.Black ||
+                WaterChangeSpeed != 1 ||
+                WaterInteraction != WaterInteractionEnum.PositionBased ||
+                WaterLayer != 1 ||
+                WaterLighting != WaterLightingEnum.None ||
+                WaterLevel != DefaultWaterLevel ||
+                WaterGradientStart != Color.Black ||
+                WaterGradientStop != Color.Black
+            );
+        }
+        internal void CreateData5SectionIfRequiredByLevel(ref byte[] Data5)
+        {
+            if (LevelNeedsData5())
             {
-                Data5 = J2LFile.FileEncoding.GetBytes("MLLE");
+                var data5header = new MemoryStream();
+                using (MemoryStream data5body = new MemoryStream())
+                using (BinaryWriter data5writer = new BinaryWriter(data5header, J2LFile.FileEncoding))
+                using (BinaryWriter data5bodywriter = new BinaryWriter(data5body, J2LFile.FileEncoding))
+                {
+                    data5writer.Write(MLLEData5MagicString.ToCharArray());
+                    data5writer.Write(CurrentMLLEData5Version);
+
+                    data5bodywriter.Write(IsSnowing);
+                    data5bodywriter.Write(IsSnowingOutdoorsOnly);
+                    data5bodywriter.Write(SnowingIntensity);
+                    data5bodywriter.Write((byte)SnowingType);
+                    data5bodywriter.Write(WarpsTransmuteCoins);
+                    data5bodywriter.Write(DelayGeneratedCrateOrigins);
+                    data5bodywriter.Write(Echo);
+                    data5bodywriter.Write(DarknessColor.ToArgb());
+                    data5bodywriter.Write(WaterChangeSpeed);
+                    data5bodywriter.Write((byte)WaterInteraction);
+                    data5bodywriter.Write(WaterLayer);
+                    data5bodywriter.Write((byte)WaterLighting);
+                    data5bodywriter.Write(WaterLevel);
+                    data5bodywriter.Write(WaterGradientStart.ToArgb());
+                    data5bodywriter.Write(WaterGradientStop.ToArgb());
+
+                    var data5bodycompressed = ZlibStream.CompressBuffer(data5body.ToArray());
+                    data5writer.Write((uint)data5bodycompressed.Length);
+                    data5writer.Write((uint)data5body.Length);
+                    data5writer.Write(data5bodycompressed);
+                }
+                Data5 = data5header.ToArray();
             }
         }
     }

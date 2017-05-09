@@ -88,6 +88,7 @@
     <Compile Include="PasswordInputForm.Designer.cs">
       <DependentUpon>PasswordInputForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="PlusAngelscriptLibrary.cs" />
     <Compile Include="PlusProperties.cs">
       <SubType>Form</SubType>
     </Compile>

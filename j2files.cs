@@ -689,7 +689,7 @@ class J2LFile : J2File
                     Secure |= (uint)data1reader.ReadUInt16();
                     switch (Secure)
                     {
-                        case 0x0:
+                        case SecurityStringInsecure:
                         case SecurityStringPassworded:
                         case SecurityStringMLLE:
                             break;

@@ -1264,6 +1264,9 @@ namespace MLLE
             {
                 SetTitle(J2L.Name, Path.GetFileName(J2L.FilenameOnly));
                 LevelHasBeenModified = false;
+
+                if (Data5 != null)
+                    currentPlusPropertyList.SaveLibrary(filename);
             }
             else if (result == SavingResults.NoTilesetSelected)
             {
