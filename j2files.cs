@@ -9,7 +9,7 @@ using Extra.Collections;
 public enum Version { JJ2, TSF, O, GorH, BC, AGA, AmbiguousBCO };
 public enum VersionChangeResults { Success, TilesetTooBig, TooManyAnimatedTiles, UnsupportedConversion };
 public enum SavingResults { Success, UndefinedTiles, NoTilesetSelected, TilesetIsDifferentVersion, Error };
-public enum OpeningResults { Success, SuccessfulButAmbiguous, PasswordNeeded, WrongPassword, UnexpectedFourCC, IncorrectEncoding, Error };
+public enum OpeningResults { Success, SuccessfulButAmbiguous, PasswordNeeded, WrongPassword, UnexpectedFourCC, IncorrectEncoding, SecurityEnvelopeDamaged, Error };
 public enum InsertFrameResults { Success, Full, StackOverflow };
 
 abstract class J2File //The fields shared by .j2l and .j2t files. No methods/interface just yet, though that would be cool too.
@@ -518,9 +518,6 @@ class J2LFile : J2File
 
     public ushort JCSHorizontalFocus;
     public ushort JCSVerticalFocus;
-    internal ushort Secure1;
-    internal ushort Secure2;
-    internal bool HasPassword;
     internal byte JCSFocusedLayer;
     public byte MinLight;
     public byte StartLight;
@@ -554,6 +551,10 @@ class J2LFile : J2File
     internal List<String> AGA_GlobalEvents;
     internal AGAEvent[,] AGA_EventMap;
     //internal byte[,][] AGA_ParameterMap;
+
+    const uint SecurityStringMLLE = 0xBACABEEF;
+    const uint SecurityStringPassworded = 0xBA00BE00;
+    const uint SecurityStringInsecure = 0;
 
     internal byte LEVunknown1;
     internal string[] LayerNames = new string[8] {"Foreground Layer #2", "Foreground Layer #1", "Sprite Foreground Layer", "Sprite Layer", "Background Layer #1", "Background Layer #2", "Background Layer #3", "Background Layer"};
@@ -605,16 +606,13 @@ class J2LFile : J2File
         else if (NumberOfAnimations >= MaxTiles - raw) return GetFrame(Animations[NumberOfAnimations - (MaxTiles - raw)].FrameList.Peek(), ref isFlipped, ref isVFlipped);
         else return 0;
     }
-    public void SetPassword() { PasswordHash[0] = 0; PasswordHash[1] = 0xBA; PasswordHash[2] = 0xBE; HasPassword = false; Secure1 = Secure2 = 0; }
+    public void SetPassword() { PasswordHash[0] = 0; PasswordHash[1] = 0xBA; PasswordHash[2] = 0xBE; }
     public void SetPassword(string newpassword)
     {
         int inPutWord = new CRC32().GetCrc32(new MemoryStream(Encoding.ASCII.GetBytes(newpassword)));
         PasswordHash[0] = (byte)(inPutWord >> 16 & 0xff);
         PasswordHash[1] = (byte)(inPutWord >> 8 & 0xff);
         PasswordHash[2] = (byte)(inPutWord & 0xff);
-        Secure1 = 0xBA00;
-        Secure2 = 0xBE00;
-        HasPassword = true;
     }
 
     int[] AGAMostValues = new int[256], AGAMostStrings = new int[256];
@@ -686,10 +684,19 @@ class J2LFile : J2File
                 using (BinaryReader data1reader = new BinaryReader(UncompressedData[0], encoding))
                 {
                     JCSHorizontalFocus = data1reader.ReadUInt16();
-                    Secure1 = data1reader.ReadUInt16();
+                    uint Secure = (uint)(data1reader.ReadUInt16()) << 16;
                     JCSVerticalFocus = data1reader.ReadUInt16();
-                    Secure2 = data1reader.ReadUInt16();
-                    JCSFocusedLayer = data1reader.ReadByte(); HasPassword = (JCSFocusedLayer & 240) > 0; JCSFocusedLayer &= 15;
+                    Secure |= (uint)data1reader.ReadUInt16();
+                    switch (Secure)
+                    {
+                        case 0x0:
+                        case SecurityStringPassworded:
+                        case SecurityStringMLLE:
+                            break;
+                        default:
+                            return OpeningResults.SecurityEnvelopeDamaged;
+                    }
+                    JCSFocusedLayer = (byte)(data1reader.ReadByte() & 15);
                     MinLight = data1reader.ReadByte();
                     StartLight = data1reader.ReadByte();
                     NumberOfAnimations = data1reader.ReadUInt16();
@@ -1182,9 +1189,8 @@ class J2LFile : J2File
         }
         Size = 0;
         Crc32 = 0;
-        JCSHorizontalFocus = Secure1 = JCSVerticalFocus = Secure2 = NumberOfAnimations = 0;
+        JCSHorizontalFocus = JCSVerticalFocus = NumberOfAnimations = 0;
         StreamSize = 0;
-        HasPassword = false;
         JCSFocusedLayer = 3;
         MinLight = StartLight = 64;
         UsesVerticalSplitscreen = false;
@@ -1293,10 +1299,8 @@ class J2LFile : J2File
             }
         }
     }
-    //public SavingResults Save() { return Save(FullFilePath, false); }
-    //public SavingResults Save(string filename) { return Save(filename, false); }
-    public SavingResults Save(bool eraseUndefinedTiles = false, bool allowDifferentTilesetVersion = false, bool storeGivenFilename = true) { return Save(FullFilePath, eraseUndefinedTiles, allowDifferentTilesetVersion, storeGivenFilename); }
-    public SavingResults Save(string filename, bool eraseUndefinedTiles = false, bool allowDifferentTilesetVersion = false, bool storeGivenFilename = true)
+    public SavingResults Save(bool eraseUndefinedTiles = false, bool allowDifferentTilesetVersion = false, byte[] Data5 = null) { return Save(FullFilePath, eraseUndefinedTiles, allowDifferentTilesetVersion, false, Data5); }
+    public SavingResults Save(string filename, bool eraseUndefinedTiles = false, bool allowDifferentTilesetVersion = false, bool storeGivenFilename = true, byte[] Data5 = null)
     {
         if (J2T == null)
         {
@@ -1680,11 +1684,27 @@ class J2LFile : J2File
             using (BinaryWriter data4writer = new BinaryWriter(CompressedData[3], encoding))
             {
                 #region data1
+                uint SecurityString;
+                if (Data5 == null) //not a plus-only level
+                {
+                    if (PasswordHash[0] != 0 || PasswordHash[1] != 0xBA || PasswordHash[2] != 0xBE) //has a password
+                    {
+                        SecurityString = SecurityStringPassworded;
+                    }
+                    else
+                    {
+                        SecurityString = SecurityStringInsecure;
+                    }
+                }
+                else //damage the security envelope for JCS
+                {
+                    SecurityString = SecurityStringMLLE;
+                }
                 data1writer.Write(JCSHorizontalFocus);
-                data1writer.Write(Secure1);
+                data1writer.Write((ushort)(SecurityString >> 16));
                 data1writer.Write(JCSVerticalFocus);
-                data1writer.Write(Secure2);
-                data1writer.Write((byte)(JCSFocusedLayer | (HasPassword ? 240 : 0))); // SetPassword()
+                data1writer.Write((ushort)(SecurityString & 0xFFFFu));
+                data1writer.Write((byte)(JCSFocusedLayer | (SecurityString != SecurityStringInsecure ? 0xF0 : 0x00)));
                 data1writer.Write(MinLight);
                 data1writer.Write(StartLight);
                 data1writer.Write(NumberOfAnimations);
@@ -1847,6 +1867,11 @@ class J2LFile : J2File
                     binwriter.Write(zcomparray);
                     CompressedDataLength[i] = zcomparray.Length;
                     CRCCalculator.SlurpBlock(zcomparray, 0, zcomparray.Length);
+                }
+                if (Data5 != null)
+                {
+                    binwriter.Write(Data5); //immediately after the compressed Data4 block
+                    CRCCalculator.SlurpBlock(Data5, 0, Data5.Length);
                 }
             }
             binwriter.Seek(encoding.GetByteCount(Header) + 42, 0);

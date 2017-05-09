@@ -1092,6 +1092,12 @@ namespace MLLE
                 encoding = Encoding.UTF8;
                 goto TRYTOOPEN;
             }
+            else if (openResults == OpeningResults.SecurityEnvelopeDamaged)
+            {
+                MessageBox.Show("This security envelope of this level has been damaged or is in a format not recognized by MLLE.", "This level cannot be loaded", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                SafeToDisplay = true;
+                return;
+            }
             else if (openResults == OpeningResults.Success || openResults == OpeningResults.SuccessfulButAmbiguous)
             {
                 if (J2L != null && J2L.TexturesHaveBeenGenerated) J2L.Degenerate_Textures();
@@ -1248,7 +1254,12 @@ namespace MLLE
             J2L.JCSFocusedLayer = CurrentLayer;
             J2L.JCSHorizontalFocus = (ushort)LDScrollH.Value;
             J2L.JCSVerticalFocus = (ushort)LDScrollV.Value;
-            SavingResults result = J2L.Save(filename, eraseUndefinedTiles, allowDifferentTilesetVersion, storeGivenFilename);
+
+            byte[] Data5 = null;
+            if (EnableableBools[J2L.VersionType][EnableableTitles.BoolDevelopingForPlus])
+                currentPlusPropertyList.CreateData5SectionIfRequiredByLevel(ref Data5);
+
+            SavingResults result = J2L.Save(filename, eraseUndefinedTiles, allowDifferentTilesetVersion, storeGivenFilename, Data5);
             if (result == SavingResults.Success)
             {
                 SetTitle(J2L.Name, Path.GetFileName(J2L.FilenameOnly));

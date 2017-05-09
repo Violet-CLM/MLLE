@@ -243,5 +243,13 @@ namespace MLLE
                     }
             }
         }
+
+        public void CreateData5SectionIfRequiredByLevel(ref byte[] Data5)
+        {
+            if (false)
+            {
+                Data5 = J2LFile.FileEncoding.GetBytes("MLLE");
+            }
+        }
     }
 }
