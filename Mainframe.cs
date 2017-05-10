@@ -1265,6 +1265,7 @@ namespace MLLE
                 SetTitle(J2L.Name, Path.GetFileName(J2L.FilenameOnly));
                 LevelHasBeenModified = false;
 
+                PlusPropertyList.RemovePriorReferencesToMLLELibrary(filename);
                 if (Data5 != null)
                     currentPlusPropertyList.SaveLibrary(filename);
             }

@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using Ionic.Zlib;
+using System.Text.RegularExpressions;
 
 namespace MLLE
 {
@@ -10,7 +11,8 @@ namespace MLLE
         const string CurrentMLLEData5VersionStringForComparison = "0x100";
         const string CurrentMLLEData5VersionString = "1.0";
         const string AngelscriptLibraryFilename = "MLLE-Include-" + CurrentMLLEData5VersionString + ".asc";
-        const string IncludeAngelscriptLibrary = "#pragma include " + AngelscriptLibraryFilename;
+
+        const string AngelscriptLibraryCallStockLine = "const bool MLLESetupSuccessful = MLLE::Setup();\r\n";
 
         const string AngelscriptLibrary = 
 @"//This is a standard library created by MLLE to read some JJ2+ properties from a level file whose script includes this library. DO NOT MANUALLY MODIFY THIS FILE.
@@ -86,7 +88,7 @@ namespace MLLE {
         data5.pop(pbyte); jjWaterInteraction = WATERINTERACTION::WaterInteraction(pbyte);
         data5.pop(pint);  jjWaterLayer = pint;
         data5.pop(pbyte); jjWaterLighting = WATERLIGHT::wl(pbyte);
-        data5.pop(pfloat);jjSetWaterLevel(pfloat, true);
+        data5.pop(pfloat); if (int(pfloat) < jjLayerHeight[4] * 32) jjSetWaterLevel(pfloat, true);
         data5.pop(puint); data5.pop(puint2); jjSetWaterGradient(_colorFromArgb(puint), _colorFromArgb(puint2));
 
         if (!data5.isEmpty()) {
@@ -111,6 +113,30 @@ namespace MLLE {
                 CRCCalculator.SlurpBlock(libraryFileAsBytes, 0, libraryFileAsBytes.Length);
                 binwriter.Write(encoding.GetBytes(((uint)CRCCalculator.Crc32Result).ToString() + "\r\n"));
                 binwriter.Write(libraryFileAsBytes);
+            }
+
+            string scriptFilepath = Path.ChangeExtension(filepath, ".j2as");
+            string fileContents = "";
+            if (File.Exists(scriptFilepath))
+                fileContents = System.IO.File.ReadAllText(scriptFilepath, encoding);
+            if (!fileContents.Contains("MLLE::Setup()"))
+                fileContents = AngelscriptLibraryCallStockLine + fileContents;
+            System.IO.File.WriteAllText(scriptFilepath, "#include \"" + AngelscriptLibraryFilename + "\"\r\n" + fileContents, encoding);
+        }
+
+        public static void RemovePriorReferencesToMLLELibrary(string filepath)
+        {
+            string scriptFilepath = Path.ChangeExtension(filepath, ".j2as");
+            if (File.Exists(scriptFilepath))
+            {
+                var encoding = J2LFile.FileEncoding;
+                string fileContents = System.IO.File.ReadAllText(scriptFilepath, encoding);
+                fileContents = fileContents.Replace(AngelscriptLibraryCallStockLine, ""); //get rid of the simpler old uses of MLLE::Setup(), though not all can be so painlessly removed
+                fileContents = Regex.Replace(fileContents, "\\s*#include\\s+['\"]MLLE-Include-\\d+\\.\\d+\\.asc['\"]\\s*\\r?\\n?", ""); //get rid of existing #include calls to MLLE-Include, especially if they referenced older/newer versions of the file
+                if (fileContents.Length > 0)
+                    System.IO.File.WriteAllText(scriptFilepath, fileContents, encoding);
+                else
+                    File.Delete(scriptFilepath);
             }
         }
     }
