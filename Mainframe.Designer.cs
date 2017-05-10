@@ -194,6 +194,7 @@
             this.AnimScrollbar = new System.Windows.Forms.HScrollBar();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
+            this.paletteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MainMenu.SuspendLayout();
             this.DrawingTools.SuspendLayout();
             this.StatusBar.SuspendLayout();
@@ -499,7 +500,8 @@
             // jJ2PropertiesToolStripMenuItem
             // 
             this.jJ2PropertiesToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.plusLevelPropertiesToolStripMenuItem});
+            this.plusLevelPropertiesToolStripMenuItem,
+            this.paletteToolStripMenuItem});
             this.jJ2PropertiesToolStripMenuItem.Name = "jJ2PropertiesToolStripMenuItem";
             this.jJ2PropertiesToolStripMenuItem.Size = new System.Drawing.Size(97, 20);
             this.jJ2PropertiesToolStripMenuItem.Text = "JJ2+ Properties";
@@ -507,8 +509,8 @@
             // plusLevelPropertiesToolStripMenuItem
             // 
             this.plusLevelPropertiesToolStripMenuItem.Name = "plusLevelPropertiesToolStripMenuItem";
-            this.plusLevelPropertiesToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
-            this.plusLevelPropertiesToolStripMenuItem.Text = "Level Properties";
+            this.plusLevelPropertiesToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.plusLevelPropertiesToolStripMenuItem.Text = "Level Properties...";
             this.plusLevelPropertiesToolStripMenuItem.Click += new System.EventHandler(this.plusLevelPropertiesToolStripMenuItem_Click);
             // 
             // preferencesToolStripMenuItem
@@ -1772,6 +1774,13 @@
             // 
             this.folderBrowserDialog1.ShowNewFolderButton = false;
             // 
+            // paletteToolStripMenuItem
+            // 
+            this.paletteToolStripMenuItem.Name = "paletteToolStripMenuItem";
+            this.paletteToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.paletteToolStripMenuItem.Text = "Palette...";
+            this.paletteToolStripMenuItem.Click += new System.EventHandler(this.paletteToolStripMenuItem_Click);
+            // 
             // Mainframe
             // 
             this.AllowDrop = true;
@@ -1991,5 +2000,6 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator21;
         private System.Windows.Forms.ToolStripMenuItem jJ2PropertiesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem plusLevelPropertiesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem paletteToolStripMenuItem;
     }
 }

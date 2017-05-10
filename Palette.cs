@@ -19,6 +19,15 @@ internal class Palette
         }
     }
 
+    internal void CopyFrom(Palette other)
+    {
+        if (other != null)
+        {
+            for (int i = 0; i < PaletteSize; ++i)
+                Colors[i] = other.Colors[i].Clone() as byte[];
+        }
+    }
+
     public void WriteLEVStyle(BinaryWriter binwriter)
     {
         foreach (byte[] color in Colors)

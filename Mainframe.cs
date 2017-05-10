@@ -724,7 +724,28 @@ namespace MLLE
             }
             _suspendEvent.Set();
         }
-        
+
+        private void paletteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (J2L.J2T != null) //otherwise it's not clear how this would work
+            {
+                _suspendEvent.Reset();
+                Palette newPalette = new PaletteForm().ShowForm(currentPlusPropertyList.Palette, J2L.J2T.Palette);
+                if (newPalette != null)
+                {
+                    currentPlusPropertyList.Palette = newPalette;
+                    LevelHasBeenModified = true;
+                    if (J2L.TexturesHaveBeenGenerated)
+                    {
+                        J2L.Degenerate_Textures();
+                        J2L.Generate_Textures(palette: currentPlusPropertyList.Palette);
+                    }
+                    RedrawTilesetHowManyTimes = 2;
+                }
+                _suspendEvent.Set();
+            }
+        }
+
 
         private void pathsAndFilenamesToolStripMenuItem_Click(object sender, EventArgs e)
         {

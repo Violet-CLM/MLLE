@@ -23,9 +23,12 @@ namespace MLLE
 
 #pragma require '" + AngelscriptLibraryFilename + @"'
 namespace MLLE {
-    jjPAL Palette = jjBackupPalette;
+    jjPAL@ Palette;
 
     bool Setup() {
+        jjPAL palette;
+        @Palette = @palette;
+
         jjSTREAM crcCheck('" + AngelscriptLibraryFilename + @"');
         string crcLine;
         if (crcCheck.isEmpty() || !crcCheck.getLine(crcLine)) {
@@ -103,11 +106,11 @@ namespace MLLE {
 
         data5.pop(pbool); if (pbool) {
             for (uint i = 0; i < 256; ++i) {
-                data5.pop(Palette.color[i].red);
-                data5.pop(Palette.color[i].green);
-                data5.pop(Palette.color[i].blue);
+                data5.pop(palette.color[i].red);
+                data5.pop(palette.color[i].green);
+                data5.pop(palette.color[i].blue);
             }
-            Palette.apply();
+            palette.apply();
         }
 
         if (!data5.isEmpty()) {
