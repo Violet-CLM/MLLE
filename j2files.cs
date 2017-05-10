@@ -41,7 +41,7 @@ abstract class J2File //The fields shared by .j2l and .j2t files. No methods/int
 class J2TFile : J2File
 {
     internal uint Signature;
-    public MLLE.Palette Palette;
+    public Palette Palette;
     internal int MaxTiles; //A simple function of VersionType: does the file support up to 4096 or only up to 1024 tiles? Good for looping and array sizes.
     public uint TileCount; //Again, good for looping.
     public bool[] IsFullyOpaque; //Not too useful, but there's a shortcut bool to indicate that a tile has no transparency at ALL and may be drawn more simply.
@@ -157,7 +157,7 @@ class J2TFile : J2File
             #endregion header
             #region data1
             BinaryReader data1reader = new BinaryReader(UncompressedData[0], encoding);
-            Palette = new MLLE.Palette(data1reader);
+            Palette = new Palette(data1reader);
             TileCount = data1reader.ReadUInt32();
             for (short i = 0; i < MaxTiles; i++) IsFullyOpaque[i] = data1reader.ReadBoolean();
             for (short i = 0; i < MaxTiles; i++) unknown1[i] = data1reader.ReadByte();
@@ -1143,7 +1143,7 @@ class J2LFile : J2File
                 binreader.ReadBytes(binreader.ReadInt32()); //skip TMAP entirely
                 Console.WriteLine(binreader.ReadChars(4)); //CMAP
                 binreader.ReadBytes(9); //section length, 256, mystery byte
-                J2T.Palette = new MLLE.Palette(binreader, true);
+                J2T.Palette = new Palette(binreader, true);
             }
         }
         if (VersionType == Version.AmbiguousBCO) return OpeningResults.SuccessfulButAmbiguous;
@@ -1639,12 +1639,7 @@ class J2LFile : J2File
 
                 CMAP.Write(256);
                 CMAP.Write((byte)1);
-                foreach (byte[] color in J2T.Palette.Colors)
-                {
-                    CMAP.Write(color[0]);
-                    CMAP.Write(color[1]);
-                    CMAP.Write(color[2]);
-                }
+                J2T.Palette.WriteLEVStyle(CMAP);
 
                 InputLEVSection(TILE, TINFO, new char[4] { 'I', 'N', 'F', 'O' });
                 InputLEVSection(TILE, TDATA, new char[4] { 'D', 'A', 'T', 'A' });

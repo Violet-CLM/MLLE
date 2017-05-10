@@ -108,12 +108,14 @@ class TexturedJ2L : J2LFile
             default: return color.A;
         }
     }
-    public void Generate_Textures(TransparencySource source = TransparencySource.JJ2_Style, bool includeMasks = false)
+    public void Generate_Textures(TransparencySource source = TransparencySource.JJ2_Style, bool includeMasks = false, Palette palette = null)
     {
         byte[][] transSource;
         Color usedColor = Tile0Color;
         if (source == TransparencySource.JJ2_Style) transSource = J2T.TransparencyMaskJJ2_Style;
         else transSource = J2T.TransparencyMaskJCS_Style;
+        if (palette == null)
+            palette = J2T.Palette;
         for (byte i = 0; i < 5; i++) if (J2T.TileCount < 16 << (i * 2)) { AtlasLength = 128 << i; workingAtlases[0] = new byte[AtlasLength * AtlasLength * 4]; if (includeMasks) workingAtlases[1] = new byte[AtlasLength * AtlasLength * 4]; AtlasLength /= 32; AtlasFraction = 1.0d / AtlasLength; break; }
         for (ushort i = 0; i < J2T.TileCount; i++)
         {
@@ -123,7 +125,7 @@ class TexturedJ2L : J2LFile
             transp = TileTypes[i] == 1;
             for (short j = 0; j < 4096; j += 4)
             {
-                pixel = J2T.Palette[(int)tile[j / 4]];
+                pixel = palette[(int)tile[j / 4]];
                 if (includeMasks) for (byte k = 0; k < 4; k++)
                 {
                     atlasDrawingLocation = i % AtlasLength * 128 + i / AtlasLength * AtlasLength * 4096 + j % 128 + j / 128 * AtlasLength * 128 + k;
@@ -146,12 +148,12 @@ class TexturedJ2L : J2LFile
         }
         TexturesHaveBeenGenerated = false;
     }
-    new public VersionChangeResults ChangeTileset(string filename, bool avoidRedundancy = true, Dictionary<Version, string> defaultDirectories = null)
+    public VersionChangeResults ChangeTileset(string filename, bool avoidRedundancy = true, Dictionary<Version, string> defaultDirectories = null, Palette overridePalette = null)
     {
         if (avoidRedundancy && Path.GetFileName(filename) == Tileset) return VersionChangeResults.Success;
         else {
             VersionChangeResults result = base.ChangeTileset(filename, avoidRedundancy, defaultDirectories);
-            if (result == VersionChangeResults.Success) { if (TexturesHaveBeenGenerated) Degenerate_Textures(); Generate_Textures(TransparencySource.JJ2_Style, true); }
+            if (result == VersionChangeResults.Success) { if (TexturesHaveBeenGenerated) Degenerate_Textures(); Generate_Textures(TransparencySource.JJ2_Style, true, overridePalette); }
             return result;
         }
     }

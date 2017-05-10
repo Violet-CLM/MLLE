@@ -750,7 +750,7 @@ namespace MLLE
                 if (recompilationNeeded && J2L.J2T != null && J2L.TexturesHaveBeenGenerated)
                 {
                     J2L.Degenerate_Textures();
-                    J2L.Generate_Textures(includeMasks: true);
+                    J2L.Generate_Textures(includeMasks: true, palette: currentPlusPropertyList.Palette);
                 }
                 RedrawTilesetHowManyTimes = 2;
             }
@@ -1001,7 +1001,7 @@ namespace MLLE
         #region J2L Extensions
         internal void ChangeTileset(string filename)
         {
-            var result = J2L.ChangeTileset(filename);
+            var result = J2L.ChangeTileset(filename, overridePalette: currentPlusPropertyList.Palette);
             if (result != VersionChangeResults.Success)
             {
                 _suspendEvent.Reset();

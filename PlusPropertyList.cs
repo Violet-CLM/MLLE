@@ -216,6 +216,11 @@ namespace MLLE
         CategoryAttribute("Water")]
         public Color WaterGradientStop { get; set; }
 
+
+        [Browsable(false)]
+        internal Palette Palette;
+
+
         const float DefaultWaterLevel = 0x7FFF;
         public PlusPropertyList(PlusPropertyList? other) : this()
         {
@@ -224,6 +229,15 @@ namespace MLLE
                 this = other.Value;
 
                 startOffTriggers = new TriggerIDList(other.Value.startOffTriggers);
+
+                if (other.Value.Palette == null)
+                    Palette = null;
+                else
+                {
+                    Palette = new Palette();
+                    for (int i = 0; i < Palette.PaletteSize; ++i)
+                        Palette[i] = other.Value.Palette[i];
+                }
             }
             else
             {
@@ -235,6 +249,7 @@ namespace MLLE
                 WaterLevel = DefaultWaterLevel;
                 WaterGradientStart = Color.Black;
                 WaterGradientStop = Color.Black;
+                Palette = null;
             }
         }
 
@@ -349,7 +364,8 @@ namespace MLLE
                 WaterLighting != WaterLightingEnum.None ||
                 WaterLevel != DefaultWaterLevel ||
                 WaterGradientStart != Color.Black ||
-                WaterGradientStop != Color.Black
+                WaterGradientStop != Color.Black ||
+                Palette != null
             );
         }
         internal void CreateData5SectionIfRequiredByLevel(ref byte[] Data5)
@@ -379,6 +395,9 @@ namespace MLLE
                     data5bodywriter.Write(WaterLevel);
                     data5bodywriter.Write(WaterGradientStart.ToArgb());
                     data5bodywriter.Write(WaterGradientStop.ToArgb());
+                    data5bodywriter.Write(Palette != null);
+                    if (Palette != null)
+                        Palette.WriteLEVStyle(data5bodywriter);
 
                     var data5bodycompressed = ZlibStream.CompressBuffer(data5body.ToArray());
                     data5writer.Write((uint)data5bodycompressed.Length);
@@ -424,6 +443,8 @@ namespace MLLE
                     WaterLevel = data5bodyreader.ReadSingle();
                     WaterGradientStart = Color.FromArgb(data5bodyreader.ReadInt32());
                     WaterGradientStop = Color.FromArgb(data5bodyreader.ReadInt32());
+                    if (data5bodyreader.ReadBoolean())
+                        Palette = new Palette(data5bodyreader, true);
                 }
             }
             return true;

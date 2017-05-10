@@ -23,6 +23,8 @@ namespace MLLE
 
 #pragma require '" + AngelscriptLibraryFilename + @"'
 namespace MLLE {
+    jjPAL Palette = jjBackupPalette;
+
     bool Setup() {
         jjSTREAM crcCheck('" + AngelscriptLibraryFilename + @"');
         string crcLine;
@@ -98,6 +100,15 @@ namespace MLLE {
         data5.pop(pbyte); jjWaterLighting = WATERLIGHT::wl(pbyte);
         data5.pop(pfloat); if (int(pfloat) < jjLayerHeight[4] * 32) jjSetWaterLevel(pfloat, true);
         data5.pop(puint); data5.pop(puint2); jjSetWaterGradient(_colorFromArgb(puint), _colorFromArgb(puint2));
+
+        data5.pop(pbool); if (pbool) {
+            for (uint i = 0; i < 256; ++i) {
+                data5.pop(Palette.color[i].red);
+                data5.pop(Palette.color[i].green);
+                data5.pop(Palette.color[i].blue);
+            }
+            Palette.apply();
+        }
 
         if (!data5.isEmpty()) {
             jjDebug('MLLE::Setup: Warning, Data5 longer than expected');
