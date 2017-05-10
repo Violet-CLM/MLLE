@@ -80,6 +80,14 @@ namespace MLLE {
         data5.pop(pbool); jjIsSnowingOutdoorsOnly = pbool;
         data5.pop(pbyte); jjSnowingIntensity = pbyte;
         data5.pop(pbyte); jjSnowingType = SNOWING::Type(pbyte);
+
+        if (jjIsSnowing) {
+            if (jjSnowingType == SNOWING::SNOW && jjAnimSets[ANIM::SNOW] == 0)
+                jjAnimSets[ANIM::SNOW].load();
+            else if (jjSnowingType == SNOWING::LEAF && jjAnimSets[ANIM::PLUS_SCENERY] == 0)
+                jjAnimSets[ANIM::PLUS_SCENERY].load();
+        }
+
         data5.pop(pbool); jjWarpsTransmuteCoins = pbool;
         data5.pop(pbool); jjDelayGeneratedCrateOrigins = pbool;
         data5.pop(pint);  jjEcho = pint;
