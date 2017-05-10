@@ -41,7 +41,7 @@ abstract class J2File //The fields shared by .j2l and .j2t files. No methods/int
 class J2TFile : J2File
 {
     internal uint Signature;
-    public byte[][] Palette = new byte[256][]; //Stored as a 256-long byte array of R,B,G,A. A is always 0 because .j2t files aren't that complicated.
+    public MLLE.Palette Palette;
     internal int MaxTiles; //A simple function of VersionType: does the file support up to 4096 or only up to 1024 tiles? Good for looping and array sizes.
     public uint TileCount; //Again, good for looping.
     public bool[] IsFullyOpaque; //Not too useful, but there's a shortcut bool to indicate that a tile has no transparency at ALL and may be drawn more simply.
@@ -157,7 +157,7 @@ class J2TFile : J2File
             #endregion header
             #region data1
             BinaryReader data1reader = new BinaryReader(UncompressedData[0], encoding);
-            for (short i = 0; i < 256; i++) Palette[i] = data1reader.ReadBytes(4);
+            Palette = new MLLE.Palette(data1reader);
             TileCount = data1reader.ReadUInt32();
             for (short i = 0; i < MaxTiles; i++) IsFullyOpaque[i] = data1reader.ReadBoolean();
             for (short i = 0; i < MaxTiles; i++) unknown1[i] = data1reader.ReadByte();
@@ -1143,13 +1143,7 @@ class J2LFile : J2File
                 binreader.ReadBytes(binreader.ReadInt32()); //skip TMAP entirely
                 Console.WriteLine(binreader.ReadChars(4)); //CMAP
                 binreader.ReadBytes(9); //section length, 256, mystery byte
-                for (ushort i = 0; i < 256; i++)
-                {
-                    J2T.Palette[i] = new byte[4];
-                    J2T.Palette[i][0] = binreader.ReadByte();
-                    J2T.Palette[i][1] = binreader.ReadByte();
-                    J2T.Palette[i][2] = binreader.ReadByte();
-                }
+                J2T.Palette = new MLLE.Palette(binreader, true);
             }
         }
         if (VersionType == Version.AmbiguousBCO) return OpeningResults.SuccessfulButAmbiguous;
@@ -1645,7 +1639,12 @@ class J2LFile : J2File
 
                 CMAP.Write(256);
                 CMAP.Write((byte)1);
-                for (ushort i = 0; i < 256; i++) {CMAP.Write(J2T.Palette[i][0]); CMAP.Write(J2T.Palette[i][1]); CMAP.Write(J2T.Palette[i][2]);}
+                foreach (byte[] color in J2T.Palette.Colors)
+                {
+                    CMAP.Write(color[0]);
+                    CMAP.Write(color[1]);
+                    CMAP.Write(color[2]);
+                }
 
                 InputLEVSection(TILE, TINFO, new char[4] { 'I', 'N', 'F', 'O' });
                 InputLEVSection(TILE, TDATA, new char[4] { 'D', 'A', 'T', 'A' });

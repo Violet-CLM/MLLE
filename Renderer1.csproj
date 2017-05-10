@@ -82,6 +82,7 @@
     <Compile Include="LevelProperties.Designer.cs">
       <DependentUpon>LevelProperties.cs</DependentUpon>
     </Compile>
+    <Compile Include="Palette.cs" />
     <Compile Include="PasswordInputForm.cs">
       <SubType>Form</SubType>
     </Compile>
