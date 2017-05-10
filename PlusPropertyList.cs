@@ -143,13 +143,13 @@ namespace MLLE
         CategoryAttribute("Snow")]
         public byte SnowingIntensity { get; set; }
 
-        public enum SnowTypeeEnum
+        public enum SnowTypeEnum
         {
             Snow, Flower, Rain, Leaf
         }
         [DescriptionAttribute("Type of the starting weather effect."),
         CategoryAttribute("Snow")]
-        public SnowTypeeEnum SnowingType { get; set; }
+        public SnowTypeEnum SnowingType { get; set; }
 
 
 
@@ -338,7 +338,7 @@ namespace MLLE
                 IsSnowing ||
                 IsSnowingOutdoorsOnly ||
                 SnowingIntensity != 0 ||
-                SnowingType != SnowTypeeEnum.Snow ||
+                SnowingType != SnowTypeEnum.Snow ||
                 !WarpsTransmuteCoins ||
                 DelayGeneratedCrateOrigins ||
                 Echo != 0 ||
@@ -387,6 +387,46 @@ namespace MLLE
                 }
                 Data5 = data5header.ToArray();
             }
+        }
+        internal bool LevelIsReadable(byte[] Data5)
+        {
+            if (Data5 == null || Data5.Length < 20) //level stops at the end of data4, as is good and proper
+            {
+                this = new PlusPropertyList(null);
+                return true;
+            }
+            using (BinaryReader data5reader = new BinaryReader(new MemoryStream(Data5), J2LFile.FileEncoding))
+            {
+                if (new string(data5reader.ReadChars(4)) != MLLEData5MagicString)
+                    return false;
+                if (data5reader.ReadUInt32() > CurrentMLLEData5Version)
+                    return false;
+                //should be okay to read at this point
+                
+                this = new PlusPropertyList(null);
+
+                uint csize = data5reader.ReadUInt32();
+                uint usize = data5reader.ReadUInt32();
+                using (BinaryReader data5bodyreader = new BinaryReader(new MemoryStream(ZlibStream.UncompressBuffer(data5reader.ReadBytes((int)csize)))))
+                {
+                    IsSnowing = data5bodyreader.ReadBoolean();
+                    IsSnowingOutdoorsOnly = data5bodyreader.ReadBoolean();
+                    SnowingIntensity = data5bodyreader.ReadByte();
+                    SnowingType = (SnowTypeEnum)data5bodyreader.ReadByte();
+                    WarpsTransmuteCoins = data5bodyreader.ReadBoolean();
+                    DelayGeneratedCrateOrigins = data5bodyreader.ReadBoolean();
+                    Echo = data5bodyreader.ReadInt32();
+                    DarknessColor = Color.FromArgb(data5bodyreader.ReadInt32());
+                    WaterChangeSpeed = data5bodyreader.ReadSingle();
+                    WaterInteraction = (WaterInteractionEnum)data5bodyreader.ReadByte();
+                    WaterLayer = data5bodyreader.ReadInt32();
+                    WaterLighting = (WaterLightingEnum)data5bodyreader.ReadByte();
+                    WaterLevel = data5bodyreader.ReadSingle();
+                    WaterGradientStart = Color.FromArgb(data5bodyreader.ReadInt32());
+                    WaterGradientStop = Color.FromArgb(data5bodyreader.ReadInt32());
+                }
+            }
+            return true;
         }
     }
 }

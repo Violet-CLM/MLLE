@@ -617,7 +617,7 @@ class J2LFile : J2File
 
     int[] AGAMostValues = new int[256], AGAMostStrings = new int[256];
 
-    public OpeningResults OpenLevel(string filename, string password = null, Dictionary<Version, string> defaultDirectories = null, Encoding encoding = null)
+    public OpeningResults OpenLevel(string filename, ref byte[] Data5, string password = null, Dictionary<Version, string> defaultDirectories = null, Encoding encoding = null)
     {
         encoding = encoding ?? FileEncoding;
         using (BinaryReader binreader = new BinaryReader(File.Open(filename, FileMode.Open, FileAccess.Read), encoding))
@@ -902,6 +902,11 @@ class J2LFile : J2File
                     }
                 }
                 #endregion data4
+                #region data5
+                var remainingLength = binreader.BaseStream.Length - binreader.BaseStream.Position;
+                if (remainingLength > 0)
+                    Data5 = binreader.ReadBytes((int)remainingLength); //let the application figure out what to do with them
+                #endregion
             }
             else // is a .LEV file
             {

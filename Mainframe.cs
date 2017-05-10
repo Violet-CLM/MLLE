@@ -1067,8 +1067,9 @@ namespace MLLE
             //TexturedJ2L TentativeJ2L = new TexturedJ2L();
             string newPassword = null;
             Encoding encoding = null;
-            TRYTOOPEN:
-            OpeningResults openResults = J2L.OpenLevel(filename, newPassword, DefaultDirectories, encoding);
+        TRYTOOPEN:
+            byte[] Data5 = null;
+            OpeningResults openResults = J2L.OpenLevel(filename, ref Data5, newPassword, DefaultDirectories, encoding);
             if (openResults == OpeningResults.PasswordNeeded || openResults == OpeningResults.WrongPassword)
             {
                 _suspendEvent.Reset();
@@ -1100,6 +1101,12 @@ namespace MLLE
             }
             else if (openResults == OpeningResults.Success || openResults == OpeningResults.SuccessfulButAmbiguous)
             {
+                if (!currentPlusPropertyList.LevelIsReadable(Data5))
+                {
+                    MessageBox.Show("This level was not saved in a format that this version of MLLE understands. Please try downloading the latest MLLE release and trying again.", "This level cannot be loaded", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    SafeToDisplay = true;
+                    return;
+                }
                 if (J2L != null && J2L.TexturesHaveBeenGenerated) J2L.Degenerate_Textures();
                 //EventsFromIni = TexturedJ2L.ReadEventIni("MLLEProfile.ini");
                 //TexturedJ2L.GenerateEventNameTextures(ref eventtexturenumberlist, EventsFromIni);
