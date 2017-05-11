@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -166,6 +167,31 @@ namespace MLLE
                 float[] steps = new float[3] { (last.R - first.R) / (float)length, (last.G - first.G) / (float)length, (last.B - first.B) / (float)length };
                 for (int i = 1; i < length; i++)
                     SetColor(selectedPanels[i], Color.FromArgb((byte)(first.R + (steps[0] * i)), (byte)(first.G + (steps[1] * i)), (byte)(first.B + (steps[2] * i))));
+            }
+        }
+
+        private void LoadButton_Click(object sender, EventArgs e)
+        {
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                var filepath = openFileDialog1.FileName;
+                if (Path.GetExtension(filepath) == ".j2t") //J2TFile has zero error checking, so hopefully this works out
+                {
+                    PaletteEdited = true;
+                    Palette.CopyFrom(new J2TFile(filepath).Palette);
+                    SetAllColors();
+                }
+                else
+                    using (BinaryReader binreader = new BinaryReader(File.Open(filepath, FileMode.Open, FileAccess.Read), J2TFile.FileEncoding))
+                    {
+                        if (binreader.BaseStream.Length < 1024)
+                            return;
+                        else if (binreader.BaseStream.Length == 1032) //"color map" palette
+                            binreader.BaseStream.Seek(4, SeekOrigin.Begin);
+                        Palette = new Palette(binreader);
+                        PaletteEdited = true;
+                        SetAllColors();
+                    }
             }
         }
     }

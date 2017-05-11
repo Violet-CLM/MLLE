@@ -46,6 +46,7 @@
             this.swapGreenBlueToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.swapBlueRedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -86,13 +87,17 @@
             // LoadButton
             // 
             this.LoadButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.LoadButton.Enabled = false;
             this.LoadButton.Location = new System.Drawing.Point(327, 287);
             this.LoadButton.Name = "LoadButton";
             this.LoadButton.Size = new System.Drawing.Size(75, 23);
             this.LoadButton.TabIndex = 5;
             this.LoadButton.Text = "Load...";
             this.LoadButton.UseVisualStyleBackColor = true;
+            this.LoadButton.Click += new System.EventHandler(this.LoadButton_Click);
+            // 
+            // colorDialog1
+            // 
+            this.colorDialog1.FullOpen = true;
             // 
             // menuStrip1
             // 
@@ -202,6 +207,11 @@
             this.toolStripSeparator2.Name = "toolStripSeparator2";
             this.toolStripSeparator2.Size = new System.Drawing.Size(161, 6);
             // 
+            // openFileDialog1
+            // 
+            this.openFileDialog1.DefaultExt = "j2t";
+            this.openFileDialog1.Filter = "Tilesets|*.j2t|Palettes|*.pal|All files|*.*";
+            // 
             // PaletteForm
             // 
             this.AcceptButton = this.OKButton;
@@ -250,5 +260,6 @@
         private System.Windows.Forms.ToolStripMenuItem swapRedGreenToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem swapGreenBlueToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem swapBlueRedToolStripMenuItem;
+        private System.Windows.Forms.OpenFileDialog openFileDialog1;
     }
 }
