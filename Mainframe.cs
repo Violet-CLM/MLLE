@@ -202,7 +202,7 @@ namespace MLLE
                 else
                     baseIni = ini;
             }
-            J2L.ProduceEventAndTypeListsFromIni(version, baseIni, ini);
+            TexturedJ2L.ProduceEventAndTypeListsFromIni(version, baseIni, ini);
             if (TreeStructure[version] == null)
             {
                 List<TreeNode>[] TreeNodeLists = TreeStructure[version] = new List<TreeNode>[2];
@@ -228,7 +228,7 @@ namespace MLLE
                         if (CurrentIniLine.Length == 3 || CurrentIniLine[3] == "+") TreeNodeLists[1].First((TreeNode node) => { return node.Text == CurrentIniLine[2].TrimEnd(); }).Nodes.Add(CurrentIniLine[1].TrimEnd(), CurrentIniLine[0].TrimEnd());
                     }
                 }
-                string[][] EventsFromIni = J2L.IniEventListing[version];
+                string[][] EventsFromIni = TexturedJ2L.IniEventListing[version];
                 for (ushort i = 1; i < 256; i++)
                 {
                     if (EventsFromIni[i][2].Trim() != "")
@@ -241,7 +241,7 @@ namespace MLLE
             TiletypeDropdown.DropDownItems.Clear();
             for (byte i = 0; i < 16; i++)
             {
-                string label = (i == 0) ? "Normal" : J2L.TileTypeNames[version][i];
+                string label = (i == 0) ? "Normal" : TexturedJ2L.TileTypeNames[version][i];
                 if (label != "")
                 {
                     ToolStripMenuItem option = new ToolStripMenuItem(i.ToString() + ": " + label);
@@ -349,9 +349,9 @@ namespace MLLE
             ProcessIniColorsIntoHotKolor(2, "Colors", "Transparent");
             TexUtil.InitTexturing();
             J2L = new TexturedJ2L();
-            J2L.DeadspaceColor = HotKolors[0];
-            J2L.Tile0Color = HotKolors[1];
-            J2L.TranspColor = HotKolors[2];
+            TexturedJ2L.DeadspaceColor = HotKolors[0];
+            TexturedJ2L.Tile0Color = HotKolors[1];
+            TexturedJ2L.TranspColor = HotKolors[2];
             switch (Settings.IniReadValue("Miscellaneous", "DefaultGame"))
             {
                 case "JJ2":
@@ -654,7 +654,7 @@ namespace MLLE
         private void exitToolStripMenuItem_Click(object sender, EventArgs e) { SafeToDisplay = false; Application.Exit(); }
         private bool setTileType(byte value)
         {
-            if (LastFocusedZone == FocusedZone.Tileset && MouseTile < J2L.J2T.TileCount && J2L.TileTypeNames[J2L.VersionType][value] != "")
+            if (LastFocusedZone == FocusedZone.Tileset && MouseTile < J2L.J2T.TileCount && TexturedJ2L.TileTypeNames[J2L.VersionType][value] != "")
             {
                 J2L.TileTypes[MouseTile] = value;
                 SetTextureTo(AtlasID.Image);
@@ -666,8 +666,18 @@ namespace MLLE
                         for (byte y = 0; y < 32; y++)
                         {
                             byte[] pixel = J2L.J2T.Palette[oldTile[x + y * 32]];
-                            if (tileTrans[x + y * 32] == 0) bmp.SetPixel(x, y, Color.FromArgb(0, TexturedJ2L.GetLevelFromColor(J2L.TranspColor, 0), TexturedJ2L.GetLevelFromColor(J2L.TranspColor, 1), TexturedJ2L.GetLevelFromColor(J2L.TranspColor, 2)));
-                            else bmp.SetPixel(x, y, Color.FromArgb((value >= 1 && value <= 3) ? 192 : 255, pixel[0], pixel[1], pixel[2]));
+                            if (tileTrans[x + y * 32] == 0)
+                                bmp.SetPixel(x, y, Color.FromArgb(
+                                    0,
+                                    TexturedJ2L.GetLevelFromColor(TexturedJ2L.TranspColor, 0),
+                                    TexturedJ2L.GetLevelFromColor(TexturedJ2L.TranspColor, 1),
+                                    TexturedJ2L.GetLevelFromColor(TexturedJ2L.TranspColor, 2)
+                                ));
+                            else
+                                bmp.SetPixel(x, y, Color.FromArgb(
+                                    (value >= 1 && value <= 3) ? 192 : 255,
+                                    pixel[0], pixel[1], pixel[2]
+                                ));
                         }
                     System.Drawing.Imaging.BitmapData data = bmp.LockBits(new Rectangle(0, 0, 32, 32), System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
                     GL.TexSubImage2D(TextureTarget.Texture2D, 0, MouseTile % J2L.AtlasLength * 32, MouseTile / J2L.AtlasLength * 32, 32, 32, PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
@@ -755,9 +765,9 @@ namespace MLLE
             _suspendEvent.Set();
         }
 
-        private void setDeadspaceColorToolStripMenuItem_Click(object sender, EventArgs e) { SetNewColor(ref J2L.DeadspaceColor, "Deadspace", false); GL.ClearColor(J2L.DeadspaceColor); }
-        private void setTile0ColorToolStripMenuItem_Click(object sender, EventArgs e) { SetNewColor(ref J2L.Tile0Color, "Tile0", true); }
-        private void setTransparentColorToolStripMenuItem_Click(object sender, EventArgs e) { SetNewColor(ref J2L.TranspColor, "Transparent", true); }
+        private void setDeadspaceColorToolStripMenuItem_Click(object sender, EventArgs e) { SetNewColor(ref TexturedJ2L.DeadspaceColor, "Deadspace", false); GL.ClearColor(TexturedJ2L.DeadspaceColor); }
+        private void setTile0ColorToolStripMenuItem_Click(object sender, EventArgs e) { SetNewColor(ref TexturedJ2L.Tile0Color, "Tile0", true); }
+        private void setTransparentColorToolStripMenuItem_Click(object sender, EventArgs e) { SetNewColor(ref TexturedJ2L.TranspColor, "Transparent", true); }
 
         private void SetNewColor(ref Color color, string iniName, bool recompilationNeeded)
         {
@@ -1437,10 +1447,10 @@ namespace MLLE
                         nuInt = GeneratorOverlay;
                         break;
                     case AtlasID.EventNames:
-                        nuInt = (int)J2L.EventAtlas[J2L.VersionType];
+                        nuInt = TexturedJ2L.EventAtlas[J2L.VersionType];
                         break;
                     case AtlasID.TileTypes:
-                        nuInt = (int)J2L.TileTypeAtlas[J2L.VersionType];
+                        nuInt = TexturedJ2L.TileTypeAtlas[J2L.VersionType];
                         break;
                     case AtlasID.Selection:
                         nuInt = SelectionOverlay;
@@ -2278,7 +2288,17 @@ namespace MLLE
         {
             OldMouseTile = MouseTile;
             MouseTilePrintout.Text = String.Format("({0}, {1})", MouseTileX, MouseTileY);
-            MouseEventPrintout.Text = (J2L.IniEventListing[J2L.VersionType][MouseAGAEvent.ID & 255][0] ?? "") + ((J2L.IniEventListing[J2L.VersionType][MouseAGAEvent.ID & 255].Length > 5 && J2L.VersionType != Version.AGA) ? " (" + String.Join(", ", PresentParameterValues(MouseAGAEvent.ID, J2L.IniEventListing[J2L.VersionType][MouseAGAEvent.ID & 255])) + ")" : "");
+            MouseEventPrintout.Text =
+                (TexturedJ2L.IniEventListing[J2L.VersionType][MouseAGAEvent.ID & 255][0] ?? "") +
+                (
+                    (TexturedJ2L.IniEventListing[J2L.VersionType][MouseAGAEvent.ID & 255].Length > 5 && J2L.VersionType != Version.AGA) ?
+                        " (" + String.Join(
+                            ", ",
+                            PresentParameterValues(MouseAGAEvent.ID, TexturedJ2L.IniEventListing[J2L.VersionType][MouseAGAEvent.ID & 255])
+                        ) + ")" :
+                        ""
+                )
+            ;
         }
         string[] PresentParameterValues(uint rawEvent, string[] iniEntry)
         {
@@ -2288,7 +2308,7 @@ namespace MLLE
             for (byte i = 0; i < output.Length; i++)
             {
                 paramName = iniEntry[i + 5].Split(':')[0];
-                if (i == 0 && paramName.Length > 4 && paramName.Substring(paramName.Length - 5, 5) == "Event") output[i] = paramName + "=" + '"' + J2L.IniEventListing[J2L.VersionType][rawEvent << 12 >> 24][0] + '"';
+                if (i == 0 && paramName.Length > 4 && paramName.Substring(paramName.Length - 5, 5) == "Event") output[i] = paramName + "=" + '"' + TexturedJ2L.IniEventListing[J2L.VersionType][rawEvent << 12 >> 24][0] + '"';
                 else output[i] = paramName + "=" + values[i].ToString();
             }
             return output;

@@ -14,8 +14,8 @@ public enum InsertFrameResults { Success, Full, StackOverflow };
 
 abstract class J2File //The fields shared by .j2l and .j2t files. No methods/interface just yet, though that would be cool too.
 {
-    internal static Encoding FileEncoding = Encoding.GetEncoding(1252); //Windows-1252
-    internal static string StandardHeader = "                      Jazz Jackrabbit 2 Data File\x0D\x0A\x0D\x0A         Retail distribution of this data is prohibited without\x0D\x0A             written permission from Epic MegaGames, Inc.\x0D\x0A\x0D\x0A\x1A";
+    internal readonly static Encoding FileEncoding = Encoding.GetEncoding(1252); //Windows-1252
+    internal readonly static string StandardHeader = "                      Jazz Jackrabbit 2 Data File\x0D\x0A\x0D\x0A         Retail distribution of this data is prohibited without\x0D\x0A             written permission from Epic MegaGames, Inc.\x0D\x0A\x0D\x0A\x1A";
     internal string Header; //The copyright notice
     internal string Magic; //"LEVL" or "TILE," depending
     public string Name; //Self-explanatory
@@ -28,7 +28,7 @@ abstract class J2File //The fields shared by .j2l and .j2t files. No methods/int
     public int[] UncompressedDataLength = new int[4];
     internal MemoryStream[] UncompressedData = new MemoryStream[4];
     internal MemoryStream[] CompressedData = new MemoryStream[4];
-    public static Dictionary<Version, string> FullVersionNames = new Dictionary<Version, string>() {
+    public readonly static Dictionary<Version, string> FullVersionNames = new Dictionary<Version, string>() {
         {Version.TSF, "The Secret Files (v1.24)"},
         {Version.JJ2, "Jazz 2 (v1.20-1.23)"},
         {Version.BC, "Battery Check"},
@@ -56,11 +56,7 @@ class J2TFile : J2File
     internal byte[][] TransparencyMaskJCS_Style;
     internal byte[][] TransparencyMaskJJ2_Style;
     internal byte[][] Images;
-    internal uint data3Pointer = 0;
     internal ushort data3Counter = 0;
-    internal int data3BlockNumber = 0;
-    internal int data3BlockNumber2 = 0;
-    internal int data3Skip = 0;
     internal byte[][] Masks;
 
     static internal bool[] Convert128BitsToBoolMask(byte[] bits)
@@ -175,19 +171,20 @@ class J2TFile : J2File
             #endregion
             #region data3
             BinaryReader data3reader = new BinaryReader(UncompressedData[2], encoding);
+            uint data3Pointer = 0;
             while (data3Pointer < UncompressedDataLength[2])
             {
                 TransparencyMaskOffset[data3Counter] = data3Pointer;
                 TransparencyMaskJCS_Style[data3Counter] = Convert128BitsToByteMask(data3reader.ReadBytes(128)); data3Pointer += 128;
                 TransparencyMaskJJ2_Style[data3Counter] = new byte[1024];// for (ushort i = 0; i < 1024; i++) tmasksjj2[data3counter][i] = 0;
-                for (byte row = 0; row < 32; row++)
+                for (int row = 0; row < 32; row++)
                 {
-                    data3Skip = row * 32;
-                    data3BlockNumber = data3reader.ReadByte(); data3Pointer++;
-                    for (byte i = 0; i < data3BlockNumber; i++)
+                    int data3Skip = row * 32;
+                    int data3BlockNumber = data3reader.ReadByte(); data3Pointer++;
+                    for (int i = 0; i < data3BlockNumber; i++)
                     {
                         data3Skip += data3reader.ReadByte(); data3Pointer++;
-                        data3BlockNumber2 = data3Skip + data3reader.ReadByte(); data3Pointer++;
+                        int data3BlockNumber2 = data3Skip + data3reader.ReadByte(); data3Pointer++;
                         for (; data3Skip < data3BlockNumber2; data3Skip++) TransparencyMaskJJ2_Style[data3Counter][data3Skip] = 1;
                     }
                 }
@@ -524,7 +521,6 @@ class J2LFile : J2File
     public ushort NumberOfAnimations;
     public bool UsesVerticalSplitscreen;
     public byte LevelMode;
-    public uint StreamSize;
     internal string Tileset;
     internal int MaxTiles;
     internal J2TFile J2T;
@@ -542,7 +538,6 @@ class J2LFile : J2File
     internal bool[] IsEachTileUsed;
     internal AnimatedTile[] Animations;
     internal uint[,] EventMap;
-    internal uint[,] ParameterMap;
     internal ushort[][] Dictionary;
 
     public string[][] AGA_SoundPointer;
@@ -550,16 +545,14 @@ class J2LFile : J2File
     internal List<String> AGA_LocalEvents; // AGA
     internal List<String> AGA_GlobalEvents;
     internal AGAEvent[,] AGA_EventMap;
-    //internal byte[,][] AGA_ParameterMap;
 
     const uint SecurityStringMLLE = 0xBACABEEF;
     const uint SecurityStringPassworded = 0xBA00BE00;
     const uint SecurityStringInsecure = 0;
 
     internal byte LEVunknown1;
-    internal string[] LayerNames = new string[8] {"Foreground Layer #2", "Foreground Layer #1", "Sprite Foreground Layer", "Sprite Layer", "Background Layer #1", "Background Layer #2", "Background Layer #3", "Background Layer"};
+    internal static readonly string[] LayerNames = new string[8] {"Foreground Layer #2", "Foreground Layer #1", "Sprite Foreground Layer", "Sprite Layer", "Background Layer #1", "Background Layer #2", "Background Layer #3", "Background Layer"};
     internal byte LEVunknown2;
-    bool[] quadrantIsNontransparent = new bool[4]; //used in both saving and loading, and it's small, so what the heck.
     internal short LEVMysteriousTextShort;
     #endregion variable declaration
 
@@ -707,7 +700,7 @@ class J2LFile : J2File
                         if (LevelMode == 1) VersionType = Version.O;
                         else if (LevelMode == 2) VersionType = Version.BC;
                     }
-                    StreamSize = data1reader.ReadUInt32();
+                    data1reader.ReadUInt32(); //StreamSize
                     Name = new string(data1reader.ReadChars(32)).TrimEnd('\0');
                     Tileset = new string(data1reader.ReadChars(32)).TrimEnd('\0');
                     if (VersionType != Version.AmbiguousBCO) J2T = new J2TFile(Path.Combine((defaultDirectories == null) ? Path.GetDirectoryName(filename) : defaultDirectories[VersionType], Tileset));
@@ -975,6 +968,7 @@ class J2LFile : J2File
                     rawTransBits = binreader.ReadByte();
                     J2T.IsFullyOpaque[tile] = (rawTransBits == 240 && TileTypes[tile] == 0);
                     //if (J2T.IsFullyOpaque[tile]) Console.WriteLine(tile);
+                    bool[] quadrantIsNontransparent = new bool[4];
                     for (byte i = 0; i < 4; i++) quadrantIsNontransparent[i] = ((rawTransBits & (16 << i)) != 0);
                     for (byte quadrant = 0; quadrant < 4; quadrant++)
                     {
@@ -1131,13 +1125,11 @@ class J2LFile : J2File
                 Console.WriteLine(binreader.ReadChars(4)); //EVNT
                 binreader.ReadBytes(4); //section length
                 EventMap = new uint[Layers[3].Width, Layers[3].Height];
-                ParameterMap = new uint[Layers[3].Width, Layers[3].Height];
                 uint rlong;
                 for (uint i = 0; i < EventMap.Length; i++)
                 {
                     rlong = binreader.ReadUInt32();
                     EventMap[i % Layers[3].Width, i / Layers[3].Width] = rlong;
-                    ParameterMap[i % Layers[3].Width, i / Layers[3].Width] = rlong >> 8;
                 }
                 Console.WriteLine(binreader.ReadChars(4)); //TMAP
                 binreader.ReadBytes(binreader.ReadInt32()); //skip TMAP entirely
@@ -1189,7 +1181,6 @@ class J2LFile : J2File
         Size = 0;
         Crc32 = 0;
         JCSHorizontalFocus = JCSVerticalFocus = NumberOfAnimations = 0;
-        StreamSize = 0;
         JCSFocusedLayer = 3;
         MinLight = StartLight = 64;
         UsesVerticalSplitscreen = false;
@@ -1375,6 +1366,7 @@ class J2LFile : J2File
                 {
                     transtile = J2T.TransparencyMaskJCS_Style[Array.BinarySearch(J2T.TransparencyMaskOffset, 0, (int)J2T.data3Counter, J2T.TransparencyMaskAddress[i])];
                     tile = J2T.Images[J2T.ImageAddress[i]];
+                    bool[] quadrantIsNontransparent = new bool[4];
                     for (byte quadrant = 0; quadrant < 4; quadrant++)
                     {
                         quadrantIsNontransparent[quadrant] = true;
@@ -1711,7 +1703,7 @@ class J2LFile : J2File
                 if (VersionType == Version.BC) data1writer.Write((byte)2);
                 else if (VersionType == Version.O) data1writer.Write((byte)1);
                 else data1writer.Write(LevelMode);
-                data1writer.Write(StreamSize); // this gets replaced later with an actual calculation
+                data1writer.Write((uint)0); // StreamSize; this gets replaced later with an actual calculation
                 data1writer.Write(getBytes(encoding, Name, 32));
                 data1writer.Write(getBytes(encoding, Tileset, 32));
                 data1writer.Write(getBytes(encoding, BonusLevel, 32));

@@ -145,7 +145,7 @@ namespace MLLE
         private void EventForm_Load(object sender, EventArgs e)
         {
             CurrentEventID = (byte)(WorkingEvent.ID & 255);
-            CurrentEvent = SourceForm.J2L.IniEventListing[SourceForm.J2L.VersionType][CurrentEventID];
+            CurrentEvent = TexturedJ2L.IniEventListing[SourceForm.J2L.VersionType][CurrentEventID];
             MostParametersSeenThusFar = (byte)(Math.Max(1, CurrentEvent.Length - 5));
             if (version != Version.AGA)
             {
@@ -188,7 +188,7 @@ namespace MLLE
         private void Findit(byte value)
         {
             try { Tree.SelectedNode = Tree.Nodes.Find(value.ToString(), true)[0]; }
-            catch { Tree.Nodes.Add(value.ToString(), SourceForm.J2L.IniEventListing[SourceForm.J2L.VersionType][value][0]); Findit(value); }
+            catch { Tree.Nodes.Add(value.ToString(), TexturedJ2L.IniEventListing[SourceForm.J2L.VersionType][value][0]); Findit(value); }
         }
         private void ButtonCancel_Click(object sender, EventArgs e) { Close(); }
         public void ResetTree() { Tree.Nodes.Clear(); }
@@ -236,7 +236,7 @@ namespace MLLE
 
         internal void SetupEvent()
         {
-            CurrentEvent = SourceForm.J2L.IniEventListing[SourceForm.J2L.VersionType][CurrentEventID];
+            CurrentEvent = TexturedJ2L.IniEventListing[SourceForm.J2L.VersionType][CurrentEventID];
             int[] range;
             string mode;
             SafeToCalculate = false;

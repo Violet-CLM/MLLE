@@ -15,11 +15,6 @@ using Ini;
 enum TransparencySource { JCS_Style, JJ2_Style }
 class TexturedJ2L : J2LFile
 {
-    public Color TranspColor, Tile0Color, DeadspaceColor;
-
-    internal static readonly RectangleF rectE = new RectangleF(-16, 0, 64, 32);
-    internal static readonly RectangleF rectT = new RectangleF(-2, 0, 256, 32);
-
     public double AtlasFraction;
     public int AtlasLength;
 
@@ -48,7 +43,18 @@ class TexturedJ2L : J2LFile
         }
     }
 
-    internal Dictionary<Version, int?> EventAtlas = new Dictionary<Version, int?> {
+
+    public static Color TranspColor, Tile0Color, DeadspaceColor;
+
+    internal static Dictionary<Version, int> EventAtlas = new Dictionary<Version, int> {
+        {Version.BC, 0 },
+        {Version.O, 0 },
+        {Version.JJ2, 0 },
+        {Version.TSF, 0 },
+        {Version.AGA, 0 },
+        {Version.GorH, 0 },
+        };
+    internal static Dictionary<Version, string[]> TileTypeNames = new Dictionary<Version, string[]> {
         {Version.BC, null },
         {Version.O, null },
         {Version.JJ2, null },
@@ -56,23 +62,15 @@ class TexturedJ2L : J2LFile
         {Version.AGA, null },
         {Version.GorH, null },
         };
-    internal Dictionary<Version, string[]> TileTypeNames = new Dictionary<Version, string[]> {
-        {Version.BC, null },
-        {Version.O, null },
-        {Version.JJ2, null },
-        {Version.TSF, null },
-        {Version.AGA, null },
-        {Version.GorH, null },
+    internal static Dictionary<Version, int> TileTypeAtlas = new Dictionary<Version, int> {
+        {Version.BC, 0 },
+        {Version.O, 0 },
+        {Version.JJ2, 0 },
+        {Version.TSF, 0 },
+        {Version.AGA, 0 },
+        {Version.GorH, 0 },
         };
-    internal Dictionary<Version, int?> TileTypeAtlas = new Dictionary<Version, int?> {
-        {Version.BC, null },
-        {Version.O, null },
-        {Version.JJ2, null },
-        {Version.TSF, null },
-        {Version.AGA, null },
-        {Version.GorH, null },
-        };
-    internal Dictionary<Version, string[][]> IniEventListing = new Dictionary<Version, string[][]> {
+    internal static Dictionary<Version, string[][]> IniEventListing = new Dictionary<Version, string[][]> {
         {Version.BC, null },
         {Version.O, null },
         {Version.JJ2, null },
@@ -150,9 +148,9 @@ class TexturedJ2L : J2LFile
             return result;
         }
     }
-    public void ProduceEventAndTypeListsFromIni(Version version, IniFile eventIni, IniFile typeIni, bool overwriteOldLists = false)
+    public static void ProduceEventAndTypeListsFromIni(Version version, IniFile eventIni, IniFile typeIni, bool overwriteOldLists = false)
     {
-        if (!overwriteOldLists && !(EventAtlas[version] == null || IniEventListing[version] == null)) return;
+        if (!overwriteOldLists && !(EventAtlas[version] == 0 || IniEventListing[version] == null)) return;
         string[][] StringList = IniEventListing[version] = new string[256][];
         for (int i = 0; i < 256; i++)
         {
@@ -167,6 +165,8 @@ class TexturedJ2L : J2LFile
         formatEvent.Alignment = formatEvent.LineAlignment = formatType.LineAlignment = StringAlignment.Center;
         formatType.Alignment = StringAlignment.Near;
         SolidBrush white = new SolidBrush(Color.White);
+        RectangleF rectE = new RectangleF(-16, 0, 64, 32);
+        RectangleF rectT = new RectangleF(-2, 0, 256, 32);
         using (Font arial = new Font(new FontFamily("Arial"), 8)) using (Bitmap text_bmp = new Bitmap(512, 512)) using (Bitmap type_bmp = new Bitmap(128,128)) using (formatType) using (formatEvent)
         {
             Bitmap single_bmp; Graphics gfx;
@@ -181,6 +181,8 @@ class TexturedJ2L : J2LFile
                     else gfx.DrawString(StringList[i][3], arial, white, rectE, formatEvent);
                     totalgfx.DrawImage(single_bmp,i%16*32, i/16*32);
                 }
+            if (EventAtlas[version] != 0)
+                GL.DeleteTexture(EventAtlas[version]);
             EventAtlas[version] = TexUtil.CreateTextureFromBitmap(text_bmp);
 
             totalgfx = Graphics.FromImage(type_bmp);
@@ -194,6 +196,8 @@ class TexturedJ2L : J2LFile
                     gfx.DrawString(typeIni.IniReadValue("Tiles", i.ToString()), arial, white, rectT, formatType);
                     totalgfx.DrawImage(single_bmp, i % 4 * 32, i / 4 * 32);
                 }
+            if (TileTypeAtlas[version] != 0)
+                GL.DeleteTexture(TileTypeAtlas[version]);
             TileTypeAtlas[version] = TexUtil.CreateTextureFromBitmap(type_bmp);
         }
     }
