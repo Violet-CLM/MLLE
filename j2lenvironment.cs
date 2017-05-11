@@ -15,21 +15,39 @@ using Ini;
 enum TransparencySource { JCS_Style, JJ2_Style }
 class TexturedJ2L : J2LFile
 {
-    internal bool TexturesHaveBeenGenerated = false;
-    internal double[] AtlasRatio = new double[4];
-    public int[] AtlasID = new int[8];
-    internal byte[] pixel, tile, tileTrans, mask;
     public Color TranspColor, Tile0Color, DeadspaceColor;
-    internal bool transp;
-    internal static byte[] eventbackdrop = new byte[4096];
-    internal static RectangleF rectE = new RectangleF(-16, 0, 64, 32);
-    internal static RectangleF rectT = new RectangleF(-2, 0, 256, 32);
-    public int[] Atlases = new int[2];
+
+    internal static readonly RectangleF rectE = new RectangleF(-16, 0, 64, 32);
+    internal static readonly RectangleF rectT = new RectangleF(-2, 0, 256, 32);
+
     public double AtlasFraction;
     public int AtlasLength;
-    //internal static Bitmap text_bmp;
-    internal int atlasDrawingLocation;
-    internal byte[][] workingAtlases = new byte[2][];
+
+    private int _imageAtlas = 0;
+    public int ImageAtlas
+    {
+        get { return _imageAtlas; }
+        set
+        {
+            if (TexturesHaveBeenGenerated)
+                GL.DeleteTexture(_imageAtlas);
+            _imageAtlas = value;
+        }
+    }
+    public bool TexturesHaveBeenGenerated { get { return _imageAtlas != 0; } }
+
+    private int _maskAtlas = 0;
+    public int MaskAtlas
+    {
+        get { return _maskAtlas; }
+        set
+        {
+            if (_maskAtlas != 0)
+                GL.DeleteTexture(_maskAtlas);
+            _maskAtlas = value;
+        }
+    }
+
     internal Dictionary<Version, int?> EventAtlas = new Dictionary<Version, int?> {
         {Version.BC, null },
         {Version.O, null },
@@ -65,40 +83,14 @@ class TexturedJ2L : J2LFile
 
     public void Generate_Blank_Tile_Texture()
     {
-        workingAtlases[0] = new byte[4096];
-        pixel = new byte[4] { Tile0Color.R, Tile0Color.G, Tile0Color.B, 255 };
-        for (ushort i = 0; i < 4096; i++) workingAtlases[0][i] = pixel[i % 4];
-        Atlases[0] = TexUtil.CreateRGBATexture(32, 32, workingAtlases[0]);
+        byte[] singleTileImage = new byte[32 * 32 * 4];
+        var pixel = new byte[4] { Tile0Color.R, Tile0Color.G, Tile0Color.B, 255 };
+        for (ushort i = 0; i < singleTileImage.Length; i++) singleTileImage[i] = pixel[i % 4];
+        ImageAtlas = TexUtil.CreateRGBATexture(32, 32, singleTileImage);
         AtlasLength = 1;
         AtlasFraction = 1;
-        TexturesHaveBeenGenerated = true;
     }
-    /* public void Old_Generate_Textures(TransparencySource source = TransparencySource.JJ2_Style, bool PinkTransparency = true)
-    {
-        //texturenumberlist = new int[J2T.TileCount];
-        //VBOid = new uint[J2T.TileCount*2];
-        //GL.GenBuffers((int)J2T.TileCount, VBOid);
-        for (ushort a = 0; a < J2T.TileCount; a+=1030)
-        {
-            workingAtlas = new byte[4096 * Math.Min(1030,(J2T.TileCount-a))];
-            for (ushort i = a; i < a+1030 && i < J2T.TileCount; i++)
-            {
-                tile = J2T.Images[J2T.ImageAddress[i]];
-                transp = TileTypes[i] == 1;
-                for (short j = 0; j < 4096; j += 4)
-                {
-                    pixel = J2T.Palette[(int)tile[j / 4]];
-                    for (byte k = 0; k < 4; k++) workingAtlas[i % 10 * 128 + i % 1030 / 10 * 40960 + j % 128 + j / 128 * 1280 + k] = (k == 3) ? (((source == TransparencySource.JCS_Style) ? J2T.TransparencyMaskJCS_Style : J2T.TransparencyMaskJJ2_Style)[Array.BinarySearch(J2T.TransparencyMaskOffset, 0, (int)J2T.data3Counter, J2T.TransparencyMaskAddress[i])][j / 4] == 1) ? ((transp) ? (byte)192 : (byte)255) : (byte)0 : (((source == TransparencySource.JCS_Style) ? J2T.TransparencyMaskJCS_Style : J2T.TransparencyMaskJJ2_Style)[Array.BinarySearch(J2T.TransparencyMaskOffset, 0, (int)J2T.data3Counter, J2T.TransparencyMaskAddress[i])][j / 4] == 1) ? pixel[k] : (i == 0 && k == 0) ? (byte)72 : PinkTransparentColors[k] ;
-                }
-                //texturenumberlist[i] = TexUtil.CreateRGBATexture(32, 32, alphatile);
-            }
-            AtlasID[a / 1030] = TexUtil.CreateRGBATexture(320, 32 * (workingAtlas.Length / 40960), workingAtlas);
-            AtlasRatio[a/1030] = 1d / (workingAtlas.Length/40960);
-            //for (ushort i = a; i < a+1030 && i < J2T.TileCount; i++) for (short j = 0; j < 4096; j += 4) workingAtlas[j] = J2T.Masks
-        }
-        TexturesHaveBeenGenerated = true;
-    } */
-    public byte GetLevelFromColor(Color color, byte level)
+    public static byte GetLevelFromColor(Color color, byte level)
     {
         switch (level)
         {
@@ -116,19 +108,29 @@ class TexturedJ2L : J2LFile
         else transSource = J2T.TransparencyMaskJCS_Style;
         if (palette == null)
             palette = J2T.Palette;
-        for (byte i = 0; i < 5; i++) if (J2T.TileCount < 16 << (i * 2)) { AtlasLength = 128 << i; workingAtlases[0] = new byte[AtlasLength * AtlasLength * 4]; if (includeMasks) workingAtlases[1] = new byte[AtlasLength * AtlasLength * 4]; AtlasLength /= 32; AtlasFraction = 1.0d / AtlasLength; break; }
+        byte[][] workingAtlases = new byte[2][];
+        for (byte i = 0; i < 5; i++)
+            if (J2T.TileCount < 16 << (i * 2)) {
+                AtlasLength = 128 << i;
+                workingAtlases[0] = new byte[AtlasLength * AtlasLength * 4];
+                if (includeMasks)
+                    workingAtlases[1] = new byte[AtlasLength * AtlasLength * 4];
+                AtlasLength /= 32;
+                AtlasFraction = 1.0d / AtlasLength;
+                break;
+            }
         for (ushort i = 0; i < J2T.TileCount; i++)
         {
-            tile = J2T.Images[J2T.ImageAddress[i]];
-            tileTrans = transSource[Array.BinarySearch(J2T.TransparencyMaskOffset, 0, (int)J2T.data3Counter, J2T.TransparencyMaskAddress[i])];
-            mask = J2T.Masks[J2T.MaskAddress[i]];
-            transp = TileTypes[i] == 1;
+            var tile = J2T.Images[J2T.ImageAddress[i]];
+            var tileTrans = transSource[Array.BinarySearch(J2T.TransparencyMaskOffset, 0, (int)J2T.data3Counter, J2T.TransparencyMaskAddress[i])];
+            var mask = J2T.Masks[J2T.MaskAddress[i]];
+            bool transp = TileTypes[i] == 1;
             for (short j = 0; j < 4096; j += 4)
             {
-                pixel = palette[(int)tile[j / 4]];
+                var pixel = palette[(int)tile[j / 4]];
                 if (includeMasks) for (byte k = 0; k < 4; k++)
                 {
-                    atlasDrawingLocation = i % AtlasLength * 128 + i / AtlasLength * AtlasLength * 4096 + j % 128 + j / 128 * AtlasLength * 128 + k;
+                    int atlasDrawingLocation = i % AtlasLength * 128 + i / AtlasLength * AtlasLength * 4096 + j % 128 + j / 128 * AtlasLength * 128 + k;
                     workingAtlases[0][atlasDrawingLocation] = (k == 3) ? (tileTrans[j / 4] == 1) ? ((transp) ? (byte)192 : (byte)255) : (byte)0 : (tileTrans[j / 4] == 1) ? pixel[k] : GetLevelFromColor(usedColor, k);
                     workingAtlases[1][atlasDrawingLocation] = (k == 3) ? (mask[j / 4] == 1) ? (byte)196 : (byte)0 : (mask[j / 4] == 1) ? (byte)0 : GetLevelFromColor(usedColor, k);
                 }
@@ -136,24 +138,15 @@ class TexturedJ2L : J2LFile
             }
             if (i == 0) usedColor = TranspColor;
         }
-        Atlases[0] = TexUtil.CreateRGBATexture(AtlasLength * 32, AtlasLength * 32, workingAtlases[0]);
-        if (includeMasks) Atlases[1] = TexUtil.CreateRGBATexture(AtlasLength * 32, AtlasLength * 32, workingAtlases[1]);
-        TexturesHaveBeenGenerated = true;
-    }
-    public void Degenerate_Textures()
-    {
-        if (TexturesHaveBeenGenerated)
-        {
-            GL.DeleteTexture(Atlases[0]);
-        }
-        TexturesHaveBeenGenerated = false;
+       ImageAtlas = TexUtil.CreateRGBATexture(AtlasLength * 32, AtlasLength * 32, workingAtlases[0]);
+        if (includeMasks) MaskAtlas = TexUtil.CreateRGBATexture(AtlasLength * 32, AtlasLength * 32, workingAtlases[1]);
     }
     public VersionChangeResults ChangeTileset(string filename, bool avoidRedundancy = true, Dictionary<Version, string> defaultDirectories = null, Palette overridePalette = null)
     {
         if (avoidRedundancy && Path.GetFileName(filename) == Tileset) return VersionChangeResults.Success;
         else {
             VersionChangeResults result = base.ChangeTileset(filename, avoidRedundancy, defaultDirectories);
-            if (result == VersionChangeResults.Success) { if (TexturesHaveBeenGenerated) Degenerate_Textures(); Generate_Textures(TransparencySource.JJ2_Style, true, overridePalette); }
+            if (result == VersionChangeResults.Success) { if (TexturesHaveBeenGenerated) Generate_Textures(TransparencySource.JJ2_Style, true, overridePalette); }
             return result;
         }
     }
@@ -204,36 +197,4 @@ class TexturedJ2L : J2LFile
             TileTypeAtlas[version] = TexUtil.CreateTextureFromBitmap(type_bmp);
         }
     }
-    /*public static string[][] Old_ReadEventIni(string filename)
-    {
-        IniFile ini = new IniFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, filename));
-        string[][] StringList = new string[256][];
-        for (int i = 0; i < 256; i++) if (ini.IniReadValue("Events", i.ToString()) != "")
-            {
-                StringList[i] = (ini.IniReadValue("Events", i.ToString()).Split('|'));
-                for (byte j = 0; j < StringList[i].Length; j++) StringList[i][j] = StringList[i][j].TrimEnd();
-            }
-        else StringList[i] = new string[] { (i == 0) ? "(none)" : "Event " + i.ToString(), "-", "", "DON'T", "USE" };
-        return StringList;
-    }*/
-    /*public static void Old_GenerateEventNameTextures(ref int[] eventtexturenumberlist, string[][] eventsfromini)
-        {
-            StringFormat format = new StringFormat();
-            format.Alignment = StringAlignment.Center; format.LineAlignment = StringAlignment.Center;
-            SolidBrush white = new SolidBrush(Color.White) ;
-            using (Font arial = new Font(new FontFamily("Arial"), 8)) using (text_bmp) using (format)
-            {
-                for (ushort i = 0; i < 4096; i++) eventbackdrop[i] = (i % 4 == 3) ? (byte)164 : (byte)0;
-                for (int i = 1; i < 256; i++) if (eventsfromini[i] != null)
-                {
-                        text_bmp = new Bitmap(32, 32);
-                        Graphics gfx = Graphics.FromImage(text_bmp);
-                        gfx.Clear(Color.FromArgb(128, 0, 0, 0));
-                        if (eventsfromini[i].Length > 4 && eventsfromini[i][4].TrimEnd() != "") gfx.DrawString(eventsfromini[i][3] + "\n" + eventsfromini[i][4], arial, white, rectE, format);
-                        else gfx.DrawString(eventsfromini[i][3], arial, white, rectE, format);
-                        eventtexturenumberlist[i] = TexUtil.CreateTextureFromBitmap(text_bmp);
-                }
-                text_bmp.Dispose();
-            }
-        }*/
 }

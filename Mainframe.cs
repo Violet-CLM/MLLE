@@ -384,7 +384,7 @@ namespace MLLE
             GL.Disable(EnableCap.CullFace);
             GeneratorOverlay = TexUtil.CreateTextureFromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Generator.png"));
             SelectionOverlay = TexUtil.CreateTextureFromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SelectionRectangles.png"));
-            GL.BindTexture(TextureTarget.Texture2D, J2L.Atlases[0]);
+            GL.BindTexture(TextureTarget.Texture2D, J2L.ImageAtlas);
             GL.ClearColor(HotKolors[0]);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
             LevelDisplay.SwapBuffers();
@@ -666,7 +666,7 @@ namespace MLLE
                         for (byte y = 0; y < 32; y++)
                         {
                             byte[] pixel = J2L.J2T.Palette[oldTile[x + y * 32]];
-                            if (tileTrans[x + y * 32] == 0) bmp.SetPixel(x, y, Color.FromArgb(0, J2L.GetLevelFromColor(J2L.TranspColor, 0), J2L.GetLevelFromColor(J2L.TranspColor, 1), J2L.GetLevelFromColor(J2L.TranspColor, 2)));
+                            if (tileTrans[x + y * 32] == 0) bmp.SetPixel(x, y, Color.FromArgb(0, TexturedJ2L.GetLevelFromColor(J2L.TranspColor, 0), TexturedJ2L.GetLevelFromColor(J2L.TranspColor, 1), TexturedJ2L.GetLevelFromColor(J2L.TranspColor, 2)));
                             else bmp.SetPixel(x, y, Color.FromArgb((value >= 1 && value <= 3) ? 192 : 255, pixel[0], pixel[1], pixel[2]));
                         }
                     System.Drawing.Imaging.BitmapData data = bmp.LockBits(new Rectangle(0, 0, 32, 32), System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
@@ -739,10 +739,7 @@ namespace MLLE
                         currentPlusPropertyList.Palette = null;
                     LevelHasBeenModified = true;
                     if (J2L.TexturesHaveBeenGenerated)
-                    {
-                        J2L.Degenerate_Textures();
                         J2L.Generate_Textures(palette: currentPlusPropertyList.Palette);
-                    }
                     RedrawTilesetHowManyTimes = 2;
                 }
                 _suspendEvent.Set();
@@ -772,10 +769,7 @@ namespace MLLE
                 color = colorDialog1.Color;
                 Settings.IniWriteValue("Colors", iniName, string.Format("{0},{1},{2}", color.R, color.G, color.B));
                 if (recompilationNeeded && J2L.J2T != null && J2L.TexturesHaveBeenGenerated)
-                {
-                    J2L.Degenerate_Textures();
                     J2L.Generate_Textures(includeMasks: true, palette: currentPlusPropertyList.Palette);
-                }
                 RedrawTilesetHowManyTimes = 2;
             }
             _suspendEvent.Set();
@@ -1131,7 +1125,6 @@ namespace MLLE
                     SafeToDisplay = true;
                     return;
                 }
-                if (J2L != null && J2L.TexturesHaveBeenGenerated) J2L.Degenerate_Textures();
                 //EventsFromIni = TexturedJ2L.ReadEventIni("MLLEProfile.ini");
                 //TexturedJ2L.GenerateEventNameTextures(ref eventtexturenumberlist, EventsFromIni);
                 //J2L = TentativeJ2L;
@@ -1150,7 +1143,7 @@ namespace MLLE
                 }
                 SetTitle(J2L.Name, J2L.FilenameOnly);
                 J2L.Generate_Textures(TransparencySource.JJ2_Style, true);
-                GL.BindTexture(TextureTarget.Texture2D, J2L.Atlases[0]);
+                GL.BindTexture(TextureTarget.Texture2D, J2L.ImageAtlas);
                 Undoable.Clear();
                 Redoable.Clear();
                 SafeToDisplay = true;
@@ -1168,7 +1161,6 @@ namespace MLLE
         internal void NewJ2L(Version? version = null)
         {
             SafeToDisplay = false;
-            if (J2L != null && J2L.TexturesHaveBeenGenerated) J2L.Degenerate_Textures();
             if (version == null) J2L.NewLevel(J2L.VersionType);
             else J2L.NewLevel((Version)version);
             J2L.FullFilePath = Path.Combine(DefaultDirectories[J2L.VersionType], J2L.FilenameOnly = "Made in MLLE.j2l");
@@ -1176,7 +1168,7 @@ namespace MLLE
             CheckCurrentVersion();
             ProcessIni(J2L.VersionType);
             J2L.Generate_Blank_Tile_Texture();
-            GL.BindTexture(TextureTarget.Texture2D, J2L.Atlases[0]);
+            GL.BindTexture(TextureTarget.Texture2D, J2L.ImageAtlas);
             SafeToDisplay = true;
             LevelHasBeenModified = false;
             Undoable.Clear();
@@ -1436,10 +1428,10 @@ namespace MLLE
                 switch (nuAtlas)
                 {
                     case AtlasID.Mask:
-                        nuInt = J2L.Atlases[1];
+                        nuInt = J2L.MaskAtlas;
                         break;
                     case AtlasID.Image:
-                        nuInt = J2L.Atlases[0];
+                        nuInt = J2L.ImageAtlas;
                         break;
                     case AtlasID.Generator:
                         nuInt = GeneratorOverlay;
