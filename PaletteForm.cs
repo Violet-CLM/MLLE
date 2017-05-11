@@ -82,6 +82,7 @@ namespace MLLE
         {
             Panel clickedpanel = sender as Panel;
             clickedpanel.BorderStyle = BorderStyle.Fixed3D;
+            colorDialog1.Color = clickedpanel.BackColor;
             DialogResult result = colorDialog1.ShowDialog();
             if (result == DialogResult.OK)
             {
@@ -100,6 +101,7 @@ namespace MLLE
 
         private void ResetButton_Click(object sender, System.EventArgs e)
         {
+            PaletteEdited = true;
             Palette.CopyFrom(DefaultPalette);
             SetAllColors();
         }
@@ -156,13 +158,13 @@ namespace MLLE
         private void gradientToolStripMenuItem_Click(object sender, EventArgs e) //pretty much copied from JJ2+
         {
             var selectedPanels = Array.FindAll(panels, panel => panel.BorderStyle != BorderStyle.None);
-            var length = selectedPanels.Length;
+            var length = selectedPanels.Length - 1;
             if (selectedPanels.Length > 2) //long enough to make a gradient from
             {
                 Color first = selectedPanels[0].BackColor;
-                Color last = selectedPanels[selectedPanels.Length - 1].BackColor;
+                Color last = selectedPanels[length].BackColor;
                 float[] steps = new float[3] { (last.R - first.R) / (float)length, (last.G - first.G) / (float)length, (last.B - first.B) / (float)length };
-                for (int i = 1; i < length - 1; i++)
+                for (int i = 1; i < length; i++)
                     SetColor(selectedPanels[i], Color.FromArgb((byte)(first.R + (steps[0] * i)), (byte)(first.G + (steps[1] * i)), (byte)(first.B + (steps[2] * i))));
             }
         }

@@ -731,9 +731,12 @@ namespace MLLE
             {
                 _suspendEvent.Reset();
                 Palette newPalette = new PaletteForm().ShowForm(currentPlusPropertyList.Palette, J2L.J2T.Palette);
-                if (newPalette != null)
+                if (newPalette != null && !newPalette.Equals(currentPlusPropertyList.Palette))
                 {
-                    currentPlusPropertyList.Palette = newPalette;
+                    if (!newPalette.Equals(J2L.J2T.Palette)) //edited
+                        currentPlusPropertyList.Palette = newPalette;
+                    else //reset
+                        currentPlusPropertyList.Palette = null;
                     LevelHasBeenModified = true;
                     if (J2L.TexturesHaveBeenGenerated)
                     {

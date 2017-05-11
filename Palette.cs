@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Linq;
 
 internal class Palette
 {
@@ -47,6 +48,19 @@ internal class Palette
         set
         {
             Colors[key] = value;
+        }
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (obj == null || GetType() != obj.GetType()) return false;
+        else
+        {
+            Palette other = obj as Palette;
+            for (int i = 0; i < PaletteSize; ++i)
+                if (!Colors[i].SequenceEqual(other.Colors[i]))
+                    return false;
+            return true;
         }
     }
 }
