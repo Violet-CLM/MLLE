@@ -654,7 +654,7 @@ namespace MLLE
         private void exitToolStripMenuItem_Click(object sender, EventArgs e) { SafeToDisplay = false; Application.Exit(); }
         private bool setTileType(byte value)
         {
-            if (LastFocusedZone == FocusedZone.Tileset && MouseTile < J2L.J2T.TileCount && TexturedJ2L.TileTypeNames[J2L.VersionType][value] != "")
+            if (LastFocusedZone == FocusedZone.Tileset && MouseTile < J2L.TileCount && TexturedJ2L.TileTypeNames[J2L.VersionType][value] != "")
             {
                 J2L.TileTypes[MouseTile] = value;
                 SetTextureTo(AtlasID.Image);
@@ -1405,7 +1405,7 @@ namespace MLLE
             {
                 LDScrollH.Maximum = Math.Max(0, (int)J2L.Layers[CurrentLayer].Width * ZoomTileSize - LevelDisplayViewportWidth + LDScrollH.LargeChange);
                 LDScrollV.Maximum = Math.Max(0, (int)J2L.Layers[CurrentLayer].Height * ZoomTileSize - LevelDisplayViewportHeight + LDScrollV.LargeChange);
-                TilesetScrollbar.Maximum = Math.Max(0, (J2L.J2T == null) ? 0 : ((int)J2L.J2T.TileCount + J2L.NumberOfAnimations + 10) / 10 * 32 - TilesetScrollbar.Height + 256);
+                TilesetScrollbar.Maximum = Math.Max(0, (J2L.J2T == null) ? 0 : ((int)J2L.TileCount + J2L.NumberOfAnimations + 10) / 10 * 32 - TilesetScrollbar.Height + 256);
                 //TilesetScrollbar.Maximum += TilesetScrollbar.LargeChange;
                 TilesetScrollbar.Refresh();
                 MakeProposedScrollbarValueWork(TilesetScrollbar, TilesetScrollbar.Value);
@@ -1524,11 +1524,11 @@ namespace MLLE
                         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
                         if (J2L.J2T != null)
                         {
-                            //uint height = ((prevatlas >= J2L.J2T.TileCount / 1030) ? J2L.J2T.TileCount % 1030 : 1030) / 10 * 32;
+                            //uint height = ((prevatlas >= J2L.TileCount / 1030) ? J2L.TileCount % 1030 : 1030) / 10 * 32;
 
                             double yfraction;
                             double xfraction;
-                            for (int yoffset = -(TilesetScrollbar.Value % 32); yoffset < TilesetScrollbar.Height && tile < J2L.J2T.TileCount; tile += 10)
+                            for (int yoffset = -(TilesetScrollbar.Value % 32); yoffset < TilesetScrollbar.Height && tile < J2L.TileCount; tile += 10)
                             {
                                 xfraction = tile % J2L.AtlasLength * J2L.AtlasFraction;
                                 yfraction = tile / J2L.AtlasLength * J2L.AtlasFraction;
@@ -2107,7 +2107,7 @@ namespace MLLE
         {
             if (J2L.J2T != null)
             {
-                AnimatedTilesDrawHeight = (int)(J2L.J2T.TileCount * 3.2) - TilesetScrollbar.Value;
+                AnimatedTilesDrawHeight = (int)(J2L.TileCount * 3.2) - TilesetScrollbar.Value;
                 AnimatedTilesVisibleOnLeft = AnimatedTilesDrawHeight < LevelDisplay.Height;
             }
             else { AnimatedTilesVisibleOnLeft = false; }
@@ -2121,12 +2121,12 @@ namespace MLLE
         {
             if (J2L.J2T != null)
             {
-                //uint height = ((prevatlas >= J2L.J2T.TileCount / 1030) ? J2L.J2T.TileCount % 1030 : 1030) / 10 * 32;
+                //uint height = ((prevatlas >= J2L.TileCount / 1030) ? J2L.TileCount % 1030 : 1030) / 10 * 32;
                 
                 double yfraction;
                 double xfraction;
                 int tile = TilesetScrollbar.Value / 32 * 10;
-                for (int yoffset = -(TilesetScrollbar.Value % 32); yoffset < TilesetScrollbar.Height && tile < J2L.J2T.TileCount; tile += 10)
+                for (int yoffset = -(TilesetScrollbar.Value % 32); yoffset < TilesetScrollbar.Height && tile < J2L.TileCount; tile += 10)
                 {
                     xfraction = tile % J2L.AtlasLength * J2L.AtlasFraction;
                     yfraction = tile / J2L.AtlasLength * J2L.AtlasFraction;
@@ -2244,14 +2244,14 @@ namespace MLLE
                     LevelDisplay.ContextMenuStrip = TContextMenu;
                     MouseTileX = e.X / 32;
                     MouseTileY = (e.Y + TilesetScrollbar.Value - TilesetScrollbar.Minimum) / 32;
-                    if (J2L.J2T == null || MouseTileY * 10 < J2L.J2T.TileCount)
+                    if (J2L.J2T == null || MouseTileY * 10 < J2L.TileCount)
                     {
                         MouseTile = MouseTileX + MouseTileY * 10;
                         editAnimationToolStripMenuItem.Visible = deleteAnimationToolStripMenuItem.Visible = cloneAnimationToolStripMenuItem.Visible = !(TiletypeDropdown.Visible = OverlayDropdown.Visible = true);
                     }
                     else
                     {
-                        MouseTile = (int)((MouseTileX + MouseTileY * 10) - J2L.J2T.TileCount + J2L.AnimOffset);
+                        MouseTile = (int)((MouseTileX + MouseTileY * 10) - J2L.TileCount + J2L.AnimOffset);
                         editAnimationToolStripMenuItem.Visible = deleteAnimationToolStripMenuItem.Visible = cloneAnimationToolStripMenuItem.Visible = !(TiletypeDropdown.Visible = OverlayDropdown.Visible = false);
                     }
                     MouseAGAEvent.ID = (J2L.VersionType == Version.AGA || MouseTile >= J2L.MaxTiles) ? 0 : J2L.EventTiles[MouseTile];
@@ -2673,7 +2673,7 @@ namespace MLLE
                     for (int y = UpperLeftSelectionCorner.Y; y < BottomRightSelectionCorner.Y; y++)
                         if (IsEachTileSelected[x + 1][y + 1])
                         {
-                            CurrentStamp[x - UpperLeftSelectionCorner.X][y - UpperLeftSelectionCorner.Y] = (WhereSelected == FocusedZone.Level) ? new TileAndEvent(J2L.Layers[CurrentLayer].TileMap[x, y], J2L.EventMap[x, y]) : new TileAndEvent((ushort)(x + y * 10 + ((y * 10 >= J2L.J2T.TileCount) ? J2L.AnimOffset - J2L.J2T.TileCount : 0)), J2L.EventTiles[x + y * 10]);
+                            CurrentStamp[x - UpperLeftSelectionCorner.X][y - UpperLeftSelectionCorner.Y] = (WhereSelected == FocusedZone.Level) ? new TileAndEvent(J2L.Layers[CurrentLayer].TileMap[x, y], J2L.EventMap[x, y]) : new TileAndEvent((ushort)(x + y * 10 + ((y * 10 >= J2L.TileCount) ? J2L.AnimOffset - J2L.TileCount : 0)), J2L.EventTiles[x + y * 10]);
                             if (cut && WhereSelected == FocusedZone.Level) { J2L.Layers[CurrentLayer].TileMap[x, y] = 0; J2L.EventMap[x, y] = 0; }
                         }
             }

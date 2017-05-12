@@ -108,7 +108,7 @@ class TexturedJ2L : J2LFile
             palette = J2T.Palette;
         byte[][] workingAtlases = new byte[2][];
         for (byte i = 0; i < 5; i++)
-            if (J2T.TileCount < 16 << (i * 2)) {
+            if (TileCount < 16 << (i * 2)) {
                 AtlasLength = 128 << i;
                 workingAtlases[0] = new byte[AtlasLength * AtlasLength * 4];
                 if (includeMasks)
@@ -117,7 +117,7 @@ class TexturedJ2L : J2LFile
                 AtlasFraction = 1.0d / AtlasLength;
                 break;
             }
-        for (ushort i = 0; i < J2T.TileCount; i++)
+        for (ushort i = 0; i < TileCount; i++)
         {
             var tile = J2T.Images[J2T.ImageAddress[i]];
             var tileTrans = transSource[Array.BinarySearch(J2T.TransparencyMaskOffset, 0, (int)J2T.data3Counter, J2T.TransparencyMaskAddress[i])];
