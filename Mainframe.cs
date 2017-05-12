@@ -453,7 +453,7 @@ namespace MLLE
 
         internal void IdentifyTileset()
         {
-            TilesetSelection.SelectedIndex = TilesetSelection.Items.IndexOf(AllTilesetLists[J2L.VersionType].FirstOrDefault((NameAndFilename nf) => { return Path.GetFileName(nf.Filename) == J2L.Tileset; }));
+            TilesetSelection.SelectedIndex = TilesetSelection.Items.IndexOf(AllTilesetLists[J2L.VersionType].FirstOrDefault((NameAndFilename nf) => { return Path.GetFileName(nf.Filename) == J2L.MainTilesetFilename; }));
             //desiredindex = AllTilesets.FindIndex(delegate(string current) { return Path.GetFileName(current) == J2L.Tileset; });
             //foreach (StringAndIndex item in TilesetSelection.Items)
             //{
@@ -658,14 +658,15 @@ namespace MLLE
             {
                 J2L.TileTypes[MouseTile] = value;
                 SetTextureTo(AtlasID.Image);
-                byte[] oldTile = J2L.J2T.Images[J2L.J2T.ImageAddress[MouseTile]];
-                var tileTrans = J2L.J2T.TransparencyMaskJJ2_Style[Array.BinarySearch(J2L.J2T.TransparencyMaskOffset, 0, (int)J2L.J2T.data3Counter, J2L.J2T.TransparencyMaskAddress[MouseTile])];
+                J2TFile J2T = J2L.Tilesets[0];
+                byte[] oldTile = J2T.Images[J2T.ImageAddress[MouseTile]];
+                var tileTrans = J2T.TransparencyMaskJJ2_Style[Array.BinarySearch(J2T.TransparencyMaskOffset, 0, (int)J2T.data3Counter, J2T.TransparencyMaskAddress[MouseTile])];
                 using (Bitmap bmp = new Bitmap(32, 32)) //using (Graphics gfx = Graphics.FromImage(bmp))
                 {
                     for (byte x = 0; x < 32; x++)
                         for (byte y = 0; y < 32; y++)
                         {
-                            byte[] pixel = J2L.J2T.Palette[oldTile[x + y * 32]];
+                            byte[] pixel = J2T.Palette[oldTile[x + y * 32]];
                             if (tileTrans[x + y * 32] == 0)
                                 bmp.SetPixel(x, y, Color.FromArgb(
                                     0,
@@ -737,13 +738,13 @@ namespace MLLE
 
         private void paletteToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (J2L.J2T != null) //otherwise it's not clear how this would work
+            if (J2L.HasTiles) //otherwise it's not clear how this would work
             {
                 _suspendEvent.Reset();
-                Palette newPalette = new PaletteForm().ShowForm(currentPlusPropertyList.Palette, J2L.J2T.Palette);
+                Palette newPalette = new PaletteForm().ShowForm(currentPlusPropertyList.Palette, J2L.Tilesets[0].Palette);
                 if (newPalette != null && !newPalette.Equals(currentPlusPropertyList.Palette))
                 {
-                    if (!newPalette.Equals(J2L.J2T.Palette)) //edited
+                    if (!newPalette.Equals(J2L.Tilesets[0].Palette)) //edited
                         currentPlusPropertyList.Palette = newPalette;
                     else //reset
                         currentPlusPropertyList.Palette = null;
@@ -778,7 +779,7 @@ namespace MLLE
             {
                 color = colorDialog1.Color;
                 Settings.IniWriteValue("Colors", iniName, string.Format("{0},{1},{2}", color.R, color.G, color.B));
-                if (recompilationNeeded && J2L.J2T != null && J2L.TexturesHaveBeenGenerated)
+                if (recompilationNeeded && J2L.HasTiles && J2L.TexturesHaveBeenGenerated)
                     J2L.Generate_Textures(includeMasks: true, palette: currentPlusPropertyList.Palette);
                 RedrawTilesetHowManyTimes = 2;
             }
@@ -1144,7 +1145,7 @@ namespace MLLE
                     J2L.VersionType = (result == DialogResult.Yes) ? Version.BC : Version.O;
                     CheckCurrentVersion();
                     ProcessIni(J2L.VersionType);
-                    J2L.ChangeTileset(J2L.Tileset, false, DefaultDirectories);
+                    J2L.ChangeTileset(J2L.MainTilesetFilename, false, DefaultDirectories);
                 }
                 else
                 {
@@ -1308,13 +1309,13 @@ namespace MLLE
             }
             else if (result == SavingResults.TilesetIsDifferentVersion)
             {
-                if (J2L.J2T.VersionType == Version.GorH)
+                if (J2L.Tilesets[0].VersionType == Version.GorH)
                 {
                     MessageBox.Show("This level was originally saved as a Jazz 2 OEM v1.00g/h level, and does not have an external tileset file. Please choose an existing tileset file in order to save this level as any other version, or else it will not be playable. This level will not be saved.", "Tileset File Needed", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
                 else
                 {
-                    DialogResult dialogResult = MessageBox.Show(String.Format("You are saving this level as a {0} level, but {2} is only compatible with {1}. In order for the level to be playable, you will need to have and make available a {0}-compatible version of {2}. MLLE will not do this for you. Press 'OK' to continue saving or 'Cancel' to choose a different tileset.", J2File.FullVersionNames[J2L.VersionType], J2File.FullVersionNames[J2L.J2T.VersionType], J2L.Tileset), "Version Difference", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+                    DialogResult dialogResult = MessageBox.Show(String.Format("You are saving this level as a {0} level, but {2} is only compatible with {1}. In order for the level to be playable, you will need to have and make available a {0}-compatible version of {2}. MLLE will not do this for you. Press 'OK' to continue saving or 'Cancel' to choose a different tileset.", J2File.FullVersionNames[J2L.VersionType], J2File.FullVersionNames[J2L.Tilesets[0].VersionType], J2L.MainTilesetFilename), "Version Difference", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
                     if (dialogResult == DialogResult.OK)
                     {
                         result = SaveJ2L(filename, eraseUndefinedTiles, true, storeGivenFilename);
@@ -1405,7 +1406,7 @@ namespace MLLE
             {
                 LDScrollH.Maximum = Math.Max(0, (int)J2L.Layers[CurrentLayer].Width * ZoomTileSize - LevelDisplayViewportWidth + LDScrollH.LargeChange);
                 LDScrollV.Maximum = Math.Max(0, (int)J2L.Layers[CurrentLayer].Height * ZoomTileSize - LevelDisplayViewportHeight + LDScrollV.LargeChange);
-                TilesetScrollbar.Maximum = Math.Max(0, (J2L.J2T == null) ? 0 : ((int)J2L.TileCount + J2L.NumberOfAnimations + 10) / 10 * 32 - TilesetScrollbar.Height + 256);
+                TilesetScrollbar.Maximum = Math.Max(0, (!J2L.HasTiles) ? 0 : ((int)J2L.TileCount + J2L.NumberOfAnimations + 10) / 10 * 32 - TilesetScrollbar.Height + 256);
                 //TilesetScrollbar.Maximum += TilesetScrollbar.LargeChange;
                 TilesetScrollbar.Refresh();
                 MakeProposedScrollbarValueWork(TilesetScrollbar, TilesetScrollbar.Value);
@@ -1522,7 +1523,7 @@ namespace MLLE
                     {
                         #region draw tileset
                         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-                        if (J2L.J2T != null)
+                        if (J2L.HasTiles)
                         {
                             //uint height = ((prevatlas >= J2L.TileCount / 1030) ? J2L.TileCount % 1030 : 1030) / 10 * 32;
 
@@ -1735,7 +1736,7 @@ namespace MLLE
                 {
                     EmborderSelectedTiles(LDScrollH.Value, LDScrollV.Value, ZoomTileSize, LevelDisplayViewportWidth, LevelDisplayViewportHeight);
                 }
-                if (LastFocusedZone == FocusedZone.Level && VisibleEditingTool != SelectionButton && CurrentStamp.Length > 0 && J2L.J2T != null)
+                if (LastFocusedZone == FocusedZone.Level && VisibleEditingTool != SelectionButton && CurrentStamp.Length > 0 && J2L.HasTiles)
                 {
                     int x = MouseTileX * ZoomTileSize - LDScrollH.Value;
                     int y = MouseTileY * ZoomTileSize - LDScrollV.Value;
@@ -2105,7 +2106,7 @@ namespace MLLE
 
         internal void DetermineVisibilityOfAnimatedTiles()
         {
-            if (J2L.J2T != null)
+            if (J2L.HasTiles)
             {
                 AnimatedTilesDrawHeight = (int)(J2L.TileCount * 3.2) - TilesetScrollbar.Value;
                 AnimatedTilesVisibleOnLeft = AnimatedTilesDrawHeight < LevelDisplay.Height;
@@ -2244,7 +2245,7 @@ namespace MLLE
                     LevelDisplay.ContextMenuStrip = TContextMenu;
                     MouseTileX = e.X / 32;
                     MouseTileY = (e.Y + TilesetScrollbar.Value - TilesetScrollbar.Minimum) / 32;
-                    if (J2L.J2T == null || MouseTileY * 10 < J2L.TileCount)
+                    if (!J2L.HasTiles || MouseTileY * 10 < J2L.TileCount)
                     {
                         MouseTile = MouseTileX + MouseTileY * 10;
                         editAnimationToolStripMenuItem.Visible = deleteAnimationToolStripMenuItem.Visible = cloneAnimationToolStripMenuItem.Visible = !(TiletypeDropdown.Visible = OverlayDropdown.Visible = true);
@@ -2684,7 +2685,7 @@ namespace MLLE
 
         private void LevelDisplay_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
         {
-            if (AnimationSettings.Visible || e.Button == MouseButtons.Right || (LastFocusedZone == FocusedZone.Tileset && (J2L.J2T == null || MouseTile >= J2L.MaxTiles))) return;
+            if (AnimationSettings.Visible || e.Button == MouseButtons.Right || (LastFocusedZone == FocusedZone.Tileset && (!J2L.HasTiles || MouseTile >= J2L.MaxTiles))) return;
             if ((DeepEditingTool == SelectionButton || LastFocusedZone == FocusedZone.Tileset) && HowSelecting == FocusedZone.None)
             {
                 MouseHeldDownSelection = true;

@@ -100,12 +100,9 @@ class TexturedJ2L : J2LFile
     }
     public void Generate_Textures(TransparencySource source = TransparencySource.JJ2_Style, bool includeMasks = false, Palette palette = null)
     {
-        byte[][] transSource;
         Color usedColor = Tile0Color;
-        if (source == TransparencySource.JJ2_Style) transSource = J2T.TransparencyMaskJJ2_Style;
-        else transSource = J2T.TransparencyMaskJCS_Style;
         if (palette == null)
-            palette = J2T.Palette;
+            palette = Tilesets[0].Palette;
         byte[][] workingAtlases = new byte[2][];
         for (byte i = 0; i < 5; i++)
             if (TileCount < 16 << (i * 2)) {
@@ -117,31 +114,46 @@ class TexturedJ2L : J2LFile
                 AtlasFraction = 1.0d / AtlasLength;
                 break;
             }
-        for (ushort i = 0; i < TileCount; i++)
+        for (ushort tileInLevelID = 0; tileInLevelID < TileCount; tileInLevelID++)
         {
-            var tile = J2T.Images[J2T.ImageAddress[i]];
-            var tileTrans = transSource[Array.BinarySearch(J2T.TransparencyMaskOffset, 0, (int)J2T.data3Counter, J2T.TransparencyMaskAddress[i])];
-            var mask = J2T.Masks[J2T.MaskAddress[i]];
-            bool transp = TileTypes[i] == 1;
-            for (short j = 0; j < 4096; j += 4)
+            uint tileInTilesetID = tileInLevelID;
+            uint tilesetID = 0;
+            J2TFile J2T;
+            while (true)
+            {
+                J2T = Tilesets[tilesetID++];
+                if (tileInTilesetID >= J2T.TileCount)
+                    tileInTilesetID -= J2T.TileCount;
+                else
+                    break;
+            }
+            tileInTilesetID += J2T.FirstTile;
+
+            var tile = J2T.Images[J2T.ImageAddress[tileInTilesetID]];
+            var tileTrans = ((source == TransparencySource.JJ2_Style) ? J2T.TransparencyMaskJJ2_Style : J2T.TransparencyMaskJCS_Style)[Array.BinarySearch(J2T.TransparencyMaskOffset, 0, (int)J2T.data3Counter, J2T.TransparencyMaskAddress[tileInTilesetID])];
+            var mask = J2T.Masks[J2T.MaskAddress[tileInTilesetID]];
+            bool transp = TileTypes[tileInTilesetID] == 1;
+
+            for (short j = 0; j < 32*32*4; j += 4)
             {
                 var pixel = palette[(int)tile[j / 4]];
                 if (includeMasks) for (byte k = 0; k < 4; k++)
                 {
-                    int atlasDrawingLocation = i % AtlasLength * 128 + i / AtlasLength * AtlasLength * 4096 + j % 128 + j / 128 * AtlasLength * 128 + k;
+                    int atlasDrawingLocation = tileInLevelID % AtlasLength * 128 + tileInLevelID / AtlasLength * AtlasLength * 4096 + j % 128 + j / 128 * AtlasLength * 128 + k;
                     workingAtlases[0][atlasDrawingLocation] = (k == 3) ? (tileTrans[j / 4] == 1) ? ((transp) ? (byte)192 : (byte)255) : (byte)0 : (tileTrans[j / 4] == 1) ? pixel[k] : GetLevelFromColor(usedColor, k);
                     workingAtlases[1][atlasDrawingLocation] = (k == 3) ? (mask[j / 4] == 1) ? (byte)196 : (byte)0 : (mask[j / 4] == 1) ? (byte)0 : GetLevelFromColor(usedColor, k);
                 }
-                else for (byte k = 0; k < 4; k++) workingAtlases[0][i % AtlasLength * 128 + i / AtlasLength * AtlasLength * 4096 + j % 128 + j / 128 * AtlasLength * 128 + k] = (k == 3) ? (tileTrans[j / 4] == 1) ? ((transp) ? (byte)192 : (byte)255) : (byte)0 : (tileTrans[j / 4] == 1) ? pixel[k] : GetLevelFromColor(usedColor, k);
+                else for (byte k = 0; k < 4; k++) workingAtlases[0][tileInLevelID % AtlasLength * 128 + tileInLevelID / AtlasLength * AtlasLength * 4096 + j % 128 + j / 128 * AtlasLength * 128 + k] = (k == 3) ? (tileTrans[j / 4] == 1) ? ((transp) ? (byte)192 : (byte)255) : (byte)0 : (tileTrans[j / 4] == 1) ? pixel[k] : GetLevelFromColor(usedColor, k);
             }
-            if (i == 0) usedColor = TranspColor;
+
+            if (tileInLevelID == 0) usedColor = TranspColor;
         }
-       ImageAtlas = TexUtil.CreateRGBATexture(AtlasLength * 32, AtlasLength * 32, workingAtlases[0]);
+        ImageAtlas = TexUtil.CreateRGBATexture(AtlasLength * 32, AtlasLength * 32, workingAtlases[0]);
         if (includeMasks) MaskAtlas = TexUtil.CreateRGBATexture(AtlasLength * 32, AtlasLength * 32, workingAtlases[1]);
     }
     public VersionChangeResults ChangeTileset(string filename, bool avoidRedundancy = true, Dictionary<Version, string> defaultDirectories = null, Palette overridePalette = null)
     {
-        if (avoidRedundancy && Path.GetFileName(filename) == Tileset) return VersionChangeResults.Success;
+        if (avoidRedundancy && Path.GetFileName(filename) == MainTilesetFilename) return VersionChangeResults.Success;
         else {
             VersionChangeResults result = base.ChangeTileset(filename, avoidRedundancy, defaultDirectories);
             if (result == VersionChangeResults.Success) { if (TexturesHaveBeenGenerated) Generate_Textures(TransparencySource.JJ2_Style, true, overridePalette); }
