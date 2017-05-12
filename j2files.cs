@@ -198,6 +198,270 @@ class J2TFile : J2File
             #endregion data4
         }
     }
+    internal J2TFile(BinaryReader binreader) //for .LEV tilesets only, started partway through the early EDIT section
+    {
+        VersionType = Version.GorH;
+        MaxTiles = 1024;
+        FilenameOnly = new string(binreader.ReadChars(binreader.ReadByte()));
+        TileCount = binreader.ReadUInt32();
+
+        data3Counter = (ushort)TileCount;
+        IsFullyOpaque = new bool[1024];
+        unknown1 = new byte[1024];
+        ImageAddress = new uint[1024];
+        Images = new byte[TileCount][];
+        unknown2 = new uint[1024];
+        TransparencyMaskAddress = new uint[1024];
+        TransparencyMaskOffset = new uint[1024];
+        for (ushort i = 0; i < TileCount; i++)
+            ImageAddress[i] = TransparencyMaskAddress[i] = TransparencyMaskOffset[i] = i;
+        unknown3 = new uint[1024];
+        MaskAddress = new uint[1024];
+        FlippedMaskAddress = new uint[1024];
+        TransparencyMaskJCS_Style = new byte[1024][];
+        TransparencyMaskJJ2_Style = new byte[1024][];
+        Images[0] = TransparencyMaskJCS_Style[0] = TransparencyMaskJJ2_Style[0] = new byte[1024];
+    }
+    internal void ReadFromTILEDATA(BinaryReader binreader, byte[] TileTypes)
+    {
+        byte rawTransBits, infoByte, elapsedRowDistance, rowTarget;
+        int pixelDestination;
+        for (ushort tile = 1; tile < TileCount; tile++)
+        {
+            Images[tile] = new byte[1024];
+            TransparencyMaskJCS_Style[tile] = new byte[1024];
+            TransparencyMaskJJ2_Style[tile] = new byte[1024];
+            rawTransBits = binreader.ReadByte();
+            IsFullyOpaque[tile] = (rawTransBits == 240 && TileTypes[tile] == 0);
+            //if (IsFullyOpaque[tile]) Console.WriteLine(tile);
+            bool[] quadrantIsNontransparent = new bool[4];
+            for (byte i = 0; i < 4; i++) quadrantIsNontransparent[i] = ((rawTransBits & (16 << i)) != 0);
+            for (byte quadrant = 0; quadrant < 4; quadrant++)
+            {
+                if (quadrantIsNontransparent[quadrant])
+                {
+                    for (ushort pixel = 0; pixel < 256; pixel++)
+                    {
+                        pixelDestination = pixel % 16 + quadrant % 2 * 16 + pixel / 16 * 32 + quadrant / 2 * 512;
+                        Images[tile][pixelDestination] = binreader.ReadByte();
+                        TransparencyMaskJCS_Style[tile][pixelDestination] = TransparencyMaskJJ2_Style[tile][pixelDestination] = (byte)((TileTypes[tile] > 0 && Images[tile][pixelDestination] == 1) ? 0 : 1);
+                    }
+                }
+                else
+                {
+                    binreader.ReadBytes(6); //size, width, height
+                    for (byte row = 0; row < 16; row++)
+                    {
+                        elapsedRowDistance = 0;
+                        while (true)
+                        {
+                            infoByte = binreader.ReadByte();
+                            if (infoByte == 128) break;
+                            rowTarget = (byte)((infoByte & 31) + elapsedRowDistance);
+                            if ((infoByte & 128) == 128)
+                            {
+                                for (; elapsedRowDistance < rowTarget; elapsedRowDistance++)
+                                {
+                                    pixelDestination = elapsedRowDistance + quadrant % 2 * 16 + row * 32 + quadrant / 2 * 512;
+                                    Images[tile][pixelDestination] = binreader.ReadByte();
+                                    TransparencyMaskJCS_Style[tile][pixelDestination] = TransparencyMaskJJ2_Style[tile][pixelDestination] = 1;
+                                }
+                            }
+                            else elapsedRowDistance = rowTarget;
+                        }
+                    }
+                }
+            }
+
+        }
+
+    }
+    internal void ReadFromMASK(BinaryReader binreader)
+    {
+        ushort newTile, lessTile = 0;
+        ushort oldTile = 1;
+        Masks = new byte[TileCount][];
+        Masks[0] = new byte[1024];
+        while (true)
+        {
+            newTile = binreader.ReadUInt16();
+            if (newTile == 0xFFFF)
+            {
+                for (; oldTile < TileCount; oldTile++) MaskAddress[oldTile] = lessTile;
+                break;
+            }
+            else
+            {
+                for (; oldTile < (newTile & 1023); oldTile++)
+                {
+                    if (lessTile == 0) { Masks[oldTile] = J2TFile.ProduceMasklessTileByteMask(); lessTile = oldTile; }
+                    MaskAddress[oldTile] = lessTile;
+                }
+                if ((newTile & 32768) == 32768)
+                {
+                    MaskAddress[newTile & 1023] = binreader.ReadUInt16();
+                }
+                else
+                {
+                    Masks[newTile] = J2TFile.Convert128BitsToByteMask(binreader.ReadBytes(128));
+                    MaskAddress[newTile] = newTile;
+                }
+                oldTile++;
+            }
+        }
+    }
+    internal void WriteToTDATA(BinaryWriter TDATA, byte[] TileTypes)
+    {
+        byte[] tile, transtile;
+        long preQuadrantOffset;
+        byte columnCount;
+        byte previousTransp;
+        for (ushort i = 1; i < TileCount; i++)
+        {
+            transtile = TransparencyMaskJCS_Style[Array.BinarySearch(TransparencyMaskOffset, 0, (int)data3Counter, TransparencyMaskAddress[i])];
+            tile = Images[ImageAddress[i]];
+            bool[] quadrantIsNontransparent = new bool[4];
+            for (byte quadrant = 0; quadrant < 4; quadrant++)
+            {
+                quadrantIsNontransparent[quadrant] = true;
+                if (TileTypes[i] == 0) for (ushort pixel = 0; pixel < 256; pixel++) if (transtile[pixel % 16 + pixel / 16 * 32 + quadrant % 2 * 16 + quadrant / 2 * 512] == 0) { quadrantIsNontransparent[quadrant] = false; break; }
+            }
+            TDATA.Write((byte)(((quadrantIsNontransparent[0]) ? 16 : 0) | ((quadrantIsNontransparent[1]) ? 32 : 0) | ((quadrantIsNontransparent[2]) ? 64 : 0) | ((quadrantIsNontransparent[3]) ? 128 : 0)));
+            for (byte quadrant = 0; quadrant < 4; quadrant++)
+            {
+                if (quadrantIsNontransparent[quadrant])
+                {
+                    for (ushort j = 0; j < 256; j++)
+                    {
+                        byte pixel = tile[j % 16 + j / 16 * 32 + quadrant % 2 * 16 + quadrant / 2 * 512];
+                        TDATA.Write((TileTypes[i] > 0 && pixel == 0) ? (byte)1 : pixel);
+                    }
+                }
+                else
+                {
+                    preQuadrantOffset = TDATA.BaseStream.Length;
+                    TDATA.Write(new byte[2]);
+                    TDATA.Write((ushort)16); TDATA.Write((ushort)16);
+                    for (byte row = 0; row < 16; row++)
+                    {
+                        columnCount = 1;
+                        previousTransp = (byte)(transtile[row * 32 + quadrant / 2 * 512 + quadrant % 2 * 16]);
+                        for (byte column = 1; column < 16; column++)
+                        {
+                            switch (previousTransp)
+                            {
+                                case 0:
+                                    switch (transtile[row * 32 + quadrant / 2 * 512 + column + quadrant % 2 * 16])
+                                    {
+                                        case 0:
+                                            columnCount++;
+                                            break;
+                                        case 1:
+                                            TDATA.Write(columnCount);
+                                            previousTransp = 1;
+                                            columnCount = 1;
+                                            break;
+                                    }
+                                    break;
+                                case 1:
+                                    switch (transtile[row * 32 + quadrant / 2 * 512 + column + quadrant % 2 * 16])
+                                    {
+                                        case 0:
+                                            TDATA.Write((byte)(columnCount | 128));
+                                            for (byte p = 0; p < columnCount; p++) TDATA.Write(tile[row * 32 + quadrant / 2 * 512 + column - columnCount + p + quadrant % 2 * 16]);
+                                            previousTransp = 0;
+                                            columnCount = 1;
+                                            break;
+                                        case 1:
+                                            columnCount++;
+                                            break;
+                                    }
+                                    break;
+                            }
+                        }
+                        if (previousTransp == 1) { TDATA.Write((byte)(columnCount | 128)); for (byte p = 0; p < columnCount; p++) TDATA.Write(tile[row * 32 + quadrant / 2 * 512 + 16 - columnCount + p + quadrant % 2 * 16]); }
+                        TDATA.Write((byte)128);
+                    }
+                    TDATA.Seek((int)(preQuadrantOffset - TDATA.BaseStream.Length), SeekOrigin.End);
+                    TDATA.Write((ushort)(TDATA.BaseStream.Length - preQuadrantOffset - 2));
+                    TDATA.Seek(0, SeekOrigin.End);
+                }
+            }
+        }
+    }
+    internal void WriteToEMSK(BinaryWriter EMSK)
+    {
+        bool[] shouldBeOpaque = new bool[8];
+        for (ushort i = 0; i < TileCount; i++)
+        {
+            var transtile = TransparencyMaskJJ2_Style[Array.BinarySearch(TransparencyMaskOffset, 0, (int)data3Counter, TransparencyMaskAddress[i])];
+            for (byte block = 0; block < 8; block++)
+            {
+                for (byte bit = 0; bit < 8; bit++) shouldBeOpaque[bit] = (
+                   transtile[bit * 4 + block * 128] == 1 &&
+                   transtile[bit * 4 + block * 128 + 1] == 1 &&
+                   transtile[bit * 4 + block * 128 + 2] == 1 &&
+                   transtile[bit * 4 + block * 128 + 3] == 1 &&
+                   transtile[bit * 4 + block * 128 + 32] == 1 &&
+                   transtile[bit * 4 + block * 128 + 33] == 1 &&
+                   transtile[bit * 4 + block * 128 + 34] == 1 &&
+                   transtile[bit * 4 + block * 128 + 35] == 1 &&
+                   transtile[bit * 4 + block * 128 + 64] == 1 &&
+                   transtile[bit * 4 + block * 128 + 65] == 1 &&
+                   transtile[bit * 4 + block * 128 + 66] == 1 &&
+                   transtile[bit * 4 + block * 128 + 67] == 1 &&
+                   transtile[bit * 4 + block * 128 + 96] == 1 &&
+                   transtile[bit * 4 + block * 128 + 97] == 1 &&
+                   transtile[bit * 4 + block * 128 + 98] == 1 &&
+                   transtile[bit * 4 + block * 128 + 99] == 1
+                   );
+                EMSK.Write((byte)(
+                    (shouldBeOpaque[0] ? 0 : 1) |
+                    (shouldBeOpaque[1] ? 0 : 2) |
+                    (shouldBeOpaque[2] ? 0 : 4) |
+                    (shouldBeOpaque[3] ? 0 : 8) |
+                    (shouldBeOpaque[4] ? 0 : 16) |
+                    (shouldBeOpaque[5] ? 0 : 32) |
+                    (shouldBeOpaque[6] ? 0 : 64) |
+                    (shouldBeOpaque[7] ? 0 : 128)
+                    ));
+            }
+        }
+    }
+    internal void WriteToMASK(BinaryWriter MASK, bool[] IsEachTileUsed)
+    {
+        ushort[] firstMaskInstance = new ushort[TileCount];
+        uint maskAddress;
+        for (ushort i = 1; i < TileCount; i++) if (IsEachTileUsed[i])
+            {
+                maskAddress = MaskAddress[i];
+                if (firstMaskInstance[maskAddress] == 0)
+                {
+                    firstMaskInstance[maskAddress] = i;
+                    MASK.Write(i);
+                    for (ushort j = 0; j < 1024; j += 8)
+                    {
+                        MASK.Write((byte)(
+                            (Masks[maskAddress][j + 0] == 1 ? 1 : 0) |
+                            (Masks[maskAddress][j + 1] == 1 ? 2 : 0) |
+                            (Masks[maskAddress][j + 2] == 1 ? 4 : 0) |
+                            (Masks[maskAddress][j + 3] == 1 ? 8 : 0) |
+                            (Masks[maskAddress][j + 4] == 1 ? 16 : 0) |
+                            (Masks[maskAddress][j + 5] == 1 ? 32 : 0) |
+                            (Masks[maskAddress][j + 6] == 1 ? 64 : 0) |
+                            (Masks[maskAddress][j + 7] == 1 ? 128 : 0)
+                            ));
+                    }
+                }
+                else
+                {
+                    MASK.Write((ushort)(i | 32768));
+                    MASK.Write(firstMaskInstance[maskAddress]);
+                }
+            }
+        MASK.Write((ushort)0xFFFF);
+
+    }
     //public byte[] GetImage(ushort id) { return Images[ImageAddress[id]]; }
     //public byte[] GetMask(ushort id) { return Masks[MaskAddress[id]]; }
     //public byte[] GetFMask(ushort id) { return Masks[FlippedMaskAddress[id]]; }
@@ -911,10 +1175,8 @@ class J2LFile : J2File
                 Console.WriteLine(binreader.ReadBytes(4)); //EDIT
                 SectionLength = binreader.ReadInt32(); SectionOffset = 6;
                 LEVunknown1 = binreader.ReadByte();
-                J2T = new J2TFile(); J2T.VersionType = Version.GorH; J2T.MaxTiles = 1024;
-                Tileset = J2T.FilenameOnly = new string(binreader.ReadChars(binreader.ReadByte())); SectionOffset += J2T.FilenameOnly.Length + 1;
-                J2T.TileCount = binreader.ReadUInt32();
-                J2T.data3Counter = (ushort)J2T.TileCount;
+                J2T = new J2TFile(binreader);
+                SectionOffset += (Tileset = J2T.FilenameOnly).Length + 1;
                 LEVunknown2 = binreader.ReadByte();
                 for (byte i = 0; i < 8; i++) { LayerNames[i] = new string(binreader.ReadChars(binreader.ReadByte())); SectionOffset += LayerNames[i].Length + 1; }
                 while (binreader.PeekChar() == 0) binreader.ReadByte(); //padding
@@ -945,106 +1207,14 @@ class J2LFile : J2File
                 while (binreader.PeekChar() == 0) binreader.ReadByte(); //padding
                 Console.WriteLine(binreader.ReadChars(4)); //DATA
                 SectionLength = (int)(binreader.BaseStream.Position + 4 + binreader.ReadUInt32()); // section length
-                J2T.IsFullyOpaque = new bool[1024];
-                J2T.unknown1 = new byte[1024];
-                J2T.ImageAddress = new uint[1024];
-                J2T.Images = new byte[J2T.TileCount][];
-                J2T.unknown2 = new uint[1024];
-                J2T.TransparencyMaskAddress = new uint[1024];
-                J2T.TransparencyMaskOffset = new uint[1024]; for (ushort i = 0; i < J2T.TileCount; i++) J2T.ImageAddress[i] = J2T.TransparencyMaskAddress[i] = J2T.TransparencyMaskOffset[i] = i;
-                J2T.unknown3 = new uint[1024];
-                J2T.MaskAddress = new uint[1024];
-                J2T.FlippedMaskAddress = new uint[1024];
-                J2T.TransparencyMaskJCS_Style = new byte[1024][];
-                J2T.TransparencyMaskJJ2_Style = new byte[1024][];
-                J2T.Images[0] = J2T.TransparencyMaskJCS_Style[0] = J2T.TransparencyMaskJJ2_Style[0] = new byte[1024];
-                byte rawTransBits, infoByte, elapsedRowDistance, rowTarget;
-                int pixelDestination;
-                for (ushort tile = 1; tile < J2T.TileCount; tile++)
-                {
-                    J2T.Images[tile] = new byte[1024];
-                    J2T.TransparencyMaskJCS_Style[tile] = new byte[1024];
-                    J2T.TransparencyMaskJJ2_Style[tile] = new byte[1024];
-                    rawTransBits = binreader.ReadByte();
-                    J2T.IsFullyOpaque[tile] = (rawTransBits == 240 && TileTypes[tile] == 0);
-                    //if (J2T.IsFullyOpaque[tile]) Console.WriteLine(tile);
-                    bool[] quadrantIsNontransparent = new bool[4];
-                    for (byte i = 0; i < 4; i++) quadrantIsNontransparent[i] = ((rawTransBits & (16 << i)) != 0);
-                    for (byte quadrant = 0; quadrant < 4; quadrant++)
-                    {
-                        if (quadrantIsNontransparent[quadrant])
-                        {
-                            for (ushort pixel = 0; pixel < 256; pixel++)
-                            {
-                                pixelDestination = pixel % 16 + quadrant % 2 * 16 + pixel / 16 * 32 + quadrant / 2 * 512;
-                                J2T.Images[tile][pixelDestination] = binreader.ReadByte();
-                                J2T.TransparencyMaskJCS_Style[tile][pixelDestination] = J2T.TransparencyMaskJJ2_Style[tile][pixelDestination] = (byte)((TileTypes[tile] > 0 && J2T.Images[tile][pixelDestination] == 1) ? 0 : 1);
-                            }
-                        }
-                        else
-                        {
-                            binreader.ReadBytes(6); //size, width, height
-                            for (byte row = 0; row < 16; row++)
-                            {
-                                elapsedRowDistance = 0;
-                                while (true)
-                                {
-                                    infoByte = binreader.ReadByte();
-                                    if (infoByte == 128) break;
-                                    rowTarget = (byte)((infoByte & 31) + elapsedRowDistance);
-                                    if ((infoByte & 128) == 128)
-                                    {
-                                        for (; elapsedRowDistance < rowTarget; elapsedRowDistance++)
-                                        {
-                                            pixelDestination = elapsedRowDistance + quadrant % 2 * 16 + row * 32 + quadrant / 2 * 512;
-                                            J2T.Images[tile][pixelDestination] = binreader.ReadByte();
-                                            J2T.TransparencyMaskJCS_Style[tile][pixelDestination] = J2T.TransparencyMaskJJ2_Style[tile][pixelDestination] = 1;
-                                        }
-                                    }
-                                    else elapsedRowDistance = rowTarget;
-                                }
-                            }
-                        }
-                    }
-
-                }
+                J2T.ReadFromTILEDATA(binreader, TileTypes);
                 binreader.ReadBytes(SectionLength - (int)binreader.BaseStream.Position);
                 Console.WriteLine(binreader.ReadChars(4)); //EMSK
                 binreader.ReadBytes(binreader.ReadInt32()); // skip EMSK for now, it's complicated
 
                 Console.WriteLine(binreader.ReadChars(4)); //MASK
                 binreader.ReadBytes(4); //section length
-                ushort newTile, lessTile = 0;
-                ushort oldTile = 1;
-                J2T.Masks = new byte[J2T.TileCount][];
-                J2T.Masks[0] = new byte[1024];
-                while (true)
-                {
-                    newTile = binreader.ReadUInt16();
-                    if (newTile == 0xFFFF)
-                    {
-                        for (; oldTile < J2T.TileCount; oldTile++) J2T.MaskAddress[oldTile] = lessTile;
-                        break;
-                    }
-                    else
-                    {
-                        for (; oldTile < (newTile & 1023); oldTile++)
-                        {
-                            if (lessTile == 0) { J2T.Masks[oldTile] = J2TFile.ProduceMasklessTileByteMask(); lessTile = oldTile; }
-                            J2T.MaskAddress[oldTile] = lessTile;
-                        }
-                        if ((newTile & 32768) == 32768)
-                        {
-                            J2T.MaskAddress[newTile & 1023] = binreader.ReadUInt16();
-                        }
-                        else
-                        {
-                            J2T.Masks[newTile] = J2TFile.Convert128BitsToByteMask(binreader.ReadBytes(128));
-                            J2T.MaskAddress[newTile] = newTile;
-                        }
-                        oldTile++;
-                    }
-                }
+                J2T.ReadFromMASK(binreader);
                 while (binreader.PeekChar() == 0) binreader.ReadByte(); //padding
                 Console.WriteLine(binreader.ReadChars(4)); //ANIM
                 SectionLength = binreader.ReadInt32();
@@ -1331,7 +1501,7 @@ class J2LFile : J2File
                 CMAP = new BinaryWriter(new MemoryStream(), encoding))
             {
                 EDIT.Write((byte)3);
-                EDIT.Write(Path.GetFileNameWithoutExtension(J2T.FilenameOnly));
+                EDIT.Write(Path.GetFileNameWithoutExtension(Tileset));
                 EDIT.Write(J2T.TileCount);
                 EDIT.Write((byte)0);
                 for (byte i = 0; i < 8; i++) EDIT.Write(LayerNames[i]);
@@ -1358,151 +1528,10 @@ class J2LFile : J2File
                 TINFO.Write(J2T.TileCount);
                 TINFO.Write(TileTypes, 1, (int)J2T.TileCount-1);
 
-                byte[] tile, transtile;
-                long preQuadrantOffset;
-                byte columnCount;
-                byte previousTransp;
-                for (ushort i = 1; i < J2T.TileCount; i++)
-                {
-                    transtile = J2T.TransparencyMaskJCS_Style[Array.BinarySearch(J2T.TransparencyMaskOffset, 0, (int)J2T.data3Counter, J2T.TransparencyMaskAddress[i])];
-                    tile = J2T.Images[J2T.ImageAddress[i]];
-                    bool[] quadrantIsNontransparent = new bool[4];
-                    for (byte quadrant = 0; quadrant < 4; quadrant++)
-                    {
-                        quadrantIsNontransparent[quadrant] = true;
-                        if (TileTypes[i] == 0) for (ushort pixel = 0; pixel < 256; pixel++) if (transtile[pixel % 16 + pixel / 16 * 32 + quadrant%2*16 + quadrant/2*512] == 0) { quadrantIsNontransparent[quadrant] = false; break; }
-                    }
-                    TDATA.Write((byte)(((quadrantIsNontransparent[0]) ? 16 : 0) | ((quadrantIsNontransparent[1]) ? 32 : 0) | ((quadrantIsNontransparent[2]) ? 64 : 0) | ((quadrantIsNontransparent[3]) ? 128 : 0)));
-                    for (byte quadrant = 0; quadrant < 4; quadrant++)
-                    {
-                        if (quadrantIsNontransparent[quadrant])
-                        {
-                            for (ushort j = 0; j < 256; j++)
-                            {
-                                byte pixel = tile[j % 16 + j / 16 * 32 + quadrant % 2 * 16 + quadrant / 2 * 512];
-                                TDATA.Write((TileTypes[i] > 0 && pixel == 0) ? (byte)1 : pixel);
-                            }
-                        }
-                        else
-                        {
-                            preQuadrantOffset = TDATA.BaseStream.Length;
-                            TDATA.Write(new byte[2]);
-                            TDATA.Write((ushort)16); TDATA.Write((ushort)16);
-                            for (byte row = 0; row < 16; row++)
-                            {
-                                columnCount = 1;
-                                previousTransp = (byte)(transtile[row * 32 + quadrant / 2 * 512 + quadrant % 2 * 16]);
-                                for (byte column = 1; column < 16; column++)
-                                {
-                                    switch (previousTransp)
-                                    {
-                                        case 0:
-                                            switch (transtile[row * 32 + quadrant / 2 * 512 + column + quadrant % 2 * 16])
-                                            {
-                                                case 0:
-                                                    columnCount++;
-                                                    break;
-                                                case 1:
-                                                    TDATA.Write(columnCount);
-                                                    previousTransp = 1;
-                                                    columnCount = 1;
-                                                    break;
-                                            }
-                                            break;
-                                        case 1:
-                                            switch (transtile[row * 32 + quadrant / 2 * 512 + column + quadrant % 2 * 16])
-                                            {
-                                                case 0:
-                                                    TDATA.Write((byte)(columnCount | 128));
-                                                    for (byte p = 0; p < columnCount; p++) TDATA.Write(tile[row * 32 + quadrant / 2 * 512 + column-columnCount+p + quadrant % 2 * 16]);
-                                                    previousTransp = 0;
-                                                    columnCount = 1;
-                                                    break;
-                                                case 1:
-                                                    columnCount++;
-                                                    break;
-                                            }
-                                            break;
-                                    }
-                                }
-                                if (previousTransp == 1) { TDATA.Write((byte)(columnCount | 128)); for (byte p = 0; p < columnCount; p++) TDATA.Write(tile[row * 32 + quadrant / 2 * 512 + 16 - columnCount + p + quadrant % 2 * 16]); }
-                                TDATA.Write((byte)128);
-                            }
-                            TDATA.Seek((int)(preQuadrantOffset - TDATA.BaseStream.Length), SeekOrigin.End);
-                            TDATA.Write((ushort)(TDATA.BaseStream.Length - preQuadrantOffset - 2));
-                            TDATA.Seek(0, SeekOrigin.End);
-                        }
-                    }
-                }
-
-                bool[] shouldBeOpaque = new bool[8];
-                for (ushort i = 0; i < J2T.TileCount; i++)
-                {
-                    transtile = J2T.TransparencyMaskJJ2_Style[Array.BinarySearch(J2T.TransparencyMaskOffset, 0, (int)J2T.data3Counter, J2T.TransparencyMaskAddress[i])];
-                    for (byte block = 0; block < 8; block++)
-                    {
-                        for (byte bit = 0; bit < 8; bit++) shouldBeOpaque[bit] = (
-                           transtile[bit * 4 + block * 128] == 1 &&
-                           transtile[bit * 4 + block * 128 + 1] == 1 &&
-                           transtile[bit * 4 + block * 128 + 2] == 1 &&
-                           transtile[bit * 4 + block * 128 + 3] == 1 &&
-                           transtile[bit * 4 + block * 128 + 32] == 1 &&
-                           transtile[bit * 4 + block * 128 + 33] == 1 &&
-                           transtile[bit * 4 + block * 128 + 34] == 1 &&
-                           transtile[bit * 4 + block * 128 + 35] == 1 &&
-                           transtile[bit * 4 + block * 128 + 64] == 1 &&
-                           transtile[bit * 4 + block * 128 + 65] == 1 &&
-                           transtile[bit * 4 + block * 128 + 66] == 1 &&
-                           transtile[bit * 4 + block * 128 + 67] == 1 &&
-                           transtile[bit * 4 + block * 128 + 96] == 1 &&
-                           transtile[bit * 4 + block * 128 + 97] == 1 &&
-                           transtile[bit * 4 + block * 128 + 98] == 1 &&
-                           transtile[bit * 4 + block * 128 + 99] == 1
-                           );
-                        EMSK.Write((byte)(
-                            (shouldBeOpaque[0] ? 0 : 1) |
-                            (shouldBeOpaque[1] ? 0 : 2) |
-                            (shouldBeOpaque[2] ? 0 : 4) |
-                            (shouldBeOpaque[3] ? 0 : 8) |
-                            (shouldBeOpaque[4] ? 0 : 16) |
-                            (shouldBeOpaque[5] ? 0 : 32) |
-                            (shouldBeOpaque[6] ? 0 : 64) |
-                            (shouldBeOpaque[7] ? 0 : 128)
-                            ));
-                    }
-                }
-
+                J2T.WriteToTDATA(TDATA, TileTypes);
+                J2T.WriteToEMSK(EMSK);
                 DiscoverTilesThatAreFlippedAndOrUsedInLayer3();
-                ushort[] firstMaskInstance = new ushort[J2T.TileCount];
-                uint maskAddress;
-                for (ushort i = 1; i < J2T.TileCount; i++) if (IsEachTileUsed[i])
-                {
-                    maskAddress = J2T.MaskAddress[i];
-                    if (firstMaskInstance[maskAddress] == 0)
-                    {
-                        firstMaskInstance[maskAddress] = i;
-                        MASK.Write(i);
-                        for (ushort j = 0; j < 1024; j+=8)
-                        {
-                            MASK.Write((byte)(
-                                (J2T.Masks[maskAddress][j + 0] == 1 ? 1 : 0) |
-                                (J2T.Masks[maskAddress][j + 1] == 1 ? 2 : 0) |
-                                (J2T.Masks[maskAddress][j + 2] == 1 ? 4 : 0) |
-                                (J2T.Masks[maskAddress][j + 3] == 1 ? 8 : 0) |
-                                (J2T.Masks[maskAddress][j + 4] == 1 ? 16 : 0) |
-                                (J2T.Masks[maskAddress][j + 5] == 1 ? 32 : 0) |
-                                (J2T.Masks[maskAddress][j + 6] == 1 ? 64 : 0) |
-                                (J2T.Masks[maskAddress][j + 7] == 1 ? 128 : 0)
-                                ));
-                        }
-                    }
-                    else
-                    {
-                        MASK.Write((ushort)(i | 32768));
-                        MASK.Write(firstMaskInstance[maskAddress]);
-                    }
-                }
-                MASK.Write((ushort)0xFFFF);
+                J2T.WriteToMASK(MASK, IsEachTileUsed);
 
                 ANIM.Write((uint)NumberOfAnimations);
                 for (ushort i = 0; i < NumberOfAnimations; i++)
