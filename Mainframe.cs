@@ -1300,7 +1300,7 @@ namespace MLLE
 
                 PlusPropertyList.RemovePriorReferencesToMLLELibrary(filename);
                 if (Data5 != null)
-                    J2L.PlusPropertyList.SaveLibrary(filename);
+                    J2L.PlusPropertyList.SaveLibrary(filename, J2L.Tilesets);
             }
             else if (result == SavingResults.NoTilesetSelected)
             {

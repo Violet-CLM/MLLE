@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using Ionic.Zlib;
 using System.Text.RegularExpressions;
 
@@ -150,7 +151,7 @@ namespace MLLE {
     }
 }";
 
-        public void SaveLibrary(string filepath)
+        internal void SaveLibrary(string filepath, List<J2TFile> Tilesets)
         {
             var encoding = J2LFile.FileEncoding;
             using (BinaryWriter binwriter = new BinaryWriter(File.Open(Path.Combine(Path.GetDirectoryName(filepath), AngelscriptLibraryFilename), FileMode.Create, FileAccess.Write), encoding)) {
@@ -166,6 +167,12 @@ namespace MLLE {
             string fileContents = "";
             if (File.Exists(scriptFilepath))
                 fileContents = System.IO.File.ReadAllText(scriptFilepath, encoding);
+            for (int i = 1; i < Tilesets.Count; ++i)
+            {
+                string pragma = "#pragma require \"" + Tilesets[i].FilenameOnly + "\"\r\n";
+                if (!fileContents.Contains(pragma))
+                    fileContents = pragma + fileContents;
+            }
             if (!fileContents.Contains("MLLE::Setup()"))
                 fileContents = AngelscriptLibraryCallStockLine + fileContents;
             System.IO.File.WriteAllText(scriptFilepath, "#include \"" + AngelscriptLibraryFilename + "\"\r\n" + fileContents, encoding);
