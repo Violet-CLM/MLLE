@@ -117,7 +117,7 @@ class TexturedJ2L : J2LFile
         for (ushort tileInLevelID = 0; tileInLevelID < TileCount; tileInLevelID++)
         {
             uint tileInTilesetID = tileInLevelID;
-            uint tilesetID = 0;
+            int tilesetID = 0;
             J2TFile J2T;
             while (true)
             {

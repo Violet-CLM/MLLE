@@ -113,6 +113,14 @@ namespace MLLE {
             palette.apply();
         }
 
+        data5.pop(pbyte);
+        for (uint i = 0; i < pbyte; ++i) {
+            string tilesetFilename = _read7BitEncodedStringFromStream(data5);
+            uint16 tileStart, tileCount;
+            data5.pop(tileStart); data5.pop(tileCount);
+            jjTilesFromTileset(tilesetFilename, tileStart, tileCount);
+        }
+
         if (!data5.isEmpty()) {
             jjDebug('MLLE::Setup: Warning, Data5 longer than expected');
         }
@@ -122,6 +130,23 @@ namespace MLLE {
 
     jjPALCOLOR _colorFromArgb(uint Argb) {
         return jjPALCOLOR(Argb >> 16, Argb >> 8, Argb >> 0);
+    }
+    uint _read7BitEncodedUintFromStream(jjSTREAM@ stream) {
+        uint result = 0;
+        while (true) {
+            uint8 byteRead; stream.pop(byteRead);
+            result |= (byteRead & 0x7F);
+            if (byteRead >= 0x80)
+                result <<= 7;
+            else
+                break;
+        }
+        return result;
+    }
+    string _read7BitEncodedStringFromStream(jjSTREAM@ stream) {
+        string result;
+        stream.get(result, _read7BitEncodedUintFromStream(stream));
+        return result;
     }
 }";
 

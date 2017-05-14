@@ -794,8 +794,8 @@ class J2LFile : J2File
     public bool UsesVerticalSplitscreen;
     public byte LevelMode;
     internal string MainTilesetFilename;
-    internal J2TFile[] Tilesets = new J2TFile[0];
-    public bool HasTiles { get { return Tilesets.Length > 0; } }
+    internal List<J2TFile> Tilesets = new List<J2TFile>(0);
+    public bool HasTiles { get { return Tilesets.Count > 0; } }
     public uint TileCount { get { return (uint)Tilesets.Sum(tileset => (int)tileset.TileCount); } }
     internal string BonusLevel;
     internal string NextLevel;
@@ -818,6 +818,8 @@ class J2LFile : J2File
     internal List<String> AGA_LocalEvents; // AGA
     internal List<String> AGA_GlobalEvents;
     internal AGAEvent[,] AGA_EventMap;
+
+    internal MLLE.PlusPropertyList PlusPropertyList = new MLLE.PlusPropertyList(null);
 
     const uint SecurityStringMLLE = 0xBACABEEF;
     const uint SecurityStringPassworded = 0xBA00BE00;
@@ -973,7 +975,7 @@ class J2LFile : J2File
                     data1reader.ReadUInt32(); //StreamSize
                     Name = new string(data1reader.ReadChars(32)).TrimEnd('\0');
                     MainTilesetFilename = new string(data1reader.ReadChars(32)).TrimEnd('\0');
-                    if (VersionType != Version.AmbiguousBCO) Tilesets = new J2TFile[1] { new J2TFile(Path.Combine((defaultDirectories == null) ? Path.GetDirectoryName(filename) : defaultDirectories[VersionType], MainTilesetFilename)) };
+                    if (VersionType != Version.AmbiguousBCO) Tilesets = new List<J2TFile>(1) { new J2TFile(Path.Combine((defaultDirectories == null) ? Path.GetDirectoryName(filename) : defaultDirectories[VersionType], MainTilesetFilename)) };
                     BonusLevel = new string(data1reader.ReadChars(32)).TrimEnd('\0');
                     NextLevel = new string(data1reader.ReadChars(32)).TrimEnd('\0');
                     SecretLevel = new string(data1reader.ReadChars(32)).TrimEnd('\0');
@@ -1181,7 +1183,7 @@ class J2LFile : J2File
                 SectionLength = binreader.ReadInt32(); SectionOffset = 6;
                 LEVunknown1 = binreader.ReadByte();
                 J2TFile J2T = new J2TFile(binreader);
-                Tilesets = new J2TFile[1] { J2T };
+                Tilesets = new List<J2TFile>(1) { J2T };
                 SectionOffset += (MainTilesetFilename = J2T.FilenameOnly).Length + 1;
                 LEVunknown2 = binreader.ReadByte();
                 for (byte i = 0; i < 8; i++) { LayerNames[i] = new string(binreader.ReadChars(binreader.ReadByte())); SectionOffset += LayerNames[i].Length + 1; }
@@ -1344,7 +1346,7 @@ class J2LFile : J2File
         UsesVerticalSplitscreen = false;
         Name = "Untitled";
         MainTilesetFilename = "";
-        Tilesets = new J2TFile[0];
+        Tilesets = new List<J2TFile>(0);
         BonusLevel = "";
         NextLevel = "";
         SecretLevel = "";
@@ -2080,7 +2082,7 @@ class J2LFile : J2File
             {
                 if (!HasTiles)
                 { //only testing here, obviously
-                    Tilesets = new J2TFile[2] { null, new J2TFile("D:\\Games\\Jazz2\\Mez04.j2t") }; //new J2TFile[1];
+                    Tilesets = new List<J2TFile>(2) { null, new J2TFile("D:\\Games\\Jazz2\\Mez04.j2t") }; //new J2TFile[1];
                 }
                 Tilesets[0] = tryout;
                 MainTilesetFilename = Path.GetFileName(filename);

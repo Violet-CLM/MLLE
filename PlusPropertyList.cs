@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Windows.Forms;
 using System.Drawing;
 using System.IO;
@@ -368,9 +369,9 @@ namespace MLLE
                 Palette != null
             );
         }
-        internal void CreateData5SectionIfRequiredByLevel(ref byte[] Data5)
+        internal void CreateData5SectionIfRequiredByLevel(ref byte[] Data5, List<J2TFile> Tilesets)
         {
-            if (LevelNeedsData5())
+            if (Tilesets.Count > 1 || LevelNeedsData5())
             {
                 var data5header = new MemoryStream();
                 using (MemoryStream data5body = new MemoryStream())
@@ -395,9 +396,19 @@ namespace MLLE
                     data5bodywriter.Write(WaterLevel);
                     data5bodywriter.Write(WaterGradientStart.ToArgb());
                     data5bodywriter.Write(WaterGradientStop.ToArgb());
+
                     data5bodywriter.Write(Palette != null);
                     if (Palette != null)
                         Palette.WriteLEVStyle(data5bodywriter);
+
+                    data5bodywriter.Write((byte)(Tilesets.Count - 1));
+                    for (int tilesetID = 1; tilesetID < Tilesets.Count; ++tilesetID) //Tilesets[0] is already mentioned in Data5, after all
+                    {
+                        var tileset = Tilesets[tilesetID];
+                        data5bodywriter.Write(Tilesets[tilesetID].FilenameOnly);
+                        data5bodywriter.Write((ushort)tileset.FirstTile);
+                        data5bodywriter.Write((ushort)tileset.TileCount);
+                    }
 
                     var data5bodycompressed = ZlibStream.CompressBuffer(data5body.ToArray());
                     data5writer.Write((uint)data5bodycompressed.Length);
@@ -407,7 +418,7 @@ namespace MLLE
                 Data5 = data5header.ToArray();
             }
         }
-        internal bool LevelIsReadable(byte[] Data5)
+        internal bool LevelIsReadable(byte[] Data5, List<J2TFile> Tilesets, string Folder)
         {
             if (Data5 == null || Data5.Length < 20) //level stops at the end of data4, as is good and proper
             {
@@ -443,8 +454,28 @@ namespace MLLE
                     WaterLevel = data5bodyreader.ReadSingle();
                     WaterGradientStart = Color.FromArgb(data5bodyreader.ReadInt32());
                     WaterGradientStop = Color.FromArgb(data5bodyreader.ReadInt32());
+
                     if (data5bodyreader.ReadBoolean())
                         Palette = new Palette(data5bodyreader, true);
+
+                    var extraTilesetCount = data5bodyreader.ReadByte();
+                    for (uint tilesetID = 0; tilesetID < extraTilesetCount; ++tilesetID)
+                    {
+                        var tilesetFilepath = Path.Combine(Folder, data5bodyreader.ReadString());
+                        if (File.Exists(tilesetFilepath))
+                        {
+                            var tileset = new J2TFile(tilesetFilepath);
+                            tileset.FirstTile = data5bodyreader.ReadUInt16();
+                            tileset.TileCount = data5bodyreader.ReadUInt16();
+                            Tilesets.Add(tileset);
+                        }
+                        else
+                        {
+                            this = new PlusPropertyList(null);
+                            MessageBox.Show("Additional tileset \"" + tilesetFilepath + "\" not found; MLLE will stop trying to read this Data5 section.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+                            return false;
+                        }
+                    }
                 }
             }
             return true;

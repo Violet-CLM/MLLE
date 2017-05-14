@@ -720,17 +720,16 @@ namespace MLLE
             if (SFX.result == DialogResult.OK) { J2L.AGA_SoundPointer = SFX.Paths; LevelHasBeenModified = true; }
             _suspendEvent.Set();
         }
-
-        private PlusPropertyList currentPlusPropertyList = new PlusPropertyList(null);
+        
         private void plusLevelPropertiesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _suspendEvent.Reset();
-            currentPlusPropertyList.ReadFromEventMap(J2L.EventMap);
-            PlusPropertyList? newPlusPropertyList = new PlusProperties().ShowForm(ref currentPlusPropertyList);
+            J2L.PlusPropertyList.ReadFromEventMap(J2L.EventMap);
+            PlusPropertyList? newPlusPropertyList = new PlusProperties().ShowForm(ref J2L.PlusPropertyList);
             if (newPlusPropertyList.HasValue)
             {
-                currentPlusPropertyList = newPlusPropertyList.Value;
-                currentPlusPropertyList.WriteToEventMap(J2L.EventMap);
+                J2L.PlusPropertyList = newPlusPropertyList.Value;
+                J2L.PlusPropertyList.WriteToEventMap(J2L.EventMap);
                 LevelHasBeenModified = true;
             }
             _suspendEvent.Set();
@@ -741,16 +740,16 @@ namespace MLLE
             if (J2L.HasTiles) //otherwise it's not clear how this would work
             {
                 _suspendEvent.Reset();
-                Palette newPalette = new PaletteForm().ShowForm(currentPlusPropertyList.Palette, J2L.Tilesets[0].Palette);
-                if (newPalette != null && !newPalette.Equals(currentPlusPropertyList.Palette))
+                Palette newPalette = new PaletteForm().ShowForm(J2L.PlusPropertyList.Palette, J2L.Tilesets[0].Palette);
+                if (newPalette != null && !newPalette.Equals(J2L.PlusPropertyList.Palette))
                 {
                     if (!newPalette.Equals(J2L.Tilesets[0].Palette)) //edited
-                        currentPlusPropertyList.Palette = newPalette;
+                        J2L.PlusPropertyList.Palette = newPalette;
                     else //reset
-                        currentPlusPropertyList.Palette = null;
+                        J2L.PlusPropertyList.Palette = null;
                     LevelHasBeenModified = true;
                     if (J2L.TexturesHaveBeenGenerated)
-                        J2L.Generate_Textures(palette: currentPlusPropertyList.Palette);
+                        J2L.Generate_Textures(palette: J2L.PlusPropertyList.Palette);
                     RedrawTilesetHowManyTimes = 2;
                 }
                 _suspendEvent.Set();
@@ -780,7 +779,7 @@ namespace MLLE
                 color = colorDialog1.Color;
                 Settings.IniWriteValue("Colors", iniName, string.Format("{0},{1},{2}", color.R, color.G, color.B));
                 if (recompilationNeeded && J2L.HasTiles && J2L.TexturesHaveBeenGenerated)
-                    J2L.Generate_Textures(includeMasks: true, palette: currentPlusPropertyList.Palette);
+                    J2L.Generate_Textures(includeMasks: true, palette: J2L.PlusPropertyList.Palette);
                 RedrawTilesetHowManyTimes = 2;
             }
             _suspendEvent.Set();
@@ -1030,7 +1029,7 @@ namespace MLLE
         #region J2L Extensions
         internal void ChangeTileset(string filename)
         {
-            var result = J2L.ChangeTileset(filename, overridePalette: currentPlusPropertyList.Palette);
+            var result = J2L.ChangeTileset(filename, overridePalette: J2L.PlusPropertyList.Palette);
             if (result != VersionChangeResults.Success)
             {
                 _suspendEvent.Reset();
@@ -1130,7 +1129,7 @@ namespace MLLE
             }
             else if (openResults == OpeningResults.Success || openResults == OpeningResults.SuccessfulButAmbiguous)
             {
-                if (!currentPlusPropertyList.LevelIsReadable(Data5))
+                if (!J2L.PlusPropertyList.LevelIsReadable(Data5, J2L.Tilesets, Path.GetDirectoryName(filename)))
                 {
                     MessageBox.Show("This level was not saved in a format that this version of MLLE understands. Please try downloading the latest MLLE release and trying again.", "This level cannot be loaded", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     SafeToDisplay = true;
@@ -1291,7 +1290,7 @@ namespace MLLE
 
             byte[] Data5 = null;
             if (EnableableBools[J2L.VersionType][EnableableTitles.BoolDevelopingForPlus])
-                currentPlusPropertyList.CreateData5SectionIfRequiredByLevel(ref Data5);
+                J2L.PlusPropertyList.CreateData5SectionIfRequiredByLevel(ref Data5, J2L.Tilesets);
 
             SavingResults result = J2L.Save(filename, eraseUndefinedTiles, allowDifferentTilesetVersion, storeGivenFilename, Data5);
             if (result == SavingResults.Success)
@@ -1301,7 +1300,7 @@ namespace MLLE
 
                 PlusPropertyList.RemovePriorReferencesToMLLELibrary(filename);
                 if (Data5 != null)
-                    currentPlusPropertyList.SaveLibrary(filename);
+                    J2L.PlusPropertyList.SaveLibrary(filename);
             }
             else if (result == SavingResults.NoTilesetSelected)
             {
