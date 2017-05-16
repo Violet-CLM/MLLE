@@ -2081,8 +2081,8 @@ class J2LFile : J2File
             if (tryout.TotalNumberOfTiles + NumberOfAnimations < MaxTiles)
             {
                 if (!HasTiles)
-                { //only testing here, obviously
-                    Tilesets = new List<J2TFile>(2) { null, new J2TFile("D:\\Games\\Jazz2\\Mez04.j2t") }; //new J2TFile[1];
+                {
+                    Tilesets = new List<J2TFile>(1) { null };
                 }
                 Tilesets[0] = tryout;
                 MainTilesetFilename = Path.GetFileName(filename);

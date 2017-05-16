@@ -1024,6 +1024,54 @@ namespace MLLE
             if (mode) { ParallaxDisplayMode = ParallaxMode.FullParallax; GL.Enable(EnableCap.Blend); /*GL.Disable(EnableCap.ScissorTest);*/ }
             else { ParallaxDisplayMode = ParallaxMode.NoParallax; GL.Disable(EnableCap.Blend); /*GL.Enable(EnableCap.ScissorTest);*/ }
         }
+
+
+        private void tilesetsToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
+        {
+            tilesetsToolStripMenuItem.DropDownItems.Clear();
+            for (int tilesetID = 0; tilesetID < J2L.Tilesets.Count; ++tilesetID)
+            {
+                var tileset = J2L.Tilesets[tilesetID];
+                var toolstripItem = new ToolStripMenuItem(tileset.Name);
+                toolstripItem.Enabled = tilesetID > 0;
+                toolstripItem.Tag = tileset;
+                toolstripItem.Click += tilesetsToolStripMenuItemTileset_Click;
+                tilesetsToolStripMenuItem.DropDownItems.Add(toolstripItem);
+            }
+            addNewToolStripMenuItem.Enabled = J2L.HasTiles && (J2L.TileCount + J2L.NumberOfAnimations + 10 < J2L.MaxTiles);
+            tilesetsToolStripMenuItem.DropDownItems.Add(addNewToolStripMenuItem);
+        }
+        private void ReadjustTilesetImage()
+        {
+            if (J2L.TexturesHaveBeenGenerated)
+                J2L.Generate_Textures(includeMasks: true, palette: J2L.PlusPropertyList.Palette);
+            ResizeDisplay();
+        }
+        private void tilesetsToolStripMenuItemTileset_Click(object sender, EventArgs e)
+        {
+            _suspendEvent.Reset();
+            var toolstripItem = sender as ToolStripMenuItem;
+            var tileset = toolstripItem.Tag as J2TFile;
+            if (new TilesetForm().ShowForm(tileset, J2L.Tilesets))
+                ReadjustTilesetImage();
+            _suspendEvent.Set();
+        }
+        private void addNewToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _suspendEvent.Reset();
+            var tilesetOpenDialog = new OpenFileDialog();
+            tilesetOpenDialog.DefaultExt = "j2t";
+            tilesetOpenDialog.Filter = "Tilesets|*.j2t";
+            if (tilesetOpenDialog.ShowDialog() == DialogResult.OK)
+            {
+                var newTileset = new J2TFile(tilesetOpenDialog.FileName);
+                newTileset.TileCount = 10;
+                if (new TilesetForm().ShowForm(newTileset, J2L.Tilesets))
+                    ReadjustTilesetImage();
+            }
+            _suspendEvent.Set();
+        }
+
         #endregion Menu Busywork
 
         #region J2L Extensions
@@ -1582,7 +1630,7 @@ namespace MLLE
                     {
                         #region draw animated tiles
                         var count = Math.Min(J2L.NumberOfAnimations, (TilesetScrollbar.Height - AnimatedTilesDrawHeight + 31) / 32 * 10);
-                        int x = 0, y = AnimatedTilesDrawHeight;
+                        int x = (int)(J2L.TileCount % 10) * 32, y = AnimatedTilesDrawHeight;
                         for (byte i = 0; i < count; i++)
                         {
                             DrawTile(ref x, ref y, (ushort)(J2L.AnimOffset + i), 32, true);
@@ -2107,7 +2155,7 @@ namespace MLLE
         {
             if (J2L.HasTiles)
             {
-                AnimatedTilesDrawHeight = (int)(J2L.TileCount * 3.2) - TilesetScrollbar.Value;
+                AnimatedTilesDrawHeight = (int)(J2L.TileCount / 10 * 32) - TilesetScrollbar.Value;
                 AnimatedTilesVisibleOnLeft = AnimatedTilesDrawHeight < LevelDisplay.Height;
             }
             else { AnimatedTilesVisibleOnLeft = false; }
