@@ -132,7 +132,7 @@
             // outputMath
             // 
             this.outputMath.AutoSize = true;
-            this.outputMath.Location = new System.Drawing.Point(338, 317);
+            this.outputMath.Location = new System.Drawing.Point(338, 199);
             this.outputMath.Name = "outputMath";
             this.outputMath.Size = new System.Drawing.Size(35, 13);
             this.outputMath.TabIndex = 10;
@@ -166,6 +166,7 @@
             this.Controls.Add(this.ButtonCancel);
             this.Controls.Add(this.OKButton);
             this.Controls.Add(this.panel1);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Name = "TilesetForm";
             this.Text = "Setup Extra Tileset";
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
