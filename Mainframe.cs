@@ -2293,14 +2293,14 @@ namespace MLLE
                     LevelDisplay.ContextMenuStrip = TContextMenu;
                     MouseTileX = e.X / 32;
                     MouseTileY = (e.Y + TilesetScrollbar.Value - TilesetScrollbar.Minimum) / 32;
-                    if (!J2L.HasTiles || MouseTileY * 10 < J2L.TileCount)
+                    MouseTile = MouseTileX + MouseTileY * 10;
+                    if (!J2L.HasTiles || MouseTile < J2L.TileCount)
                     {
-                        MouseTile = MouseTileX + MouseTileY * 10;
                         editAnimationToolStripMenuItem.Visible = deleteAnimationToolStripMenuItem.Visible = cloneAnimationToolStripMenuItem.Visible = !(TiletypeDropdown.Visible = OverlayDropdown.Visible = true);
                     }
                     else
                     {
-                        MouseTile = (int)((MouseTileX + MouseTileY * 10) - J2L.TileCount + J2L.AnimOffset);
+                        MouseTile = MouseTile - (int)J2L.TileCount + J2L.AnimOffset;
                         editAnimationToolStripMenuItem.Visible = deleteAnimationToolStripMenuItem.Visible = cloneAnimationToolStripMenuItem.Visible = !(TiletypeDropdown.Visible = OverlayDropdown.Visible = false);
                     }
                     MouseAGAEvent.ID = (J2L.VersionType == Version.AGA || MouseTile >= J2L.MaxTiles) ? 0 : J2L.EventTiles[MouseTile];
@@ -2722,8 +2722,27 @@ namespace MLLE
                     for (int y = UpperLeftSelectionCorner.Y; y < BottomRightSelectionCorner.Y; y++)
                         if (IsEachTileSelected[x + 1][y + 1])
                         {
-                            CurrentStamp[x - UpperLeftSelectionCorner.X][y - UpperLeftSelectionCorner.Y] = (WhereSelected == FocusedZone.Level) ? new TileAndEvent(J2L.Layers[CurrentLayer].TileMap[x, y], J2L.EventMap[x, y]) : new TileAndEvent((ushort)(x + y * 10 + ((y * 10 >= J2L.TileCount) ? J2L.AnimOffset - J2L.TileCount : 0)), J2L.EventTiles[x + y * 10]);
-                            if (cut && WhereSelected == FocusedZone.Level) { J2L.Layers[CurrentLayer].TileMap[x, y] = 0; J2L.EventMap[x, y] = 0; }
+                            TileAndEvent tileToAddToStamp;
+                            if ((WhereSelected == FocusedZone.Level))
+                            {
+                                tileToAddToStamp = new TileAndEvent(J2L.Layers[CurrentLayer].TileMap[x, y], J2L.EventMap[x, y]);
+                                if (cut) {
+                                    J2L.Layers[CurrentLayer].TileMap[x, y] = 0;
+                                    J2L.EventMap[x, y] = 0;
+                                }
+                            }
+                            else
+                            {
+                                var tileID = x + y * 10;
+                                if (tileID >= J2L.TileCount)
+                                {
+                                    tileID -= (int)J2L.TileCount;
+                                    tileID += J2L.AnimOffset;
+                                }
+                                if (tileID >= J2L.MaxTiles) tileID = 0;
+                                tileToAddToStamp = new TileAndEvent((ushort)tileID, J2L.EventTiles[tileID]);
+                            }
+                            CurrentStamp[x - UpperLeftSelectionCorner.X][y - UpperLeftSelectionCorner.Y] = tileToAddToStamp;
                         }
             }
         }
