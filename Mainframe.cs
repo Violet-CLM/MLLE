@@ -1578,21 +1578,22 @@ namespace MLLE
                             double xfraction;
                             for (int yoffset = -(TilesetScrollbar.Value % 32); yoffset < TilesetScrollbar.Height && tile < J2L.TileCount; tile += 10)
                             {
+                                var numberOfTilesToDraw = Math.Min(10, J2L.TileCount - tile); //normally 10, but could be less if TileCount isn't a multiple of 10 because you're working with multiple tilesets
                                 xfraction = tile % J2L.AtlasLength * J2L.AtlasFraction;
                                 yfraction = tile / J2L.AtlasLength * J2L.AtlasFraction;
-                                if (tile % J2L.AtlasLength + 9 < J2L.AtlasLength)
+                                if (tile % J2L.AtlasLength + numberOfTilesToDraw - 1 < J2L.AtlasLength)
                                 {
                                     GL.Begin(BeginMode.Quads);
-                                    GL.TexCoord2(xfraction + J2L.AtlasFraction * 10, yfraction); GL.Vertex2(320, yoffset);
+                                    GL.TexCoord2(xfraction + J2L.AtlasFraction * numberOfTilesToDraw, yfraction); GL.Vertex2(32 * numberOfTilesToDraw, yoffset);
                                     GL.TexCoord2(xfraction, yfraction); GL.Vertex2(0, yoffset);
                                     yfraction += J2L.AtlasFraction; yoffset += 32;
                                     GL.TexCoord2(xfraction, yfraction); GL.Vertex2(0, yoffset);
-                                    GL.TexCoord2(xfraction + J2L.AtlasFraction * 10, yfraction); GL.Vertex2(320, yoffset);
+                                    GL.TexCoord2(xfraction + J2L.AtlasFraction * numberOfTilesToDraw, yfraction); GL.Vertex2(32 * numberOfTilesToDraw, yoffset);
                                     GL.End();
                                 }
                                 else
                                 {
-                                    byte width = (byte)(J2L.AtlasLength - tile % J2L.AtlasLength);
+                                    var width = (J2L.AtlasLength - tile % J2L.AtlasLength);
                                     GL.Begin(BeginMode.Quads);
                                     GL.TexCoord2(xfraction + J2L.AtlasFraction * width, yfraction); GL.Vertex2(32 * width, yoffset);
                                     GL.TexCoord2(xfraction, yfraction); GL.Vertex2(0, yoffset);
@@ -1602,11 +1603,11 @@ namespace MLLE
                                     GL.End();
                                     xfraction = 0; yoffset -= 32;
                                     GL.Begin(BeginMode.Quads);
-                                    GL.TexCoord2(xfraction + J2L.AtlasFraction * (10 - width), yfraction); GL.Vertex2(320, yoffset);
+                                    GL.TexCoord2(xfraction + J2L.AtlasFraction * (numberOfTilesToDraw - width), yfraction); GL.Vertex2(32 * numberOfTilesToDraw, yoffset);
                                     GL.TexCoord2(xfraction, yfraction); GL.Vertex2(32 * width, yoffset);
                                     yfraction += J2L.AtlasFraction; yoffset += 32;
                                     GL.TexCoord2(xfraction, yfraction); GL.Vertex2(32 * width, yoffset);
-                                    GL.TexCoord2(xfraction + J2L.AtlasFraction * (10 - width), yfraction); GL.Vertex2(320, yoffset);
+                                    GL.TexCoord2(xfraction + J2L.AtlasFraction * (numberOfTilesToDraw - width), yfraction); GL.Vertex2(32 * numberOfTilesToDraw, yoffset);
                                     GL.End();
                                 }
                             }
