@@ -49,24 +49,26 @@
             this.pictureBox1.Location = new System.Drawing.Point(0, 0);
             this.pictureBox1.Margin = new System.Windows.Forms.Padding(0);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(100, 50);
+            this.pictureBox1.Size = new System.Drawing.Size(320, 50);
             this.pictureBox1.TabIndex = 0;
             this.pictureBox1.TabStop = false;
             // 
             // panel1
             // 
+            this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.panel1.AutoScroll = true;
             this.panel1.Controls.Add(this.pictureBox1);
             this.panel1.Location = new System.Drawing.Point(12, 12);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(320, 320);
+            this.panel1.Size = new System.Drawing.Size(344, 320);
             this.panel1.TabIndex = 1;
             // 
             // ButtonCancel
             // 
             this.ButtonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.ButtonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.ButtonCancel.Location = new System.Drawing.Point(338, 39);
+            this.ButtonCancel.Location = new System.Drawing.Point(362, 39);
             this.ButtonCancel.Name = "ButtonCancel";
             this.ButtonCancel.Size = new System.Drawing.Size(75, 23);
             this.ButtonCancel.TabIndex = 5;
@@ -77,7 +79,7 @@
             // OKButton
             // 
             this.OKButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.OKButton.Location = new System.Drawing.Point(338, 10);
+            this.OKButton.Location = new System.Drawing.Point(362, 10);
             this.OKButton.Name = "OKButton";
             this.OKButton.Size = new System.Drawing.Size(75, 23);
             this.OKButton.TabIndex = 4;
@@ -87,8 +89,9 @@
             // 
             // label1
             // 
+            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(338, 121);
+            this.label1.Location = new System.Drawing.Point(362, 121);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(44, 13);
             this.label1.TabIndex = 6;
@@ -96,7 +99,8 @@
             // 
             // inputFirst
             // 
-            this.inputFirst.Location = new System.Drawing.Point(338, 137);
+            this.inputFirst.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.inputFirst.Location = new System.Drawing.Point(362, 137);
             this.inputFirst.Maximum = new decimal(new int[] {
             9,
             0,
@@ -109,7 +113,8 @@
             // 
             // inputLast
             // 
-            this.inputLast.Location = new System.Drawing.Point(338, 176);
+            this.inputLast.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.inputLast.Location = new System.Drawing.Point(362, 176);
             this.inputLast.Name = "inputLast";
             this.inputLast.Size = new System.Drawing.Size(81, 20);
             this.inputLast.TabIndex = 9;
@@ -122,8 +127,9 @@
             // 
             // label2
             // 
+            this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(338, 160);
+            this.label2.Location = new System.Drawing.Point(362, 160);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(38, 13);
             this.label2.TabIndex = 8;
@@ -131,8 +137,9 @@
             // 
             // outputMath
             // 
+            this.outputMath.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.outputMath.AutoSize = true;
-            this.outputMath.Location = new System.Drawing.Point(338, 199);
+            this.outputMath.Location = new System.Drawing.Point(362, 199);
             this.outputMath.Name = "outputMath";
             this.outputMath.Size = new System.Drawing.Size(35, 13);
             this.outputMath.TabIndex = 10;
@@ -142,7 +149,7 @@
             // 
             this.ButtonDelete.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.ButtonDelete.DialogResult = System.Windows.Forms.DialogResult.Abort;
-            this.ButtonDelete.Location = new System.Drawing.Point(338, 68);
+            this.ButtonDelete.Location = new System.Drawing.Point(362, 68);
             this.ButtonDelete.Name = "ButtonDelete";
             this.ButtonDelete.Size = new System.Drawing.Size(75, 23);
             this.ButtonDelete.TabIndex = 11;
@@ -156,7 +163,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
-            this.ClientSize = new System.Drawing.Size(425, 339);
+            this.ClientSize = new System.Drawing.Size(449, 339);
             this.Controls.Add(this.ButtonDelete);
             this.Controls.Add(this.outputMath);
             this.Controls.Add(this.inputLast);
