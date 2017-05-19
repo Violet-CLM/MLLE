@@ -35,9 +35,21 @@ namespace MLLE
             inputLast.Minimum = inputFirst.Value + 1;
             ButtonDelete.Visible = Tilesets.Contains(Tileset);
             CreateImageFromTileset();
-            UpdateOutputString();
+            UpdatePreviewControls();
             ShowDialog();
             return Result;
+        }
+
+        internal static void GetColorPaletteFromTileset(J2TFile tileset, Bitmap image)
+        {
+            var palette = image.Palette;
+            var entries = palette.Entries;
+            for (uint i = 0; i < 256; ++i)
+            {
+                var color = tileset.Palette.Colors[i];
+                entries[i] = Color.FromArgb(color[0], color[1], color[2]);
+            }
+            image.Palette = palette;
         }
 
         private void CreateImageFromTileset()
@@ -62,22 +74,17 @@ namespace MLLE
             image.UnlockBits(data);
             pictureBox1.Image = image;
 
-            var palette = image.Palette;
-            var entries = palette.Entries;
-            for (uint i = 0; i < 256; ++i)
-            {
-                var color = Tileset.Palette.Colors[i];
-                entries[i] = Color.FromArgb(color[0], color[1], color[2]);
-            }
-            image.Palette = palette;
+            GetColorPaletteFromTileset(Tileset, image);
         }
 
-        private void UpdateOutputString()
+        private void UpdatePreviewControls()
         {
             var proposedTileCount = inputLast.Value - inputFirst.Value;
             var proposedTotal = NumberOfTilesInThisLevelBesidesThisTileset + proposedTileCount;
             outputMath.Text = String.Format("{0} + {1} =\n{2}/{3}", NumberOfTilesInThisLevelBesidesThisTileset, proposedTileCount, proposedTotal, MaxTilesSupportedByLevel);
             outputMath.ForeColor = (OKButton.Enabled = proposedTotal <= MaxTilesSupportedByLevel) ? Color.Black : Color.Red;
+            EdgePanelLeft.Location = GetPointFromTileID((int)inputFirst.Value, 0);
+            EdgePanelRight.Location = GetPointFromTileID((int)inputLast.Value - 1, 32);
         }
 
         private void OKButton_Click(object sender, EventArgs e)
@@ -105,13 +112,49 @@ namespace MLLE
         private void inputFirst_ValueChanged(object sender, EventArgs e)
         {
             inputLast.Minimum = inputFirst.Value + 1;
-            UpdateOutputString();
+            UpdatePreviewControls();
         }
 
         private void inputLast_ValueChanged(object sender, EventArgs e)
         {
             inputFirst.Maximum = inputLast.Value - 1;
-            UpdateOutputString();
+            UpdatePreviewControls();
+        }
+
+        int GetMouseTileIDFromTileset(MouseEventArgs e)
+        {
+            var pictureOrigin = pictureBox1.AutoScrollOffset;
+            return ((e.X - pictureOrigin.X) / 32 + (e.Y - pictureOrigin.Y) / 32 * 10);
+        }
+        Point GetPointFromTileID(int tileID, int xAdjust)
+        {
+            return new Point(
+                pictureBox1.Left + (tileID % 10) * 32 - EdgePanelLeft.Width / 2 + xAdjust,
+                pictureBox1.Top + (tileID / 10) * 32 - (EdgePanelLeft.Height - 32) / 2
+            );
+        }
+
+
+        private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
+        {
+            Text = "Setup Extra Tileset - " + GetMouseTileIDFromTileset(e);
+        }
+
+        private void pictureBox1_MouseLeave(object sender, EventArgs e)
+        {
+            Text = "Setup Extra Tileset";
+        }
+
+        private void pictureBox1_MouseClick(object sender, MouseEventArgs e)
+        {
+            try
+            {
+                if (e.Button == MouseButtons.Right)
+                    inputLast.Value = GetMouseTileIDFromTileset(e) + 1;
+                else
+                    inputFirst.Value = GetMouseTileIDFromTileset(e);
+            }
+            catch { } //invalid value because of Minimum/Maximum of that textbox; do nothing
         }
     }
 }
