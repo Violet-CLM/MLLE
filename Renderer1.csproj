@@ -233,7 +233,17 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\DiamondusPole.ico" />
     <None Include="Icons\MLLE01.ico" />
+    <None Include="Images\500Bumper.png" />
+    <None Include="Images\CarrotBumper.png" />
+    <None Include="Images\CarrotusPole.png" />
+    <None Include="Images\DiamondusPole.png" />
+    <None Include="Images\Flipper.png" />
+    <None Include="Images\JunglePole.png" />
+    <None Include="Images\PsychPole.png" />
+    <None Include="Images\SmallTree.png" />
+    <None Include="Images\Splash.png" />
     <Content Include="MLLE.ico" />
     <Content Include="MLLE01.ico" />
   </ItemGroup>

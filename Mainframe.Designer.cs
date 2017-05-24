@@ -197,6 +197,8 @@
             this.AnimScrollbar = new System.Windows.Forms.HScrollBar();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
+            this.recolorEventsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.diamondusPoleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MainMenu.SuspendLayout();
             this.DrawingTools.SuspendLayout();
             this.StatusBar.SuspendLayout();
@@ -504,7 +506,8 @@
             this.jJ2PropertiesToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.plusLevelPropertiesToolStripMenuItem,
             this.paletteToolStripMenuItem,
-            this.tilesetsToolStripMenuItem});
+            this.tilesetsToolStripMenuItem,
+            this.recolorEventsToolStripMenuItem});
             this.jJ2PropertiesToolStripMenuItem.Name = "jJ2PropertiesToolStripMenuItem";
             this.jJ2PropertiesToolStripMenuItem.Size = new System.Drawing.Size(97, 20);
             this.jJ2PropertiesToolStripMenuItem.Text = "JJ2+ Properties";
@@ -1800,6 +1803,21 @@
             // 
             this.folderBrowserDialog1.ShowNewFolderButton = false;
             // 
+            // recolorEventsToolStripMenuItem
+            // 
+            this.recolorEventsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.diamondusPoleToolStripMenuItem});
+            this.recolorEventsToolStripMenuItem.Name = "recolorEventsToolStripMenuItem";
+            this.recolorEventsToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.recolorEventsToolStripMenuItem.Text = "Recolor Events";
+            // 
+            // diamondusPoleToolStripMenuItem
+            // 
+            this.diamondusPoleToolStripMenuItem.Name = "diamondusPoleToolStripMenuItem";
+            this.diamondusPoleToolStripMenuItem.Size = new System.Drawing.Size(161, 22);
+            this.diamondusPoleToolStripMenuItem.Text = "Diamondus Pole";
+            this.diamondusPoleToolStripMenuItem.Click += new System.EventHandler(this.diamondusPoleToolStripMenuItem_Click);
+            // 
             // Mainframe
             // 
             this.AllowDrop = true;
@@ -2022,5 +2040,7 @@
         private System.Windows.Forms.ToolStripMenuItem paletteToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem tilesetsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem addNewToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem recolorEventsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem diamondusPoleToolStripMenuItem;
     }
 }

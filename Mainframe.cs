@@ -757,6 +757,14 @@ namespace MLLE
         }
 
 
+        private void diamondusPoleToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _suspendEvent.Reset();
+
+            _suspendEvent.Set();
+        }
+
+
         private void pathsAndFilenamesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _suspendEvent.Reset();
