@@ -28,7 +28,7 @@ internal class Palette
 
     public static Color Convert(byte[] src)
     {
-        return Color.FromArgb(src[0], src[1], src[2], src[3]);
+        return Color.FromArgb(src[3], src[0], src[1], src[2]);
     }
     public static byte[] Convert(Color src)
     {
@@ -90,14 +90,14 @@ namespace MLLE
 
         public int NumberOfColorsToSelectAtATime = 1;
 
-        private Palette _Palette;
+        private Palette _Palette = new Palette();
         public Palette Palette {
             get {
                 return _Palette;
             }
             set
             {
-                _Palette = value;
+                _Palette.CopyFrom(value);
                 Update(Enumerable.Range(0, (int)Palette.PaletteSize).ToArray());
             }
         }
@@ -115,6 +115,17 @@ namespace MLLE
 
             MouseDown += Clicked;
             MouseDoubleClick += DoubleClicked;
+            MouseMove += Moved;
+        }
+
+        bool CurrentlySelectingColors;
+        private void Moved(object sender, MouseEventArgs e)
+        {
+            if (e.Button != MouseButtons.None)
+            {
+                if (ColorsSelected[getSelectedColor(e)] != CurrentlySelectingColors)
+                    Clicked(sender, e);
+            }
         }
 
         private int getSelectedColor(MouseEventArgs e)
@@ -129,35 +140,46 @@ namespace MLLE
                     colorSelected & ~(NumberOfColorsToSelectAtATime - 1),
                     NumberOfColorsToSelectAtATime
                 ).ToArray(),
-                !ColorsSelected[colorSelected]
+                CurrentlySelectingColors = !ColorsSelected[colorSelected]
             );
+        }
+
+        public int[] GetSelectedIndices()
+        {
+            return ColorsSelected.Select((item, index) => new { Item = item, Index = index })
+               .Where(pair => pair.Item)
+               .Select(result => result.Index)
+               .ToArray();
+        }
+        public int NumberOfSelectedColors { get
+            {
+                return ColorsSelected.Where(item => item).Count();
+            }
         }
         private void DoubleClicked(object sender, MouseEventArgs e)
         {
             int colorSelected = getSelectedColor(e);
-            ColorsSelected[colorSelected] = true;
+            if (!ColorsSelected[colorSelected])
+                Clicked(sender, e);
 
             ColorDialog colorDialog1 = new ColorDialog();
             colorDialog1.Color = Palette.Convert(Palette[colorSelected]);
+            colorDialog1.FullOpen = true;
             DialogResult result = colorDialog1.ShowDialog();
             if (result == DialogResult.OK)
             {
                 var color = Palette.Convert(colorDialog1.Color);
-                List<int> numbersOfSelectedColors = new List<int>();
-                for (int i = 0; i < Palette.PaletteSize; ++i)
-                    if (ColorsSelected[i])
-                    {
-                        Palette[i] = color;
-                        numbersOfSelectedColors.Add(i);
-                    }
-                if (numbersOfSelectedColors.Count == 1) //only this one
+                var selections = GetSelectedIndices();
+                foreach (var selectedIndex in selections)
+                    Palette[selectedIndex] = color;
+                if (selections.Length == 1) //only this one
                     ColorsSelected[colorSelected] = false;
-                Update(numbersOfSelectedColors.ToArray());
+                Update(selections);
             }
         }
 
         public bool[] ColorsSelected { get; }
-        private void Update(int[] colorsToUpdate)
+        public void Update(int[] colorsToUpdate)
         {
             using (Graphics g = Graphics.FromImage(ImageImage))
             {
@@ -172,15 +194,6 @@ namespace MLLE
                     }
                 Image = ImageImage;
             }
-
-            /*ImageData = ImageImage.LockBits(new Rectangle(0, 0, Width, Height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
-            Bytes = new byte[ImageData.Height * ImageData.Stride];
-            {
-                System.Drawing.Drawing2D.Rect
-            }
-            Marshal.Copy(Bytes, 0, ImageData.Scan0, Bytes.Length);
-            ImageImage.UnlockBits(ImageData);
-            Image = ImageImage;*/
         }
         public void SetSelected(int[] colorsToSelect, bool selecting)
         {

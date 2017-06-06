@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.IO;
 using System.Drawing;
 using System.Windows.Forms;
@@ -7,55 +8,38 @@ namespace MLLE
 {
     public partial class PaletteForm : Form
     {
-        bool PaletteEdited = false;
         Palette DefaultPalette;
-        Palette Palette = new Palette();
 
         public PaletteForm()
         {
             InitializeComponent();
         }
 
-        void SetAllColors()
-        {
-            throw new NotImplementedException();
-        }
-        void SetColor(Panel panel, Color color)
-        {
-            panel.BackColor = color;
-            var paletteEntry = Palette[(int)panel.Tag];
-            paletteEntry[0] = color.R;
-            paletteEntry[1] = color.G;
-            paletteEntry[2] = color.B;
-            PaletteEdited = true;
-        }
-
+        Palette InitialPalette;
         PaletteImage PaletteImage = new PaletteImage(15, 2);
         internal Palette ShowForm(Palette plusPalette, Palette defaultPalette)
         {
             DefaultPalette = defaultPalette;
-            Palette.CopyFrom(plusPalette ?? DefaultPalette);
+            InitialPalette = (plusPalette ?? DefaultPalette);
 
             PaletteImage.Location = new Point(12, OKButton.Location.Y);
-            PaletteImage.Palette = Palette;
+            PaletteImage.Palette = InitialPalette;
             Controls.Add(PaletteImage);
 
             ShowDialog();
 
-            return PaletteEdited ? Palette : null;
+            return (!PaletteImage.Palette.Equals(InitialPalette)) ? PaletteImage.Palette : null;
         }
 
 
         private void ResetButton_Click(object sender, System.EventArgs e)
         {
-            PaletteEdited = true;
-            Palette.CopyFrom(DefaultPalette);
-            SetAllColors();
+            PaletteImage.Palette = DefaultPalette;
         }
 
         private void ButtonCancel_Click(object sender, System.EventArgs e)
         {
-            PaletteEdited = false;
+            PaletteImage.Palette.CopyFrom(InitialPalette);
             Close();
         }
 
@@ -87,18 +71,17 @@ namespace MLLE
 
         private void selectNoneToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            PaletteImage.SetSelected(Enumerable.Range(0, (int)Palette.PaletteSize).ToArray(), false);
         }
 
         void SwapChannels(int a, int b, int c)
         {
-            throw new NotImplementedException();
-            /*foreach (Panel panel in panels)
-                if (panel.BorderStyle != BorderStyle.None)
-                {
-                    var paletteEntry = Palette[(int)panel.Tag];
-                    SetColor(panel, Color.FromArgb(paletteEntry[a], paletteEntry[b], paletteEntry[c]));
-                }*/
+            var selections = PaletteImage.GetSelectedIndices();
+            foreach (var selectedIndex in selections) {
+                var paletteEntry = PaletteImage.Palette[selectedIndex];
+                PaletteImage.Palette[selectedIndex] = new byte[] { paletteEntry[a], paletteEntry[b], paletteEntry[c], byte.MaxValue };
+            }
+            PaletteImage.Update(selections);
         }
 
         private void swapRedGreenToolStripMenuItem_Click(object sender, EventArgs e) { SwapChannels(1, 0, 2);  }
@@ -107,17 +90,17 @@ namespace MLLE
 
         private void gradientToolStripMenuItem_Click(object sender, EventArgs e) //pretty much copied from JJ2+
         {
-            throw new NotImplementedException();
-            /*var selectedPanels = Array.FindAll(panels, panel => panel.BorderStyle != BorderStyle.None);
-            var length = selectedPanels.Length - 1;
-            if (selectedPanels.Length > 2) //long enough to make a gradient from
+            var selections = PaletteImage.GetSelectedIndices();
+            var length = selections.Length - 1;
+            if (selections.Length > 2) //long enough to make a gradient from
             {
-                Color first = selectedPanels[0].BackColor;
-                Color last = selectedPanels[length].BackColor;
+                Color first = Palette.Convert(PaletteImage.Palette[selections[0]]);
+                Color last = Palette.Convert(PaletteImage.Palette[selections[length]]);
                 float[] steps = new float[3] { (last.R - first.R) / (float)length, (last.G - first.G) / (float)length, (last.B - first.B) / (float)length };
                 for (int i = 1; i < length; i++)
-                    SetColor(selectedPanels[i], Color.FromArgb((byte)(first.R + (steps[0] * i)), (byte)(first.G + (steps[1] * i)), (byte)(first.B + (steps[2] * i))));
-            }*/
+                    PaletteImage.Palette[selections[i]] = new byte[] { (byte)(first.R + (steps[0] * i)), (byte)(first.G + (steps[1] * i)), (byte)(first.B + (steps[2] * i)), byte.MaxValue };
+                PaletteImage.Update(selections);
+            }
         }
 
         private void LoadButton_Click(object sender, EventArgs e)
@@ -127,9 +110,7 @@ namespace MLLE
                 var filepath = openFileDialog1.FileName;
                 if (Path.GetExtension(filepath) == ".j2t") //J2TFile has zero error checking, so hopefully this works out
                 {
-                    PaletteEdited = true;
-                    Palette.CopyFrom(new J2TFile(filepath).Palette);
-                    SetAllColors();
+                    PaletteImage.Palette = new J2TFile(filepath).Palette;
                 }
                 else
                     using (BinaryReader binreader = new BinaryReader(File.Open(filepath, FileMode.Open, FileAccess.Read), J2TFile.FileEncoding))
@@ -138,11 +119,23 @@ namespace MLLE
                             return;
                         else if (binreader.BaseStream.Length == 1032) //"color map" palette
                             binreader.BaseStream.Seek(4, SeekOrigin.Begin);
-                        Palette = new Palette(binreader);
-                        PaletteEdited = true;
-                        SetAllColors();
+                        PaletteImage.Palette = new Palette(binreader);
                     }
             }
+        }
+
+        private void toolsToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
+        {
+            var count = PaletteImage.NumberOfSelectedColors;
+            gradientToolStripMenuItem.Enabled =
+                count >= 3;
+            swapBlueRedToolStripMenuItem.Enabled = swapGreenBlueToolStripMenuItem.Enabled = swapRedGreenToolStripMenuItem.Enabled =
+                count > 0;
+        }
+
+        private void toolsToolStripMenuItem_DropDownClosed(object sender, EventArgs e)
+        {
+            gradientToolStripMenuItem.Enabled = true; //so that Ctrl+G is always available
         }
     }
 }

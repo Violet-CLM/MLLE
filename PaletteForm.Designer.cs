@@ -35,17 +35,17 @@
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.selectionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.selectNoneToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.select1ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.select8ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.select16ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.gradientToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.swapRedGreenToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.swapGreenBlueToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.swapBlueRedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -122,18 +122,6 @@
             this.selectionToolStripMenuItem.Size = new System.Drawing.Size(67, 20);
             this.selectionToolStripMenuItem.Text = "Selection";
             // 
-            // toolsToolStripMenuItem
-            // 
-            this.toolsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.gradientToolStripMenuItem,
-            this.toolStripSeparator2,
-            this.swapRedGreenToolStripMenuItem,
-            this.swapGreenBlueToolStripMenuItem,
-            this.swapBlueRedToolStripMenuItem});
-            this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
-            this.toolsToolStripMenuItem.Size = new System.Drawing.Size(47, 20);
-            this.toolsToolStripMenuItem.Text = "Tools";
-            // 
             // selectNoneToolStripMenuItem
             // 
             this.selectNoneToolStripMenuItem.Name = "selectNoneToolStripMenuItem";
@@ -141,6 +129,11 @@
             this.selectNoneToolStripMenuItem.Size = new System.Drawing.Size(179, 22);
             this.selectNoneToolStripMenuItem.Text = "Select None";
             this.selectNoneToolStripMenuItem.Click += new System.EventHandler(this.selectNoneToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(176, 6);
             // 
             // select1ToolStripMenuItem
             // 
@@ -168,10 +161,19 @@
             this.select16ToolStripMenuItem.Text = "Select 16";
             this.select16ToolStripMenuItem.Click += new System.EventHandler(this.select16ToolStripMenuItem_Click);
             // 
-            // toolStripSeparator1
+            // toolsToolStripMenuItem
             // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(176, 6);
+            this.toolsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.gradientToolStripMenuItem,
+            this.toolStripSeparator2,
+            this.swapRedGreenToolStripMenuItem,
+            this.swapGreenBlueToolStripMenuItem,
+            this.swapBlueRedToolStripMenuItem});
+            this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
+            this.toolsToolStripMenuItem.Size = new System.Drawing.Size(47, 20);
+            this.toolsToolStripMenuItem.Text = "Tools";
+            this.toolsToolStripMenuItem.DropDownClosed += new System.EventHandler(this.toolsToolStripMenuItem_DropDownClosed);
+            this.toolsToolStripMenuItem.DropDownOpening += new System.EventHandler(this.toolsToolStripMenuItem_DropDownOpening);
             // 
             // gradientToolStripMenuItem
             // 
@@ -180,6 +182,11 @@
             this.gradientToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
             this.gradientToolStripMenuItem.Text = "Gradient";
             this.gradientToolStripMenuItem.Click += new System.EventHandler(this.gradientToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(161, 6);
             // 
             // swapRedGreenToolStripMenuItem
             // 
@@ -201,11 +208,6 @@
             this.swapBlueRedToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
             this.swapBlueRedToolStripMenuItem.Text = "Swap Blue/Red";
             this.swapBlueRedToolStripMenuItem.Click += new System.EventHandler(this.swapBlueRedToolStripMenuItem_Click);
-            // 
-            // toolStripSeparator2
-            // 
-            this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(161, 6);
             // 
             // openFileDialog1
             // 
