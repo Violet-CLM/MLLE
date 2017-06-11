@@ -760,7 +760,10 @@ namespace MLLE
         private void diamondusPoleToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _suspendEvent.Reset();
-
+            if (new SpriteRecolorForm().ShowForm(J2L.PlusPropertyList.Palette ?? J2L.Tilesets[0].Palette, Properties.Resources.DiamondusPole))
+            {
+                
+            }
             _suspendEvent.Set();
         }
 

@@ -16,7 +16,7 @@ namespace MLLE
         }
 
         Palette InitialPalette;
-        PaletteImage PaletteImage = new PaletteImage(15, 2);
+        PaletteImage PaletteImage = new PaletteImage(15, 2, false);
         internal Palette ShowForm(Palette plusPalette, Palette defaultPalette)
         {
             DefaultPalette = defaultPalette;

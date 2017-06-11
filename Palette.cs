@@ -28,11 +28,11 @@ internal class Palette
 
     public static Color Convert(byte[] src)
     {
-        return Color.FromArgb(src[3], src[0], src[1], src[2]);
+        return Color.FromArgb(byte.MaxValue, src[0], src[1], src[2]);
     }
     public static byte[] Convert(Color src)
     {
-        return new byte[4] { src.R, src.G, src.B, src.A };
+        return new byte[4] { src.R, src.G, src.B, byte.MaxValue };
     }
 
     internal void CopyFrom(Palette other)
@@ -104,17 +104,17 @@ namespace MLLE
 
 
         private Bitmap ImageImage;
-        //private BitmapData ImageData;
-        //private byte[] Bytes;
+        bool ReadOnly;
 
-        public PaletteImage(int colorSize, int borderSize)
+        public PaletteImage(int colorSize, int borderSize, bool readOnly)
         {
             Width = Height = (int)((ColorTotalSize = (ColorSize = colorSize) + (BorderSize = borderSize) * 2) * PaletteLengthOnEitherDimension);
             ImageImage = new Bitmap(Width, Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
             ColorsSelected = new bool[Palette.PaletteSize];
 
             MouseDown += Clicked;
-            MouseDoubleClick += DoubleClicked;
+            if (!(ReadOnly = readOnly))
+                MouseDoubleClick += DoubleClicked;
             MouseMove += Moved;
         }
 

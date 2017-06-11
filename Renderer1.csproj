@@ -122,6 +122,12 @@
     <Compile Include="TextEdit.Designer.cs">
       <DependentUpon>TextEdit.cs</DependentUpon>
     </Compile>
+    <Compile Include="SpriteRecolorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SpriteRecolorForm.Designer.cs">
+      <DependentUpon>SpriteRecolorForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="TilesetForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -212,6 +218,9 @@
     <EmbeddedResource Include="TextEdit.resx">
       <DependentUpon>TextEdit.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="SpriteRecolorForm.resx">
+      <DependentUpon>SpriteRecolorForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="TilesetForm.resx">
       <DependentUpon>TilesetForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -244,6 +253,8 @@
     <None Include="Images\PsychPole.png" />
     <None Include="Images\SmallTree.png" />
     <None Include="Images\Splash.png" />
+    <Content Include="Images\Leaf.png" />
+    <Content Include="Images\Snow.png" />
     <Content Include="MLLE.ico" />
     <Content Include="MLLE01.ico" />
   </ItemGroup>
