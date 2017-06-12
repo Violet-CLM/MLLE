@@ -70,6 +70,7 @@
             this.paletteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tilesetsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addNewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.recolorEventsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.preferencesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.eventsForemostToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator19 = new System.Windows.Forms.ToolStripSeparator();
@@ -197,8 +198,6 @@
             this.AnimScrollbar = new System.Windows.Forms.HScrollBar();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
-            this.recolorEventsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.diamondusPoleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MainMenu.SuspendLayout();
             this.DrawingTools.SuspendLayout();
             this.StatusBar.SuspendLayout();
@@ -538,9 +537,15 @@
             // addNewToolStripMenuItem
             // 
             this.addNewToolStripMenuItem.Name = "addNewToolStripMenuItem";
-            this.addNewToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.addNewToolStripMenuItem.Size = new System.Drawing.Size(132, 22);
             this.addNewToolStripMenuItem.Text = "Add New...";
             this.addNewToolStripMenuItem.Click += new System.EventHandler(this.addNewToolStripMenuItem_Click);
+            // 
+            // recolorEventsToolStripMenuItem
+            // 
+            this.recolorEventsToolStripMenuItem.Name = "recolorEventsToolStripMenuItem";
+            this.recolorEventsToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.recolorEventsToolStripMenuItem.Text = "Recolor Events";
             // 
             // preferencesToolStripMenuItem
             // 
@@ -1803,20 +1808,6 @@
             // 
             this.folderBrowserDialog1.ShowNewFolderButton = false;
             // 
-            // recolorEventsToolStripMenuItem
-            // 
-            this.recolorEventsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.diamondusPoleToolStripMenuItem});
-            this.recolorEventsToolStripMenuItem.Name = "recolorEventsToolStripMenuItem";
-            this.recolorEventsToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
-            this.recolorEventsToolStripMenuItem.Text = "Recolor Events";
-            // 
-            // diamondusPoleToolStripMenuItem
-            // 
-            this.diamondusPoleToolStripMenuItem.Name = "diamondusPoleToolStripMenuItem";
-            this.diamondusPoleToolStripMenuItem.Size = new System.Drawing.Size(161, 22);
-            this.diamondusPoleToolStripMenuItem.Text = "Diamondus Pole";
-            // 
             // Mainframe
             // 
             this.AllowDrop = true;
@@ -2040,6 +2031,5 @@
         private System.Windows.Forms.ToolStripMenuItem tilesetsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem addNewToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem recolorEventsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem diamondusPoleToolStripMenuItem;
     }
 }

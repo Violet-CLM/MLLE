@@ -402,6 +402,15 @@ namespace MLLE
             try { SubtractSelectionKey = StK[Settings.IniReadValue("Hotkeys", "SubtractFromSelection")]; }
             catch { SubtractSelectionKey = Keys.Control; }
             ParallaxEventDisplayType = (Settings.IniReadValue("Miscellaneous", "EventParallaxMode") == "0") ? (byte)0 : (byte)1; eventsForemostToolStripMenuItem.Checked = ParallaxEventDisplayType == 1;
+            
+            for (int i = 0; i < RecolorableSpriteNames.Length; ++i)
+            {
+                ToolStripMenuItem toolstripitem = new ToolStripMenuItem(RecolorableSpriteNames[i]);
+                toolstripitem.Tag = i;
+                toolstripitem.Click += recolorableSpriteToolStripMenuItem_Click;
+                recolorEventsToolStripMenuItem.DropDownItems.Add(toolstripitem);
+            }
+
 
             var commands = Environment.GetCommandLineArgs();
             if (commands.Length > 1) switch (Path.GetExtension(commands[1].Trim()).ToLowerInvariant())
@@ -757,18 +766,18 @@ namespace MLLE
         }
 
         private static readonly Bitmap[] RecolorableSpriteResources = { Properties.Resources._500Bumper, Properties.Resources.CarrotBumper, Properties.Resources.CarrotusPole, Properties.Resources.DiamondusPole, Properties.Resources.Flipper, Properties.Resources.JunglePole, Properties.Resources.Leaf, Properties.Resources.PsychPole, Properties.Resources.SmallTree, Properties.Resources.Snow, Properties.Resources.Splash };
-        private enum RecolorableSprites { _500Bumper, CarrotBumper, CarrotusPole, DiamondusPole, Flipper, JunglePole, Leaf, PsychPole, SmallTree, Snow, Splash, LAST }
-        private void RecolorSprite(RecolorableSprites sprite)
+        private static readonly string[] RecolorableSpriteNames = { "500 Bumper", "Carrot Bumper", "Carrotus Pole", "Diamondus Pole", "Flipper", "Jungle Pole", "Leaf", "Psych Pole", "Small Tree", "Snow", "Splash" };
+        private void RecolorSprite(int spriteID)
         {
             _suspendEvent.Reset();
-            if (new SpriteRecolorForm().ShowForm(J2L.PlusPropertyList.Palette ?? J2L.Tilesets[0].Palette, RecolorableSpriteResources[(int)sprite]))
+            if (new SpriteRecolorForm().ShowForm(J2L.PlusPropertyList.Palette ?? J2L.Tilesets[0].Palette, RecolorableSpriteResources[spriteID]))
             {
 
             }
             _suspendEvent.Set();
 
         }
-        private void recolorableSpriteToolStripMenuItem_Click(object sender, EventArgs e) { RecolorSprite((RecolorableSprites)((sender as Control).Tag)); }
+        private void recolorableSpriteToolStripMenuItem_Click(object sender, EventArgs e) { RecolorSprite((int)((sender as ToolStripMenuItem).Tag)); }
 
 
         private void pathsAndFilenamesToolStripMenuItem_Click(object sender, EventArgs e)
