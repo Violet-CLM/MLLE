@@ -756,16 +756,19 @@ namespace MLLE
             }
         }
 
-
-        private void diamondusPoleToolStripMenuItem_Click(object sender, EventArgs e)
+        private static readonly Bitmap[] RecolorableSpriteResources = { Properties.Resources._500Bumper, Properties.Resources.CarrotBumper, Properties.Resources.CarrotusPole, Properties.Resources.DiamondusPole, Properties.Resources.Flipper, Properties.Resources.JunglePole, Properties.Resources.Leaf, Properties.Resources.PsychPole, Properties.Resources.SmallTree, Properties.Resources.Snow, Properties.Resources.Splash };
+        private enum RecolorableSprites { _500Bumper, CarrotBumper, CarrotusPole, DiamondusPole, Flipper, JunglePole, Leaf, PsychPole, SmallTree, Snow, Splash, LAST }
+        private void RecolorSprite(RecolorableSprites sprite)
         {
             _suspendEvent.Reset();
-            if (new SpriteRecolorForm().ShowForm(J2L.PlusPropertyList.Palette ?? J2L.Tilesets[0].Palette, Properties.Resources.DiamondusPole))
+            if (new SpriteRecolorForm().ShowForm(J2L.PlusPropertyList.Palette ?? J2L.Tilesets[0].Palette, RecolorableSpriteResources[(int)sprite]))
             {
-                
+
             }
             _suspendEvent.Set();
+
         }
+        private void recolorableSpriteToolStripMenuItem_Click(object sender, EventArgs e) { RecolorSprite((RecolorableSprites)((sender as Control).Tag)); }
 
 
         private void pathsAndFilenamesToolStripMenuItem_Click(object sender, EventArgs e)

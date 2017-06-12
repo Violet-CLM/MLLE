@@ -1816,7 +1816,6 @@
             this.diamondusPoleToolStripMenuItem.Name = "diamondusPoleToolStripMenuItem";
             this.diamondusPoleToolStripMenuItem.Size = new System.Drawing.Size(161, 22);
             this.diamondusPoleToolStripMenuItem.Text = "Diamondus Pole";
-            this.diamondusPoleToolStripMenuItem.Click += new System.EventHandler(this.diamondusPoleToolStripMenuItem_Click);
             // 
             // Mainframe
             // 

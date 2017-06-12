@@ -121,6 +121,16 @@ namespace MLLE.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Leaf {
+            get {
+                object obj = ResourceManager.GetObject("Leaf", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
         internal static System.Drawing.Icon MLLE01 {
@@ -146,6 +156,16 @@ namespace MLLE.Properties {
         internal static System.Drawing.Bitmap SmallTree {
             get {
                 object obj = ResourceManager.GetObject("SmallTree", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Snow {
+            get {
+                object obj = ResourceManager.GetObject("Snow", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
