@@ -88,6 +88,8 @@ namespace MLLE
         public const int PaletteLengthOnEitherDimension = 16;
         int ColorSize, BorderSize, ColorTotalSize;
 
+        public bool[] ColorDisabled = new bool[Palette.PaletteSize];
+
         public int NumberOfColorsToSelectAtATime = 1;
 
         private Palette _Palette = new Palette();
@@ -135,19 +137,20 @@ namespace MLLE
         private void Clicked(object sender, MouseEventArgs e)
         {
             int colorSelected = getSelectedColor(e);
-            SetSelected(
-                Enumerable.Range(
-                    colorSelected & ~(NumberOfColorsToSelectAtATime - 1),
-                    NumberOfColorsToSelectAtATime
-                ).ToArray(),
-                CurrentlySelectingColors = !ColorsSelected[colorSelected]
-            );
+            if (!ColorDisabled[colorSelected])
+                SetSelected(
+                    Enumerable.Range(
+                        colorSelected & ~(NumberOfColorsToSelectAtATime - 1),
+                        NumberOfColorsToSelectAtATime
+                    ).ToArray(),
+                    CurrentlySelectingColors = !ColorsSelected[colorSelected]
+                );
         }
 
         public int[] GetSelectedIndices()
         {
             return ColorsSelected.Select((item, index) => new { Item = item, Index = index })
-               .Where(pair => pair.Item)
+               .Where(pair => pair.Item && !ColorDisabled[pair.Index]) //can't hurt to check ColorDisabled here too, probably
                .Select(result => result.Index)
                .ToArray();
         }
@@ -159,6 +162,8 @@ namespace MLLE
         private void DoubleClicked(object sender, MouseEventArgs e)
         {
             int colorSelected = getSelectedColor(e);
+            if (ColorDisabled[colorSelected])
+                return;
             if (!ColorsSelected[colorSelected])
                 Clicked(sender, e);
 
@@ -181,11 +186,12 @@ namespace MLLE
         public bool[] ColorsSelected { get; }
         public void Update(int[] colorsToUpdate)
         {
+            var backColorAsArray = Palette.Convert(BackColor);
             using (Graphics g = Graphics.FromImage(ImageImage))
             {
                 using (Brush transparent = new SolidBrush(BackColor))
                     foreach (var colorToUpdate in colorsToUpdate) {
-                        var color = Palette[colorToUpdate];
+                        var color = !ColorDisabled[colorToUpdate] ? Palette[colorToUpdate] : backColorAsArray;
                         int left = (colorToUpdate % PaletteLengthOnEitherDimension) * ColorTotalSize;
                         int top = (colorToUpdate / PaletteLengthOnEitherDimension) * ColorTotalSize;
                         g.FillRectangle(ColorsSelected[colorToUpdate] ? Brushes.Black : transparent, new Rectangle(left, top, ColorTotalSize, ColorTotalSize)); //border
@@ -198,7 +204,7 @@ namespace MLLE
         public void SetSelected(int[] colorsToSelect, bool selecting)
         {
             foreach (var colorToSelect in colorsToSelect)
-                ColorsSelected[colorToSelect] = selecting;
+                ColorsSelected[colorToSelect] = !ColorDisabled[colorToSelect] ? selecting : false;
             Update(colorsToSelect);
         }
     }

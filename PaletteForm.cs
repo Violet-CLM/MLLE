@@ -22,6 +22,8 @@ namespace MLLE
             DefaultPalette = defaultPalette;
             InitialPalette = (plusPalette ?? DefaultPalette);
 
+            for (int i = 0; i < 10; ++i)
+                PaletteImage.ColorDisabled[i] = PaletteImage.ColorDisabled[Palette.PaletteSize - 10 + i] = true; //transparency, and default windows colors
             PaletteImage.Location = new Point(12, OKButton.Location.Y);
             PaletteImage.Palette = InitialPalette;
             Controls.Add(PaletteImage);
