@@ -128,7 +128,7 @@ namespace MLLE
             }
         }
 
-        private int getSelectedColor(MouseEventArgs e)
+        public int getSelectedColor(MouseEventArgs e)
         {
             return (e.X / ColorTotalSize) + (e.Y / ColorTotalSize * PaletteLengthOnEitherDimension);
         }

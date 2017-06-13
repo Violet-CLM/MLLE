@@ -14,9 +14,9 @@ namespace MLLE
     public partial class SpriteRecolorForm : Form
     {
         bool Result = false;
-        Palette ImageOriginalPalette = new Palette();
         Palette LevelPalette;
         ColorPalette ImageWorkingPalette;
+        byte[] ImageIndices;
         public SpriteRecolorForm()
         {
             InitializeComponent();
@@ -30,21 +30,52 @@ namespace MLLE
         internal bool ShowForm(Palette palette, Bitmap bitmap)
         {
             //CreateImageFromTileset(tileset);
-            pictureBox1.Image = bitmap;
-            pictureBox1.Size = bitmap.Size;
-            Width -= (320 - pictureBox1.Width); //this doesn't work very well because windows have a minimum size, dictated by their border/menu properties, that I cannot fully override
 
             LevelPalette = palette;
             ImageWorkingPalette = bitmap.Palette;
+            PaletteImage original = new PaletteImage(5, 0, true);
             for (uint i = 0; i < Palette.PaletteSize; ++i)
             {
-                ImageOriginalPalette.Colors[i] = Palette.Convert(ImageWorkingPalette.Entries[i]);
+                original.Palette.Colors[i] = Palette.Convert(ImageWorkingPalette.Entries[i]);
                 ImageWorkingPalette.Entries[i] = Palette.Convert(LevelPalette.Colors[i]);
             }
             bitmap.Palette = ImageWorkingPalette;
 
+            pictureBox1.Image = bitmap;
+            pictureBox1.Size = bitmap.Size;
+            Width -= (320 - pictureBox1.Width); //this doesn't work very well because windows have a minimum size, dictated by their border/menu properties, that I cannot fully override
+
+            original.Update(Enumerable.Range(0, (int)Palette.PaletteSize).ToArray());
+            original.Location = new Point(label1.Location.X, label1.Location.Y + 16);
+            original.MouseMove += PaletteImageMouseMove;
+            original.MouseLeave += PaletteImageMouseLeave;
+            Controls.Add(original);
+
+            var data = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly, PixelFormat.Format8bppIndexed);
+            ImageIndices = new byte[data.Width * data.Height];
+            for (int y = 0; y < bitmap.Height; ++y)
+                Marshal.Copy(new IntPtr((int)data.Scan0 + data.Stride * y), ImageIndices, bitmap.Width * y, bitmap.Width);
+            bitmap.UnlockBits(data);
+
             ShowDialog();
             return Result;
+        }
+
+        private void PaletteImageMouseLeave(object sender, EventArgs e)
+        {
+            Text = "Remap Image Palette";
+        }
+
+        private void PaletteImageMouseMove(object sender, MouseEventArgs e)
+        {
+            Text = "Remap Image Palette \u2013 " + (sender as PaletteImage).getSelectedColor(e);
+        }
+
+        private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
+        {
+            Point pictureOrigin = pictureBox1.AutoScrollOffset;
+            Text = "Remap Image Palette \u2013 " + ImageIndices[(e.Location.X - pictureOrigin.X) + (e.Location.Y - pictureOrigin.Y) * pictureBox1.Width];
+
         }
 
         /*internal static void GetColorPaletteFromTileset(J2TFile tileset, Bitmap image)
