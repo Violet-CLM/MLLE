@@ -14,7 +14,8 @@ namespace MLLE
     public partial class SpriteRecolorForm : Form
     {
         bool Result = false;
-        Palette LevelPalette;
+        PaletteImage LevelPalette = new PaletteImage(8, 1, false);
+        PaletteImage RemappingPalette = new PaletteImage(8, 1, false);
         ColorPalette ImageWorkingPalette;
         byte[] ImageIndices;
         public SpriteRecolorForm()
@@ -31,13 +32,14 @@ namespace MLLE
         {
             //CreateImageFromTileset(tileset);
 
-            LevelPalette = palette;
+            LevelPalette.Palette = palette;
+            RemappingPalette.Palette = palette; //todo
             ImageWorkingPalette = bitmap.Palette;
             PaletteImage original = new PaletteImage(5, 0, true);
             for (uint i = 0; i < Palette.PaletteSize; ++i)
             {
                 original.Palette.Colors[i] = Palette.Convert(ImageWorkingPalette.Entries[i]);
-                ImageWorkingPalette.Entries[i] = Palette.Convert(LevelPalette.Colors[i]);
+                ImageWorkingPalette.Entries[i] = Palette.Convert(LevelPalette.Palette.Colors[i]);
             }
             bitmap.Palette = ImageWorkingPalette;
 
@@ -50,6 +52,18 @@ namespace MLLE
             original.MouseMove += PaletteImageMouseMove;
             original.MouseLeave += PaletteImageMouseLeave;
             Controls.Add(original);
+
+            LevelPalette.Update(Enumerable.Range(0, (int)Palette.PaletteSize).ToArray());
+            LevelPalette.Location = new Point(label3.Left, panel1.Top);
+            LevelPalette.MouseMove += PaletteImageMouseMove;
+            LevelPalette.MouseLeave += PaletteImageMouseLeave;
+            Controls.Add(LevelPalette);
+
+            RemappingPalette.Update(Enumerable.Range(0, (int)Palette.PaletteSize).ToArray());
+            RemappingPalette.Location = new Point(label4.Left, label4.Location.Y + 16);
+            RemappingPalette.MouseMove += PaletteImageMouseMove;
+            RemappingPalette.MouseLeave += PaletteImageMouseLeave;
+            Controls.Add(RemappingPalette);
 
             var data = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly, PixelFormat.Format8bppIndexed);
             ImageIndices = new byte[data.Width * data.Height];
