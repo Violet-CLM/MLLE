@@ -111,24 +111,52 @@ namespace MLLE
         private void PaletteImageMouseLeave(object sender, EventArgs e)
         {
             Text = "Remap Image Palette";
+            (sender as PaletteImage).Update(PaletteImage.AllPaletteColors);
         }
 
         private void PaletteImageMouseMove(object sender, MouseEventArgs e)
         {
             PaletteImage paletteImage = sender as PaletteImage;
+            int selectedColor = paletteImage.getSelectedColor(e);
             if (e.Button != MouseButtons.None && paletteImage.NumberOfSelectedColors > 0)
             {
                 paletteImage.Moved(sender, e);
             }
+            else
+            {
+                var otherPaletteSelectedColors = (GetOtherPalette(paletteImage)).GetSelectedIndices();
+                if (otherPaletteSelectedColors.Length > 0)
+                {
+                    int offset = selectedColor - otherPaletteSelectedColors[0];
+                    for (int i = 0; i < otherPaletteSelectedColors.Length; ++i)
+                    {
+                        int proposedOffsetSelectedColor = (otherPaletteSelectedColors[i] + offset) & byte.MaxValue;
+                        while (paletteImage.ColorDisabled[proposedOffsetSelectedColor])
+                        {
+                            proposedOffsetSelectedColor = (proposedOffsetSelectedColor + 1) & byte.MaxValue;
+                            offset += 1;
+                        }
+                        otherPaletteSelectedColors[i] = proposedOffsetSelectedColor;
+                    }
+                    paletteImage.Update(PaletteImage.AllPaletteColors);
+                    paletteImage.SetSelected(otherPaletteSelectedColors, true); //visual change only, to be undone below
+                    paletteImage.Update();
+                    foreach (var selected in otherPaletteSelectedColors)
+                        paletteImage.ColorsSelected[selected] = false;
+                }
+            }
 
-            Text = "Remap Image Palette \u2013 " + paletteImage.getSelectedColor(e);
+            Text = "Remap Image Palette \u2013 " + selectedColor;
         }
 
         private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
         {
             Point pictureOrigin = pictureBox1.AutoScrollOffset;
             Text = "Remap Image Palette \u2013 " + ImageIndices[(e.Location.X - pictureOrigin.X) + (e.Location.Y - pictureOrigin.Y) * pictureBox1.Width];
-
+        }
+        private void pictureBox1_MouseLeave(object sender, EventArgs e)
+        {
+            Text = "Remap Image Palette";
         }
 
         private void OKButton_Click(object sender, EventArgs e)
@@ -152,5 +180,6 @@ namespace MLLE
             }
             return base.ProcessCmdKey(ref msg, keyData);
         }
+
     }
 }
