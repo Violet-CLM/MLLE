@@ -108,20 +108,24 @@ namespace MLLE
         private Bitmap ImageImage;
         bool ReadOnly;
 
-        public PaletteImage(int colorSize, int borderSize, bool readOnly)
+        public PaletteImage(int colorSize, int borderSize, bool readOnly, bool registerStandardEvents)
         {
             Width = Height = (int)((ColorTotalSize = (ColorSize = colorSize) + (BorderSize = borderSize) * 2) * PaletteLengthOnEitherDimension);
             ImageImage = new Bitmap(Width, Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
             ColorsSelected = new bool[Palette.PaletteSize];
 
-            MouseDown += Clicked;
-            if (!(ReadOnly = readOnly))
-                MouseDoubleClick += DoubleClicked;
-            MouseMove += Moved;
+            ReadOnly = readOnly;
+            if (registerStandardEvents)
+            {
+                MouseDown += Clicked;
+                if (!ReadOnly)
+                    MouseDoubleClick += DoubleClicked;
+                MouseMove += Moved;
+            }
         }
 
         bool CurrentlySelectingColors;
-        private void Moved(object sender, MouseEventArgs e)
+        public void Moved(object sender, MouseEventArgs e)
         {
             if (e.Button != MouseButtons.None)
             {
@@ -134,7 +138,7 @@ namespace MLLE
         {
             return (e.X / ColorTotalSize) + (e.Y / ColorTotalSize * PaletteLengthOnEitherDimension);
         }
-        private void Clicked(object sender, MouseEventArgs e)
+        public void Clicked(object sender, MouseEventArgs e)
         {
             int colorSelected = getSelectedColor(e);
             if (!ColorDisabled[colorSelected])

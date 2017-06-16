@@ -14,8 +14,8 @@ namespace MLLE
     public partial class SpriteRecolorForm : Form
     {
         bool Result = false;
-        PaletteImage LevelPalette = new PaletteImage(8, 1, false);
-        PaletteImage RemappingPalette = new PaletteImage(8, 1, false);
+        PaletteImage LevelPalette = new PaletteImage(8, 1, false, false);
+        PaletteImage RemappingPalette = new PaletteImage(8, 1, false, false);
         ColorPalette ImageWorkingPalette;
         byte[] ImageIndices;
         byte[] ColorRemappings = new byte[Palette.PaletteSize];
@@ -44,7 +44,7 @@ namespace MLLE
             for (int i = 0; i < Palette.PaletteSize; ++i)
                 RemappingPalette.Palette[i] = LevelPalette.Palette[ColorRemappings[i]];
             ImageWorkingPalette = bitmap.Palette;
-            PaletteImage original = new PaletteImage(5, 0, true);
+            PaletteImage original = new PaletteImage(5, 0, true, false);
             for (uint i = 0; i < Palette.PaletteSize; ++i)
             {
                 original.Palette.Colors[i] = Palette.Convert(ImageWorkingPalette.Entries[i]);
@@ -64,11 +64,13 @@ namespace MLLE
             LevelPalette.Location = new Point(label3.Left, panel1.Top);
             LevelPalette.MouseMove += PaletteImageMouseMove;
             LevelPalette.MouseLeave += PaletteImageMouseLeave;
+            LevelPalette.MouseDown += PaletteImageMouseDown;
             Controls.Add(LevelPalette);
 
             RemappingPalette.Location = new Point(label4.Left, label4.Location.Y + 16);
             RemappingPalette.MouseMove += PaletteImageMouseMove;
             RemappingPalette.MouseLeave += PaletteImageMouseLeave;
+            RemappingPalette.MouseDown += PaletteImageMouseDown;
             Controls.Add(RemappingPalette);
 
             var data = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly, PixelFormat.Format8bppIndexed);
@@ -94,6 +96,11 @@ namespace MLLE
             return Result;
         }
 
+        private void PaletteImageMouseDown(object sender, MouseEventArgs e)
+        {
+            (sender as PaletteImage).Clicked(sender, e);
+        }
+
         private void PaletteImageMouseLeave(object sender, EventArgs e)
         {
             Text = "Remap Image Palette";
@@ -102,6 +109,7 @@ namespace MLLE
         private void PaletteImageMouseMove(object sender, MouseEventArgs e)
         {
             Text = "Remap Image Palette \u2013 " + (sender as PaletteImage).getSelectedColor(e);
+            (sender as PaletteImage).Moved(sender, e);
         }
 
         private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
