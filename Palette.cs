@@ -125,7 +125,7 @@ namespace MLLE
             }
         }
 
-        bool CurrentlySelectingColors;
+        public bool CurrentlySelectingColors;
         public void Moved(object sender, MouseEventArgs e)
         {
             if (e.Button != MouseButtons.None)

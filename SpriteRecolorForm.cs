@@ -52,7 +52,7 @@ namespace MLLE
             for (uint i = 0; i < Palette.PaletteSize; ++i)
             {
                 original.Palette.Colors[i] = Palette.Convert(ImageWorkingPalette.Entries[i]);
-                ImageWorkingPalette.Entries[i] = Palette.Convert(LevelPalette.Palette.Colors[i]);
+                ImageWorkingPalette.Entries[i] = Palette.Convert(LevelPalette.Palette.Colors[ColorRemappings[i]]);
             }
             bitmap.Palette = ImageWorkingPalette;
 
@@ -102,9 +102,36 @@ namespace MLLE
         private void PaletteImageMouseDown(object sender, MouseEventArgs e)
         {
             PaletteImage paletteImage = sender as PaletteImage;
-            if ((GetOtherPalette(paletteImage)).NumberOfSelectedColors == 0)
+            PaletteImage otherPaletteImage = GetOtherPalette(paletteImage);
+            if (otherPaletteImage.NumberOfSelectedColors == 0)
             {
                 paletteImage.Clicked(sender, e);
+            }
+            else
+            {
+                int[] otherPaletteSelectedColors = otherPaletteImage.GetSelectedIndices();
+                int[] thisPaletteSelectedColors = otherPaletteSelectedColors.Clone() as int[];
+                SetMatchingSelectedColorsBasedOnOtherPaletteImage(paletteImage, paletteImage.getSelectedColor(e), ref thisPaletteSelectedColors);
+
+                if (paletteImage == RemappingPalette)
+                    for (int i = 0; i < thisPaletteSelectedColors.Length; ++i)
+                        ColorRemappings[thisPaletteSelectedColors[i]] = (byte)otherPaletteSelectedColors[i];
+                else
+                    for (int i = 0; i < thisPaletteSelectedColors.Length; ++i)
+                        ColorRemappings[otherPaletteSelectedColors[i]] = (byte)thisPaletteSelectedColors[i];
+
+                for (int i = 0; i < Palette.PaletteSize; ++i) {
+                    var remappedColor = LevelPalette.Palette[ColorRemappings[i]];
+                    RemappingPalette.Palette[i] = remappedColor;
+                    ImageWorkingPalette.Entries[i] = Palette.Convert(remappedColor);
+                }
+                pictureBox1.Image.Palette = ImageWorkingPalette;
+                pictureBox1.Refresh();
+
+                LevelPalette.SetSelected(PaletteImage.AllPaletteColors, false);
+                RemappingPalette.SetSelected(PaletteImage.AllPaletteColors, false);
+
+                paletteImage.CurrentlySelectingColors = false;
             }
         }
 
@@ -114,6 +141,20 @@ namespace MLLE
             (sender as PaletteImage).Update(PaletteImage.AllPaletteColors);
         }
 
+        private static void SetMatchingSelectedColorsBasedOnOtherPaletteImage(PaletteImage paletteImage, int selectedColor, ref int[] otherPaletteSelectedColors)
+        {
+            int offset = selectedColor - otherPaletteSelectedColors[0];
+            for (int i = 0; i < otherPaletteSelectedColors.Length; ++i)
+            {
+                int proposedOffsetSelectedColor = (otherPaletteSelectedColors[i] + offset) & byte.MaxValue;
+                while (paletteImage.ColorDisabled[proposedOffsetSelectedColor])
+                {
+                    proposedOffsetSelectedColor = (proposedOffsetSelectedColor + 1) & byte.MaxValue;
+                    offset += 1;
+                }
+                otherPaletteSelectedColors[i] = proposedOffsetSelectedColor;
+            }
+        }
         private void PaletteImageMouseMove(object sender, MouseEventArgs e)
         {
             PaletteImage paletteImage = sender as PaletteImage;
@@ -124,23 +165,13 @@ namespace MLLE
             }
             else
             {
-                var otherPaletteSelectedColors = (GetOtherPalette(paletteImage)).GetSelectedIndices();
+                PaletteImage otherPaletteImage = GetOtherPalette(paletteImage);
+                int[] otherPaletteSelectedColors = otherPaletteImage.GetSelectedIndices();
                 if (otherPaletteSelectedColors.Length > 0)
                 {
-                    int offset = selectedColor - otherPaletteSelectedColors[0];
-                    for (int i = 0; i < otherPaletteSelectedColors.Length; ++i)
-                    {
-                        int proposedOffsetSelectedColor = (otherPaletteSelectedColors[i] + offset) & byte.MaxValue;
-                        while (paletteImage.ColorDisabled[proposedOffsetSelectedColor])
-                        {
-                            proposedOffsetSelectedColor = (proposedOffsetSelectedColor + 1) & byte.MaxValue;
-                            offset += 1;
-                        }
-                        otherPaletteSelectedColors[i] = proposedOffsetSelectedColor;
-                    }
+                    SetMatchingSelectedColorsBasedOnOtherPaletteImage(paletteImage, selectedColor, ref otherPaletteSelectedColors);
                     paletteImage.Update(PaletteImage.AllPaletteColors);
                     paletteImage.SetSelected(otherPaletteSelectedColors, true); //visual change only, to be undone below
-                    paletteImage.Update();
                     foreach (var selected in otherPaletteSelectedColors)
                         paletteImage.ColorsSelected[selected] = false;
                 }
