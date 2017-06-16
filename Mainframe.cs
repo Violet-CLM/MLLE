@@ -766,11 +766,11 @@ namespace MLLE
         }
 
         private static readonly Bitmap[] RecolorableSpriteResources = { Properties.Resources._500Bumper, Properties.Resources.CarrotBumper, Properties.Resources.CarrotusPole, Properties.Resources.DiamondusPole, Properties.Resources.Flipper, Properties.Resources.JunglePole, Properties.Resources.Leaf, Properties.Resources.PsychPole, Properties.Resources.SmallTree, Properties.Resources.Snow, Properties.Resources.Splash };
-        private static readonly string[] RecolorableSpriteNames = { "500 Bumper", "Carrot Bumper", "Carrotus Pole", "Diamondus Pole", "Flipper", "Jungle Pole", "Leaf", "Psych Pole", "Small Tree", "Snow", "Splash" };
+        public static readonly string[] RecolorableSpriteNames = { "500 Bumper", "Carrot Bumper", "Carrotus Pole", "Diamondus Pole", "Flipper", "Jungle Pole", "Leaf", "Psych Pole", "Small Tree", "Snow", "Splash" };
         private void RecolorSprite(int spriteID)
         {
             _suspendEvent.Reset();
-            if (new SpriteRecolorForm().ShowForm(J2L.PlusPropertyList.Palette ?? J2L.Tilesets[0].Palette, RecolorableSpriteResources[spriteID], HotKolors[1]))
+            if (new SpriteRecolorForm().ShowForm(J2L.PlusPropertyList.Palette ?? J2L.Tilesets[0].Palette, RecolorableSpriteResources[spriteID], ref J2L.PlusPropertyList.ColorRemappings[spriteID], HotKolors[1]))
             {
 
             }

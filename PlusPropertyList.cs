@@ -222,9 +222,15 @@ namespace MLLE
         internal Palette Palette;
 
 
+        [Browsable(false)]
+        internal byte[][] ColorRemappings;
+
+
         const float DefaultWaterLevel = 0x7FFF;
         public PlusPropertyList(PlusPropertyList? other) : this()
         {
+            ColorRemappings = new byte[Mainframe.RecolorableSpriteNames.Length][];
+
             if (other.HasValue)
             {
                 this = other.Value;
@@ -236,8 +242,18 @@ namespace MLLE
                 else
                 {
                     Palette = new Palette();
-                    for (int i = 0; i < Palette.PaletteSize; ++i)
-                        Palette[i] = other.Value.Palette[i];
+                    Palette.CopyFrom(other.Value.Palette);
+                }
+
+                for (int i = 0; i < ColorRemappings.Length; ++i)
+                {
+                    if (other.Value.ColorRemappings[i] == null)
+                        ColorRemappings[i] = null;
+                    else
+                    {
+                        ColorRemappings[i] = new byte[Palette.PaletteSize];
+                        other.Value.ColorRemappings[i].CopyTo(ColorRemappings[i], 0);
+                    }
                 }
             }
             else

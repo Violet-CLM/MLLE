@@ -18,23 +18,31 @@ namespace MLLE
         PaletteImage RemappingPalette = new PaletteImage(8, 1, false);
         ColorPalette ImageWorkingPalette;
         byte[] ImageIndices;
+        byte[] ColorRemappings = new byte[Palette.PaletteSize];
         public SpriteRecolorForm()
         {
             InitializeComponent();
         }
-        internal bool ShowForm(Palette palette, J2TFile tileset)
+        /*internal bool ShowForm(Palette palette, J2TFile tileset)
         {
             //CreateImageFromTileset(tileset);
             ShowDialog();
             return Result;
-        }
-        internal bool ShowForm(Palette palette, Bitmap bitmap, Color imageBackgroundColor)
+        }*/
+        internal bool ShowForm(Palette palette, Bitmap bitmap, ref byte[] colorRemappings, Color imageBackgroundColor)
         {
             //CreateImageFromTileset(tileset);
 
+            if (colorRemappings == null)
+                for (uint i = 0; i < Palette.PaletteSize; ++i)
+                    ColorRemappings[i] = (byte)i;
+            else
+                colorRemappings.CopyTo(ColorRemappings, 0);
+
             LevelPalette.Palette = palette;
             LevelPalette.Palette[0] = Palette.Convert(imageBackgroundColor);
-            RemappingPalette.Palette = palette; //todo
+            for (int i = 0; i < Palette.PaletteSize; ++i)
+                RemappingPalette.Palette[i] = LevelPalette.Palette[ColorRemappings[i]];
             ImageWorkingPalette = bitmap.Palette;
             PaletteImage original = new PaletteImage(5, 0, true);
             for (uint i = 0; i < Palette.PaletteSize; ++i)
@@ -80,6 +88,9 @@ namespace MLLE
             RemappingPalette.Update(AllPaletteColors);
 
             ShowDialog();
+
+            if (Result)
+                colorRemappings = ColorRemappings;
             return Result;
         }
 
