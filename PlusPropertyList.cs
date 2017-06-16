@@ -366,7 +366,7 @@ namespace MLLE
 
         private bool LevelNeedsData5()
         {
-            return (
+            if (
                 IsSnowing ||
                 IsSnowingOutdoorsOnly ||
                 SnowingIntensity != 0 ||
@@ -383,7 +383,12 @@ namespace MLLE
                 WaterGradientStart != Color.Black ||
                 WaterGradientStop != Color.Black ||
                 Palette != null
-            );
+            )
+                return true;
+            foreach (byte[] remappings in ColorRemappings)
+                if (remappings != null)
+                    return true;
+            return false;
         }
         internal void CreateData5SectionIfRequiredByLevel(ref byte[] Data5, List<J2TFile> Tilesets)
         {
@@ -416,6 +421,18 @@ namespace MLLE
                     data5bodywriter.Write(Palette != null);
                     if (Palette != null)
                         Palette.WriteLEVStyle(data5bodywriter);
+
+                    foreach (byte[] remappings in ColorRemappings)
+                    {
+                        if (remappings == null)
+                            data5bodywriter.Write(false);
+                        else
+                        {
+                            data5bodywriter.Write(true);
+                            for (int i = 0; i < remappings.Length; ++i)
+                                data5bodywriter.Write(remappings[i]);
+                        }
+                    }
 
                     data5bodywriter.Write((byte)(Tilesets.Count - 1));
                     for (int tilesetID = 1; tilesetID < Tilesets.Count; ++tilesetID) //Tilesets[0] is already mentioned in Data5, after all
@@ -473,6 +490,16 @@ namespace MLLE
 
                     if (data5bodyreader.ReadBoolean())
                         Palette = new Palette(data5bodyreader, true);
+
+                    for (int i = 0; i < Mainframe.RecolorableSpriteNames.Length; ++i)
+                        if (data5bodyreader.ReadBoolean())
+                        {
+                            ColorRemappings[i] = new byte[Palette.PaletteSize];
+                            for (uint j = 0; j < Palette.PaletteSize; ++j)
+                                ColorRemappings[i][j] = data5bodyreader.ReadByte();
+                        }
+                        else
+                            ColorRemappings[i] = null;
 
                     var extraTilesetCount = data5bodyreader.ReadByte();
                     for (uint tilesetID = 0; tilesetID < extraTilesetCount; ++tilesetID)
