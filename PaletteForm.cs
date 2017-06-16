@@ -73,7 +73,7 @@ namespace MLLE
 
         private void selectNoneToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            PaletteImage.SetSelected(Enumerable.Range(0, (int)Palette.PaletteSize).ToArray(), false);
+            PaletteImage.SetSelected(PaletteImage.AllPaletteColors, false);
         }
 
         void SwapChannels(int a, int b, int c)

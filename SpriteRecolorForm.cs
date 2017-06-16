@@ -16,6 +16,10 @@ namespace MLLE
         bool Result = false;
         PaletteImage LevelPalette = new PaletteImage(8, 1, false, false);
         PaletteImage RemappingPalette = new PaletteImage(8, 1, false, false);
+        private PaletteImage GetOtherPalette(PaletteImage thisOne)
+        {
+            return (thisOne == LevelPalette) ? RemappingPalette : LevelPalette;
+        }
         ColorPalette ImageWorkingPalette;
         byte[] ImageIndices;
         byte[] ColorRemappings = new byte[Palette.PaletteSize];
@@ -83,11 +87,10 @@ namespace MLLE
                 original.ColorDisabled[i] = RemappingPalette.ColorDisabled[i] = i == 0 || !ImageIndices.Contains((byte)i);
             for (int i = 0; i < 10; ++i)
                 LevelPalette.ColorDisabled[i] = LevelPalette.ColorDisabled[Palette.PaletteSize - 10 + i] = true; //transparency, and default windows colors
-
-            var AllPaletteColors = Enumerable.Range(0, (int)Palette.PaletteSize).ToArray();
-            original.Update(AllPaletteColors);
-            LevelPalette.Update(AllPaletteColors);
-            RemappingPalette.Update(AllPaletteColors);
+            
+            original.Update(PaletteImage.AllPaletteColors);
+            LevelPalette.Update(PaletteImage.AllPaletteColors);
+            RemappingPalette.Update(PaletteImage.AllPaletteColors);
 
             ShowDialog();
 
@@ -98,7 +101,11 @@ namespace MLLE
 
         private void PaletteImageMouseDown(object sender, MouseEventArgs e)
         {
-            (sender as PaletteImage).Clicked(sender, e);
+            PaletteImage paletteImage = sender as PaletteImage;
+            if ((GetOtherPalette(paletteImage)).NumberOfSelectedColors == 0)
+            {
+                paletteImage.Clicked(sender, e);
+            }
         }
 
         private void PaletteImageMouseLeave(object sender, EventArgs e)
@@ -108,8 +115,13 @@ namespace MLLE
 
         private void PaletteImageMouseMove(object sender, MouseEventArgs e)
         {
-            Text = "Remap Image Palette \u2013 " + (sender as PaletteImage).getSelectedColor(e);
-            (sender as PaletteImage).Moved(sender, e);
+            PaletteImage paletteImage = sender as PaletteImage;
+            if (e.Button != MouseButtons.None && paletteImage.NumberOfSelectedColors > 0)
+            {
+                paletteImage.Moved(sender, e);
+            }
+
+            Text = "Remap Image Palette \u2013 " + paletteImage.getSelectedColor(e);
         }
 
         private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
@@ -128,6 +140,17 @@ namespace MLLE
         private void ButtonCancel_Click(object sender, EventArgs e)
         {
             Dispose();
+        }
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            if (keyData == (Keys.D | Keys.Control)) //Select None
+            {
+                RemappingPalette.SetSelected(PaletteImage.AllPaletteColors, false);
+                LevelPalette.SetSelected(PaletteImage.AllPaletteColors, false);
+                return true;
+            }
+            return base.ProcessCmdKey(ref msg, keyData);
         }
     }
 }

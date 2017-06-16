@@ -87,6 +87,7 @@ namespace MLLE
     {
         public const int PaletteLengthOnEitherDimension = 16;
         int ColorSize, BorderSize, ColorTotalSize;
+        public static readonly int[] AllPaletteColors = Enumerable.Range(0, (int)Palette.PaletteSize).ToArray();
 
         public bool[] ColorDisabled = new bool[Palette.PaletteSize];
 
@@ -100,7 +101,7 @@ namespace MLLE
             set
             {
                 _Palette.CopyFrom(value);
-                Update(Enumerable.Range(0, (int)Palette.PaletteSize).ToArray());
+                Update(AllPaletteColors);
             }
         }
 
@@ -160,7 +161,7 @@ namespace MLLE
         }
         public int NumberOfSelectedColors { get
             {
-                return ColorsSelected.Where(item => item).Count();
+                return ColorsSelected.Count(item => item);
             }
         }
         private void DoubleClicked(object sender, MouseEventArgs e)
