@@ -766,7 +766,7 @@ namespace MLLE
         }
 
         private static readonly Bitmap[] RecolorableSpriteResources = { Properties.Resources._500Bumper, Properties.Resources.CarrotBumper, Properties.Resources.CarrotusPole, Properties.Resources.DiamondusPole, Properties.Resources.Flipper, Properties.Resources.JunglePole, Properties.Resources.Leaf, Properties.Resources.PsychPole, Properties.Resources.SmallTree, Properties.Resources.Snow, Properties.Resources.Splash };
-        public static readonly string[] RecolorableSpriteNames = { "500 Bumper", "Carrot Bumper", "Carrotus Pole", "Diamondus Pole", "Flipper", "Jungle Pole", "Leaf", "Psych Pole", "Small Tree", "Snow", "Splash" };
+        public static readonly string[] RecolorableSpriteNames = { "500 Bumper", "Carrot Bumper", "Carrotus Pole", "Diamondus Pole", "Flipper", "Jungle Pole", "Leaf", "Psych Pole", "Small Tree", "Snow", "Splash/Rain" };
         private void RecolorSprite(int spriteID)
         {
             _suspendEvent.Reset();

@@ -131,7 +131,13 @@ namespace MLLE {
             string tilesetFilename = _read7BitEncodedStringFromStream(data5);
             uint16 tileStart, tileCount;
             data5.pop(tileStart); data5.pop(tileCount);
-            jjTilesFromTileset(tilesetFilename, tileStart, tileCount);
+            array<uint8>@ colors = null;
+            data5.pop(pbool); if (pbool) {
+                @colors = array<uint8>(256);
+                for (uint j = 0; j < 256; ++j)
+                    data5.pop(colors[j]);
+            }
+            jjTilesFromTileset(tilesetFilename, tileStart, tileCount, colors);
         }
 
         if (!data5.isEmpty()) {

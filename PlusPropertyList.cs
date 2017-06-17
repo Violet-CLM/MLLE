@@ -440,6 +440,12 @@ namespace MLLE
                         data5bodywriter.Write(Tilesets[tilesetID].FilenameOnly);
                         data5bodywriter.Write((ushort)tileset.FirstTile);
                         data5bodywriter.Write((ushort)tileset.TileCount);
+                        byte[] remappings = tileset.ColorRemapping;
+                        data5bodywriter.Write(remappings != null);
+                        if (remappings != null)
+                            for (int i = 0; i < remappings.Length; ++i)
+                                data5bodywriter.Write(remappings[i]);
+
                     }
 
                     var data5bodycompressed = ZlibStream.CompressBuffer(data5body.ToArray());
@@ -509,6 +515,12 @@ namespace MLLE
                             var tileset = new J2TFile(tilesetFilepath);
                             tileset.FirstTile = data5bodyreader.ReadUInt16();
                             tileset.TileCount = data5bodyreader.ReadUInt16();
+                            if (data5bodyreader.ReadBoolean())
+                            {
+                                tileset.ColorRemapping = new byte[Palette.PaletteSize];
+                                for (uint i = 0; i < Palette.PaletteSize; ++i)
+                                    tileset.ColorRemapping[i] = data5bodyreader.ReadByte();
+                            }
                             Tilesets.Add(tileset);
                         }
                         else
