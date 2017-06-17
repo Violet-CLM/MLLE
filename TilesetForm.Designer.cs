@@ -223,6 +223,7 @@
             this.ColorsButton.TabIndex = 12;
             this.ColorsButton.Text = "Colors...";
             this.ColorsButton.UseVisualStyleBackColor = true;
+            this.ColorsButton.Click += new System.EventHandler(this.ColorsButton_Click);
             // 
             // TilesetForm
             // 

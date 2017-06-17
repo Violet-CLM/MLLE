@@ -72,6 +72,8 @@ class J2TFile : J2File
     internal ushort data3Counter = 0;
     internal byte[][] Masks;
 
+    public byte[] ColorRemapping = null; //for levels with multiple tilesets
+
     static internal bool[] Convert128BitsToBoolMask(byte[] bits)
     {
         bool[] output = new bool[1024];

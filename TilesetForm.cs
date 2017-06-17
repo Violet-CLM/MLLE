@@ -18,14 +18,17 @@ namespace MLLE
         uint MaxTilesSupportedByLevel;
         uint NumberOfTilesInThisLevelBesidesThisTileset;
         bool Result = false;
+        Palette LevelPalette;
+        Bitmap TilesetOriginalColorsImage;
         public TilesetForm()
         {
             InitializeComponent();
         }
-        internal bool ShowForm(J2TFile tileset, List<J2TFile> tilesets, int max, uint number)
+        internal bool ShowForm(J2TFile tileset, List<J2TFile> tilesets, Palette palette, int max, uint number)
         {
             Tileset = tileset;
             Tilesets = tilesets;
+            LevelPalette = palette;
             MaxTilesSupportedByLevel = (uint)max;
             NumberOfTilesInThisLevelBesidesThisTileset = number;
             inputLast.Maximum = Tileset.TotalNumberOfTiles;
@@ -40,16 +43,15 @@ namespace MLLE
             return Result;
         }
 
-        internal static void GetColorPaletteFromTileset(J2TFile tileset, Bitmap image)
+        internal void DrawTilesetUsingRemappedLevelPalette()
         {
+            Image image = pictureBox1.Image;
             var palette = image.Palette;
             var entries = palette.Entries;
-            for (uint i = 0; i < 256; ++i)
-            {
-                var color = tileset.Palette.Colors[i];
-                entries[i] = Color.FromArgb(color[0], color[1], color[2]);
-            }
+            for (uint i = 0; i < Palette.PaletteSize; ++i)
+                entries[i] = Palette.Convert(LevelPalette.Colors[Tileset.ColorRemapping != null ? Tileset.ColorRemapping[i] : i]);
             image.Palette = palette;
+            pictureBox1.Refresh();
         }
 
         private void CreateImageFromTileset()
@@ -73,8 +75,15 @@ namespace MLLE
             Marshal.Copy(bytes, 0, data.Scan0, bytes.Length);
             image.UnlockBits(data);
             pictureBox1.Image = image;
+            
+            TilesetOriginalColorsImage = image.Clone() as Bitmap;
+            var palette = TilesetOriginalColorsImage.Palette;
+            var entries = palette.Entries;
+            for (uint i = 0; i < Palette.PaletteSize; ++i)
+                entries[i] = Palette.Convert(Tileset.Palette.Colors[i]);
+            TilesetOriginalColorsImage.Palette = palette;
 
-            GetColorPaletteFromTileset(Tileset, image);
+            DrawTilesetUsingRemappedLevelPalette();
         }
 
         private void UpdatePreviewControls()
@@ -137,7 +146,7 @@ namespace MLLE
 
         private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
         {
-            Text = "Setup Extra Tileset - " + GetMouseTileIDFromTileset(e);
+            Text = "Setup Extra Tileset \u2013 " + GetMouseTileIDFromTileset(e);
         }
 
         private void pictureBox1_MouseLeave(object sender, EventArgs e)
@@ -155,6 +164,14 @@ namespace MLLE
                     inputFirst.Value = GetMouseTileIDFromTileset(e);
             }
             catch { } //invalid value because of Minimum/Maximum of that textbox; do nothing
+        }
+
+        private void ColorsButton_Click(object sender, EventArgs e)
+        {
+            if (new SpriteRecolorForm().ShowForm(LevelPalette, TilesetOriginalColorsImage.Clone() as Bitmap, ref Tileset.ColorRemapping, BackColor))
+            {
+                DrawTilesetUsingRemappedLevelPalette();
+            }
         }
     }
 }
