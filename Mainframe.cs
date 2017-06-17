@@ -1113,31 +1113,42 @@ namespace MLLE
             SafeToDisplay = true;
             ResizeDisplay();
         }
+        private bool VersionIsPlusCompatible(Version version)
+        {
+            if (EnableableBools[version] != null)
+                return EnableableBools[version][EnableableTitles.BoolDevelopingForPlus];
+            return new IniFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ProfileIniFilename[J2L.VersionType] + ".ini")).IniReadValue("Enableable", "BoolDevelopingForPlus") == "";
+        }
         internal void ChangeVersion(Version nuversion)
         {
             _suspendEvent.Reset();
-            Version aldversion = J2L.VersionType;
-            VersionChangeResults result = J2L.ChangeVersion(nuversion);
-            switch (result)
+            if (!VersionIsPlusCompatible(nuversion) && J2L.PlusOnly)
+                MessageBox.Show("This level uses one or more features exclusive to JJ2+ and cannot be changed to a version that JJ2+ does not support.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            else
             {
-                case VersionChangeResults.Success:
-                    CheckCurrentVersion();
-                    ProcessIni(nuversion);
-                    if (nuversion == Version.AGA || aldversion == Version.AGA)
-                    {
-                        Undoable.Clear();
-                        Redoable.Clear();
-                    }
-                    break;
-                case VersionChangeResults.TilesetTooBig:
-                    MessageBox.Show("The current tileset has too many tiles to change the version.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    break;
-                case VersionChangeResults.TooManyAnimatedTiles:
-                    MessageBox.Show("There are too many tiles and animated tiles to change the version.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    break;
-                case VersionChangeResults.UnsupportedConversion:
-                    MessageBox.Show("The desired version change is not yet available.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    break;
+                Version aldversion = J2L.VersionType;
+                VersionChangeResults result = J2L.ChangeVersion(nuversion);
+                switch (result)
+                {
+                    case VersionChangeResults.Success:
+                        CheckCurrentVersion();
+                        ProcessIni(nuversion);
+                        if (nuversion == Version.AGA || aldversion == Version.AGA)
+                        {
+                            Undoable.Clear();
+                            Redoable.Clear();
+                        }
+                        break;
+                    case VersionChangeResults.TilesetTooBig:
+                        MessageBox.Show("The current tileset has too many tiles to change the version.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        break;
+                    case VersionChangeResults.TooManyAnimatedTiles:
+                        MessageBox.Show("There are too many tiles and animated tiles to change the version.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        break;
+                    case VersionChangeResults.UnsupportedConversion:
+                        MessageBox.Show("The desired version change is not yet available.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        break;
+                }
             }
             _suspendEvent.Set();
         }
@@ -1360,8 +1371,8 @@ namespace MLLE
             J2L.JCSVerticalFocus = (ushort)LDScrollV.Value;
 
             byte[] Data5 = null;
-            if (EnableableBools[J2L.VersionType][EnableableTitles.BoolDevelopingForPlus])
-                J2L.PlusPropertyList.CreateData5SectionIfRequiredByLevel(ref Data5, J2L.Tilesets);
+            if (EnableableBools[J2L.VersionType][EnableableTitles.BoolDevelopingForPlus] && J2L.PlusOnly)
+                J2L.PlusPropertyList.CreateData5Section(ref Data5, J2L.Tilesets);
 
             SavingResults result = J2L.Save(filename, eraseUndefinedTiles, allowDifferentTilesetVersion, storeGivenFilename, Data5);
             if (result == SavingResults.Success)

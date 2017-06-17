@@ -823,6 +823,7 @@ class J2LFile : J2File
     internal AGAEvent[,] AGA_EventMap;
 
     internal MLLE.PlusPropertyList PlusPropertyList = new MLLE.PlusPropertyList(null);
+    internal bool PlusOnly { get { return Tilesets.Count > 1 || PlusPropertyList.LevelNeedsData5; } }
 
     const uint SecurityStringMLLE = 0xBACABEEF;
     const uint SecurityStringPassworded = 0xBA00BE00;

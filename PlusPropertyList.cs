@@ -363,98 +363,98 @@ namespace MLLE
             }
         }
 
-        private bool LevelNeedsData5()
+        internal bool LevelNeedsData5
         {
-            if (
-                IsSnowing ||
-                IsSnowingOutdoorsOnly ||
-                SnowingIntensity != 0 ||
-                SnowingType != SnowTypeEnum.Snow ||
-                !WarpsTransmuteCoins ||
-                DelayGeneratedCrateOrigins ||
-                Echo != 0 ||
-                DarknessColor != Color.Black ||
-                WaterChangeSpeed != 1 ||
-                WaterInteraction != WaterInteractionEnum.PositionBased ||
-                WaterLayer != 1 ||
-                WaterLighting != WaterLightingEnum.None ||
-                WaterLevel != DefaultWaterLevel ||
-                WaterGradientStart != Color.Black ||
-                WaterGradientStop != Color.Black ||
-                Palette != null
-            )
-                return true;
-            foreach (byte[] remappings in ColorRemappings)
-                if (remappings != null)
-                    return true;
-            return false;
-        }
-        internal void CreateData5SectionIfRequiredByLevel(ref byte[] Data5, List<J2TFile> Tilesets)
-        {
-            if (Tilesets.Count > 1 || LevelNeedsData5())
+            get
             {
-                var data5header = new MemoryStream();
-                using (MemoryStream data5body = new MemoryStream())
-                using (BinaryWriter data5writer = new BinaryWriter(data5header, J2LFile.FileEncoding))
-                using (BinaryWriter data5bodywriter = new BinaryWriter(data5body, J2LFile.FileEncoding))
-                {
-                    data5writer.Write(MLLEData5MagicString.ToCharArray());
-                    data5writer.Write(CurrentMLLEData5Version);
-
-                    data5bodywriter.Write(IsSnowing);
-                    data5bodywriter.Write(IsSnowingOutdoorsOnly);
-                    data5bodywriter.Write(SnowingIntensity);
-                    data5bodywriter.Write((byte)SnowingType);
-                    data5bodywriter.Write(WarpsTransmuteCoins);
-                    data5bodywriter.Write(DelayGeneratedCrateOrigins);
-                    data5bodywriter.Write(Echo);
-                    data5bodywriter.Write(DarknessColor.ToArgb());
-                    data5bodywriter.Write(WaterChangeSpeed);
-                    data5bodywriter.Write((byte)WaterInteraction);
-                    data5bodywriter.Write(WaterLayer);
-                    data5bodywriter.Write((byte)WaterLighting);
-                    data5bodywriter.Write(WaterLevel);
-                    data5bodywriter.Write(WaterGradientStart.ToArgb());
-                    data5bodywriter.Write(WaterGradientStop.ToArgb());
-
-                    data5bodywriter.Write(Palette != null);
-                    if (Palette != null)
-                        Palette.WriteLEVStyle(data5bodywriter);
-
-                    foreach (byte[] remappings in ColorRemappings)
-                    {
-                        if (remappings == null)
-                            data5bodywriter.Write(false);
-                        else
-                        {
-                            data5bodywriter.Write(true);
-                            for (int i = 0; i < remappings.Length; ++i)
-                                data5bodywriter.Write(remappings[i]);
-                        }
-                    }
-
-                    data5bodywriter.Write((byte)(Tilesets.Count - 1));
-                    for (int tilesetID = 1; tilesetID < Tilesets.Count; ++tilesetID) //Tilesets[0] is already mentioned in Data5, after all
-                    {
-                        var tileset = Tilesets[tilesetID];
-                        data5bodywriter.Write(Tilesets[tilesetID].FilenameOnly);
-                        data5bodywriter.Write((ushort)tileset.FirstTile);
-                        data5bodywriter.Write((ushort)tileset.TileCount);
-                        byte[] remappings = tileset.ColorRemapping;
-                        data5bodywriter.Write(remappings != null);
-                        if (remappings != null)
-                            for (int i = 0; i < remappings.Length; ++i)
-                                data5bodywriter.Write(remappings[i]);
-
-                    }
-
-                    var data5bodycompressed = ZlibStream.CompressBuffer(data5body.ToArray());
-                    data5writer.Write((uint)data5bodycompressed.Length);
-                    data5writer.Write((uint)data5body.Length);
-                    data5writer.Write(data5bodycompressed);
-                }
-                Data5 = data5header.ToArray();
+                if (
+                    IsSnowing ||
+                    IsSnowingOutdoorsOnly ||
+                    SnowingIntensity != 0 ||
+                    SnowingType != SnowTypeEnum.Snow ||
+                    !WarpsTransmuteCoins ||
+                    DelayGeneratedCrateOrigins ||
+                    Echo != 0 ||
+                    DarknessColor != Color.Black ||
+                    WaterChangeSpeed != 1 ||
+                    WaterInteraction != WaterInteractionEnum.PositionBased ||
+                    WaterLayer != 1 ||
+                    WaterLighting != WaterLightingEnum.None ||
+                    WaterLevel != DefaultWaterLevel ||
+                    WaterGradientStart != Color.Black ||
+                    WaterGradientStop != Color.Black ||
+                    Palette != null
+                )
+                    return true;
+                foreach (byte[] remappings in ColorRemappings)
+                    if (remappings != null)
+                        return true;
+                return false;
             }
+        }
+        internal void CreateData5Section(ref byte[] Data5, List<J2TFile> Tilesets)
+        {
+            var data5header = new MemoryStream();
+            using (MemoryStream data5body = new MemoryStream())
+            using (BinaryWriter data5writer = new BinaryWriter(data5header, J2LFile.FileEncoding))
+            using (BinaryWriter data5bodywriter = new BinaryWriter(data5body, J2LFile.FileEncoding))
+            {
+                data5writer.Write(MLLEData5MagicString.ToCharArray());
+                data5writer.Write(CurrentMLLEData5Version);
+
+                data5bodywriter.Write(IsSnowing);
+                data5bodywriter.Write(IsSnowingOutdoorsOnly);
+                data5bodywriter.Write(SnowingIntensity);
+                data5bodywriter.Write((byte)SnowingType);
+                data5bodywriter.Write(WarpsTransmuteCoins);
+                data5bodywriter.Write(DelayGeneratedCrateOrigins);
+                data5bodywriter.Write(Echo);
+                data5bodywriter.Write(DarknessColor.ToArgb());
+                data5bodywriter.Write(WaterChangeSpeed);
+                data5bodywriter.Write((byte)WaterInteraction);
+                data5bodywriter.Write(WaterLayer);
+                data5bodywriter.Write((byte)WaterLighting);
+                data5bodywriter.Write(WaterLevel);
+                data5bodywriter.Write(WaterGradientStart.ToArgb());
+                data5bodywriter.Write(WaterGradientStop.ToArgb());
+
+                data5bodywriter.Write(Palette != null);
+                if (Palette != null)
+                    Palette.WriteLEVStyle(data5bodywriter);
+
+                foreach (byte[] remappings in ColorRemappings)
+                {
+                    if (remappings == null)
+                        data5bodywriter.Write(false);
+                    else
+                    {
+                        data5bodywriter.Write(true);
+                        for (int i = 0; i < remappings.Length; ++i)
+                            data5bodywriter.Write(remappings[i]);
+                    }
+                }
+
+                data5bodywriter.Write((byte)(Tilesets.Count - 1));
+                for (int tilesetID = 1; tilesetID < Tilesets.Count; ++tilesetID) //Tilesets[0] is already mentioned in Data5, after all
+                {
+                    var tileset = Tilesets[tilesetID];
+                    data5bodywriter.Write(Tilesets[tilesetID].FilenameOnly);
+                    data5bodywriter.Write((ushort)tileset.FirstTile);
+                    data5bodywriter.Write((ushort)tileset.TileCount);
+                    byte[] remappings = tileset.ColorRemapping;
+                    data5bodywriter.Write(remappings != null);
+                    if (remappings != null)
+                        for (int i = 0; i < remappings.Length; ++i)
+                            data5bodywriter.Write(remappings[i]);
+
+                }
+
+                var data5bodycompressed = ZlibStream.CompressBuffer(data5body.ToArray());
+                data5writer.Write((uint)data5bodycompressed.Length);
+                data5writer.Write((uint)data5body.Length);
+                data5writer.Write(data5bodycompressed);
+            }
+            Data5 = data5header.ToArray();
         }
         internal bool LevelIsReadable(byte[] Data5, List<J2TFile> Tilesets, string Folder)
         {
