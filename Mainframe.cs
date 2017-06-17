@@ -1069,13 +1069,14 @@ namespace MLLE
             if (J2L.TexturesHaveBeenGenerated)
                 J2L.Generate_Textures(includeMasks: true, palette: J2L.PlusPropertyList.Palette);
             ResizeDisplay();
+            RedrawTilesetHowManyTimes += 1;
         }
         private void tilesetsToolStripMenuItemTileset_Click(object sender, EventArgs e)
         {
             _suspendEvent.Reset();
             var toolstripItem = sender as ToolStripMenuItem;
             var tileset = toolstripItem.Tag as J2TFile;
-            if (new TilesetForm().ShowForm(tileset, J2L.Tilesets, J2L.PlusPropertyList.Palette ?? J2L.Tilesets[0].Palette, J2L.MaxTiles, J2L.TileCount + J2L.NumberOfAnimations - tileset.TileCount))
+            if (new TilesetForm().ShowForm(tileset, J2L, J2L.MaxTiles, J2L.TileCount + J2L.NumberOfAnimations - tileset.TileCount))
                 ReadjustTilesetImage();
             _suspendEvent.Set();
         }
@@ -1089,7 +1090,7 @@ namespace MLLE
             {
                 var newTileset = new J2TFile(tilesetOpenDialog.FileName);
                 newTileset.TileCount = 10;
-                if (new TilesetForm().ShowForm(newTileset, J2L.Tilesets, J2L.PlusPropertyList.Palette ?? J2L.Tilesets[0].Palette, J2L.MaxTiles, J2L.TileCount + J2L.NumberOfAnimations))
+                if (new TilesetForm().ShowForm(newTileset, J2L, J2L.MaxTiles, J2L.TileCount + J2L.NumberOfAnimations))
                     ReadjustTilesetImage();
             }
             _suspendEvent.Set();

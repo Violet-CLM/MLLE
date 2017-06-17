@@ -14,27 +14,30 @@ namespace MLLE
     public partial class TilesetForm : Form
     {
         J2TFile Tileset;
+        J2LFile Level;
         List<J2TFile> Tilesets;
         uint MaxTilesSupportedByLevel;
         uint NumberOfTilesInThisLevelBesidesThisTileset;
         bool Result = false;
         Palette LevelPalette;
         Bitmap TilesetOriginalColorsImage;
+        uint InitialTileCount, InitialFirstTile;
         public TilesetForm()
         {
             InitializeComponent();
         }
-        internal bool ShowForm(J2TFile tileset, List<J2TFile> tilesets, Palette palette, int max, uint number)
+        internal bool ShowForm(J2TFile tileset, J2LFile level, int max, uint number)
         {
             Tileset = tileset;
-            Tilesets = tilesets;
-            LevelPalette = palette;
+            Level = level;
+            Tilesets = level.Tilesets;
+            LevelPalette = level.PlusPropertyList.Palette ?? Tilesets[0].Palette;
             MaxTilesSupportedByLevel = (uint)max;
             NumberOfTilesInThisLevelBesidesThisTileset = number;
             inputLast.Maximum = Tileset.TotalNumberOfTiles;
-            inputLast.Value = Tileset.FirstTile + Tileset.TileCount;
+            inputLast.Value = Tileset.FirstTile + (InitialTileCount = Tileset.TileCount);
             inputFirst.Maximum = inputLast.Value - 1;
-            inputFirst.Value = Tileset.FirstTile;
+            inputFirst.Value = InitialFirstTile = Tileset.FirstTile;
             inputLast.Minimum = inputFirst.Value + 1;
             ButtonDelete.Visible = Tilesets.Contains(Tileset);
             CreateImageFromTileset();
@@ -113,9 +116,15 @@ namespace MLLE
 
         private void ButtonDelete_Click(object sender, EventArgs e)
         {
-            Tilesets.Remove(Tileset);
-            Result = true;
-            Dispose();
+            if (Level.DeleteTiles(InitialFirstTile, InitialFirstTile + InitialTileCount - 1, () =>
+            {
+                return MessageBox.Show("This level contains references to one or more of the tiles you are removing. Those references will be deleted.", "Undefined Tiles", MessageBoxButtons.OKCancel, MessageBoxIcon.Hand) == DialogResult.OK;
+            }))
+            {
+                Tilesets.Remove(Tileset);
+                Result = true;
+                Dispose();
+            }
         }
 
         private void inputFirst_ValueChanged(object sender, EventArgs e)

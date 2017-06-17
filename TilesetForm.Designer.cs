@@ -205,7 +205,6 @@
             // ButtonDelete
             // 
             this.ButtonDelete.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.ButtonDelete.DialogResult = System.Windows.Forms.DialogResult.Abort;
             this.ButtonDelete.Location = new System.Drawing.Point(362, 68);
             this.ButtonDelete.Name = "ButtonDelete";
             this.ButtonDelete.Size = new System.Drawing.Size(75, 23);

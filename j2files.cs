@@ -2096,5 +2096,49 @@ class J2LFile : J2File
         }
         else return VersionChangeResults.UnsupportedConversion;
     }
+    
+    internal bool DeleteTiles(uint first, uint last, Func<bool> getPermission)
+    {
+        if (first > last)
+            return false; //something went wrong
+        bool permissionGotten = false;
 
+        foreach (Layer CurrentLayer in Layers)
+            if (CurrentLayer.HasTiles)
+                for (uint x = 0; x < CurrentLayer.Width; ++x)
+                    for (uint y = 0; y < CurrentLayer.Height; ++y)
+                    {
+                        var prospectiveTileToDelete = CurrentLayer.TileMap[x, y] % MaxTiles;
+                        if (prospectiveTileToDelete >= first && prospectiveTileToDelete <= last)
+                        {
+                            if (!permissionGotten)
+                            {
+                                if (!getPermission())
+                                    return false;
+                                permissionGotten = true;
+                            }
+                            CurrentLayer.TileMap[x, y] = 0;
+                        }
+                    }
+        foreach (AnimatedTile CurrentAnimatedTile in Animations)
+        {
+            var sequence = CurrentAnimatedTile.Sequence;
+            for (int frameID = 0; frameID < sequence.Length; ++frameID)
+            {
+                var prospectiveTileToDelete = sequence[frameID] % MaxTiles;
+                if (prospectiveTileToDelete >= first && prospectiveTileToDelete <= last)
+                {
+                    if (!permissionGotten)
+                    {
+                        if (!getPermission())
+                            return false;
+                        permissionGotten = true;
+                    }
+                    sequence[frameID] = 0;
+                }
+            }
+        }
+
+        return true;
+    }
 }
