@@ -149,6 +149,8 @@ namespace MLLE
         public bool CurrentlySelectingColors;
         public void Moved(object sender, MouseEventArgs e)
         {
+            if (!(sender as Control).ClientRectangle.Contains(e.Location))
+                return;
             if (e.Button != MouseButtons.None)
             {
                 if (ColorsSelected[getSelectedColor(e)] != CurrentlySelectingColors)

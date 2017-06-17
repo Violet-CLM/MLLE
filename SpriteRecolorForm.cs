@@ -178,6 +178,8 @@ namespace MLLE
         }
         private void PaletteImageMouseMove(object sender, MouseEventArgs e)
         {
+            if (!(sender as Control).ClientRectangle.Contains(e.Location))
+                return;
             PaletteImage paletteImage = sender as PaletteImage;
             int selectedColor = paletteImage.getSelectedColor(e);
             if (e.Button != MouseButtons.None && paletteImage.NumberOfSelectedColors > 0)
@@ -204,6 +206,8 @@ namespace MLLE
 
         private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
         {
+            if (!(sender as Control).ClientRectangle.Contains(e.Location))
+                return;
             Point pictureOrigin = pictureBox1.AutoScrollOffset;
             Text = "Remap Image Palette \u2013 " + ImageIndices[(e.Location.X - pictureOrigin.X) + (e.Location.Y - pictureOrigin.Y) * pictureBox1.Width];
         }

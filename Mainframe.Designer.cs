@@ -510,6 +510,7 @@
             this.jJ2PropertiesToolStripMenuItem.Name = "jJ2PropertiesToolStripMenuItem";
             this.jJ2PropertiesToolStripMenuItem.Size = new System.Drawing.Size(97, 20);
             this.jJ2PropertiesToolStripMenuItem.Text = "JJ2+ Properties";
+            this.jJ2PropertiesToolStripMenuItem.DropDownOpening += new System.EventHandler(this.jJ2PropertiesToolStripMenuItem_DropDownOpening);
             // 
             // plusLevelPropertiesToolStripMenuItem
             // 
@@ -537,7 +538,7 @@
             // addNewToolStripMenuItem
             // 
             this.addNewToolStripMenuItem.Name = "addNewToolStripMenuItem";
-            this.addNewToolStripMenuItem.Size = new System.Drawing.Size(132, 22);
+            this.addNewToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.addNewToolStripMenuItem.Text = "Add New...";
             this.addNewToolStripMenuItem.Click += new System.EventHandler(this.addNewToolStripMenuItem_Click);
             // 

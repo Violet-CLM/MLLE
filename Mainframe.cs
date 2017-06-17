@@ -2791,6 +2791,11 @@ namespace MLLE
             }
         }
 
+        private void jJ2PropertiesToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
+        {
+            paletteToolStripMenuItem.Enabled = tilesetsToolStripMenuItem.Enabled = recolorEventsToolStripMenuItem.Enabled = J2L.HasTiles;
+        }
+
         private void LevelDisplay_MouseUp(object sender, System.Windows.Forms.MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Right) return;
