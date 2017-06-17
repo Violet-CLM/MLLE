@@ -132,11 +132,12 @@ class TexturedJ2L : J2LFile
             var tile = J2T.Images[J2T.ImageAddress[tileInTilesetID]];
             var tileTrans = ((source == TransparencySource.JJ2_Style) ? J2T.TransparencyMaskJJ2_Style : J2T.TransparencyMaskJCS_Style)[Array.BinarySearch(J2T.TransparencyMaskOffset, 0, (int)J2T.data3Counter, J2T.TransparencyMaskAddress[tileInTilesetID])];
             var mask = J2T.Masks[J2T.MaskAddress[tileInTilesetID]];
+            var colorRemapping = J2T.ColorRemapping ?? J2TFile.DefaultColorRemapping;
             bool transp = TileTypes[tileInTilesetID] == 1;
 
             for (short j = 0; j < 32*32*4; j += 4)
             {
-                var pixel = palette[(int)tile[j / 4]];
+                var pixel = palette[colorRemapping[(int)tile[j / 4]]];
                 if (includeMasks) for (byte k = 0; k < 4; k++)
                 {
                     int atlasDrawingLocation = tileInLevelID % AtlasLength * 128 + tileInLevelID / AtlasLength * AtlasLength * 4096 + j % 128 + j / 128 * AtlasLength * 128 + k;

@@ -73,6 +73,7 @@ class J2TFile : J2File
     internal byte[][] Masks;
 
     public byte[] ColorRemapping = null; //for levels with multiple tilesets
+    public static readonly byte[] DefaultColorRemapping = Enumerable.Range(0, (int)Palette.PaletteSize).Select(val => (byte)val).ToArray();
 
     static internal bool[] Convert128BitsToBoolMask(byte[] bits)
     {

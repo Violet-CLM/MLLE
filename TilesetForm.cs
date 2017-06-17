@@ -49,7 +49,7 @@ namespace MLLE
             var palette = image.Palette;
             var entries = palette.Entries;
             for (uint i = 0; i < Palette.PaletteSize; ++i)
-                entries[i] = Palette.Convert(LevelPalette.Colors[Tileset.ColorRemapping != null ? Tileset.ColorRemapping[i] : i]);
+                entries[i] = Palette.Convert(LevelPalette.Colors[(Tileset.ColorRemapping ?? J2TFile.DefaultColorRemapping)[i]]);
             image.Palette = palette;
             pictureBox1.Refresh();
         }
