@@ -78,6 +78,27 @@ internal class Palette
             return true;
         }
     }
+
+    internal byte FindNearestColor(byte[] requestedColor)
+    {
+        byte nearestEntry = 15;
+        int smallestSquaredDifference = 0x40000;
+        for (int i = 16; i < 256; i++)
+        {
+            int squaredDifference = 0;
+            for (int j = 0; j < 3; j++)
+            {
+                int difference = (int)Colors[i][j] - (int)requestedColor[j];
+                squaredDifference += difference * difference;
+            }
+            if (squaredDifference < smallestSquaredDifference)
+            {
+                nearestEntry = (byte)i;
+                smallestSquaredDifference = squaredDifference;
+            }
+        }
+        return nearestEntry;
+    }
 }
 
 

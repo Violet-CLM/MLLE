@@ -251,8 +251,7 @@ namespace MLLE
                         ColorRemappings[i] = null;
                     else
                     {
-                        ColorRemappings[i] = new byte[Palette.PaletteSize];
-                        other.Value.ColorRemappings[i].CopyTo(ColorRemappings[i], 0);
+                        ColorRemappings[i] = other.Value.ColorRemappings[i].Clone() as byte[];
                     }
                 }
             }

@@ -36,6 +36,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
+            this.ButtonNearestColors = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
@@ -125,6 +126,19 @@
             this.label4.TabIndex = 9;
             this.label4.Text = "Image Remapped Palette";
             // 
+            // ButtonNearestColors
+            // 
+            this.ButtonNearestColors.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.ButtonNearestColors.Enabled = false;
+            this.ButtonNearestColors.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ButtonNearestColors.Location = new System.Drawing.Point(532, 346);
+            this.ButtonNearestColors.Name = "ButtonNearestColors";
+            this.ButtonNearestColors.Size = new System.Drawing.Size(75, 23);
+            this.ButtonNearestColors.TabIndex = 10;
+            this.ButtonNearestColors.Text = "Nearest Colors";
+            this.ButtonNearestColors.UseVisualStyleBackColor = true;
+            this.ButtonNearestColors.Click += new System.EventHandler(this.ButtonNearestColor_Click);
+            // 
             // SpriteRecolorForm
             // 
             this.AcceptButton = this.OKButton;
@@ -132,6 +146,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
             this.ClientSize = new System.Drawing.Size(619, 381);
+            this.Controls.Add(this.ButtonNearestColors);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
@@ -162,5 +177,6 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Button ButtonNearestColors;
     }
 }

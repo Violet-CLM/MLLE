@@ -770,7 +770,7 @@ namespace MLLE
         private void RecolorSprite(int spriteID)
         {
             _suspendEvent.Reset();
-            if (new SpriteRecolorForm().ShowForm(J2L.PlusPropertyList.Palette ?? J2L.Tilesets[0].Palette, RecolorableSpriteResources[spriteID], ref J2L.PlusPropertyList.ColorRemappings[spriteID], HotKolors[1]))
+            if (new SpriteRecolorForm().ShowForm(J2L.PlusPropertyList.Palette ?? J2L.Tilesets[0].Palette, RecolorableSpriteResources[spriteID].Clone() as Bitmap, ref J2L.PlusPropertyList.ColorRemappings[spriteID], HotKolors[1]))
             {
 
             }

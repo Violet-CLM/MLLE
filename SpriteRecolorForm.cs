@@ -16,6 +16,7 @@ namespace MLLE
         bool Result = false;
         PaletteImage LevelPalette = new PaletteImage(8, 1, false, false);
         PaletteImage RemappingPalette = new PaletteImage(8, 1, false, false);
+        Palette OriginalPalette = new Palette();
         private PaletteImage GetOtherPalette(PaletteImage thisOne)
         {
             return (thisOne == LevelPalette) ? RemappingPalette : LevelPalette;
@@ -54,6 +55,7 @@ namespace MLLE
                 original.Palette.Colors[i] = Palette.Convert(ImageWorkingPalette.Entries[i]);
                 ImageWorkingPalette.Entries[i] = Palette.Convert(LevelPalette.Palette.Colors[ColorRemappings[i]]);
             }
+            OriginalPalette.CopyFrom(original.Palette);
             bitmap.Palette = ImageWorkingPalette;
 
             pictureBox1.Image = bitmap;
@@ -106,6 +108,7 @@ namespace MLLE
             if (otherPaletteImage.NumberOfSelectedColors == 0)
             {
                 paletteImage.Clicked(sender, e);
+                ButtonNearestColors.Enabled = (paletteImage == RemappingPalette && paletteImage.NumberOfSelectedColors > 0);
             }
             else
             {
@@ -132,7 +135,25 @@ namespace MLLE
                 RemappingPalette.SetSelected(PaletteImage.AllPaletteColors, false);
 
                 paletteImage.CurrentlySelectingColors = false;
+                ButtonNearestColors.Enabled = false;
             }
+        }
+
+        private void ButtonNearestColor_Click(object sender, EventArgs e)
+        {
+            int[] selectedColors = RemappingPalette.GetSelectedIndices();
+            for (int i = 0; i < selectedColors.Length; ++i)
+            {
+                int colorIndex = selectedColors[i];
+                var remappedColor = LevelPalette.Palette[ColorRemappings[colorIndex] = LevelPalette.Palette.FindNearestColor(OriginalPalette[colorIndex])];
+                RemappingPalette.Palette[colorIndex] = remappedColor;
+                ImageWorkingPalette.Entries[colorIndex] = Palette.Convert(remappedColor);
+            }
+            pictureBox1.Image.Palette = ImageWorkingPalette;
+            pictureBox1.Refresh();
+
+            RemappingPalette.SetSelected(selectedColors, false);
+            ButtonNearestColors.Enabled = false;
         }
 
         private void PaletteImageMouseLeave(object sender, EventArgs e)
@@ -162,6 +183,7 @@ namespace MLLE
             if (e.Button != MouseButtons.None && paletteImage.NumberOfSelectedColors > 0)
             {
                 paletteImage.Moved(sender, e);
+                ButtonNearestColors.Enabled = (paletteImage == RemappingPalette && paletteImage.NumberOfSelectedColors > 0);
             }
             else
             {
@@ -207,10 +229,10 @@ namespace MLLE
             {
                 RemappingPalette.SetSelected(PaletteImage.AllPaletteColors, false);
                 LevelPalette.SetSelected(PaletteImage.AllPaletteColors, false);
+                ButtonNearestColors.Enabled = false;
                 return true;
             }
             return base.ProcessCmdKey(ref msg, keyData);
         }
-
     }
 }
