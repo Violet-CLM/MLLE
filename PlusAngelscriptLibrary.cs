@@ -114,6 +114,18 @@ namespace MLLE {
             palette.apply();
         }
 
+        _recolorAnimationIf(data5, ANIM::PINBALL, 0, 4);
+        _recolorAnimationIf(data5, ANIM::PINBALL, 2, 4);
+        _recolorAnimationIf(data5, ANIM::CARROTPOLE, 0, 1);
+        _recolorAnimationIf(data5, ANIM::DIAMPOLE, 0, 1);
+        _recolorAnimationIf(data5, ANIM::PINBALL, 4, 8);
+        _recolorAnimationIf(data5, ANIM::JUNGLEPOLE, 0, 1);
+        _recolorAnimationIf(data5, ANIM::PLUS_SCENERY, 0, 17);
+        _recolorAnimationIf(data5, ANIM::PSYCHPOLE, 0, 1);
+        _recolorAnimationIf(data5, ANIM::SMALTREE, 0, 1);
+        _recolorAnimationIf(data5, ANIM::SNOW, 0, 8);
+        _recolorAnimationIf(data5, ANIM::COMMON, 2, 18);
+
         data5.pop(pbyte);
         for (uint i = 0; i < pbyte; ++i) {
             string tilesetFilename = _read7BitEncodedStringFromStream(data5);
@@ -132,6 +144,7 @@ namespace MLLE {
     jjPALCOLOR _colorFromArgb(uint Argb) {
         return jjPALCOLOR(Argb >> 16, Argb >> 8, Argb >> 0);
     }
+
     uint _read7BitEncodedUintFromStream(jjSTREAM@ stream) {
         uint result = 0;
         while (true) {
@@ -148,6 +161,25 @@ namespace MLLE {
         string result;
         stream.get(result, _read7BitEncodedUintFromStream(stream));
         return result;
+    }
+
+    void _recolorAnimationIf(jjSTREAM@ stream, ANIM::Set set, uint animID, uint frameCount) {
+        bool pbool; stream.pop(pbool); if (!pbool) return;
+
+        if (jjAnimSets[set] == 0)
+            jjAnimSets[set].load();
+        const uint firstFrameID = jjAnimations[jjAnimSets[set] + animID];
+        array<uint8> colors(256);
+        for (uint i = 0; i < 256; ++i)
+            stream.pop(colors[i]);
+        for (uint i = 0; i < frameCount; ++i) {
+            jjANIMFRAME@ frame = jjAnimFrames[firstFrameID + i];
+            jjPIXELMAP image(frame);
+            for (uint x = 0; x < image.width; ++x)
+                for (uint y = 0; y < image.height; ++y)
+                    image[x,y] = colors[image[x,y]];
+            image.save(frame);
+        }
     }
 }";
 
