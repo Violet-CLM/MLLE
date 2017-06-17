@@ -35,9 +35,9 @@ namespace MLLE
             MaxTilesSupportedByLevel = (uint)max;
             NumberOfTilesInThisLevelBesidesThisTileset = number;
             inputLast.Maximum = Tileset.TotalNumberOfTiles;
-            inputLast.Value = Tileset.FirstTile + (InitialTileCount = Tileset.TileCount);
+            inputLast.Value = (InitialFirstTile = Tileset.FirstTile) + (InitialTileCount = Tileset.TileCount);
             inputFirst.Maximum = inputLast.Value - 1;
-            inputFirst.Value = InitialFirstTile = Tileset.FirstTile;
+            inputFirst.Value = Tileset.FirstTile;
             inputLast.Minimum = inputFirst.Value + 1;
             ButtonDelete.Visible = Tilesets.Contains(Tileset);
             CreateImageFromTileset();
@@ -99,12 +99,48 @@ namespace MLLE
             EdgePanelRight.Location = GetPointFromTileID((int)inputLast.Value - 1, 32);
         }
 
+        bool AlreadyGaveConsentToDeletingTiles = false;
+        bool DeleteReferencedTilesWarning()
+        {
+            if (AlreadyGaveConsentToDeletingTiles) return true;
+            if (MessageBox.Show("This level contains references to one or more of the tiles you are removing. Those references will be deleted.", "Undefined Tiles", MessageBoxButtons.OKCancel, MessageBoxIcon.Hand) != DialogResult.OK)
+                return false;
+            return AlreadyGaveConsentToDeletingTiles = true;
+        }
+        private uint GetTilesetFirstTileIDInLevel()
+        {
+            uint TilesetFirstTileIDInLevel = 0;
+            foreach (J2TFile otherTileset in Tilesets)
+                if (otherTileset == Tileset)
+                    break;
+                else
+                    TilesetFirstTileIDInLevel += otherTileset.TileCount;
+            return TilesetFirstTileIDInLevel;
+        }
         private void OKButton_Click(object sender, EventArgs e)
         {
-            Tileset.FirstTile = (uint)inputFirst.Value;
-            Tileset.TileCount = (uint)(inputLast.Value - inputFirst.Value);
+            uint FirstTile = (uint)inputFirst.Value;
+            uint LastTile = (uint)inputLast.Value;
+
             if (!Tilesets.Contains(Tileset))
                 Tilesets.Add(Tileset);
+            else
+            {
+                AlreadyGaveConsentToDeletingTiles = false;
+                uint TilesetFirstTileIDInLevel = GetTilesetFirstTileIDInLevel();
+                uint InitialLastTile = InitialFirstTile + InitialTileCount;
+
+                if (FirstTile > InitialFirstTile)
+                    if (!Level.DeleteTiles(TilesetFirstTileIDInLevel + InitialFirstTile, TilesetFirstTileIDInLevel + FirstTile - 1, DeleteReferencedTilesWarning))
+                        return;
+                if (LastTile < InitialLastTile)
+                    if (!Level.DeleteTiles(TilesetFirstTileIDInLevel + LastTile, TilesetFirstTileIDInLevel + InitialLastTile - 1, DeleteReferencedTilesWarning))
+                        return;
+            }
+
+            Tileset.FirstTile = FirstTile;
+            Tileset.TileCount = LastTile - FirstTile;
+
             Result = true;
             Dispose();
         }
@@ -116,10 +152,10 @@ namespace MLLE
 
         private void ButtonDelete_Click(object sender, EventArgs e)
         {
-            if (Level.DeleteTiles(InitialFirstTile, InitialFirstTile + InitialTileCount - 1, () =>
-            {
-                return MessageBox.Show("This level contains references to one or more of the tiles you are removing. Those references will be deleted.", "Undefined Tiles", MessageBoxButtons.OKCancel, MessageBoxIcon.Hand) == DialogResult.OK;
-            }))
+            AlreadyGaveConsentToDeletingTiles = false;
+            uint TilesetFirstTileIDInLevel = GetTilesetFirstTileIDInLevel();
+
+            if (Level.DeleteTiles(TilesetFirstTileIDInLevel + InitialFirstTile, TilesetFirstTileIDInLevel + InitialFirstTile + InitialTileCount - 1, DeleteReferencedTilesWarning))
             {
                 Tilesets.Remove(Tileset);
                 Result = true;
