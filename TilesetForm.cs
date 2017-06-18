@@ -21,7 +21,7 @@ namespace MLLE
         bool Result = false;
         Palette LevelPalette;
         Bitmap TilesetOriginalColorsImage;
-        uint InitialTileCount, InitialFirstTile;
+        int InitialTileCount, InitialFirstTile;
         public TilesetForm()
         {
             InitializeComponent();
@@ -35,7 +35,7 @@ namespace MLLE
             MaxTilesSupportedByLevel = (uint)max;
             NumberOfTilesInThisLevelBesidesThisTileset = number;
             inputLast.Maximum = Tileset.TotalNumberOfTiles;
-            inputLast.Value = (InitialFirstTile = Tileset.FirstTile) + (InitialTileCount = Tileset.TileCount);
+            inputLast.Value = (InitialFirstTile = (int)Tileset.FirstTile) + (InitialTileCount = (int)Tileset.TileCount);
             inputFirst.Maximum = inputLast.Value - 1;
             inputFirst.Value = Tileset.FirstTile;
             inputLast.Minimum = inputFirst.Value + 1;
@@ -107,39 +107,70 @@ namespace MLLE
                 return false;
             return AlreadyGaveConsentToDeletingTiles = true;
         }
-        private uint GetTilesetFirstTileIDInLevel()
+        static ushort SetTileToZero(ushort tileID)
         {
-            uint TilesetFirstTileIDInLevel = 0;
+            return 0;
+        }
+        private int GetTilesetFirstTileIDInLevel()
+        {
+            int TilesetFirstTileIDInLevel = 0;
             foreach (J2TFile otherTileset in Tilesets)
                 if (otherTileset == Tileset)
                     break;
                 else
-                    TilesetFirstTileIDInLevel += otherTileset.TileCount;
+                    TilesetFirstTileIDInLevel += (int)otherTileset.TileCount;
             return TilesetFirstTileIDInLevel;
         }
         private void OKButton_Click(object sender, EventArgs e)
         {
-            uint FirstTile = (uint)inputFirst.Value;
-            uint LastTile = (uint)inputLast.Value;
+            int FirstTile = (int)inputFirst.Value;
+            int LastTile = (int)inputLast.Value;
+            int InitialLastTile = InitialFirstTile + InitialTileCount;
+            int TilesetFirstTileIDInLevel = GetTilesetFirstTileIDInLevel();
 
             if (!Tilesets.Contains(Tileset))
                 Tilesets.Add(Tileset);
             else
             {
                 AlreadyGaveConsentToDeletingTiles = false;
-                uint TilesetFirstTileIDInLevel = GetTilesetFirstTileIDInLevel();
-                uint InitialLastTile = InitialFirstTile + InitialTileCount;
+                int offsetFromChangedFirst = InitialFirstTile - FirstTile;
+                int offsetFromChangedLast = InitialLastTile - LastTile;
 
-                if (FirstTile > InitialFirstTile)
-                    if (!Level.DeleteTiles(TilesetFirstTileIDInLevel + InitialFirstTile, TilesetFirstTileIDInLevel + FirstTile - 1, DeleteReferencedTilesWarning))
+                if (offsetFromChangedFirst < 0) //InitialFirstTile < FirstTile
+                    if (!Level.ChangeRangeOfTiles(
+                        TilesetFirstTileIDInLevel,
+                        TilesetFirstTileIDInLevel - offsetFromChangedFirst - 1,
+                        DeleteReferencedTilesWarning,
+                        SetTileToZero
+                    ))
                         return;
-                if (LastTile < InitialLastTile)
-                    if (!Level.DeleteTiles(TilesetFirstTileIDInLevel + LastTile, TilesetFirstTileIDInLevel + InitialLastTile - 1, DeleteReferencedTilesWarning))
+                if (offsetFromChangedLast > 0) //InitialLastTile > LastTile
+                    if (!Level.ChangeRangeOfTiles(
+                        TilesetFirstTileIDInLevel - InitialFirstTile + LastTile,
+                        TilesetFirstTileIDInLevel - InitialFirstTile + InitialLastTile - 1,
+                        DeleteReferencedTilesWarning,
+                        SetTileToZero
+                    ))
                         return;
+                
+                if (offsetFromChangedLast != 0) //InitialLastTile != LastTile
+                    Level.ChangeRangeOfTiles(
+                        TilesetFirstTileIDInLevel + InitialLastTile - InitialFirstTile,
+                        Level.AnimOffset - 1,
+                        () => { return true; },
+                        (ushort tileID) => { return (ushort)(tileID - offsetFromChangedLast); }
+                    );
+                if (offsetFromChangedFirst != 0) //InitialFirstTile != FirstTile
+                    Level.ChangeRangeOfTiles(
+                        TilesetFirstTileIDInLevel,
+                        Level.AnimOffset - 1,
+                        () => { return true; },
+                        (ushort tileID) => { return (ushort)(tileID + offsetFromChangedFirst); }
+                    );
             }
 
-            Tileset.FirstTile = FirstTile;
-            Tileset.TileCount = LastTile - FirstTile;
+            Tileset.FirstTile = (uint)FirstTile;
+            Tileset.TileCount = (uint)(LastTile - FirstTile);
 
             Result = true;
             Dispose();
@@ -153,10 +184,21 @@ namespace MLLE
         private void ButtonDelete_Click(object sender, EventArgs e)
         {
             AlreadyGaveConsentToDeletingTiles = false;
-            uint TilesetFirstTileIDInLevel = GetTilesetFirstTileIDInLevel();
+            int TilesetFirstTileIDInLevel = GetTilesetFirstTileIDInLevel();
 
-            if (Level.DeleteTiles(TilesetFirstTileIDInLevel + InitialFirstTile, TilesetFirstTileIDInLevel + InitialFirstTile + InitialTileCount - 1, DeleteReferencedTilesWarning))
+            if (Level.ChangeRangeOfTiles(
+                TilesetFirstTileIDInLevel,
+                TilesetFirstTileIDInLevel + InitialTileCount - 1,
+                DeleteReferencedTilesWarning,
+                SetTileToZero
+            ))
             {
+                Level.ChangeRangeOfTiles(
+                    TilesetFirstTileIDInLevel,
+                    Level.AnimOffset - 1,
+                    () => { return true; },
+                    (ushort tileID) => { return (ushort)(tileID - InitialTileCount); }
+                );
                 Tilesets.Remove(Tileset);
                 Result = true;
                 Dispose();

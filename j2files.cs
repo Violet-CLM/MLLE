@@ -2097,7 +2097,7 @@ class J2LFile : J2File
         else return VersionChangeResults.UnsupportedConversion;
     }
     
-    internal bool DeleteTiles(uint first, uint last, Func<bool> getPermission)
+    internal bool ChangeRangeOfTiles(int first, int last, Func<bool> getPermission, Func<ushort, ushort> action)
     {
         if (first > last)
             return false; //something went wrong
@@ -2108,8 +2108,8 @@ class J2LFile : J2File
                 for (uint x = 0; x < CurrentLayer.Width; ++x)
                     for (uint y = 0; y < CurrentLayer.Height; ++y)
                     {
-                        var prospectiveTileToDelete = CurrentLayer.TileMap[x, y] % MaxTiles;
-                        if (prospectiveTileToDelete >= first && prospectiveTileToDelete <= last)
+                        var prospectiveTileToChange = CurrentLayer.TileMap[x, y] % MaxTiles;
+                        if (prospectiveTileToChange >= first && prospectiveTileToChange <= last)
                         {
                             if (!permissionGotten)
                             {
@@ -2117,7 +2117,7 @@ class J2LFile : J2File
                                     return false;
                                 permissionGotten = true;
                             }
-                            CurrentLayer.TileMap[x, y] = 0;
+                            CurrentLayer.TileMap[x, y] = action(CurrentLayer.TileMap[x, y]);
                         }
                     }
         foreach (AnimatedTile CurrentAnimatedTile in Animations)
@@ -2125,8 +2125,8 @@ class J2LFile : J2File
             var sequence = CurrentAnimatedTile.Sequence;
             for (int frameID = 0; frameID < sequence.Length; ++frameID)
             {
-                var prospectiveTileToDelete = sequence[frameID] % MaxTiles;
-                if (prospectiveTileToDelete >= first && prospectiveTileToDelete <= last)
+                var prospectiveTileToChange = sequence[frameID] % MaxTiles;
+                if (prospectiveTileToChange >= first && prospectiveTileToChange <= last)
                 {
                     if (!permissionGotten)
                     {
@@ -2134,7 +2134,7 @@ class J2LFile : J2File
                             return false;
                         permissionGotten = true;
                     }
-                    sequence[frameID] = 0;
+                    sequence[frameID] = action(sequence[frameID]);
                 }
             }
         }
