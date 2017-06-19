@@ -7,10 +7,10 @@ namespace MLLE
 {
     public partial struct PlusPropertyList
     {
-        const uint CurrentMLLEData5Version = 0x100;
+        const uint CurrentMLLEData5Version = 0x101;
         const string MLLEData5MagicString = "MLLE";
-        const string CurrentMLLEData5VersionStringForComparison = "0x100";
-        const string CurrentMLLEData5VersionString = "1.0";
+        const string CurrentMLLEData5VersionStringForComparison = "0x101";
+        const string CurrentMLLEData5VersionString = "1.1";
         const string AngelscriptLibraryFilename = "MLLE-Include-" + CurrentMLLEData5VersionString + ".asc";
 
         const string AngelscriptLibraryCallStockLine = "const bool MLLESetupSuccessful = MLLE::Setup();\r\n";
@@ -139,6 +139,8 @@ namespace MLLE {
             }
             jjTilesFromTileset(tilesetFilename, tileStart, tileCount, colors);
         }
+        if (pbyte != 0)
+            jjLayersFromLevel(jjLevelFileName, array<uint> = {1,2,3,4,5,6,7,8});
 
         if (!data5.isEmpty()) {
             jjDebug('MLLE::Setup: Warning, Data5 longer than expected');
