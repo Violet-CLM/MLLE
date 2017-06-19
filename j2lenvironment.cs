@@ -102,7 +102,7 @@ class TexturedJ2L : J2LFile
     {
         Color usedColor = Tile0Color;
         if (palette == null)
-            palette = Tilesets[0].Palette;
+            palette = PlusPropertyList.Palette ?? Tilesets[0].Palette;
         byte[][] workingAtlases = new byte[2][];
         for (byte i = 0; i < 5; i++)
             if (TileCount < 16 << (i * 2)) {

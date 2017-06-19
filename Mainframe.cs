@@ -758,7 +758,7 @@ namespace MLLE
                         J2L.PlusPropertyList.Palette = null;
                     LevelHasBeenModified = true;
                     if (J2L.TexturesHaveBeenGenerated)
-                        J2L.Generate_Textures(palette: J2L.PlusPropertyList.Palette);
+                        J2L.Generate_Textures();
                     RedrawTilesetHowManyTimes = 2;
                 }
                 _suspendEvent.Set();
@@ -802,7 +802,7 @@ namespace MLLE
                 color = colorDialog1.Color;
                 Settings.IniWriteValue("Colors", iniName, string.Format("{0},{1},{2}", color.R, color.G, color.B));
                 if (recompilationNeeded && J2L.HasTiles && J2L.TexturesHaveBeenGenerated)
-                    J2L.Generate_Textures(includeMasks: true, palette: J2L.PlusPropertyList.Palette);
+                    J2L.Generate_Textures(includeMasks: true);
                 RedrawTilesetHowManyTimes = 2;
             }
             _suspendEvent.Set();
@@ -1067,7 +1067,7 @@ namespace MLLE
         private void ReadjustTilesetImage()
         {
             if (J2L.TexturesHaveBeenGenerated)
-                J2L.Generate_Textures(includeMasks: true, palette: J2L.PlusPropertyList.Palette);
+                J2L.Generate_Textures(includeMasks: true);
             ResizeDisplay();
             RedrawTilesetHowManyTimes += 1;
         }
