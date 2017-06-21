@@ -67,6 +67,10 @@
             this.packageAsZiptoolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.jJ2PropertiesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.plusLevelPropertiesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.paletteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.tilesetsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.addNewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.recolorEventsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.preferencesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.eventsForemostToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator19 = new System.Windows.Forms.ToolStripSeparator();
@@ -499,17 +503,50 @@
             // jJ2PropertiesToolStripMenuItem
             // 
             this.jJ2PropertiesToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.plusLevelPropertiesToolStripMenuItem});
+            this.plusLevelPropertiesToolStripMenuItem,
+            this.paletteToolStripMenuItem,
+            this.tilesetsToolStripMenuItem,
+            this.recolorEventsToolStripMenuItem});
             this.jJ2PropertiesToolStripMenuItem.Name = "jJ2PropertiesToolStripMenuItem";
             this.jJ2PropertiesToolStripMenuItem.Size = new System.Drawing.Size(97, 20);
             this.jJ2PropertiesToolStripMenuItem.Text = "JJ2+ Properties";
+            this.jJ2PropertiesToolStripMenuItem.DropDownOpening += new System.EventHandler(this.jJ2PropertiesToolStripMenuItem_DropDownOpening);
             // 
             // plusLevelPropertiesToolStripMenuItem
             // 
             this.plusLevelPropertiesToolStripMenuItem.Name = "plusLevelPropertiesToolStripMenuItem";
-            this.plusLevelPropertiesToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
-            this.plusLevelPropertiesToolStripMenuItem.Text = "Level Properties";
+            this.plusLevelPropertiesToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.plusLevelPropertiesToolStripMenuItem.Text = "Level Properties...";
             this.plusLevelPropertiesToolStripMenuItem.Click += new System.EventHandler(this.plusLevelPropertiesToolStripMenuItem_Click);
+            // 
+            // paletteToolStripMenuItem
+            // 
+            this.paletteToolStripMenuItem.Name = "paletteToolStripMenuItem";
+            this.paletteToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.paletteToolStripMenuItem.Text = "Palette...";
+            this.paletteToolStripMenuItem.Click += new System.EventHandler(this.paletteToolStripMenuItem_Click);
+            // 
+            // tilesetsToolStripMenuItem
+            // 
+            this.tilesetsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.addNewToolStripMenuItem});
+            this.tilesetsToolStripMenuItem.Name = "tilesetsToolStripMenuItem";
+            this.tilesetsToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.tilesetsToolStripMenuItem.Text = "Tilesets";
+            this.tilesetsToolStripMenuItem.DropDownOpening += new System.EventHandler(this.tilesetsToolStripMenuItem_DropDownOpening);
+            // 
+            // addNewToolStripMenuItem
+            // 
+            this.addNewToolStripMenuItem.Name = "addNewToolStripMenuItem";
+            this.addNewToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.addNewToolStripMenuItem.Text = "Add New...";
+            this.addNewToolStripMenuItem.Click += new System.EventHandler(this.addNewToolStripMenuItem_Click);
+            // 
+            // recolorEventsToolStripMenuItem
+            // 
+            this.recolorEventsToolStripMenuItem.Name = "recolorEventsToolStripMenuItem";
+            this.recolorEventsToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.recolorEventsToolStripMenuItem.Text = "Recolor Events";
             // 
             // preferencesToolStripMenuItem
             // 
@@ -1991,5 +2028,9 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator21;
         private System.Windows.Forms.ToolStripMenuItem jJ2PropertiesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem plusLevelPropertiesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem paletteToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem tilesetsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem addNewToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem recolorEventsToolStripMenuItem;
     }
 }

@@ -82,12 +82,20 @@
     <Compile Include="LevelProperties.Designer.cs">
       <DependentUpon>LevelProperties.cs</DependentUpon>
     </Compile>
+    <Compile Include="Palette.cs" />
+    <Compile Include="PaletteForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PaletteForm.Designer.cs">
+      <DependentUpon>PaletteForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="PasswordInputForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="PasswordInputForm.Designer.cs">
       <DependentUpon>PasswordInputForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="PlusAngelscriptLibrary.cs" />
     <Compile Include="PlusProperties.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -113,6 +121,18 @@
     </Compile>
     <Compile Include="TextEdit.Designer.cs">
       <DependentUpon>TextEdit.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SpriteRecolorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SpriteRecolorForm.Designer.cs">
+      <DependentUpon>SpriteRecolorForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="TilesetForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TilesetForm.Designer.cs">
+      <DependentUpon>TilesetForm.cs</DependentUpon>
     </Compile>
     <Compile Include="TriggerSelect.cs">
       <SubType>Form</SubType>
@@ -180,6 +200,9 @@
     <EmbeddedResource Include="LevelProperties.resx">
       <DependentUpon>LevelProperties.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="PaletteForm.resx">
+      <DependentUpon>PaletteForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="PasswordInputForm.resx">
       <DependentUpon>PasswordInputForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -194,6 +217,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="TextEdit.resx">
       <DependentUpon>TextEdit.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SpriteRecolorForm.resx">
+      <DependentUpon>SpriteRecolorForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TilesetForm.resx">
+      <DependentUpon>TilesetForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="TriggerSelect.resx">
       <DependentUpon>TriggerSelect.cs</DependentUpon>
@@ -214,6 +243,17 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Icons\MLLE01.ico" />
+    <None Include="Images\500Bumper.png" />
+    <None Include="Images\CarrotBumper.png" />
+    <None Include="Images\CarrotusPole.png" />
+    <None Include="Images\DiamondusPole.png" />
+    <None Include="Images\Flipper.png" />
+    <None Include="Images\JunglePole.png" />
+    <None Include="Images\PsychPole.png" />
+    <None Include="Images\SmallTree.png" />
+    <None Include="Images\Splash.png" />
+    <None Include="Images\Leaf.png" />
+    <None Include="Images\Snow.png" />
     <Content Include="MLLE.ico" />
     <Content Include="MLLE01.ico" />
   </ItemGroup>
