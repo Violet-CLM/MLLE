@@ -823,7 +823,22 @@ class J2LFile : J2File
     internal AGAEvent[,] AGA_EventMap;
 
     internal MLLE.PlusPropertyList PlusPropertyList = new MLLE.PlusPropertyList(null);
-    internal bool PlusOnly { get { return Tilesets.Count > 1 || PlusPropertyList.LevelNeedsData5; } }
+    internal bool PlusOnly { get
+        {
+            if (Tilesets.Count > 1 || PlusPropertyList.LevelNeedsData5)
+                return true;
+            foreach (Layer CurrentLayer in Layers)
+                if (CurrentLayer.HasTiles)
+                    foreach (ushort tileID in CurrentLayer.TileMap)
+                        if ((tileID & 0x2000) != 0) //flipped vertically
+                            return true;
+            foreach (AnimatedTile CurrentAnimatedTile in Animations)
+                foreach (ushort tileID in CurrentAnimatedTile.Sequence)
+                    if ((tileID & 0x2000) != 0) //flipped vertically
+                        return true;
+            return false;
+        }
+    }
 
     const uint SecurityStringMLLE = 0xBACABEEF;
     const uint SecurityStringPassworded = 0xBA00BE00;

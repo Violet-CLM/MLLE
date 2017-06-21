@@ -576,18 +576,21 @@ namespace MLLE
                     }
                 case Keys.I:
                     {
-                        if (LastFocusedZone == FocusedZone.AnimationEditing) WorkingAnimation.Sequence[SelectedAnimationFrame] ^= (ushort)0x2000;
-                        else if (CurrentStamp.Length > 0)
+                        if (VersionIsPlusCompatible(J2L.VersionType))
                         {
-                            TileAndEvent[][] NuStamp = new TileAndEvent[CurrentStamp.Length][];
-                            int height = CurrentStamp[0].Length;
-                            for (ushort x = 0; x < NuStamp.Length; x++)
+                            if (LastFocusedZone == FocusedZone.AnimationEditing) WorkingAnimation.Sequence[SelectedAnimationFrame] ^= (ushort)0x2000;
+                            else if (CurrentStamp.Length > 0)
                             {
-                                NuStamp[x] = new TileAndEvent[height];
-                                for (ushort y = 0; y < height; y++)
-                                    NuStamp[x][y].Tile = (ushort)(CurrentStamp[x][height - y - 1].Tile ^ (ushort)0x2000);
+                                TileAndEvent[][] NuStamp = new TileAndEvent[CurrentStamp.Length][];
+                                int height = CurrentStamp[0].Length;
+                                for (ushort x = 0; x < NuStamp.Length; x++)
+                                {
+                                    NuStamp[x] = new TileAndEvent[height];
+                                    for (ushort y = 0; y < height; y++)
+                                        NuStamp[x][y].Tile = (ushort)(CurrentStamp[x][height - y - 1].Tile ^ (ushort)0x2000);
+                                }
+                                CurrentStamp = NuStamp;
                             }
-                            CurrentStamp = NuStamp;
                         }
                         return true;
                     }
@@ -1120,6 +1123,17 @@ namespace MLLE
                 return EnableableBools[version][EnableableTitles.BoolDevelopingForPlus];
             return new IniFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ProfileIniFilename[J2L.VersionType] + ".ini")).IniReadValue("Enableable", "BoolDevelopingForPlus") == "";
         }
+        private bool EmptyActionStackIfItContainsVerticallyFlippedTiles(Stack<LayerAndSpecificTiles> stack)
+        {
+            foreach (var stamp in stack)
+                foreach (var specific in stamp.Specifics)
+                    if ((specific.Value.Tile & 0x2000) != 0)
+                    {
+                        stack.Clear();
+                        return true;
+                    }
+            return false;
+        }
         internal void ChangeVersion(Version nuversion)
         {
             _suspendEvent.Reset();
@@ -1138,6 +1152,14 @@ namespace MLLE
                         {
                             Undoable.Clear();
                             Redoable.Clear();
+                        }
+                        if (!VersionIsPlusCompatible(nuversion)) //remove all references to vertically flipped tiles
+                        {
+                            foreach (var axis in CurrentStamp)
+                                for (int i = 0; i < axis.Length; ++i)
+                                    axis[i].Tile &= unchecked((ushort)~0x2000);
+                            EmptyActionStackIfItContainsVerticallyFlippedTiles(Undoable);
+                            EmptyActionStackIfItContainsVerticallyFlippedTiles(Redoable);
                         }
                         break;
                     case VersionChangeResults.TilesetTooBig:
