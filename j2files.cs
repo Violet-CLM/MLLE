@@ -633,7 +633,7 @@ class AnimatedTile
         if (FrameCount > 0) {
             GenerateFrameList();
             int mod = (frame * Speed / 70) % FrameList.Count();
-            for (byte i = 0; i < mod; i++) FrameList.Dequeue();
+            for (int i = 0; i < mod; i++) FrameList.Dequeue();
         }
         else FrameList.Enqueue(0);
         hitherto = frame * Speed / 70;
@@ -647,14 +647,14 @@ class AnimatedTile
 
     private void GenerateFrameList(int random = 0)
     {
-        for (byte i = 0; i < FrameCount; i++) FrameList.Enqueue(Sequence[i]);
+        for (uint i = 0; i < FrameCount; i++) FrameList.Enqueue(Sequence[i]);
         if (IsPingPong)
         {
-            for (byte i = 0; i < PingPongWait; i++) FrameList.Enqueue(Sequence[FrameCount - 1]);
-            for (byte i = 0; i < FrameCount; i++) FrameList.Enqueue(Sequence[FrameCount - 1 - i]);
-            for (byte i = 0; i < Framewait + random; i++) FrameList.Enqueue(Sequence[0]);
+            for (uint i = 0; i < PingPongWait; i++) FrameList.Enqueue(Sequence[FrameCount - 1]);
+            for (uint i = 0; i < FrameCount; i++) FrameList.Enqueue(Sequence[FrameCount - 1 - i]);
+            for (uint i = 0; i < Framewait + random; i++) FrameList.Enqueue(Sequence[0]);
         }
-        else for (byte i = 0; i < Framewait + random; i++) FrameList.Enqueue(Sequence[FrameCount - 1]);
+        else for (uint i = 0; i < Framewait + random; i++) FrameList.Enqueue(Sequence[FrameCount - 1]);
     }
     public void Advance(int frame, int random=0)
     {
