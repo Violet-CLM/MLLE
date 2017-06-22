@@ -506,6 +506,8 @@ namespace MLLE
         enum MaskMode { NoMask, FullMask, TemporaryMask }
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
+            if (TilesetSelection.Focused)
+                return false;
             switch (keyData)
             {
                 case Keys.D1: { if (LastFocusedZone != FocusedZone.AnimationEditing) { ChangeLayer(0); return true; } else return false; }
@@ -706,7 +708,7 @@ namespace MLLE
 
         #region Menu Busywork
         private void TilesetSelection_SelectedIndexChanged(object sender, EventArgs e)
-        { TilesetScrollbar.Focus(); ChangeTileset(((NameAndFilename)TilesetSelection.Items[TilesetSelection.SelectedIndex]).Filename); }
+        { if (TilesetSelection.SelectedIndex < 0) return; TilesetScrollbar.Focus(); ChangeTileset(((NameAndFilename)TilesetSelection.Items[TilesetSelection.SelectedIndex]).Filename); }
 
         private void aboutMLLEToolStripMenuItem_Click(object sender, EventArgs e) { _suspendEvent.Reset(); new AboutBox1().ShowDialog(); _suspendEvent.Set(); }
 
