@@ -2613,7 +2613,7 @@ namespace MLLE
                 AnimRandDelay.Value = anim.Random;
                 TilesetScrollbar.Height -= HeightOfAnimationEditingSection;
                 TilesetScrollbar.Maximum += HeightOfAnimationEditingSection;
-                TilesetScrollbar.Value += HeightOfAnimationEditingSection;
+                //TilesetScrollbar.Value += HeightOfAnimationEditingSection;
                 AnimationSettings.Visible = AnimScrollbar.Visible = true;
                 AnimScrollbar.Value = 0;
                 AnimScrollbar.Maximum = Math.Max(0, anim.FrameCount * 32 + 80 - AnimScrollbar.Width + AnimScrollbar.LargeChange);
