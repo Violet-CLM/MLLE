@@ -1400,8 +1400,11 @@ namespace MLLE
             SavingResults result = J2L.Save(filename, eraseUndefinedTiles, allowDifferentTilesetVersion, storeGivenFilename, Data5);
             if (result == SavingResults.Success)
             {
-                SetTitle(J2L.Name, Path.GetFileName(J2L.FilenameOnly));
-                LevelHasBeenModified = false;
+                if (storeGivenFilename)
+                {
+                    SetTitle(J2L.Name, Path.GetFileName(J2L.FilenameOnly));
+                    LevelHasBeenModified = false;
+                }
 
                 PlusPropertyList.RemovePriorReferencesToMLLELibrary(filename);
                 if (Data5 != null)
