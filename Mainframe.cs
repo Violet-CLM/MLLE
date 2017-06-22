@@ -2486,7 +2486,7 @@ namespace MLLE
             internal Dictionary<Point, TileAndEvent> Specifics;
             public LayerAndSpecificTiles(byte b) { Layer = b; Specifics = new Dictionary<Point, TileAndEvent>(); }
         }
-        Stack<LayerAndSpecificTiles> Undoable = new Stack<LayerAndSpecificTiles>(), Redoable = new Stack<LayerAndSpecificTiles>();
+        internal Stack<LayerAndSpecificTiles> Undoable = new Stack<LayerAndSpecificTiles>(), Redoable = new Stack<LayerAndSpecificTiles>();
         TileAndEvent[][] CurrentStamp = new TileAndEvent[0][];
         private void SetStampDimensions(int x, int y)
         {
