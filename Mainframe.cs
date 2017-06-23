@@ -1283,7 +1283,7 @@ namespace MLLE
             SafeToDisplay = false;
             if (version == null) J2L.NewLevel(J2L.VersionType);
             else J2L.NewLevel((Version)version);
-            J2L.FullFilePath = Path.Combine(DefaultDirectories[J2L.VersionType], J2L.FilenameOnly = "Made in MLLE.j2l");
+            J2L.FullFilePath = Path.Combine(DefaultDirectories[J2L.VersionType], J2L.FilenameOnly = DefaultLevelFilename);
             SetTitle(J2L.Name);
             CheckCurrentVersion();
             ProcessIni(J2L.VersionType);
@@ -1301,15 +1301,35 @@ namespace MLLE
         #endregion Open
 
         #region Save
-        private void saveToolStripMenuItem_Click(object sender, EventArgs e) { SaveJ2L(); }
+        const string DefaultLevelFilename = "Made in MLLE.j2l";
+
+        string AskUserForJ2LFilenameIfNecessary(bool alwaysNecessary = false)
+        {
+            if (alwaysNecessary || J2L.FilenameOnly == DefaultLevelFilename)
+            {
+                _suspendEvent.Reset();
+                SaveJ2LDialog.FileName = Path.GetFileName(J2L.FilenameOnly);
+                SaveJ2LDialog.InitialDirectory = DefaultDirectories[J2L.VersionType];
+                SaveJ2LDialog.FilterIndex = DefaultFileExtension[J2L.VersionType];
+                DialogResult result = SaveJ2LDialog.ShowDialog();
+                _suspendEvent.Set();
+                if (result == DialogResult.OK)
+                    return SaveJ2LDialog.FileName;
+                return null;
+            }
+            return J2L.FullFilePath;
+        }
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string filepath = AskUserForJ2LFilenameIfNecessary(false);
+            if (filepath != null)
+                SaveJ2L(filepath);
+        }
         private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            _suspendEvent.Reset();
-            SaveJ2LDialog.FileName = Path.GetFileName(J2L.FilenameOnly);
-            SaveJ2LDialog.FilterIndex = DefaultFileExtension[J2L.VersionType];
-            DialogResult result = SaveJ2LDialog.ShowDialog();
-            if (result == DialogResult.OK) SaveJ2L(SaveJ2LDialog.FileName);
-            _suspendEvent.Set();
+            string filepath = AskUserForJ2LFilenameIfNecessary(true);
+            if (filepath != null)
+                SaveJ2L(filepath);
         }
         private void SaveAndRun(string filepath, string warningText, bool storeGivenFilename)
         {
@@ -1352,7 +1372,9 @@ namespace MLLE
         }
         private void saveRunToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            SaveAndRun(J2L.FullFilePath, " Level will be saved but not run.", true);
+            string filepath = AskUserForJ2LFilenameIfNecessary(false);
+            if (filepath != null)
+                 SaveAndRun(filepath, " Level will be saved but not run.", true);
         }
 
         private void TrialRun()
@@ -1381,15 +1403,11 @@ namespace MLLE
             {
                 _suspendEvent.Reset();
                 DialogResult result = MessageBox.Show("Save changes to " + Path.GetFileName(J2L.FilenameOnly) + "?", "Level has been modified!", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Stop);
-                if (result == DialogResult.Yes && SaveJ2L() == SavingResults.Success) { _suspendEvent.Reset(); return true; }
+                if (result == DialogResult.Yes && SaveJ2L(J2L.FullFilePath) == SavingResults.Success) { _suspendEvent.Reset(); return true; }
                 else if (result == DialogResult.No) return true;
                 else return false;
             }
             else return true;
-        }
-        internal SavingResults SaveJ2L(bool eraseUndefinedTiles = false, bool allowDifferentTilesetVersion = false, bool storeGivenFilename = true)
-        {
-            return SaveJ2L(J2L.FullFilePath, eraseUndefinedTiles, allowDifferentTilesetVersion, storeGivenFilename);
         }
         internal SavingResults SaveJ2L(string filename, bool eraseUndefinedTiles = false, bool allowDifferentTilesetVersion = false, bool storeGivenFilename = true)
         {
