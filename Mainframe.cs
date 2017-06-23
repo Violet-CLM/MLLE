@@ -1972,9 +1972,10 @@ namespace MLLE
                 {
                     isflipped = false;
                     isvflipped = false;
-                    id = J2L.GetFrame(id, ref isflipped, ref isvflipped);
-                    if (id == 0 && !DrawTileZero) return;
+                    ushort actualid = J2L.GetFrame(id, ref isflipped, ref isvflipped);
+                    if (actualid == 0 && !DrawTileZero) return;
                     previd = id;
+                    id = actualid;
                 }
                 double startAtRatioX = id % J2L.AtlasLength * J2L.AtlasFraction;
                 double startAtRatioY = id / J2L.AtlasLength;
