@@ -1636,6 +1636,7 @@ namespace MLLE
                 #region all tileset stuff
                 if (RedrawTilesetHowManyTimes != 0 || AnimatedTilesVisibleOnLeft || AnimationSettings.Visible)
                 {
+                    GL.Disable(EnableCap.Blend);
                     GL.MatrixMode(MatrixMode.Projection);
                     GL.LoadIdentity();
                     GL.Ortho(0, DrawingTools.Left, LevelDisplay.Height, 0, -1, 1);
@@ -1872,6 +1873,7 @@ namespace MLLE
                     int x = MouseTileX * ZoomTileSize - LDScrollH.Value;
                     int y = MouseTileY * ZoomTileSize - LDScrollV.Value;
                     SetTextureTo((MaskDisplayMode == MaskMode.FullMask) ? AtlasID.Mask : AtlasID.Image);
+                    GL.Enable(EnableCap.Blend);
                     GL.BlendFunc(BlendingFactorSrc.One, BlendingFactorDest.One);
                     GL.Color4((byte)255, (byte)255, (byte)255, (byte)128);
                     for (int xloop = 0, xoffset = x; xloop < CurrentStamp.Length; xloop++, xoffset += ZoomTileSize) for (int yloop = 0, yoffset = y; yloop < CurrentStamp[0].Length; yloop++, yoffset += ZoomTileSize)
