@@ -538,7 +538,7 @@
             // addNewToolStripMenuItem
             // 
             this.addNewToolStripMenuItem.Name = "addNewToolStripMenuItem";
-            this.addNewToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.addNewToolStripMenuItem.Size = new System.Drawing.Size(132, 22);
             this.addNewToolStripMenuItem.Text = "Add New...";
             this.addNewToolStripMenuItem.Click += new System.EventHandler(this.addNewToolStripMenuItem_Click);
             // 
@@ -600,7 +600,6 @@
             this.readmeToolStripMenuItem,
             this.toolStripSeparator4,
             this.aboutMLLEToolStripMenuItem});
-            this.helpToolStripMenuItem.Enabled = false;
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
             this.helpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
             this.helpToolStripMenuItem.Text = "Help";
@@ -609,18 +608,18 @@
             // 
             this.readmeToolStripMenuItem.Enabled = false;
             this.readmeToolStripMenuItem.Name = "readmeToolStripMenuItem";
-            this.readmeToolStripMenuItem.Size = new System.Drawing.Size(139, 22);
+            this.readmeToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.readmeToolStripMenuItem.Text = "Contents";
             // 
             // toolStripSeparator4
             // 
             this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(136, 6);
+            this.toolStripSeparator4.Size = new System.Drawing.Size(149, 6);
             // 
             // aboutMLLEToolStripMenuItem
             // 
             this.aboutMLLEToolStripMenuItem.Name = "aboutMLLEToolStripMenuItem";
-            this.aboutMLLEToolStripMenuItem.Size = new System.Drawing.Size(139, 22);
+            this.aboutMLLEToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.aboutMLLEToolStripMenuItem.Text = "About MLLE";
             this.aboutMLLEToolStripMenuItem.Click += new System.EventHandler(this.aboutMLLEToolStripMenuItem_Click);
             // 

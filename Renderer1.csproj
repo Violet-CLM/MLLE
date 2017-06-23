@@ -254,6 +254,8 @@
     <None Include="Images\Splash.png" />
     <None Include="Images\Leaf.png" />
     <None Include="Images\Snow.png" />
+    <None Include="Images\JazzAbout.bmp" />
+    <None Include="Images\JazzAbout.png" />
     <Content Include="MLLE.ico" />
     <Content Include="MLLE01.ico" />
   </ItemGroup>
