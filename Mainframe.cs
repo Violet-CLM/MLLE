@@ -1633,7 +1633,7 @@ namespace MLLE
             FPSCounter.Text = "FPS: " + LatestFPS.ToString();
             if (SafeToDisplay)
             {
-                prevtotaltileid = 0; //reset all cached DrawTile details, to prevent failing to advance animated tiles in certain edge cases
+                prevtotaltileid = prevstaticid = 0; //reset all cached DrawTile details, to prevent failing to advance animated tiles in certain edge cases
                 #region all tileset stuff
                 if (RedrawTilesetHowManyTimes != 0 || AnimatedTilesVisibleOnLeft || AnimationSettings.Visible)
                 {
