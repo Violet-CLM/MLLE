@@ -1511,7 +1511,7 @@ namespace MLLE
         internal int heightreduced;//
         internal bool isflipped = false;
         internal bool isvflipped = false;
-        internal ushort previd = 0;
+        internal ushort prevstaticid = 0, prevtotaltileid = 0;
         //internal byte prevatlas = 0;
         internal AtlasID PrevAtlas = AtlasID.Null;
         //internal double startAtRatioY, startAtRatioX;
@@ -1633,6 +1633,7 @@ namespace MLLE
             FPSCounter.Text = "FPS: " + LatestFPS.ToString();
             if (SafeToDisplay)
             {
+                prevtotaltileid = 0; //reset all cached DrawTile details, to prevent failing to advance animated tiles in certain edge cases
                 #region all tileset stuff
                 if (RedrawTilesetHowManyTimes != 0 || AnimatedTilesVisibleOnLeft || AnimationSettings.Visible)
                 {
@@ -1991,17 +1992,17 @@ namespace MLLE
         {
             if (id != 0 || DrawTileZero)
             {
-                if (id != previd)
+                if (id != prevtotaltileid)
                 {
                     isflipped = false;
                     isvflipped = false;
-                    ushort actualid = J2L.GetFrame(id, ref isflipped, ref isvflipped);
-                    if (actualid == 0 && !DrawTileZero) return;
-                    previd = id;
-                    id = actualid;
+                    ushort staticid = J2L.GetFrame(id, ref isflipped, ref isvflipped);
+                    if (staticid == 0 && !DrawTileZero) return;
+                    prevtotaltileid = id;
+                    prevstaticid = staticid;
                 }
-                double startAtRatioX = id % J2L.AtlasLength * J2L.AtlasFraction;
-                double startAtRatioY = id / J2L.AtlasLength;
+                double startAtRatioX = prevstaticid % J2L.AtlasLength * J2L.AtlasFraction;
+                double startAtRatioY = prevstaticid / J2L.AtlasLength;
                 double yChange = J2L.AtlasFraction;
                 if (isvflipped)
                 {
