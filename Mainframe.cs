@@ -569,8 +569,10 @@ namespace MLLE
                             TileAndEvent[][] NuStamp = new TileAndEvent[CurrentStamp.Length][];
                             for (ushort x = 0; x < NuStamp.Length; x++)
                             {
-                                NuStamp[x] = CurrentStamp[NuStamp.Length - x - 1];
-                                for (ushort y = 0; y < NuStamp[x].Length; y++) NuStamp[x][y].Tile ^= (ushort)J2L.MaxTiles;
+                                TileAndEvent[] column = NuStamp[x] = CurrentStamp[NuStamp.Length - x - 1];
+                                for (ushort y = 0; y < column.Length; y++)
+                                    if (column[y].Tile != 0)
+                                        column[y].Tile ^= (ushort)J2L.MaxTiles;
                             }
                             CurrentStamp = NuStamp;
                         }
@@ -587,9 +589,10 @@ namespace MLLE
                                 int height = CurrentStamp[0].Length;
                                 for (ushort x = 0; x < NuStamp.Length; x++)
                                 {
-                                    NuStamp[x] = new TileAndEvent[height];
+                                    TileAndEvent[] column = NuStamp[x] = new TileAndEvent[height];
                                     for (ushort y = 0; y < height; y++)
-                                        NuStamp[x][y].Tile = (ushort)(CurrentStamp[x][height - y - 1].Tile ^ (ushort)0x2000);
+                                        if ((column[y].Tile = CurrentStamp[x][height - y - 1].Tile) != 0)
+                                            column[y].Tile ^= (ushort)0x2000;
                                 }
                                 CurrentStamp = NuStamp;
                             }
