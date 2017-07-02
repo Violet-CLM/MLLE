@@ -411,6 +411,7 @@ namespace MLLE
                 recolorEventsToolStripMenuItem.DropDownItems.Add(toolstripitem);
             }
 
+            LevelDisplay.MouseWheel += LevelDisplay_MouseWheel;
 
             var commands = Environment.GetCommandLineArgs();
             if (commands.Length > 1) switch (Path.GetExtension(commands[1].Trim()).ToLowerInvariant())
@@ -433,6 +434,12 @@ namespace MLLE
             DrawThread.IsBackground = true;
             DrawThread.Start();
         }
+
+        private void LevelDisplay_MouseWheel(object sender, MouseEventArgs e)
+        {
+            MakeProposedScrollbarValueWork(LDScrollV, LDScrollV.Value - LDScrollV.SmallChange * e.Delta / 120);
+        }
+
         private void Mainframe_FormClosing(object sender, FormClosingEventArgs e) {
             if (!PromptForSaving())
             {
