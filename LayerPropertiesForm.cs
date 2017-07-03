@@ -65,7 +65,7 @@ namespace MLLE
 
         private void ReadLayer(byte Layer)
         {
-            DataSource = SourceForm.J2L.Layers[Layer];
+            DataSource = SourceForm.J2L.DefaultLayers[Layer];
             WidthBox.Value = DataSource.Width;
             HeightBox.Value = DataSource.Height;
             //PHASEWidthBox.Text = DataSource.Width.ToString();
@@ -262,7 +262,7 @@ namespace MLLE
         private void Copy4_Click(object sender, EventArgs e)
         {
             ReadLayer(3);
-            DataSource = SourceForm.J2L.Layers[CurrentLayer];
+            DataSource = SourceForm.J2L.DefaultLayers[CurrentLayer];
         }
 
     }

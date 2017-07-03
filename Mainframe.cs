@@ -101,7 +101,7 @@ namespace MLLE
         public byte? GeneratorEventID = null, StartPositionEventID = null;
 
         //int desiredindex;
-        byte CurrentLayer = 3;
+        byte CurrentLayerID = 3;
         byte ZoomTileSize = 32;
         float ZoomTileFactor = 1;
 
@@ -487,7 +487,7 @@ namespace MLLE
         }
         internal void ChangeLayer(byte number)
         {
-            CurrentLayer = number;
+            CurrentLayerID = number;
             ResizeDisplay();
             L1Button.Checked = Gotolayer1.Checked = number == 0;
             L2Button.Checked = Gotolayer2.Checked = number == 1;
@@ -565,7 +565,7 @@ namespace MLLE
                 case Keys.Delete:
                     {
                         if (LastFocusedZone == FocusedZone.AnimationEditing && SelectedAnimationFrame < WorkingAnimation.FrameCount) { WorkingAnimation.DeleteFrame(SelectedAnimationFrame); WorkingAnimation.JustBeenEdited(GameTick); if (AnimScrollbar.Maximum > 32) AnimScrollbar.Maximum -= 32; AnimScrollbar.Value = Math.Max(0, AnimScrollbar.Value - 32); LevelHasBeenModified = true; }
-                        else if (LastFocusedZone == FocusedZone.Level) Clear(CurrentLayer);
+                        else if (LastFocusedZone == FocusedZone.Level) Clear(CurrentLayerID);
                         return true;
                     }
                 case Keys.F:
@@ -611,8 +611,8 @@ namespace MLLE
                 case (Keys.Shift | Keys.E): { PasteEventAtMouse(); return true; }
                 case Keys.E: { SelectEventAtMouse(); return true; }
 
-                case Keys.Oemcomma: { SetStampDimensions(1, 1); CurrentStamp[0][0] = new TileAndEvent((LastFocusedZone == FocusedZone.Level) ? J2L.Layers[CurrentLayer].TileMap[MouseTileX, MouseTileY] : (ushort)MouseTile, 0); ShowBlankTileInStamp = true; DeselectAll(); return true; }
-                case (Keys.Shift | Keys.Oemcomma): { SetStampDimensions(1, 1); CurrentStamp[0][0] = new TileAndEvent((LastFocusedZone == FocusedZone.Level) ? J2L.Layers[CurrentLayer].TileMap[MouseTileX, MouseTileY] : (ushort)MouseTile, MouseAGAEvent.ID); ShowBlankTileInStamp = true; DeselectAll(); return true; }
+                case Keys.Oemcomma: { SetStampDimensions(1, 1); CurrentStamp[0][0] = new TileAndEvent((LastFocusedZone == FocusedZone.Level) ? J2L.DefaultLayers[CurrentLayerID].TileMap[MouseTileX, MouseTileY] : (ushort)MouseTile, 0); ShowBlankTileInStamp = true; DeselectAll(); return true; }
+                case (Keys.Shift | Keys.Oemcomma): { SetStampDimensions(1, 1); CurrentStamp[0][0] = new TileAndEvent((LastFocusedZone == FocusedZone.Level) ? J2L.DefaultLayers[CurrentLayerID].TileMap[MouseTileX, MouseTileY] : (ushort)MouseTile, MouseAGAEvent.ID); ShowBlankTileInStamp = true; DeselectAll(); return true; }
                 case Keys.Back: { ShowBlankTileInStamp = true; SetStampDimensions(1, 1); CurrentStamp[0][0] = new TileAndEvent(0, 0); DeselectAll(); return true; }
 
                 case (Keys.Control | Keys.B):
@@ -838,17 +838,17 @@ namespace MLLE
 
         private void MenuTypeInstance_Click(object sender, EventArgs e) { J2L.TileTypes[MouseTile] = (byte)((ToolStripItem)sender).Tag; LevelHasBeenModified = true; RedrawTilesetHowManyTimes = 2; }
 
-        private void DropdownClear_Click(object sender, EventArgs e) { Clear(CurrentLayer); }
-        private void ClearButton_Click(object sender, EventArgs e) { Clear(CurrentLayer); }
+        private void DropdownClear_Click(object sender, EventArgs e) { Clear(CurrentLayerID); }
+        private void ClearButton_Click(object sender, EventArgs e) { Clear(CurrentLayerID); }
 
         private void saveAsImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _suspendEvent.Reset();
             byte OriginalTileSize = ZoomTileSize;
             LDScrollH.Value = LDScrollV.Value = 0;
-            Zoom((byte)(Math.Min(32, 4096 / Math.Max(J2L.Layers[3].Width, J2L.Layers[3].Height)/4*4)));
-            LevelDisplay.Width = (int)J2L.Layers[3].Width * ZoomTileSize + LDScrollH.Location.X;
-            LevelDisplay.Height = (int)J2L.Layers[3].Height * ZoomTileSize + LDScrollH.Height;
+            Zoom((byte)(Math.Min(32, 4096 / Math.Max(J2L.SpriteLayer.Width, J2L.SpriteLayer.Height)/4*4)));
+            LevelDisplay.Width = (int)J2L.SpriteLayer.Width * ZoomTileSize + LDScrollH.Location.X;
+            LevelDisplay.Height = (int)J2L.SpriteLayer.Height * ZoomTileSize + LDScrollH.Height;
             SafeToDisplay = false;
             ChangeLayer(3);
             SafeToDisplay = true;
@@ -1027,7 +1027,7 @@ namespace MLLE
             ResizeDisplay();
             _suspendEvent.Set();
         }
-        private void LayerPropertiesButton_Click(object sender, EventArgs e) { ShowLayerProperties(CurrentLayer); }
+        private void LayerPropertiesButton_Click(object sender, EventArgs e) { ShowLayerProperties(CurrentLayerID); }
         private void Properties1_Click(object sender, EventArgs e) { ShowLayerProperties(0); }
         private void Properties2_Click(object sender, EventArgs e) { ShowLayerProperties(1); }
         private void Properties3_Click(object sender, EventArgs e) { ShowLayerProperties(2); }
@@ -1047,7 +1047,7 @@ namespace MLLE
         }
         private void DropdownProperties_Click(object sender, EventArgs e)
         {
-            ShowLayerProperties(CurrentLayer);
+            ShowLayerProperties(CurrentLayerID);
         }
 
         private void EventsButton_CheckedChanged(object sender, EventArgs e) { EventDisplayMode = DropdownEvents.Checked = EventsButton.Checked; }
@@ -1419,7 +1419,7 @@ namespace MLLE
         internal SavingResults SaveJ2L(string filename, bool eraseUndefinedTiles = false, bool allowDifferentTilesetVersion = false, bool storeGivenFilename = true)
         {
             _suspendEvent.Reset();
-            J2L.JCSFocusedLayer = CurrentLayer;
+            J2L.JCSFocusedLayer = CurrentLayerID;
             J2L.JCSHorizontalFocus = (ushort)LDScrollH.Value;
             J2L.JCSVerticalFocus = (ushort)LDScrollV.Value;
 
@@ -1541,8 +1541,8 @@ namespace MLLE
             LDScrollH.LargeChange = LDScrollV.LargeChange = (LDScrollH.SmallChange = LDScrollV.SmallChange = ZoomTileSize) * 8;
             if (SafeToDisplay)
             {
-                LDScrollH.Maximum = Math.Max(0, (int)J2L.Layers[CurrentLayer].Width * ZoomTileSize - LevelDisplayViewportWidth + LDScrollH.LargeChange);
-                LDScrollV.Maximum = Math.Max(0, (int)J2L.Layers[CurrentLayer].Height * ZoomTileSize - LevelDisplayViewportHeight + LDScrollV.LargeChange);
+                LDScrollH.Maximum = Math.Max(0, (int)J2L.DefaultLayers[CurrentLayerID].Width * ZoomTileSize - LevelDisplayViewportWidth + LDScrollH.LargeChange);
+                LDScrollV.Maximum = Math.Max(0, (int)J2L.DefaultLayers[CurrentLayerID].Height * ZoomTileSize - LevelDisplayViewportHeight + LDScrollV.LargeChange);
                 TilesetScrollbar.Maximum = Math.Max(0, (!J2L.HasTiles) ? 0 : ((int)J2L.TileCount + J2L.NumberOfAnimations + 10) / 10 * 32 - TilesetScrollbar.Height + 256);
                 //TilesetScrollbar.Maximum += TilesetScrollbar.LargeChange;
                 TilesetScrollbar.Refresh();
@@ -1811,15 +1811,15 @@ namespace MLLE
                 GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
                 if (ParallaxDisplayMode != ParallaxMode.NoParallax && MaskDisplayMode != MaskMode.FullMask)
                 {
-                    xspeedparallax = (J2L.Layers[CurrentLayer].XSpeed == 0) ? 0 : (int)((LDScrollH.Value + widthreduced) / J2L.Layers[CurrentLayer].XSpeed);
-                    yspeedparallax = (J2L.Layers[CurrentLayer].YSpeed == 0) ? 0 : (int)((LDScrollV.Value + (J2L.Layers[CurrentLayer].LimitVisibleRegion ? heightreduced * 2 : heightreduced)) / J2L.Layers[CurrentLayer].YSpeed);
+                    xspeedparallax = (J2L.DefaultLayers[CurrentLayerID].XSpeed == 0) ? 0 : (int)((LDScrollH.Value + widthreduced) / J2L.DefaultLayers[CurrentLayerID].XSpeed);
+                    yspeedparallax = (J2L.DefaultLayers[CurrentLayerID].YSpeed == 0) ? 0 : (int)((LDScrollV.Value + (J2L.DefaultLayers[CurrentLayerID].LimitVisibleRegion ? heightreduced * 2 : heightreduced)) / J2L.DefaultLayers[CurrentLayerID].YSpeed);
                     SetTextureTo(AtlasID.Image);
                     GL.Enable(EnableCap.Blend);
                     if (ParallaxDisplayMode == ParallaxMode.TemporaryParallax) GL.Color4((byte)255, (byte)255, (byte)255, (byte)64);
-                    for (sbyte l = 7; l >= 0; l--)
+                    for (int l = J2L.DefaultLayers.Length - 1; l >= 0; l--)
                     {
-                        DrawingLayer = J2L.Layers[l];
-                        if (l == CurrentLayer)
+                        DrawingLayer = J2L.DefaultLayers[l];
+                        if (l == CurrentLayerID)
                         {
                             GL.Color4((byte)255, (byte)255, (byte)255, (byte)255);
                             if (DrawingLayer.HasTiles) Reindeer(DrawingLayer);
@@ -1827,16 +1827,16 @@ namespace MLLE
                             {
                                 SetTextureTo(AtlasID.Mask);
                                 NoParallaxReindeer(DrawingLayer);
-                                if (l == 3 && ParallaxEventDisplayType == 0 && EventDisplayMode) EventReindeer();
+                                if (l == J2LFile.SpriteLayerID && ParallaxEventDisplayType == 0 && EventDisplayMode) EventReindeer();
                                 SetTextureTo(AtlasID.Image);
                             }
-                            else if (l == 3 && ParallaxEventDisplayType == 0 && EventDisplayMode) { EventReindeer(); SetTextureTo(AtlasID.Image); }
+                            else if (l == J2LFile.SpriteLayerID && ParallaxEventDisplayType == 0 && EventDisplayMode) { EventReindeer(); SetTextureTo(AtlasID.Image); }
                             if (ParallaxDisplayMode == ParallaxMode.TemporaryParallax) GL.Color4((byte)255, (byte)255, (byte)255, (byte)64);
                         }
                         else
                         {
                             if (DrawingLayer.HasTiles) Reindeer(DrawingLayer);
-                            if (l == 3 && ParallaxEventDisplayType == 0 && EventDisplayMode) { EventReindeer(); SetTextureTo(AtlasID.Image); }
+                            if (l == J2LFile.SpriteLayerID && ParallaxEventDisplayType == 0 && EventDisplayMode) { EventReindeer(); SetTextureTo(AtlasID.Image); }
                         }
                     }
                     if (ParallaxEventDisplayType == 1 && EventDisplayMode) EventReindeer();
@@ -1849,17 +1849,17 @@ namespace MLLE
                     if (MaskDisplayMode == MaskMode.TemporaryMask)
                     {
                         SetTextureTo(AtlasID.Image);
-                        NoParallaxReindeer(J2L.Layers[CurrentLayer]);
+                        NoParallaxReindeer(J2L.DefaultLayers[CurrentLayerID]);
                         SetTextureTo(AtlasID.Mask);
                         GL.Enable(EnableCap.Blend);
-                        NoParallaxReindeer(J2L.Layers[CurrentLayer]);
-                        if (CurrentLayer == 3 && EventDisplayMode) EventReindeer();
+                        NoParallaxReindeer(J2L.DefaultLayers[CurrentLayerID]);
+                        if (CurrentLayerID == J2LFile.SpriteLayerID && EventDisplayMode) EventReindeer();
                     }
                     else
                     {
                         SetTextureTo((MaskDisplayMode == MaskMode.FullMask) ? AtlasID.Mask : AtlasID.Image);
-                        NoParallaxReindeer(J2L.Layers[CurrentLayer]);
-                        if (CurrentLayer == 3 && EventDisplayMode) { GL.Enable(EnableCap.Blend); EventReindeer(); }
+                        NoParallaxReindeer(J2L.DefaultLayers[CurrentLayerID]);
+                        if (CurrentLayerID == J2LFile.SpriteLayerID && EventDisplayMode) { GL.Enable(EnableCap.Blend); EventReindeer(); }
                     }
                 }
                 #endregion reindeer
@@ -2179,7 +2179,7 @@ namespace MLLE
         }
         internal void EventReindeer()
         {
-            Layer currentlayer = J2L.Layers[3];
+            Layer currentlayer = J2L.SpriteLayer;
             SetTextureTo(AtlasID.EventNames);
             //upperleftx = xspeedparallax - /*widthreduced -*/ ZoomTileSize;
             //upperlefty = yspeedparallax - /*heightreduced -*/ ZoomTileSize;
@@ -2410,9 +2410,9 @@ namespace MLLE
                 MouseTileY = Math.Max(0, (e.Y + LDScrollV.Value) / ZoomTileSize);
                 if (SafeToDisplay)
                 {
-                    MouseTile = MouseTileX + MouseTileY * (int)J2L.Layers[CurrentLayer].Width;
+                    MouseTile = MouseTileX + MouseTileY * (int)J2L.DefaultLayers[CurrentLayerID].Width;
                 }
-                if (CurrentLayer == 3 && MouseTileX < J2L.Layers[3].Width && MouseTileX >= 0 && MouseTileY < J2L.Layers[3].Height && MouseTileY >= 0)
+                if (CurrentLayerID == 3 && MouseTileX < J2L.SpriteLayer.Width && MouseTileX >= 0 && MouseTileY < J2L.SpriteLayer.Height && MouseTileY >= 0)
                 {
                     if (J2L.VersionType == Version.AGA) { MouseAGAEvent = J2L.AGA_EventMap[MouseTileX, MouseTileY]; }
                     else MouseAGAEvent.ID = J2L.EventMap[MouseTileX, MouseTileY];
@@ -2542,7 +2542,7 @@ namespace MLLE
             else if (LastFocusedZone == FocusedZone.Level)
             {
                 LayerAndSpecificTiles actionCenter = new LayerAndSpecificTiles(3);
-                ActOnATile(MouseTileX, MouseTileY, J2L.Layers[3].TileMap[MouseTileX, MouseTileY], ActiveEvent, actionCenter, true);
+                ActOnATile(MouseTileX, MouseTileY, J2L.SpriteLayer.TileMap[MouseTileX, MouseTileY], ActiveEvent, actionCenter, true);
                 //actionCenter.Specifics.Add(new Point(MouseTileX, MouseTileY), new TileAndEvent(J2L.Layers[3].TileMap[MouseTileX, MouseTileY], (actionCenter.Layer == 3) ? J2L.EventMap[MouseTileX, MouseTileY] : (uint?)null));
                 Undoable.Push(actionCenter);
                 Redoable.Clear();
@@ -2695,12 +2695,13 @@ namespace MLLE
 
         internal void Clear(byte LayerNumber)
         {
-            if (J2L.Layers[LayerNumber].HasTiles)
+            Layer layer = J2L.DefaultLayers[LayerNumber];
+            if (layer.HasTiles)
             {
                 LayerAndSpecificTiles ActionCenter = new LayerAndSpecificTiles(LayerNumber);
                 if (WhereSelected == FocusedZone.Level)
                 {
-                    for (ushort x = 0; x < J2L.Layers[LayerNumber].TileMap.GetLength(0); x++) for (ushort y = 0; y < J2L.Layers[LayerNumber].TileMap.GetLength(1); y++) if (IsEachTileSelected[x + 1][y + 1])
+                    for (ushort x = 0; x < layer.TileMap.GetLength(0); x++) for (ushort y = 0; y < layer.TileMap.GetLength(1); y++) if (IsEachTileSelected[x + 1][y + 1])
                             {
                                 ActOnATile(x, y, 0, 0, ActionCenter, true);
                             }
@@ -2711,7 +2712,7 @@ namespace MLLE
                     DialogResult result = MessageBox.Show(String.Format("Are you sure you want to delete the contents of layer {0}?", LayerNumber + 1), "Clear Layer", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
                     if (result == DialogResult.OK)
                     {
-                        for (ushort x = 0; x < J2L.Layers[LayerNumber].TileMap.GetLength(0); x++) for (ushort y = 0; y < J2L.Layers[LayerNumber].TileMap.GetLength(1); y++) ActOnATile(x, y, 0, 0, ActionCenter, true);
+                        for (ushort x = 0; x < layer.TileMap.GetLength(0); x++) for (ushort y = 0; y < layer.TileMap.GetLength(1); y++) ActOnATile(x, y, 0, 0, ActionCenter, true);
                     }
                     _suspendEvent.Set();
                 }
@@ -2811,6 +2812,7 @@ namespace MLLE
         {
             if (WhereSelected != FocusedZone.None)
             {
+                var tileMap = J2L.DefaultLayers[CurrentLayerID].TileMap;
                 SetStampDimensions(BottomRightSelectionCorner.X - UpperLeftSelectionCorner.X, BottomRightSelectionCorner.Y - UpperLeftSelectionCorner.Y);
                 for (int x = UpperLeftSelectionCorner.X; x < BottomRightSelectionCorner.X; x++)
                     for (int y = UpperLeftSelectionCorner.Y; y < BottomRightSelectionCorner.Y; y++)
@@ -2819,9 +2821,9 @@ namespace MLLE
                             TileAndEvent tileToAddToStamp;
                             if ((WhereSelected == FocusedZone.Level))
                             {
-                                tileToAddToStamp = new TileAndEvent(J2L.Layers[CurrentLayer].TileMap[x, y], J2L.EventMap[x, y]);
+                                tileToAddToStamp = new TileAndEvent(tileMap[x, y], J2L.EventMap[x, y]);
                                 if (cut) {
-                                    J2L.Layers[CurrentLayer].TileMap[x, y] = 0;
+                                    tileMap[x, y] = 0;
                                     J2L.EventMap[x, y] = 0;
                                 }
                             }
@@ -2885,17 +2887,16 @@ namespace MLLE
         private void ActOnATile(int x, int y, ushort? tile, uint ev, LayerAndSpecificTiles actionCenter, bool blankTilesOkay) { ActOnATile(x, y, tile, new AGAEvent(ev), actionCenter, blankTilesOkay); }
         private void ActOnATile(int x, int y, ushort? tile, AGAEvent? ev, LayerAndSpecificTiles actionCenter, bool blankTilesOkay)
         {
+            Layer layer = J2L.DefaultLayers[actionCenter.Layer];
+            if (x >= 0 && y >= 0 && x < layer.TileMap.GetLength(0) && y < layer.TileMap.GetLength(1) && tile != null && (blankTilesOkay || tile > 0))
             {
-                if (x >= 0 && y >= 0 && x < J2L.Layers[actionCenter.Layer].TileMap.GetLength(0) && y < J2L.Layers[actionCenter.Layer].TileMap.GetLength(1) && tile != null && (blankTilesOkay || tile > 0))
+                if (J2L.VersionType == Version.AGA) actionCenter.Specifics.Add(new Point(x, y), new TileAndEvent(layer.TileMap[x, y], (actionCenter.Layer == 3) ? J2L.AGA_EventMap[x, y] : (AGAEvent?)null));
+                else actionCenter.Specifics.Add(new Point(x, y), new TileAndEvent(layer.TileMap[x, y], (actionCenter.Layer == 3) ? J2L.EventMap[x, y] : (uint?)null));
+                layer.TileMap[x, y] = (ushort)tile;
+                if (actionCenter.Layer == 3)
                 {
-                    if (J2L.VersionType == Version.AGA) actionCenter.Specifics.Add(new Point(x, y), new TileAndEvent(J2L.Layers[actionCenter.Layer].TileMap[x, y], (actionCenter.Layer == 3) ? J2L.AGA_EventMap[x, y] : (AGAEvent?)null));
-                    else actionCenter.Specifics.Add(new Point(x, y), new TileAndEvent(J2L.Layers[actionCenter.Layer].TileMap[x, y], (actionCenter.Layer == 3) ? J2L.EventMap[x, y] : (uint?)null));
-                    J2L.Layers[actionCenter.Layer].TileMap[x, y] = (ushort)tile;
-                    if (actionCenter.Layer == 3)
-                    {
-                        if (J2L.VersionType == Version.AGA) J2L.AGA_EventMap[x, y] = ev ?? new AGAEvent(0);
-                        else J2L.EventMap[x, y] = (ev == null) ? 0 : ((AGAEvent)ev).ID;
-                    }
+                    if (J2L.VersionType == Version.AGA) J2L.AGA_EventMap[x, y] = ev ?? new AGAEvent(0);
+                    else J2L.EventMap[x, y] = (ev == null) ? 0 : ((AGAEvent)ev).ID;
                 }
             }
         }
@@ -2911,7 +2912,7 @@ namespace MLLE
         private void TakeAction()
         {
             if (WhereSelected == FocusedZone.Tileset) DeselectAll();
-            LayerAndSpecificTiles ActionCenter = new LayerAndSpecificTiles(CurrentLayer);
+            LayerAndSpecificTiles ActionCenter = new LayerAndSpecificTiles(CurrentLayerID);
             bool shiftPressed = Control.ModifierKeys == Keys.Shift || Control.ModifierKeys == (Keys.Control | Keys.Shift);
             #region paintbrush
             if (VisibleEditingTool == PaintbrushButton)
@@ -2932,10 +2933,11 @@ namespace MLLE
             #region fill
             else if (VisibleEditingTool == FillButton)
             {
-                if (MouseTileX < J2L.Layers[CurrentLayer].Width && MouseTileY < J2L.Layers[CurrentLayer].Height)
+                Layer layer = J2L.DefaultLayers[CurrentLayerID];
+                if (MouseTileX < layer.Width && MouseTileY < layer.Height)
                 {
                     foreach (bool[] col in ShouldEachTileBeFilledIn) for (ushort y = 0; y < col.Length; y++) col[y] = false;
-                    ArrayMap<ushort> TileMap = J2L.Layers[CurrentLayer].TileMap;
+                    ArrayMap<ushort> TileMap = layer.TileMap;
                     ushort TargetTileID = TileMap[MouseTileX, MouseTileY];
                     bool SelectedOnly = IsEachTileSelected[MouseTileX + 1][MouseTileY + 1];
                     TryToFillTile(MouseTileX, MouseTileY, TileMap, ref TargetTileID, ref SelectedOnly, ref shiftPressed, ref ActionCenter);
@@ -2943,15 +2945,15 @@ namespace MLLE
                     {
                         Point FillPoint = FillingQ.Dequeue();
                         if (FillPoint.X > 0) TryToFillTile(FillPoint.X - 1, FillPoint.Y, TileMap, ref TargetTileID, ref SelectedOnly, ref shiftPressed, ref ActionCenter);
-                        if (FillPoint.X < J2L.Layers[CurrentLayer].Width - 1) TryToFillTile(FillPoint.X + 1, FillPoint.Y, TileMap, ref TargetTileID, ref SelectedOnly, ref shiftPressed, ref ActionCenter);
+                        if (FillPoint.X < layer.Width - 1) TryToFillTile(FillPoint.X + 1, FillPoint.Y, TileMap, ref TargetTileID, ref SelectedOnly, ref shiftPressed, ref ActionCenter);
                         if (FillPoint.Y > 0) TryToFillTile(FillPoint.X, FillPoint.Y - 1, TileMap, ref TargetTileID, ref SelectedOnly, ref shiftPressed, ref ActionCenter);
-                        if (FillPoint.Y < J2L.Layers[CurrentLayer].Height - 1) TryToFillTile(FillPoint.X, FillPoint.Y + 1, TileMap, ref TargetTileID, ref SelectedOnly, ref shiftPressed, ref ActionCenter);
+                        if (FillPoint.Y < layer.Height - 1) TryToFillTile(FillPoint.X, FillPoint.Y + 1, TileMap, ref TargetTileID, ref SelectedOnly, ref shiftPressed, ref ActionCenter);
                     }
-                    for (ushort x = 0; x < ShouldEachTileBeFilledIn.Length; x++)
+                    /*for (ushort x = 0; x < ShouldEachTileBeFilledIn.Length; x++)
                         for (ushort y = 0; y < ShouldEachTileBeFilledIn.Length; y++)
                             if (ShouldEachTileBeFilledIn[x][y])
                             {
-                                /*if (Control.ModifierKeys == Keys.Control) DrawPoint = MakeUpSomeValidStampCoordinates(shiftPressed, 0, 0, CurrentStamp.Length, CurrentStamp[0].Length);
+                                if (Control.ModifierKeys == Keys.Control) DrawPoint = MakeUpSomeValidStampCoordinates(shiftPressed, 0, 0, CurrentStamp.Length, CurrentStamp[0].Length);
                                 else
                                 {
                                     DrawPoint.X = x - MouseTileX;
@@ -2961,8 +2963,8 @@ namespace MLLE
                                     while (DrawPoint.Y < 0) DrawPoint.Y += CurrentStamp[0].Length;
                                     DrawPoint.Y %= CurrentStamp[0].Length;
                                 }
-                                ActOnATile(x, y, CurrentStamp[DrawPoint.X][DrawPoint.Y].Tile, CurrentStamp[DrawPoint.X][DrawPoint.Y].Event, ActionCenter, shiftPressed | ShowBlankTileInStamp);*/
-                            }
+                                ActOnATile(x, y, CurrentStamp[DrawPoint.X][DrawPoint.Y].Tile, CurrentStamp[DrawPoint.X][DrawPoint.Y].Event, ActionCenter, shiftPressed | ShowBlankTileInStamp);
+                            }*/
                 }
             }
             #endregion fill
@@ -3051,12 +3053,13 @@ namespace MLLE
         {
             if (grabFrom.Count > 0)
             {
-                LayerAndSpecificTiles ReplacedActions = grabFrom.Pop(), NewActions = new LayerAndSpecificTiles(ReplacedActions.Layer); ;
+                LayerAndSpecificTiles ReplacedActions = grabFrom.Pop(), NewActions = new LayerAndSpecificTiles(ReplacedActions.Layer);
+                var tileMap = J2L.DefaultLayers[ReplacedActions.Layer].TileMap;
                 foreach (Point p in ReplacedActions.Specifics.Keys)
                 {
-                    if (J2L.VersionType == Version.AGA) NewActions.Specifics.Add(p, new TileAndEvent(J2L.Layers[ReplacedActions.Layer].TileMap[p.X, p.Y], J2L.AGA_EventMap[p.X, p.Y]));
-                    else NewActions.Specifics.Add(p, new TileAndEvent(J2L.Layers[ReplacedActions.Layer].TileMap[p.X, p.Y], J2L.EventMap[p.X, p.Y]));
-                    J2L.Layers[ReplacedActions.Layer].TileMap[p.X, p.Y] = ReplacedActions.Specifics[p].Tile;
+                    if (J2L.VersionType == Version.AGA) NewActions.Specifics.Add(p, new TileAndEvent(tileMap[p.X, p.Y], J2L.AGA_EventMap[p.X, p.Y]));
+                    else NewActions.Specifics.Add(p, new TileAndEvent(tileMap[p.X, p.Y], J2L.EventMap[p.X, p.Y]));
+                    tileMap[p.X, p.Y] = ReplacedActions.Specifics[p].Tile;
                     if (ReplacedActions.Layer == 3)
                     {
                         if (J2L.VersionType == Version.AGA) J2L.AGA_EventMap[p.X, p.Y] = ((AGAEvent)ReplacedActions.Specifics[p].Event);
