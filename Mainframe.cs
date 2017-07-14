@@ -101,7 +101,8 @@ namespace MLLE
         public byte? GeneratorEventID = null, StartPositionEventID = null;
 
         //int desiredindex;
-        byte CurrentLayerID = 3;
+        byte CurrentLayerID = J2LFile.SpriteLayerID;
+        Layer CurrentLayer { get { return J2L.AllLayers[CurrentLayerID]; } }
         byte ZoomTileSize = 32;
         float ZoomTileFactor = 1;
 
@@ -611,8 +612,8 @@ namespace MLLE
                 case (Keys.Shift | Keys.E): { PasteEventAtMouse(); return true; }
                 case Keys.E: { SelectEventAtMouse(); return true; }
 
-                case Keys.Oemcomma: { SetStampDimensions(1, 1); CurrentStamp[0][0] = new TileAndEvent((LastFocusedZone == FocusedZone.Level) ? J2L.DefaultLayers[CurrentLayerID].TileMap[MouseTileX, MouseTileY] : (ushort)MouseTile, 0); ShowBlankTileInStamp = true; DeselectAll(); return true; }
-                case (Keys.Shift | Keys.Oemcomma): { SetStampDimensions(1, 1); CurrentStamp[0][0] = new TileAndEvent((LastFocusedZone == FocusedZone.Level) ? J2L.DefaultLayers[CurrentLayerID].TileMap[MouseTileX, MouseTileY] : (ushort)MouseTile, MouseAGAEvent.ID); ShowBlankTileInStamp = true; DeselectAll(); return true; }
+                case Keys.Oemcomma: { SetStampDimensions(1, 1); CurrentStamp[0][0] = new TileAndEvent((LastFocusedZone == FocusedZone.Level) ? CurrentLayer.TileMap[MouseTileX, MouseTileY] : (ushort)MouseTile, 0); ShowBlankTileInStamp = true; DeselectAll(); return true; }
+                case (Keys.Shift | Keys.Oemcomma): { SetStampDimensions(1, 1); CurrentStamp[0][0] = new TileAndEvent((LastFocusedZone == FocusedZone.Level) ? CurrentLayer.TileMap[MouseTileX, MouseTileY] : (ushort)MouseTile, MouseAGAEvent.ID); ShowBlankTileInStamp = true; DeselectAll(); return true; }
                 case Keys.Back: { ShowBlankTileInStamp = true; SetStampDimensions(1, 1); CurrentStamp[0][0] = new TileAndEvent(0, 0); DeselectAll(); return true; }
 
                 case (Keys.Control | Keys.B):
@@ -1541,8 +1542,8 @@ namespace MLLE
             LDScrollH.LargeChange = LDScrollV.LargeChange = (LDScrollH.SmallChange = LDScrollV.SmallChange = ZoomTileSize) * 8;
             if (SafeToDisplay)
             {
-                LDScrollH.Maximum = Math.Max(0, (int)J2L.DefaultLayers[CurrentLayerID].Width * ZoomTileSize - LevelDisplayViewportWidth + LDScrollH.LargeChange);
-                LDScrollV.Maximum = Math.Max(0, (int)J2L.DefaultLayers[CurrentLayerID].Height * ZoomTileSize - LevelDisplayViewportHeight + LDScrollV.LargeChange);
+                LDScrollH.Maximum = Math.Max(0, (int)CurrentLayer.Width * ZoomTileSize - LevelDisplayViewportWidth + LDScrollH.LargeChange);
+                LDScrollV.Maximum = Math.Max(0, (int)CurrentLayer.Height * ZoomTileSize - LevelDisplayViewportHeight + LDScrollV.LargeChange);
                 TilesetScrollbar.Maximum = Math.Max(0, (!J2L.HasTiles) ? 0 : ((int)J2L.TileCount + J2L.NumberOfAnimations + 10) / 10 * 32 - TilesetScrollbar.Height + 256);
                 //TilesetScrollbar.Maximum += TilesetScrollbar.LargeChange;
                 TilesetScrollbar.Refresh();
@@ -1811,14 +1812,14 @@ namespace MLLE
                 GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
                 if (ParallaxDisplayMode != ParallaxMode.NoParallax && MaskDisplayMode != MaskMode.FullMask)
                 {
-                    xspeedparallax = (J2L.DefaultLayers[CurrentLayerID].XSpeed == 0) ? 0 : (int)((LDScrollH.Value + widthreduced) / J2L.DefaultLayers[CurrentLayerID].XSpeed);
-                    yspeedparallax = (J2L.DefaultLayers[CurrentLayerID].YSpeed == 0) ? 0 : (int)((LDScrollV.Value + (J2L.DefaultLayers[CurrentLayerID].LimitVisibleRegion ? heightreduced * 2 : heightreduced)) / J2L.DefaultLayers[CurrentLayerID].YSpeed);
+                    xspeedparallax = (CurrentLayer.XSpeed == 0) ? 0 : (int)((LDScrollH.Value + widthreduced) / CurrentLayer.XSpeed);
+                    yspeedparallax = (CurrentLayer.YSpeed == 0) ? 0 : (int)((LDScrollV.Value + (CurrentLayer.LimitVisibleRegion ? heightreduced * 2 : heightreduced)) / CurrentLayer.YSpeed);
                     SetTextureTo(AtlasID.Image);
                     GL.Enable(EnableCap.Blend);
                     if (ParallaxDisplayMode == ParallaxMode.TemporaryParallax) GL.Color4((byte)255, (byte)255, (byte)255, (byte)64);
-                    for (int l = J2L.DefaultLayers.Length - 1; l >= 0; l--)
+                    for (int l = J2L.AllLayers.Count - 1; l >= 0; l--)
                     {
-                        DrawingLayer = J2L.DefaultLayers[l];
+                        DrawingLayer = J2L.AllLayers[l];
                         if (l == CurrentLayerID)
                         {
                             GL.Color4((byte)255, (byte)255, (byte)255, (byte)255);
@@ -1849,16 +1850,16 @@ namespace MLLE
                     if (MaskDisplayMode == MaskMode.TemporaryMask)
                     {
                         SetTextureTo(AtlasID.Image);
-                        NoParallaxReindeer(J2L.DefaultLayers[CurrentLayerID]);
+                        NoParallaxReindeer(CurrentLayer);
                         SetTextureTo(AtlasID.Mask);
                         GL.Enable(EnableCap.Blend);
-                        NoParallaxReindeer(J2L.DefaultLayers[CurrentLayerID]);
+                        NoParallaxReindeer(CurrentLayer);
                         if (CurrentLayerID == J2LFile.SpriteLayerID && EventDisplayMode) EventReindeer();
                     }
                     else
                     {
                         SetTextureTo((MaskDisplayMode == MaskMode.FullMask) ? AtlasID.Mask : AtlasID.Image);
-                        NoParallaxReindeer(J2L.DefaultLayers[CurrentLayerID]);
+                        NoParallaxReindeer(CurrentLayer);
                         if (CurrentLayerID == J2LFile.SpriteLayerID && EventDisplayMode) { GL.Enable(EnableCap.Blend); EventReindeer(); }
                     }
                 }
@@ -2410,9 +2411,9 @@ namespace MLLE
                 MouseTileY = Math.Max(0, (e.Y + LDScrollV.Value) / ZoomTileSize);
                 if (SafeToDisplay)
                 {
-                    MouseTile = MouseTileX + MouseTileY * (int)J2L.DefaultLayers[CurrentLayerID].Width;
+                    MouseTile = MouseTileX + MouseTileY * (int)CurrentLayer.Width;
                 }
-                if (CurrentLayerID == 3 && MouseTileX < J2L.SpriteLayer.Width && MouseTileX >= 0 && MouseTileY < J2L.SpriteLayer.Height && MouseTileY >= 0)
+                if (CurrentLayerID == J2LFile.SpriteLayerID && MouseTileX < J2L.SpriteLayer.Width && MouseTileX >= 0 && MouseTileY < J2L.SpriteLayer.Height && MouseTileY >= 0)
                 {
                     if (J2L.VersionType == Version.AGA) { MouseAGAEvent = J2L.AGA_EventMap[MouseTileX, MouseTileY]; }
                     else MouseAGAEvent.ID = J2L.EventMap[MouseTileX, MouseTileY];
@@ -2695,7 +2696,7 @@ namespace MLLE
 
         internal void Clear(byte LayerNumber)
         {
-            Layer layer = J2L.DefaultLayers[LayerNumber];
+            Layer layer = J2L.AllLayers[LayerNumber];
             if (layer.HasTiles)
             {
                 LayerAndSpecificTiles ActionCenter = new LayerAndSpecificTiles(LayerNumber);
@@ -2812,7 +2813,7 @@ namespace MLLE
         {
             if (WhereSelected != FocusedZone.None)
             {
-                var tileMap = J2L.DefaultLayers[CurrentLayerID].TileMap;
+                var tileMap = CurrentLayer.TileMap;
                 SetStampDimensions(BottomRightSelectionCorner.X - UpperLeftSelectionCorner.X, BottomRightSelectionCorner.Y - UpperLeftSelectionCorner.Y);
                 for (int x = UpperLeftSelectionCorner.X; x < BottomRightSelectionCorner.X; x++)
                     for (int y = UpperLeftSelectionCorner.Y; y < BottomRightSelectionCorner.Y; y++)
@@ -2887,13 +2888,13 @@ namespace MLLE
         private void ActOnATile(int x, int y, ushort? tile, uint ev, LayerAndSpecificTiles actionCenter, bool blankTilesOkay) { ActOnATile(x, y, tile, new AGAEvent(ev), actionCenter, blankTilesOkay); }
         private void ActOnATile(int x, int y, ushort? tile, AGAEvent? ev, LayerAndSpecificTiles actionCenter, bool blankTilesOkay)
         {
-            Layer layer = J2L.DefaultLayers[actionCenter.Layer];
+            Layer layer = J2L.AllLayers[actionCenter.Layer];
             if (x >= 0 && y >= 0 && x < layer.TileMap.GetLength(0) && y < layer.TileMap.GetLength(1) && tile != null && (blankTilesOkay || tile > 0))
             {
-                if (J2L.VersionType == Version.AGA) actionCenter.Specifics.Add(new Point(x, y), new TileAndEvent(layer.TileMap[x, y], (actionCenter.Layer == 3) ? J2L.AGA_EventMap[x, y] : (AGAEvent?)null));
-                else actionCenter.Specifics.Add(new Point(x, y), new TileAndEvent(layer.TileMap[x, y], (actionCenter.Layer == 3) ? J2L.EventMap[x, y] : (uint?)null));
+                if (J2L.VersionType == Version.AGA) actionCenter.Specifics.Add(new Point(x, y), new TileAndEvent(layer.TileMap[x, y], (actionCenter.Layer == J2LFile.SpriteLayerID) ? J2L.AGA_EventMap[x, y] : (AGAEvent?)null));
+                else actionCenter.Specifics.Add(new Point(x, y), new TileAndEvent(layer.TileMap[x, y], (actionCenter.Layer == J2LFile.SpriteLayerID) ? J2L.EventMap[x, y] : (uint?)null));
                 layer.TileMap[x, y] = (ushort)tile;
-                if (actionCenter.Layer == 3)
+                if (actionCenter.Layer == J2LFile.SpriteLayerID)
                 {
                     if (J2L.VersionType == Version.AGA) J2L.AGA_EventMap[x, y] = ev ?? new AGAEvent(0);
                     else J2L.EventMap[x, y] = (ev == null) ? 0 : ((AGAEvent)ev).ID;
@@ -2933,7 +2934,7 @@ namespace MLLE
             #region fill
             else if (VisibleEditingTool == FillButton)
             {
-                Layer layer = J2L.DefaultLayers[CurrentLayerID];
+                Layer layer = CurrentLayer;
                 if (MouseTileX < layer.Width && MouseTileY < layer.Height)
                 {
                     foreach (bool[] col in ShouldEachTileBeFilledIn) for (ushort y = 0; y < col.Length; y++) col[y] = false;
@@ -3054,13 +3055,13 @@ namespace MLLE
             if (grabFrom.Count > 0)
             {
                 LayerAndSpecificTiles ReplacedActions = grabFrom.Pop(), NewActions = new LayerAndSpecificTiles(ReplacedActions.Layer);
-                var tileMap = J2L.DefaultLayers[ReplacedActions.Layer].TileMap;
+                var tileMap = J2L.AllLayers[ReplacedActions.Layer].TileMap;
                 foreach (Point p in ReplacedActions.Specifics.Keys)
                 {
                     if (J2L.VersionType == Version.AGA) NewActions.Specifics.Add(p, new TileAndEvent(tileMap[p.X, p.Y], J2L.AGA_EventMap[p.X, p.Y]));
                     else NewActions.Specifics.Add(p, new TileAndEvent(tileMap[p.X, p.Y], J2L.EventMap[p.X, p.Y]));
                     tileMap[p.X, p.Y] = ReplacedActions.Specifics[p].Tile;
-                    if (ReplacedActions.Layer == 3)
+                    if (ReplacedActions.Layer == J2LFile.SpriteLayerID)
                     {
                         if (J2L.VersionType == Version.AGA) J2L.AGA_EventMap[p.X, p.Y] = ((AGAEvent)ReplacedActions.Specifics[p].Event);
                         else J2L.EventMap[p.X, p.Y] = ((AGAEvent)ReplacedActions.Specifics[p].Event).ID;

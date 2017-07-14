@@ -63,9 +63,9 @@ namespace MLLE
             LayerSelect.SelectedIndex = CurrentLayer;
         }
 
-        private void ReadLayer(byte Layer)
+        private void ReadLayer(Layer layer)
         {
-            DataSource = SourceForm.J2L.DefaultLayers[Layer];
+            DataSource = layer;
             WidthBox.Value = DataSource.Width;
             HeightBox.Value = DataSource.Height;
             //PHASEWidthBox.Text = DataSource.Width.ToString();
@@ -235,12 +235,12 @@ namespace MLLE
             CurrentLayer = (byte)LayerSelect.SelectedIndex;
             TileWidth.Enabled = TileHeight.Enabled = (
                 (
-                    groupBoxPlus.Enabled = groupBox2.Enabled = TextureMode.Enabled = (CurrentLayer != 3)
+                    groupBoxPlus.Enabled = groupBox2.Enabled = TextureMode.Enabled = (CurrentLayer != J2LFile.SpriteLayerID)
                 ) ||
                 SourceForm.EnableableBools[SourceForm.J2L.VersionType][EnableableTitles.BoolDevelopingForPlus]
             );
-            Copy4.Enabled = (CurrentLayer != 3 && CurrentLayer != 7);
-            ReadLayer(CurrentLayer);
+            ReadLayer(SourceForm.J2L.AllLayers[CurrentLayer]);
+            Copy4.Enabled = (DataSource.id != J2LFile.SpriteLayerID && DataSource.id != 7);
         }
 
         private void TextureMode_CheckedChanged(object sender, EventArgs e)
@@ -261,8 +261,8 @@ namespace MLLE
 
         private void Copy4_Click(object sender, EventArgs e)
         {
-            ReadLayer(3);
-            DataSource = SourceForm.J2L.DefaultLayers[CurrentLayer];
+            ReadLayer(SourceForm.J2L.SpriteLayer);
+            DataSource = SourceForm.J2L.AllLayers[CurrentLayer];
         }
 
     }

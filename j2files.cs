@@ -609,6 +609,25 @@ class Layer
         yOrigin = -tileSize - (upperLeftY % tileSize);
         upperLeftY /= tileSize;
     }
+
+    internal bool PlusOnly
+    {
+        get
+        {
+            return false;
+        }
+    }
+    internal bool ContainsVerticallyFlippedTiles
+    {
+        get
+        {
+            if (HasTiles)
+                foreach (ushort tileID in TileMap)
+                    if ((tileID & 0x2000) != 0)
+                        return true;
+            return false;
+        }
+    }
 }
 
 class AnimatedTile
@@ -853,13 +872,10 @@ class J2LFile : J2File
     internal MLLE.PlusPropertyList PlusPropertyList = new MLLE.PlusPropertyList(null);
     internal bool PlusOnly { get
         {
-            if (Tilesets.Count > 1 || PlusPropertyList.LevelNeedsData5)
+            if (Tilesets.Count > 1 || !AllLayers.SequenceEqual(DefaultLayers) || PlusPropertyList.LevelNeedsData5)
                 return true;
-            foreach (Layer CurrentLayer in DefaultLayers)
-                if (CurrentLayer.HasTiles)
-                    foreach (ushort tileID in CurrentLayer.TileMap)
-                        if ((tileID & 0x2000) != 0) //flipped vertically
-                            return true;
+            if (DefaultLayers.FirstOrDefault(layer => (layer.PlusOnly || layer.ContainsVerticallyFlippedTiles)) != null)
+                return true;
             foreach (AnimatedTile CurrentAnimatedTile in Animations)
                 foreach (ushort tileID in CurrentAnimatedTile.Sequence)
                     if ((tileID & 0x2000) != 0) //flipped vertically
@@ -870,6 +886,7 @@ class J2LFile : J2File
 
     const uint SecurityStringMLLE = 0xBACABEEF;
     const uint SecurityStringPassworded = 0xBA00BE00;
+    const uint SecurityStringExtraDataNotForDirectEditing = 0xBA01BE01;
     const uint SecurityStringInsecure = 0;
 
     internal byte LEVunknown1;
@@ -1050,6 +1067,7 @@ class J2LFile : J2File
                         }
                     }
                     for (int i = 0; i < DefaultLayers.Length; i++) DefaultLayers[i] = new Layer(i, data1reader.ReadUInt32());
+                    AllLayers = new List<Layer>(DefaultLayers);
                     foreach (Layer layer in DefaultLayers) layer.unknown1 = data1reader.ReadByte();
                     for (int i = 0; i < DefaultLayers.Length; i++) hasTiles[i] = data1reader.ReadBoolean();
                     foreach (Layer layer in DefaultLayers) layer.Width = data1reader.ReadUInt32();
@@ -1314,6 +1332,7 @@ class J2LFile : J2File
                     else { layer.AutoXSpeed = layer.AutoYSpeed = 0; }
                     layer.HasStars = false; layer.TextureMode = layer.TexturParam1 = layer.TexturParam2 = layer.TexturParam3 = 0;
                 }
+                AllLayers = new List<Layer>(DefaultLayers);
                 while (binreader.PeekChar() == 0) binreader.ReadByte(); //padding
                 Console.WriteLine(binreader.ReadChars(4)); //DATA
                 SectionLength = binreader.ReadInt32(); SectionOffset = 6;
@@ -1404,6 +1423,7 @@ class J2LFile : J2File
 
         for (int i = 0; i < DefaultLayers.Length; i++)
             DefaultLayers[i] = new Layer(i);
+        AllLayers = new List<Layer>(DefaultLayers);
 
         unknownsection = new byte[64];
         AnimOffset = (ushort)MaxTiles;
@@ -1467,7 +1487,7 @@ class J2LFile : J2File
         }
         if (!eraseUndefinedTiles)
         {
-            foreach (Layer CurrentLayer in DefaultLayers) foreach (ushort tile in CurrentLayer.TileMap) if (IsAnUndefinedTile(tile)) return SavingResults.UndefinedTiles;
+            /*first non-Open/New reference to DefaultLayers in this file*/ foreach (Layer CurrentLayer in DefaultLayers) foreach (ushort tile in CurrentLayer.TileMap) if (IsAnUndefinedTile(tile)) return SavingResults.UndefinedTiles;
             for (byte i = 0; i < NumberOfAnimations; i++) foreach (ushort tile in Animations[i].Sequence) if (IsAnUndefinedTile(tile)) return SavingResults.UndefinedTiles;
         }
         if (storeGivenFilename) FilenameOnly = Path.GetFileName(FullFilePath = filename);
@@ -1914,14 +1934,14 @@ class J2LFile : J2File
         for (ushort i = 0; i < MaxTiles; i++) IsEachTileUsed[i] = IsEachTileFlipped[i] = false;
         IsEachTileUsed[0] = true;
         bool isFlipped;
-        foreach (Layer CurrentLayer in DefaultLayers)
+        foreach (Layer CurrentLayer in AllLayers)
         {
             foreach (ushort tileUsed in CurrentLayer.TileMap)
             {
                 isFlipped = false;
                 if (tileUsed % MaxTiles < TileCount)
                 {
-                    if (CurrentLayer.id == 3) IsEachTileUsed[tileUsed % MaxTiles] = true; // ignore this; it's only useful for .LEV saving
+                    if (CurrentLayer.id == SpriteLayerID) IsEachTileUsed[tileUsed % MaxTiles] = true; // ignore this; it's only useful for .LEV saving
                     if (tileUsed >= MaxTiles) IsEachTileFlipped[tileUsed % MaxTiles] = true;
                 }
                 else
@@ -1948,7 +1968,7 @@ class J2LFile : J2File
         }
         NumberOfAnimations--;
         int threshhold = (adjustLaterAnims) ? AnimOffset + id : MaxTiles - 1;
-        foreach (Layer CurrentLayer in DefaultLayers)
+        foreach (Layer CurrentLayer in AllLayers)
             if (CurrentLayer.HasTiles)
                 for (ushort x = 0; x < CurrentLayer.Width; x++)
                     for (ushort y = 0; y < CurrentLayer.Height; y++)
@@ -1981,7 +2001,7 @@ class J2LFile : J2File
         Animations[location] = nuAnim;
         NumberOfAnimations++;
         int threshhold = AnimOffset + location;
-        foreach (Layer CurrentLayer in DefaultLayers)
+        foreach (Layer CurrentLayer in AllLayers)
             if (CurrentLayer.HasTiles)
                 for (ushort x = 0; x < CurrentLayer.Width; x++)
                     for (ushort y = 0; y < CurrentLayer.Height; y++)
@@ -2024,7 +2044,7 @@ class J2LFile : J2File
                         if (MaxTiles == 4096)
                         {
                             for (byte i = 0; i < NumberOfAnimations; i++) Animations[i].ChangeVersion(ref nuVersion,ref J2TTileCount, ref NumberOfAnimations);
-                            foreach (Layer CurrentLayer in DefaultLayers) if (CurrentLayer.HasTiles) for (ushort x = 0; x < CurrentLayer.Width; x++) for (ushort y = 0; y < CurrentLayer.Height; y++)
+                            foreach (Layer CurrentLayer in AllLayers) if (CurrentLayer.HasTiles) for (ushort x = 0; x < CurrentLayer.Width; x++) for (ushort y = 0; y < CurrentLayer.Height; y++)
                                         {
                                             if (CurrentLayer.TileMap[x, y] > 4095 + J2TTileCount) CurrentLayer.TileMap[x, y] -= 7168; //Flipped animations
                                             else if (CurrentLayer.TileMap[x, y] >= J2TTileCount)
@@ -2047,7 +2067,7 @@ class J2LFile : J2File
                     if (MaxTiles == 1024)
                     {
                         for (byte i = 0; i < NumberOfAnimations; i++) Animations[i].ChangeVersion(ref nuVersion, ref J2TTileCount, ref NumberOfAnimations);
-                        foreach (Layer CurrentLayer in DefaultLayers) if (CurrentLayer.HasTiles) for (ushort x = 0; x < CurrentLayer.Width; x++) for (ushort y = 0; y < CurrentLayer.Height; y++)
+                        foreach (Layer CurrentLayer in AllLayers) if (CurrentLayer.HasTiles) for (ushort x = 0; x < CurrentLayer.Width; x++) for (ushort y = 0; y < CurrentLayer.Height; y++)
                                     {
                                         if (CurrentLayer.TileMap[x, y] > 8192) CurrentLayer.TileMap[x, y] -= 8192; //Restored leftovers
                                         else if (CurrentLayer.TileMap[x, y] > 1023 + J2TTileCount) CurrentLayer.TileMap[x, y] += 7168; //Flipped animations
@@ -2104,7 +2124,7 @@ class J2LFile : J2File
             return false; //something went wrong
         bool permissionGotten = false;
 
-        foreach (Layer CurrentLayer in DefaultLayers)
+        foreach (Layer CurrentLayer in AllLayers)
             if (CurrentLayer.HasTiles)
                 for (uint x = 0; x < CurrentLayer.Width; ++x)
                     for (uint y = 0; y < CurrentLayer.Height; ++y)
