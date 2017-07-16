@@ -68,6 +68,8 @@
             this.XOffset = new System.Windows.Forms.TextBox();
             this.YOffset = new System.Windows.Forms.TextBox();
             this.OffsetYLabel = new System.Windows.Forms.Label();
+            this.NameLabel = new System.Windows.Forms.Label();
+            this.NameBox = new System.Windows.Forms.TextBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -228,7 +230,7 @@
             this.groupBox3.Controls.Add(this.TileWidth);
             this.groupBox3.Controls.Add(this.WidthLabel);
             this.groupBox3.Controls.Add(this.HeightLabel);
-            this.groupBox3.Location = new System.Drawing.Point(13, 203);
+            this.groupBox3.Location = new System.Drawing.Point(13, 227);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(259, 93);
             this.groupBox3.TabIndex = 8;
@@ -332,7 +334,7 @@
             this.groupBox4.Controls.Add(this.Stars);
             this.groupBox4.Controls.Add(this.ColorBox);
             this.groupBox4.Controls.Add(this.TextureMode);
-            this.groupBox4.Location = new System.Drawing.Point(13, 303);
+            this.groupBox4.Location = new System.Drawing.Point(13, 327);
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.Size = new System.Drawing.Size(259, 93);
             this.groupBox4.TabIndex = 9;
@@ -467,7 +469,7 @@
             // Copy4
             // 
             this.Copy4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.Copy4.Location = new System.Drawing.Point(278, 373);
+            this.Copy4.Location = new System.Drawing.Point(278, 397);
             this.Copy4.Name = "Copy4";
             this.Copy4.Size = new System.Drawing.Size(75, 23);
             this.Copy4.TabIndex = 10;
@@ -477,13 +479,15 @@
             // 
             // groupBoxPlus
             // 
+            this.groupBoxPlus.Controls.Add(this.NameBox);
+            this.groupBoxPlus.Controls.Add(this.NameLabel);
             this.groupBoxPlus.Controls.Add(this.OffsetXLabel);
             this.groupBoxPlus.Controls.Add(this.XOffset);
             this.groupBoxPlus.Controls.Add(this.YOffset);
             this.groupBoxPlus.Controls.Add(this.OffsetYLabel);
             this.groupBoxPlus.Location = new System.Drawing.Point(13, 149);
             this.groupBoxPlus.Name = "groupBoxPlus";
-            this.groupBoxPlus.Size = new System.Drawing.Size(259, 48);
+            this.groupBoxPlus.Size = new System.Drawing.Size(259, 72);
             this.groupBoxPlus.TabIndex = 8;
             this.groupBoxPlus.TabStop = false;
             this.groupBoxPlus.Text = "JJ2+ Properties";
@@ -524,13 +528,30 @@
             this.OffsetYLabel.TabIndex = 1;
             this.OffsetYLabel.Text = "Y-Offset";
             // 
+            // NameLabel
+            // 
+            this.NameLabel.AutoSize = true;
+            this.NameLabel.Location = new System.Drawing.Point(6, 47);
+            this.NameLabel.Name = "NameLabel";
+            this.NameLabel.Size = new System.Drawing.Size(35, 13);
+            this.NameLabel.TabIndex = 4;
+            this.NameLabel.Text = "Name";
+            // 
+            // NameBox
+            // 
+            this.NameBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.NameBox.Location = new System.Drawing.Point(60, 44);
+            this.NameBox.Name = "NameBox";
+            this.NameBox.Size = new System.Drawing.Size(193, 20);
+            this.NameBox.TabIndex = 5;
+            // 
             // LayerPropertiesForm
             // 
             this.AcceptButton = this.OKButton;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
-            this.ClientSize = new System.Drawing.Size(365, 408);
+            this.ClientSize = new System.Drawing.Size(365, 432);
             this.Controls.Add(this.groupBoxPlus);
             this.Controls.Add(this.Copy4);
             this.Controls.Add(this.groupBox4);
@@ -607,5 +628,7 @@
         private System.Windows.Forms.TextBox XOffset;
         private System.Windows.Forms.TextBox YOffset;
         private System.Windows.Forms.Label OffsetYLabel;
+        private System.Windows.Forms.TextBox NameBox;
+        private System.Windows.Forms.Label NameLabel;
     }
 }

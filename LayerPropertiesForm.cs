@@ -90,6 +90,7 @@ namespace MLLE
             TextureModeSelect.SelectedIndex = DataSource.TextureMode;
             XOffset.Text = DataSource.WaveX.ToString();
             YOffset.Text = DataSource.WaveY.ToString();
+            NameBox.Text = DataSource.Name;
         }
 
         private void ApplyChanges()
@@ -191,6 +192,7 @@ namespace MLLE
                 DataSource.TexturParam2 = (byte)Param2.Value;
                 DataSource.TexturParam3 = (byte)Param3.Value;
                 DataSource.TextureMode = (byte)TextureModeSelect.SelectedIndex;
+                DataSource.Name = NameBox.Text;
                 SourceForm.LevelHasBeenModified = true;
             }
         }
@@ -237,7 +239,7 @@ namespace MLLE
             ReadLayer(SourceForm.J2L.AllLayers[CurrentLayer]);
             TileWidth.Enabled = TileHeight.Enabled = (
                 (
-                    groupBoxPlus.Enabled = groupBox2.Enabled = TextureMode.Enabled = (DataSource.id != J2LFile.SpriteLayerID)
+                    XOffset.Enabled = YOffset.Enabled = groupBox2.Enabled = TextureMode.Enabled = (DataSource.id != J2LFile.SpriteLayerID)
                 ) ||
                 SourceForm.EnableableBools[SourceForm.J2L.VersionType][EnableableTitles.BoolDevelopingForPlus]
             );
