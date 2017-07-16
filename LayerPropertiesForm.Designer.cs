@@ -115,15 +115,6 @@
             // 
             this.LayerSelect.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.LayerSelect.FormattingEnabled = true;
-            this.LayerSelect.Items.AddRange(new object[] {
-            "1: Foreground layer #2",
-            "2: Foreground layer #1",
-            "3: Sprite foreground layer",
-            "4: Sprite layer",
-            "5: Background layer #1",
-            "6: Background layer #2",
-            "7: Background layer #3",
-            "8: Background layer"});
             this.LayerSelect.Location = new System.Drawing.Point(7, 20);
             this.LayerSelect.Name = "LayerSelect";
             this.LayerSelect.Size = new System.Drawing.Size(246, 21);

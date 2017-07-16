@@ -507,6 +507,7 @@ class Layer
     public byte TexturParam1;
     public byte TexturParam2;
     public byte TexturParam3;
+    public string Name;
     public ArrayMap<ushort> TileMap;
 
     public Layer(int i, uint raw, bool LEVstyle = false)
@@ -526,11 +527,14 @@ class Layer
             IsTextured = (raw & 8) == 8;
             HasStars = (raw & 16) == 16;
         }
+
+        Name = DefaultNames[i];
     }
 
     static readonly uint[] DefaultWidths = {864, 576, 256, 256, 171, 114, 76, 8};
     static readonly uint[] DefaultHeights = { 216, 144, 64, 64, 43, 29, 19, 8 };
     static readonly float[] DefaultSpeeds = { 3.375F, 2.25F, 1, 1, 0.666672F, 0.444458F, 0.29631F, 0 };
+    static readonly string[] DefaultNames = new string[8] { "Foreground Layer #2", "Foreground Layer #1", "Sprite Foreground Layer", "Sprite Layer", "Background Layer #1", "Background Layer #2", "Background Layer #3", "Background Layer" };
     public Layer(int i) //using default values (i.e. called when creating a new level from scratch)
     {
         id = (byte)i;
@@ -547,6 +551,8 @@ class Layer
 
         TileWidth = TileHeight = (i == 7);
         LimitVisibleRegion = IsTextured = HasStars = false;
+
+        Name = DefaultNames[i];
 
         TileMap = new ArrayMap<ushort>(Width, Height);
     }
@@ -627,6 +633,14 @@ class Layer
                         return true;
             return false;
         }
+    }
+
+    static System.Text.RegularExpressions.Regex NumberPrefixedNamePattern = new System.Text.RegularExpressions.Regex("^\\d: .+");
+    public override string ToString()
+    {
+        if (NumberPrefixedNamePattern.Match(Name).Success) //.LEV files include "1: ", "2: ", etc. in their layer names, and we don't want to display "4: 4: Sprite Layer"
+            return Name;
+        return (id + 1) + ": " + Name;
     }
 }
 
@@ -890,7 +904,6 @@ class J2LFile : J2File
     const uint SecurityStringInsecure = 0;
 
     internal byte LEVunknown1;
-    internal static readonly string[] LayerNames = new string[8] {"Foreground Layer #2", "Foreground Layer #1", "Sprite Foreground Layer", "Sprite Layer", "Background Layer #1", "Background Layer #2", "Background Layer #3", "Background Layer"};
     internal byte LEVunknown2;
     internal short LEVMysteriousTextShort;
     #endregion variable declaration
@@ -1246,7 +1259,8 @@ class J2LFile : J2File
                 Tilesets = new List<J2TFile>(1) { J2T };
                 SectionOffset += (MainTilesetFilename = J2T.FilenameOnly).Length + 1;
                 LEVunknown2 = binreader.ReadByte();
-                for (byte i = 0; i < 8; i++) { LayerNames[i] = new string(binreader.ReadChars(binreader.ReadByte())); SectionOffset += LayerNames[i].Length + 1; }
+                string[] layerNames = new string[DefaultLayers.Length];
+                for (int i = 0; i < layerNames.Length; i++) { layerNames[i] = new string(binreader.ReadChars(binreader.ReadByte())); SectionOffset += layerNames[i].Length + 1; }
                 while (binreader.PeekChar() == 0) binreader.ReadByte(); //padding
                 Console.WriteLine(binreader.ReadChars(4)); //EDI2
                 binreader.ReadBytes(binreader.ReadInt32()); //skip EDI2 entirely
@@ -1331,6 +1345,7 @@ class J2LFile : J2File
                     if ((SpeedSettings & 4) == 4) { SectionOffset += 8; layer.AutoXSpeed = binreader.ReadInt32() / 65536.0F; layer.AutoYSpeed = binreader.ReadInt32() / 65536.0F; }
                     else { layer.AutoXSpeed = layer.AutoYSpeed = 0; }
                     layer.HasStars = false; layer.TextureMode = layer.TexturParam1 = layer.TexturParam2 = layer.TexturParam3 = 0;
+                    layer.Name = layerNames[i];
                 }
                 AllLayers = new List<Layer>(DefaultLayers);
                 while (binreader.PeekChar() == 0) binreader.ReadByte(); //padding
@@ -1519,7 +1534,7 @@ class J2LFile : J2File
                 EDIT.Write(Path.GetFileNameWithoutExtension(MainTilesetFilename));
                 EDIT.Write(TileCount);
                 EDIT.Write((byte)0);
-                for (byte i = 0; i < 8; i++) EDIT.Write(LayerNames[i]);
+                for (int i = 0; i < DefaultLayers.Length; i++) EDIT.Write(DefaultLayers[i].Name);
 
                 EDI2.Write(1);
                 EDI2.Write(1024);

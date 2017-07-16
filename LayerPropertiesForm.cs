@@ -60,6 +60,7 @@ namespace MLLE
             }
             TextureModeSelect.Items.Clear();
             for (ushort i = 0; i < SourceForm.TextureTypes.Count; i++) TextureModeSelect.Items.Add(SourceForm.TextureTypes[i][0].Trim());
+            LayerSelect.Items.AddRange(SourceForm.J2L.AllLayers.ToArray());
             LayerSelect.SelectedIndex = CurrentLayer;
         }
 
@@ -233,13 +234,13 @@ namespace MLLE
         private void LayerSelect_SelectedIndexChanged(object sender, EventArgs e)
         {
             CurrentLayer = (byte)LayerSelect.SelectedIndex;
+            ReadLayer(SourceForm.J2L.AllLayers[CurrentLayer]);
             TileWidth.Enabled = TileHeight.Enabled = (
                 (
-                    groupBoxPlus.Enabled = groupBox2.Enabled = TextureMode.Enabled = (CurrentLayer != J2LFile.SpriteLayerID)
+                    groupBoxPlus.Enabled = groupBox2.Enabled = TextureMode.Enabled = (DataSource.id != J2LFile.SpriteLayerID)
                 ) ||
                 SourceForm.EnableableBools[SourceForm.J2L.VersionType][EnableableTitles.BoolDevelopingForPlus]
             );
-            ReadLayer(SourceForm.J2L.AllLayers[CurrentLayer]);
             Copy4.Enabled = (DataSource.id != J2LFile.SpriteLayerID && DataSource.id != 7);
         }
 
