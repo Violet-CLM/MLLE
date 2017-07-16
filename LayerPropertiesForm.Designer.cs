@@ -64,12 +64,13 @@
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.Copy4 = new System.Windows.Forms.Button();
             this.groupBoxPlus = new System.Windows.Forms.GroupBox();
+            this.NameBox = new System.Windows.Forms.TextBox();
+            this.NameLabel = new System.Windows.Forms.Label();
             this.OffsetXLabel = new System.Windows.Forms.Label();
             this.XOffset = new System.Windows.Forms.TextBox();
             this.YOffset = new System.Windows.Forms.TextBox();
             this.OffsetYLabel = new System.Windows.Forms.Label();
-            this.NameLabel = new System.Windows.Forms.Label();
-            this.NameBox = new System.Windows.Forms.TextBox();
+            this.ButtonApply = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -157,6 +158,7 @@
             this.YSpeed.Size = new System.Drawing.Size(50, 20);
             this.YSpeed.TabIndex = 6;
             this.YSpeed.Text = "0";
+            this.YSpeed.TextChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // AutoYLabel
             // 
@@ -175,6 +177,7 @@
             this.AutoYSpeed.Size = new System.Drawing.Size(50, 20);
             this.AutoYSpeed.TabIndex = 4;
             this.AutoYSpeed.Text = "0";
+            this.AutoYSpeed.TextChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // XLabel
             // 
@@ -193,6 +196,7 @@
             this.XSpeed.Size = new System.Drawing.Size(50, 20);
             this.XSpeed.TabIndex = 2;
             this.XSpeed.Text = "0";
+            this.XSpeed.TextChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // AutoXSpeed
             // 
@@ -202,6 +206,7 @@
             this.AutoXSpeed.Size = new System.Drawing.Size(50, 20);
             this.AutoXSpeed.TabIndex = 0;
             this.AutoXSpeed.Text = "0";
+            this.AutoXSpeed.TextChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // AutoXLabel
             // 
@@ -258,6 +263,7 @@
             0,
             0,
             0});
+            this.WidthBox.ValueChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // HeightBox
             // 
@@ -280,6 +286,7 @@
             0,
             0,
             0});
+            this.HeightBox.ValueChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // LimitVisibleRegion
             // 
@@ -290,6 +297,7 @@
             this.LimitVisibleRegion.TabIndex = 6;
             this.LimitVisibleRegion.Text = "Limit visible region";
             this.LimitVisibleRegion.UseVisualStyleBackColor = true;
+            this.LimitVisibleRegion.CheckedChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // TileHeight
             // 
@@ -311,6 +319,7 @@
             this.TileWidth.TabIndex = 4;
             this.TileWidth.Text = "Tile width";
             this.TileWidth.UseVisualStyleBackColor = true;
+            this.TileWidth.CheckedChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // HeightLabel
             // 
@@ -352,6 +361,7 @@
             this.Param1.Name = "Param1";
             this.Param1.Size = new System.Drawing.Size(50, 20);
             this.Param1.TabIndex = 13;
+            this.Param1.ValueChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // Param2
             // 
@@ -364,6 +374,7 @@
             this.Param2.Name = "Param2";
             this.Param2.Size = new System.Drawing.Size(50, 20);
             this.Param2.TabIndex = 11;
+            this.Param2.ValueChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // Param3
             // 
@@ -376,6 +387,7 @@
             this.Param3.Name = "Param3";
             this.Param3.Size = new System.Drawing.Size(50, 20);
             this.Param3.TabIndex = 9;
+            this.Param3.ValueChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // RedLabel
             // 
@@ -438,6 +450,7 @@
             this.Stars.TabIndex = 2;
             this.Stars.Text = "Parallaxing stars";
             this.Stars.UseVisualStyleBackColor = true;
+            this.Stars.CheckedChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // ColorBox
             // 
@@ -492,6 +505,24 @@
             this.groupBoxPlus.TabStop = false;
             this.groupBoxPlus.Text = "JJ2+ Properties";
             // 
+            // NameBox
+            // 
+            this.NameBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.NameBox.Location = new System.Drawing.Point(60, 44);
+            this.NameBox.Name = "NameBox";
+            this.NameBox.Size = new System.Drawing.Size(193, 20);
+            this.NameBox.TabIndex = 5;
+            this.NameBox.TextChanged += new System.EventHandler(this.GenericInputChanged);
+            // 
+            // NameLabel
+            // 
+            this.NameLabel.AutoSize = true;
+            this.NameLabel.Location = new System.Drawing.Point(6, 47);
+            this.NameLabel.Name = "NameLabel";
+            this.NameLabel.Size = new System.Drawing.Size(35, 13);
+            this.NameLabel.TabIndex = 4;
+            this.NameLabel.Text = "Name";
+            // 
             // OffsetXLabel
             // 
             this.OffsetXLabel.AutoSize = true;
@@ -509,6 +540,7 @@
             this.XOffset.Size = new System.Drawing.Size(50, 20);
             this.XOffset.TabIndex = 2;
             this.XOffset.Text = "0";
+            this.XOffset.TextChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // YOffset
             // 
@@ -518,6 +550,7 @@
             this.YOffset.Size = new System.Drawing.Size(50, 20);
             this.YOffset.TabIndex = 0;
             this.YOffset.Text = "0";
+            this.YOffset.TextChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // OffsetYLabel
             // 
@@ -528,22 +561,15 @@
             this.OffsetYLabel.TabIndex = 1;
             this.OffsetYLabel.Text = "Y-Offset";
             // 
-            // NameLabel
+            // ButtonApply
             // 
-            this.NameLabel.AutoSize = true;
-            this.NameLabel.Location = new System.Drawing.Point(6, 47);
-            this.NameLabel.Name = "NameLabel";
-            this.NameLabel.Size = new System.Drawing.Size(35, 13);
-            this.NameLabel.TabIndex = 4;
-            this.NameLabel.Text = "Name";
-            // 
-            // NameBox
-            // 
-            this.NameBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.NameBox.Location = new System.Drawing.Point(60, 44);
-            this.NameBox.Name = "NameBox";
-            this.NameBox.Size = new System.Drawing.Size(193, 20);
-            this.NameBox.TabIndex = 5;
+            this.ButtonApply.Location = new System.Drawing.Point(278, 70);
+            this.ButtonApply.Name = "ButtonApply";
+            this.ButtonApply.Size = new System.Drawing.Size(75, 23);
+            this.ButtonApply.TabIndex = 11;
+            this.ButtonApply.Text = "Apply";
+            this.ButtonApply.UseVisualStyleBackColor = true;
+            this.ButtonApply.Click += new System.EventHandler(this.ButtonApply_Click);
             // 
             // LayerPropertiesForm
             // 
@@ -552,6 +578,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
             this.ClientSize = new System.Drawing.Size(365, 432);
+            this.Controls.Add(this.ButtonApply);
             this.Controls.Add(this.groupBoxPlus);
             this.Controls.Add(this.Copy4);
             this.Controls.Add(this.groupBox4);
@@ -630,5 +657,6 @@
         private System.Windows.Forms.Label OffsetYLabel;
         private System.Windows.Forms.TextBox NameBox;
         private System.Windows.Forms.Label NameLabel;
+        private System.Windows.Forms.Button ButtonApply;
     }
 }

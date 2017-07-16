@@ -93,7 +93,7 @@ namespace MLLE
             NameBox.Text = DataSource.Name;
         }
 
-        private void ApplyChanges()
+        private bool ApplyChanges()
         {
             newrectangle = null;
             lock (DataSource)
@@ -101,7 +101,7 @@ namespace MLLE
                 if (DataSource.Width != WidthBox.Value || DataSource.Height != HeightBox.Value)
                 {
                     newrectangle = LayerAlign.Show(CurrentLayer, (int)WidthBox.Value - (int)DataSource.Width, (int)HeightBox.Value - (int)DataSource.Height);
-                    if (newrectangle == null) return;
+                    if (newrectangle == null) return false;
                     SourceForm.Undoable = new Stack<MLLE.Mainframe.LayerAndSpecificTiles>(SourceForm.Undoable.Where(action => action.Layer != CurrentLayer));
                     SourceForm.Redoable = new Stack<MLLE.Mainframe.LayerAndSpecificTiles>(SourceForm.Redoable.Where(action => action.Layer != CurrentLayer));
                 }
@@ -195,6 +195,8 @@ namespace MLLE
                 DataSource.Name = NameBox.Text;
                 SourceForm.LevelHasBeenModified = true;
             }
+
+            return true;
         }
 
         private void TextureModeSelect_SelectedIndexChanged(object sender, EventArgs e)
@@ -220,6 +222,7 @@ namespace MLLE
                 if (properties.Length >= 6) { Param3.Visible = BlueLabel.Visible = true; BlueLabel.Text = properties[5].Trim(); }
                 ColorLabel.Visible = ColorBox.Visible = false;
             }
+            GenericInputChanged(sender, e);
         }
 
         private void panel1_Click(object sender, EventArgs e)
@@ -229,6 +232,7 @@ namespace MLLE
             Param1.Value = colorDialog1.Color.R;
             Param2.Value = colorDialog1.Color.G;
             Param3.Value = colorDialog1.Color.B;
+            GenericInputChanged(sender, e);
         }
 
         private void CancelButton_Click(object sender, EventArgs e) { Close(); }
@@ -244,6 +248,7 @@ namespace MLLE
                 SourceForm.EnableableBools[SourceForm.J2L.VersionType][EnableableTitles.BoolDevelopingForPlus]
             );
             Copy4.Enabled = (DataSource.id != J2LFile.SpriteLayerID && DataSource.id != 7);
+            ButtonApply.Enabled = false;
         }
 
         private void TextureMode_CheckedChanged(object sender, EventArgs e)
@@ -252,9 +257,12 @@ namespace MLLE
             WidthBox.Enabled = HeightBox.Enabled = WidthLabel.Enabled = HeightLabel.Enabled = !TextureMode.Checked;
             if (TextureMode.Checked) WidthBox.Value = HeightBox.Value = 8;
             else { WidthBox.Value = DataSource.Width; HeightBox.Value = DataSource.Height; }
-            LimitVisibleRegion.Enabled = !(TextureMode.Checked || TileHeight.Checked);
+            TileHeight_CheckedChanged(sender, e);
         }
-        private void TileHeight_CheckedChanged(object sender, EventArgs e) { LimitVisibleRegion.Enabled = !(TextureMode.Checked || TileHeight.Checked); }
+        private void TileHeight_CheckedChanged(object sender, EventArgs e) {
+            LimitVisibleRegion.Enabled = !(TextureMode.Checked || TileHeight.Checked);
+            GenericInputChanged(sender, e);
+        }
 
         private void OKButton_Click(object sender, EventArgs e)
         {
@@ -266,7 +274,21 @@ namespace MLLE
         {
             ReadLayer(SourceForm.J2L.SpriteLayer);
             DataSource = SourceForm.J2L.AllLayers[CurrentLayer];
+            NameBox.Text = DataSource.Name; //I guess?
         }
 
+        private void GenericInputChanged(object sender, EventArgs e)
+        {
+            ButtonApply.Enabled = true;
+        }
+
+        private void ButtonApply_Click(object sender, EventArgs e)
+        {
+            if (ApplyChanges())
+            {
+                LayerSelect.Items[LayerSelect.SelectedIndex] = SourceForm.J2L.AllLayers[LayerSelect.SelectedIndex].ToString();
+                ButtonApply.Enabled = false;
+            }
+        }
     }
 }
