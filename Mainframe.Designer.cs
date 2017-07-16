@@ -131,23 +131,7 @@
             this.LevelDisplay = new OpenTK.GLControl();
             this.LDContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.SelectLayer = new System.Windows.Forms.ToolStripMenuItem();
-            this.Gotolayer1 = new System.Windows.Forms.ToolStripMenuItem();
-            this.Gotolayer2 = new System.Windows.Forms.ToolStripMenuItem();
-            this.Gotolayer3 = new System.Windows.Forms.ToolStripMenuItem();
-            this.Gotolayer4 = new System.Windows.Forms.ToolStripMenuItem();
-            this.Gotolayer5 = new System.Windows.Forms.ToolStripMenuItem();
-            this.Gotolayer6 = new System.Windows.Forms.ToolStripMenuItem();
-            this.Gotolayer7 = new System.Windows.Forms.ToolStripMenuItem();
-            this.Gotolayer8 = new System.Windows.Forms.ToolStripMenuItem();
             this.LayerProperties = new System.Windows.Forms.ToolStripMenuItem();
-            this.Properties1 = new System.Windows.Forms.ToolStripMenuItem();
-            this.Properties2 = new System.Windows.Forms.ToolStripMenuItem();
-            this.Properties3 = new System.Windows.Forms.ToolStripMenuItem();
-            this.Properties4 = new System.Windows.Forms.ToolStripMenuItem();
-            this.Properties5 = new System.Windows.Forms.ToolStripMenuItem();
-            this.Properties6 = new System.Windows.Forms.ToolStripMenuItem();
-            this.Properties7 = new System.Windows.Forms.ToolStripMenuItem();
-            this.Properties8 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator11 = new System.Windows.Forms.ToolStripSeparator();
             this.DropdownPlayHere = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator21 = new System.Windows.Forms.ToolStripSeparator();
@@ -608,18 +592,18 @@
             // 
             this.readmeToolStripMenuItem.Enabled = false;
             this.readmeToolStripMenuItem.Name = "readmeToolStripMenuItem";
-            this.readmeToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.readmeToolStripMenuItem.Size = new System.Drawing.Size(139, 22);
             this.readmeToolStripMenuItem.Text = "Contents";
             // 
             // toolStripSeparator4
             // 
             this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(149, 6);
+            this.toolStripSeparator4.Size = new System.Drawing.Size(136, 6);
             // 
             // aboutMLLEToolStripMenuItem
             // 
             this.aboutMLLEToolStripMenuItem.Name = "aboutMLLEToolStripMenuItem";
-            this.aboutMLLEToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.aboutMLLEToolStripMenuItem.Size = new System.Drawing.Size(139, 22);
             this.aboutMLLEToolStripMenuItem.Text = "About MLLE";
             this.aboutMLLEToolStripMenuItem.Click += new System.EventHandler(this.aboutMLLEToolStripMenuItem_Click);
             // 
@@ -1234,158 +1218,20 @@
             this.LDContextMenu.Name = "LDContextMenu";
             this.LDContextMenu.ShowCheckMargin = true;
             this.LDContextMenu.ShowImageMargin = false;
-            this.LDContextMenu.Size = new System.Drawing.Size(162, 314);
+            this.LDContextMenu.Size = new System.Drawing.Size(162, 336);
             this.LDContextMenu.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip1_Opening);
             // 
             // SelectLayer
             // 
-            this.SelectLayer.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.Gotolayer1,
-            this.Gotolayer2,
-            this.Gotolayer3,
-            this.Gotolayer4,
-            this.Gotolayer5,
-            this.Gotolayer6,
-            this.Gotolayer7,
-            this.Gotolayer8});
             this.SelectLayer.Name = "SelectLayer";
             this.SelectLayer.Size = new System.Drawing.Size(161, 22);
             this.SelectLayer.Text = "Select layer";
             // 
-            // Gotolayer1
-            // 
-            this.Gotolayer1.Name = "Gotolayer1";
-            this.Gotolayer1.Size = new System.Drawing.Size(207, 22);
-            this.Gotolayer1.Text = "1: Foreground Layer #2";
-            this.Gotolayer1.Click += new System.EventHandler(this.Gotolayer1_Click);
-            // 
-            // Gotolayer2
-            // 
-            this.Gotolayer2.Name = "Gotolayer2";
-            this.Gotolayer2.Size = new System.Drawing.Size(207, 22);
-            this.Gotolayer2.Text = "2: Foreground layer #1";
-            this.Gotolayer2.Click += new System.EventHandler(this.Gotolayer2_Click);
-            // 
-            // Gotolayer3
-            // 
-            this.Gotolayer3.Name = "Gotolayer3";
-            this.Gotolayer3.Size = new System.Drawing.Size(207, 22);
-            this.Gotolayer3.Text = "3: Sprite foreground layer";
-            this.Gotolayer3.Click += new System.EventHandler(this.Gotolayer3_Click);
-            // 
-            // Gotolayer4
-            // 
-            this.Gotolayer4.Name = "Gotolayer4";
-            this.Gotolayer4.Size = new System.Drawing.Size(207, 22);
-            this.Gotolayer4.Text = "4: Sprite layer";
-            this.Gotolayer4.Click += new System.EventHandler(this.Gotolayer4_Click);
-            // 
-            // Gotolayer5
-            // 
-            this.Gotolayer5.Name = "Gotolayer5";
-            this.Gotolayer5.Size = new System.Drawing.Size(207, 22);
-            this.Gotolayer5.Text = "5: Background layer #1";
-            this.Gotolayer5.Click += new System.EventHandler(this.Gotolayer5_Click);
-            // 
-            // Gotolayer6
-            // 
-            this.Gotolayer6.Name = "Gotolayer6";
-            this.Gotolayer6.Size = new System.Drawing.Size(207, 22);
-            this.Gotolayer6.Text = "6: Background layer #2";
-            this.Gotolayer6.Click += new System.EventHandler(this.Gotolayer6_Click);
-            // 
-            // Gotolayer7
-            // 
-            this.Gotolayer7.Name = "Gotolayer7";
-            this.Gotolayer7.Size = new System.Drawing.Size(207, 22);
-            this.Gotolayer7.Text = "7: Background layer #3";
-            this.Gotolayer7.Click += new System.EventHandler(this.Gotolayer7_Click);
-            // 
-            // Gotolayer8
-            // 
-            this.Gotolayer8.Name = "Gotolayer8";
-            this.Gotolayer8.Size = new System.Drawing.Size(207, 22);
-            this.Gotolayer8.Text = "8: Background layer";
-            this.Gotolayer8.Click += new System.EventHandler(this.Gotolayer8_Click);
-            // 
             // LayerProperties
             // 
-            this.LayerProperties.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.Properties1,
-            this.Properties2,
-            this.Properties3,
-            this.Properties4,
-            this.Properties5,
-            this.Properties6,
-            this.Properties7,
-            this.Properties8});
             this.LayerProperties.Name = "LayerProperties";
             this.LayerProperties.Size = new System.Drawing.Size(161, 22);
             this.LayerProperties.Text = "Layer Properties";
-            // 
-            // Properties1
-            // 
-            this.Properties1.Name = "Properties1";
-            this.Properties1.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.D1)));
-            this.Properties1.Size = new System.Drawing.Size(247, 22);
-            this.Properties1.Text = "1: Foreground Layer #2";
-            this.Properties1.Click += new System.EventHandler(this.Properties1_Click);
-            // 
-            // Properties2
-            // 
-            this.Properties2.Name = "Properties2";
-            this.Properties2.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.D2)));
-            this.Properties2.Size = new System.Drawing.Size(247, 22);
-            this.Properties2.Text = "2: Foreground Layer #1";
-            this.Properties2.Click += new System.EventHandler(this.Properties2_Click);
-            // 
-            // Properties3
-            // 
-            this.Properties3.Name = "Properties3";
-            this.Properties3.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.D3)));
-            this.Properties3.Size = new System.Drawing.Size(247, 22);
-            this.Properties3.Text = "3: Sprite foreground layer";
-            this.Properties3.Click += new System.EventHandler(this.Properties3_Click);
-            // 
-            // Properties4
-            // 
-            this.Properties4.Name = "Properties4";
-            this.Properties4.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.D4)));
-            this.Properties4.Size = new System.Drawing.Size(247, 22);
-            this.Properties4.Text = "4: Sprite layer";
-            this.Properties4.Click += new System.EventHandler(this.Properties4_Click);
-            // 
-            // Properties5
-            // 
-            this.Properties5.Name = "Properties5";
-            this.Properties5.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.D5)));
-            this.Properties5.Size = new System.Drawing.Size(247, 22);
-            this.Properties5.Text = "5: Background layer #1";
-            this.Properties5.Click += new System.EventHandler(this.Properties5_Click);
-            // 
-            // Properties6
-            // 
-            this.Properties6.Name = "Properties6";
-            this.Properties6.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.D6)));
-            this.Properties6.Size = new System.Drawing.Size(247, 22);
-            this.Properties6.Text = "6: Background layer #2";
-            this.Properties6.Click += new System.EventHandler(this.Properties6_Click);
-            // 
-            // Properties7
-            // 
-            this.Properties7.Name = "Properties7";
-            this.Properties7.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.D7)));
-            this.Properties7.Size = new System.Drawing.Size(247, 22);
-            this.Properties7.Text = "7: Background layer #3";
-            this.Properties7.Click += new System.EventHandler(this.Properties7_Click);
-            // 
-            // Properties8
-            // 
-            this.Properties8.Name = "Properties8";
-            this.Properties8.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.D8)));
-            this.Properties8.Size = new System.Drawing.Size(247, 22);
-            this.Properties8.Text = "8: Background layer";
-            this.Properties8.Click += new System.EventHandler(this.Properties8_Click);
             // 
             // toolStripSeparator11
             // 
@@ -1940,23 +1786,7 @@
         private System.Windows.Forms.ToolStripStatusLabel MouseEventPrintout;
         private System.Windows.Forms.ContextMenuStrip LDContextMenu;
         private System.Windows.Forms.ToolStripMenuItem SelectLayer;
-        private System.Windows.Forms.ToolStripMenuItem Gotolayer1;
-        private System.Windows.Forms.ToolStripMenuItem Gotolayer2;
-        private System.Windows.Forms.ToolStripMenuItem Gotolayer3;
-        private System.Windows.Forms.ToolStripMenuItem Gotolayer4;
-        private System.Windows.Forms.ToolStripMenuItem Gotolayer5;
-        private System.Windows.Forms.ToolStripMenuItem Gotolayer6;
-        private System.Windows.Forms.ToolStripMenuItem Gotolayer7;
-        private System.Windows.Forms.ToolStripMenuItem Gotolayer8;
         private System.Windows.Forms.ToolStripMenuItem LayerProperties;
-        private System.Windows.Forms.ToolStripMenuItem Properties1;
-        private System.Windows.Forms.ToolStripMenuItem Properties2;
-        private System.Windows.Forms.ToolStripMenuItem Properties3;
-        private System.Windows.Forms.ToolStripMenuItem Properties4;
-        private System.Windows.Forms.ToolStripMenuItem Properties5;
-        private System.Windows.Forms.ToolStripMenuItem Properties6;
-        private System.Windows.Forms.ToolStripMenuItem Properties7;
-        private System.Windows.Forms.ToolStripMenuItem Properties8;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator11;
         private System.Windows.Forms.ToolStripMenuItem DropdownEvents;
         private System.Windows.Forms.ToolStripMenuItem DropdownMask;

@@ -490,14 +490,14 @@ namespace MLLE
         {
             CurrentLayerID = number;
             ResizeDisplay();
-            L1Button.Checked = Gotolayer1.Checked = number == 0;
-            L2Button.Checked = Gotolayer2.Checked = number == 1;
-            L3Button.Checked = Gotolayer3.Checked = number == 2;
-            L4Button.Checked = Gotolayer4.Checked = number == 3;
-            L5Button.Checked = Gotolayer5.Checked = number == 4;
-            L6Button.Checked = Gotolayer6.Checked = number == 5;
-            L7Button.Checked = Gotolayer7.Checked = number == 6;
-            L8Button.Checked = Gotolayer8.Checked = number == 7;
+            L1Button.Checked = number == 0;
+            L2Button.Checked = number == 1;
+            L3Button.Checked = number == 2;
+            L4Button.Checked = number == 3;
+            L5Button.Checked = number == 4;
+            L6Button.Checked = number == 5;
+            L7Button.Checked = number == 6;
+            L8Button.Checked = number == 7;
         }
         /*internal void ReadjustScrollbars()
         {
@@ -878,14 +878,6 @@ namespace MLLE
         private void L6Button_Click(object sender, EventArgs e) { ChangeLayer(5); }
         private void L7Button_Click(object sender, EventArgs e) { ChangeLayer(6); }
         private void L8Button_Click(object sender, EventArgs e) { ChangeLayer(7); }
-        private void Gotolayer1_Click(object sender, EventArgs e) { ChangeLayer(0); }
-        private void Gotolayer2_Click(object sender, EventArgs e) { ChangeLayer(1); }
-        private void Gotolayer3_Click(object sender, EventArgs e) { ChangeLayer(2); }
-        private void Gotolayer4_Click(object sender, EventArgs e) { ChangeLayer(3); }
-        private void Gotolayer5_Click(object sender, EventArgs e) { ChangeLayer(4); }
-        private void Gotolayer6_Click(object sender, EventArgs e) { ChangeLayer(5); }
-        private void Gotolayer7_Click(object sender, EventArgs e) { ChangeLayer(6); }
-        private void Gotolayer8_Click(object sender, EventArgs e) { ChangeLayer(7); }
 
         private void SelectEvent_Click(object sender, EventArgs e) { SelectEventAtMouse(); }
         private void GrabEvent_Click(object sender, EventArgs e) { GrabEventAtMouse(); }
@@ -3073,7 +3065,35 @@ namespace MLLE
 
         #endregion editing functions
 
-        private void contextMenuStrip1_Opening(object sender, CancelEventArgs e) { }
+        private void contextMenuStrip1_Opening(object sender, CancelEventArgs e) {
+            SelectLayer.DropDownItems.Clear();
+            LayerProperties.DropDownItems.Clear();
+            for (int i = 0; i < J2L.AllLayers.Count; ++i)
+            {
+                string layerName = J2L.AllLayers[i].ToString();
+
+                var toolStripItem = new ToolStripMenuItem(layerName);
+                toolStripItem.Tag = (byte)i;
+                toolStripItem.Checked = (i == CurrentLayerID);
+                toolStripItem.Click += SelectLayerDropdownItemLayerClick;
+                SelectLayer.DropDownItems.Add(toolStripItem);
+
+                toolStripItem = new ToolStripMenuItem(layerName);
+                toolStripItem.Tag = (byte)i;
+                toolStripItem.Click += LayerPropertiesDropdownItemLayerClick;
+                LayerProperties.DropDownItems.Add(toolStripItem);
+            }
+        }
+
+        private void SelectLayerDropdownItemLayerClick(object sender, EventArgs e)
+        {
+            ChangeLayer((byte)(sender as ToolStripItem).Tag);
+        }
+        private void LayerPropertiesDropdownItemLayerClick(object sender, EventArgs e)
+        {
+            ShowLayerProperties((byte)(sender as ToolStripItem).Tag);
+        }
+
         private void Mainframe_Resize(object sender, EventArgs e) { }
         private void changeVersionToolStripMenuItem_MouseHover(object sender, EventArgs e)
         {
