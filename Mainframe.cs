@@ -486,19 +486,27 @@ namespace MLLE
             animaniacsToolStripMenuItem.Checked = J2L.VersionType == Version.AGA;
             jazz2V100ghToolStripMenuItem.Checked = J2L.VersionType == Version.GorH;
         }
-        internal void ChangeLayer(byte number)
+
+        int GetLayerOrderFromDefaultLayerID(int number)
         {
-            CurrentLayerID = number;
-            ResizeDisplay();
-            L1Button.Checked = number == 0;
-            L2Button.Checked = number == 1;
-            L3Button.Checked = number == 2;
-            L4Button.Checked = number == 3;
-            L5Button.Checked = number == 4;
-            L6Button.Checked = number == 5;
-            L7Button.Checked = number == 6;
-            L8Button.Checked = number == 7;
+            for (int i = 0; i < J2L.AllLayers.Count; ++i)
+                if (J2L.AllLayers[i].id == number)
+                {
+                    return i;
+                }
+            return 0;
         }
+        internal void ChangeLayerByDefaultLayerID(int number)
+        {
+            ChangeLayerByOrder(GetLayerOrderFromDefaultLayerID(number));
+        }
+        internal void ChangeLayerByOrder(int number)
+        {
+            CurrentLayerID = (byte)number;
+            CheckCurrentLayerButton();
+            ResizeDisplay();
+        }
+        
         /*internal void ReadjustScrollbars()
         {
             MakeProposedScrollbarValueWork(TilesetScrollbar, TilesetScrollbar.Value);
@@ -518,23 +526,23 @@ namespace MLLE
                 return false;
             switch (keyData)
             {
-                case Keys.D1: { if (LastFocusedZone != FocusedZone.AnimationEditing) { ChangeLayer(0); return true; } else return false; }
-                case Keys.D2: { if (LastFocusedZone != FocusedZone.AnimationEditing) { ChangeLayer(1); return true; } else return false; }
-                case Keys.D3: { if (LastFocusedZone != FocusedZone.AnimationEditing) { ChangeLayer(2); return true; } else return false; }
-                case Keys.D4: { if (LastFocusedZone != FocusedZone.AnimationEditing) { ChangeLayer(3); return true; } else return false; }
-                case Keys.D5: { if (LastFocusedZone != FocusedZone.AnimationEditing) { ChangeLayer(4); return true; } else return false; }
-                case Keys.D6: { if (LastFocusedZone != FocusedZone.AnimationEditing) { ChangeLayer(5); return true; } else return false; }
-                case Keys.D7: { if (LastFocusedZone != FocusedZone.AnimationEditing) { ChangeLayer(6); return true; } else return false; }
-                case Keys.D8: { if (LastFocusedZone != FocusedZone.AnimationEditing) { ChangeLayer(7); return true; } else return false; }
+                case Keys.D1: { if (LastFocusedZone != FocusedZone.AnimationEditing) { ChangeLayerByDefaultLayerID(0); return true; } else return false; }
+                case Keys.D2: { if (LastFocusedZone != FocusedZone.AnimationEditing) { ChangeLayerByDefaultLayerID(1); return true; } else return false; }
+                case Keys.D3: { if (LastFocusedZone != FocusedZone.AnimationEditing) { ChangeLayerByDefaultLayerID(2); return true; } else return false; }
+                case Keys.D4: { if (LastFocusedZone != FocusedZone.AnimationEditing) { ChangeLayerByDefaultLayerID(3); return true; } else return false; }
+                case Keys.D5: { if (LastFocusedZone != FocusedZone.AnimationEditing) { ChangeLayerByDefaultLayerID(4); return true; } else return false; }
+                case Keys.D6: { if (LastFocusedZone != FocusedZone.AnimationEditing) { ChangeLayerByDefaultLayerID(5); return true; } else return false; }
+                case Keys.D7: { if (LastFocusedZone != FocusedZone.AnimationEditing) { ChangeLayerByDefaultLayerID(6); return true; } else return false; }
+                case Keys.D8: { if (LastFocusedZone != FocusedZone.AnimationEditing) { ChangeLayerByDefaultLayerID(7); return true; } else return false; }
 
-                case (Keys.D1 | Keys.Control): { ShowLayerProperties(0); return true; }
-                case (Keys.D2 | Keys.Control): { ShowLayerProperties(1); return true; }
-                case (Keys.D3 | Keys.Control): { ShowLayerProperties(2); return true; }
-                case (Keys.D4 | Keys.Control): { ShowLayerProperties(3); return true; }
-                case (Keys.D5 | Keys.Control): { ShowLayerProperties(4); return true; }
-                case (Keys.D6 | Keys.Control): { ShowLayerProperties(5); return true; }
-                case (Keys.D7 | Keys.Control): { ShowLayerProperties(6); return true; }
-                case (Keys.D8 | Keys.Control): { ShowLayerProperties(7); return true; }
+                case (Keys.D1 | Keys.Control): { ShowLayerPropertiesByDefaultLayerID(0); return true; }
+                case (Keys.D2 | Keys.Control): { ShowLayerPropertiesByDefaultLayerID(1); return true; }
+                case (Keys.D3 | Keys.Control): { ShowLayerPropertiesByDefaultLayerID(2); return true; }
+                case (Keys.D4 | Keys.Control): { ShowLayerPropertiesByDefaultLayerID(3); return true; }
+                case (Keys.D5 | Keys.Control): { ShowLayerPropertiesByDefaultLayerID(4); return true; }
+                case (Keys.D6 | Keys.Control): { ShowLayerPropertiesByDefaultLayerID(5); return true; }
+                case (Keys.D7 | Keys.Control): { ShowLayerPropertiesByDefaultLayerID(6); return true; }
+                case (Keys.D8 | Keys.Control): { ShowLayerPropertiesByDefaultLayerID(7); return true; }
 
                 case (Keys.Shift | Keys.T): { return setTileType(1); }
                 case (Keys.D0 | Keys.Shift): { return setTileType(0); }
@@ -784,9 +792,14 @@ namespace MLLE
         private void layersToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _suspendEvent.Reset();
+            Layer currentLayer = CurrentLayer;
             if (new LayerOrderForm().ShowForm(J2L.AllLayers))
             {
-
+                if (!J2L.AllLayers.Contains(currentLayer)) //got deleted
+                    currentLayer = J2L.SpriteLayer;
+                CurrentLayerID = (byte)J2L.AllLayers.IndexOf(currentLayer);
+                SetupLayerButtons();
+                ResizeDisplay();
             }
             _suspendEvent.Set();
         }
@@ -861,7 +874,7 @@ namespace MLLE
             LevelDisplay.Width = (int)J2L.SpriteLayer.Width * ZoomTileSize + LDScrollH.Location.X;
             LevelDisplay.Height = (int)J2L.SpriteLayer.Height * ZoomTileSize + LDScrollH.Height;
             SafeToDisplay = false;
-            ChangeLayer(3);
+            ChangeLayerByDefaultLayerID(J2LFile.SpriteLayerID);
             SafeToDisplay = true;
             LevelDisplay.Refresh();
             LevelDisplay.Refresh();
@@ -880,14 +893,14 @@ namespace MLLE
             _suspendEvent.Set();
         } // this doesn't work right now
 
-        private void L1Button_Click(object sender, EventArgs e) { ChangeLayer(0); }
-        private void L2Button_Click(object sender, EventArgs e) { ChangeLayer(1); }
-        private void L3Button_Click(object sender, EventArgs e) { ChangeLayer(2); }
-        private void L4Button_Click(object sender, EventArgs e) { ChangeLayer(3); }
-        private void L5Button_Click(object sender, EventArgs e) { ChangeLayer(4); }
-        private void L6Button_Click(object sender, EventArgs e) { ChangeLayer(5); }
-        private void L7Button_Click(object sender, EventArgs e) { ChangeLayer(6); }
-        private void L8Button_Click(object sender, EventArgs e) { ChangeLayer(7); }
+        private void L1Button_Click(object sender, EventArgs e) { ChangeLayerByDefaultLayerID(0); }
+        private void L2Button_Click(object sender, EventArgs e) { ChangeLayerByDefaultLayerID(1); }
+        private void L3Button_Click(object sender, EventArgs e) { ChangeLayerByDefaultLayerID(2); }
+        private void L4Button_Click(object sender, EventArgs e) { ChangeLayerByDefaultLayerID(3); }
+        private void L5Button_Click(object sender, EventArgs e) { ChangeLayerByDefaultLayerID(4); }
+        private void L6Button_Click(object sender, EventArgs e) { ChangeLayerByDefaultLayerID(5); }
+        private void L7Button_Click(object sender, EventArgs e) { ChangeLayerByDefaultLayerID(6); }
+        private void L8Button_Click(object sender, EventArgs e) { ChangeLayerByDefaultLayerID(7); }
 
         private void SelectEvent_Click(object sender, EventArgs e) { SelectEventAtMouse(); }
         private void GrabEvent_Click(object sender, EventArgs e) { GrabEventAtMouse(); }
@@ -1022,23 +1035,21 @@ namespace MLLE
             _suspendEvent.Set();
         }
 
-        private void ShowLayerProperties(byte layer)
+        private void ShowLayerPropertiesByDefaultLayerID(int layer)
+        {
+            ShowLayerPropertiesByOrder(GetLayerOrderFromDefaultLayerID(layer));
+        }
+        private void ShowLayerPropertiesByOrder(int layer)
         {
             _suspendEvent.Reset();
-            LayerPropertiesForm LP = new LayerPropertiesForm(this, layer);
+            LayerPropertiesForm LP = new LayerPropertiesForm(this, (byte)layer);
             LP.ShowDialog();
+            for (int i = 0; i < LayerButtons.Length; ++i)
+                LayerButtons[i].Tag = "Switch to " + J2L.AllLayers[i].Name;
             ResizeDisplay();
             _suspendEvent.Set();
         }
-        private void LayerPropertiesButton_Click(object sender, EventArgs e) { ShowLayerProperties(CurrentLayerID); }
-        private void Properties1_Click(object sender, EventArgs e) { ShowLayerProperties(0); }
-        private void Properties2_Click(object sender, EventArgs e) { ShowLayerProperties(1); }
-        private void Properties3_Click(object sender, EventArgs e) { ShowLayerProperties(2); }
-        private void Properties4_Click(object sender, EventArgs e) { ShowLayerProperties(3); }
-        private void Properties5_Click(object sender, EventArgs e) { ShowLayerProperties(4); }
-        private void Properties6_Click(object sender, EventArgs e) { ShowLayerProperties(5); }
-        private void Properties7_Click(object sender, EventArgs e) { ShowLayerProperties(6); }
-        private void Properties8_Click(object sender, EventArgs e) { ShowLayerProperties(7); }
+        private void LayerPropertiesButton_Click(object sender, EventArgs e) { ShowLayerPropertiesByOrder(CurrentLayerID); }
 
         private void levelPropertiesToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -1050,7 +1061,7 @@ namespace MLLE
         }
         private void DropdownProperties_Click(object sender, EventArgs e)
         {
-            ShowLayerProperties(CurrentLayerID);
+            ShowLayerPropertiesByOrder(CurrentLayerID);
         }
 
         private void EventsButton_CheckedChanged(object sender, EventArgs e) { EventDisplayMode = DropdownEvents.Checked = EventsButton.Checked; }
@@ -1278,7 +1289,8 @@ namespace MLLE
                 Redoable.Clear();
                 SafeToDisplay = true;
                 LevelHasBeenModified = encoding != null;
-                ChangeLayer(J2L.JCSFocusedLayer);
+                SetupLayerButtons();
+                ChangeLayerByDefaultLayerID(J2L.JCSFocusedLayer);
                 MakeProposedScrollbarValueWork(LDScrollH, J2L.JCSHorizontalFocus);
                 MakeProposedScrollbarValueWork(LDScrollV, J2L.JCSVerticalFocus);
                 IdentifyTileset();
@@ -1303,7 +1315,8 @@ namespace MLLE
             LevelHasBeenModified = false;
             Undoable.Clear();
             Redoable.Clear();
-            ChangeLayer(J2L.JCSFocusedLayer);
+            SetupLayerButtons();
+            ChangeLayerByDefaultLayerID(J2L.JCSFocusedLayer);
             if (playMusicToolStripMenuItem.Checked) PlayMusic();
             GameTick = 0; GameTime = 0; sw.Restart();
             ResizeDisplay();
@@ -3075,33 +3088,54 @@ namespace MLLE
 
         #endregion editing functions
 
+        ToolStripButton[] LayerButtons = new ToolStripButton[0];
+        private void SetupLayerButtons()
+        {
+            foreach (var button in LayerButtons)
+                DisplayToolstrip.Items.Remove(button);
+            LayerButtons = new ToolStripButton[J2L.AllLayers.Count];
+            int index = DisplayToolstrip.Items.IndexOf(toolStripSeparator8);
+            for (int i = 0; i < LayerButtons.Length; ++i)
+            {
+                int layerIndex = i;
+                var layer = J2L.AllLayers[layerIndex];
+                var button = LayerButtons[layerIndex] = new ToolStripButton((layer.id >= 0) ? (layer.id + 1).ToString() : "L");
+                button.Size = new Size(23, 22);
+                button.Tag = "Switch to " + layer.Name;
+                button.Click += (s, e) => {
+                    ChangeLayerByOrder(layerIndex);
+                };
+                button.MouseEnter += DescribableControl_MouseEnter;
+                DisplayToolstrip.Items.Insert(index, button);
+            }
+            CheckCurrentLayerButton();
+        }
+        private void CheckCurrentLayerButton() {
+            for (int i = 0; i < LayerButtons.Length; ++i)
+                LayerButtons[i].Checked = (CurrentLayerID == i);
+        }
+
         private void contextMenuStrip1_Opening(object sender, CancelEventArgs e) {
             SelectLayer.DropDownItems.Clear();
             LayerProperties.DropDownItems.Clear();
             for (int i = 0; i < J2L.AllLayers.Count; ++i)
             {
-                string layerName = J2L.AllLayers[i].ToString();
+                int layerIndex = i;
+                string layerName = J2L.AllLayers[layerIndex].ToString();
 
                 var toolStripItem = new ToolStripMenuItem(layerName);
-                toolStripItem.Tag = (byte)i;
-                toolStripItem.Checked = (i == CurrentLayerID);
-                toolStripItem.Click += SelectLayerDropdownItemLayerClick;
+                toolStripItem.Checked = (layerIndex == CurrentLayerID);
+                toolStripItem.Click += (s, ee) => {
+                    ChangeLayerByOrder(layerIndex);
+                };
                 SelectLayer.DropDownItems.Add(toolStripItem);
 
                 toolStripItem = new ToolStripMenuItem(layerName);
-                toolStripItem.Tag = (byte)i;
-                toolStripItem.Click += LayerPropertiesDropdownItemLayerClick;
+                toolStripItem.Click += (s, ee) => {
+                    ShowLayerPropertiesByOrder(layerIndex);
+                };
                 LayerProperties.DropDownItems.Add(toolStripItem);
             }
-        }
-
-        private void SelectLayerDropdownItemLayerClick(object sender, EventArgs e)
-        {
-            ChangeLayer((byte)(sender as ToolStripItem).Tag);
-        }
-        private void LayerPropertiesDropdownItemLayerClick(object sender, EventArgs e)
-        {
-            ShowLayerProperties((byte)(sender as ToolStripItem).Tag);
         }
 
         private void Mainframe_Resize(object sender, EventArgs e) { }

@@ -68,6 +68,7 @@
             this.jJ2PropertiesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.plusLevelPropertiesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.paletteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.layersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tilesetsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addNewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.recolorEventsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -107,14 +108,6 @@
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             this.ClearButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
-            this.L8Button = new System.Windows.Forms.ToolStripButton();
-            this.L7Button = new System.Windows.Forms.ToolStripButton();
-            this.L6Button = new System.Windows.Forms.ToolStripButton();
-            this.L5Button = new System.Windows.Forms.ToolStripButton();
-            this.L4Button = new System.Windows.Forms.ToolStripButton();
-            this.L3Button = new System.Windows.Forms.ToolStripButton();
-            this.L2Button = new System.Windows.Forms.ToolStripButton();
-            this.L1Button = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
             this.ReplaceEventsButton = new System.Windows.Forms.ToolStripButton();
             this.LayerPropertiesButton = new System.Windows.Forms.ToolStripButton();
@@ -182,7 +175,6 @@
             this.AnimScrollbar = new System.Windows.Forms.HScrollBar();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
-            this.layersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MainMenu.SuspendLayout();
             this.DrawingTools.SuspendLayout();
             this.StatusBar.SuspendLayout();
@@ -512,6 +504,13 @@
             this.paletteToolStripMenuItem.Text = "Palette...";
             this.paletteToolStripMenuItem.Click += new System.EventHandler(this.paletteToolStripMenuItem_Click);
             // 
+            // layersToolStripMenuItem
+            // 
+            this.layersToolStripMenuItem.Name = "layersToolStripMenuItem";
+            this.layersToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.layersToolStripMenuItem.Text = "Layers...";
+            this.layersToolStripMenuItem.Click += new System.EventHandler(this.layersToolStripMenuItem_Click);
+            // 
             // tilesetsToolStripMenuItem
             // 
             this.tilesetsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -524,7 +523,7 @@
             // addNewToolStripMenuItem
             // 
             this.addNewToolStripMenuItem.Name = "addNewToolStripMenuItem";
-            this.addNewToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.addNewToolStripMenuItem.Size = new System.Drawing.Size(132, 22);
             this.addNewToolStripMenuItem.Text = "Add New...";
             this.addNewToolStripMenuItem.Click += new System.EventHandler(this.addNewToolStripMenuItem_Click);
             // 
@@ -814,14 +813,6 @@
             this.toolStripSeparator6,
             this.ClearButton,
             this.toolStripSeparator7,
-            this.L8Button,
-            this.L7Button,
-            this.L6Button,
-            this.L5Button,
-            this.L4Button,
-            this.L3Button,
-            this.L2Button,
-            this.L1Button,
             this.toolStripSeparator8,
             this.ReplaceEventsButton,
             this.LayerPropertiesButton,
@@ -921,110 +912,6 @@
             // 
             this.toolStripSeparator7.Name = "toolStripSeparator7";
             this.toolStripSeparator7.Size = new System.Drawing.Size(6, 25);
-            // 
-            // L8Button
-            // 
-            this.L8Button.AutoToolTip = false;
-            this.L8Button.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.L8Button.Image = ((System.Drawing.Image)(resources.GetObject("L8Button.Image")));
-            this.L8Button.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.L8Button.Name = "L8Button";
-            this.L8Button.Size = new System.Drawing.Size(23, 22);
-            this.L8Button.Tag = "Switch to Background layer";
-            this.L8Button.Text = "8";
-            this.L8Button.Click += new System.EventHandler(this.L8Button_Click);
-            this.L8Button.MouseEnter += new System.EventHandler(this.DescribableControl_MouseEnter);
-            // 
-            // L7Button
-            // 
-            this.L7Button.AutoToolTip = false;
-            this.L7Button.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.L7Button.Image = ((System.Drawing.Image)(resources.GetObject("L7Button.Image")));
-            this.L7Button.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.L7Button.Name = "L7Button";
-            this.L7Button.Size = new System.Drawing.Size(23, 22);
-            this.L7Button.Tag = "Switch to Background layer #3";
-            this.L7Button.Text = "7";
-            this.L7Button.Click += new System.EventHandler(this.L7Button_Click);
-            this.L7Button.MouseEnter += new System.EventHandler(this.DescribableControl_MouseEnter);
-            // 
-            // L6Button
-            // 
-            this.L6Button.AutoToolTip = false;
-            this.L6Button.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.L6Button.Image = ((System.Drawing.Image)(resources.GetObject("L6Button.Image")));
-            this.L6Button.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.L6Button.Name = "L6Button";
-            this.L6Button.Size = new System.Drawing.Size(23, 22);
-            this.L6Button.Tag = "Switch to Background layer #2";
-            this.L6Button.Text = "6";
-            this.L6Button.Click += new System.EventHandler(this.L6Button_Click);
-            this.L6Button.MouseEnter += new System.EventHandler(this.DescribableControl_MouseEnter);
-            // 
-            // L5Button
-            // 
-            this.L5Button.AutoToolTip = false;
-            this.L5Button.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.L5Button.Image = ((System.Drawing.Image)(resources.GetObject("L5Button.Image")));
-            this.L5Button.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.L5Button.Name = "L5Button";
-            this.L5Button.Size = new System.Drawing.Size(23, 22);
-            this.L5Button.Tag = "Switch to Background layer #1";
-            this.L5Button.Text = "5";
-            this.L5Button.Click += new System.EventHandler(this.L5Button_Click);
-            this.L5Button.MouseEnter += new System.EventHandler(this.DescribableControl_MouseEnter);
-            // 
-            // L4Button
-            // 
-            this.L4Button.AutoToolTip = false;
-            this.L4Button.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.L4Button.Image = ((System.Drawing.Image)(resources.GetObject("L4Button.Image")));
-            this.L4Button.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.L4Button.Name = "L4Button";
-            this.L4Button.Size = new System.Drawing.Size(23, 22);
-            this.L4Button.Tag = "Switch to Sprite layer";
-            this.L4Button.Text = "4";
-            this.L4Button.Click += new System.EventHandler(this.L4Button_Click);
-            this.L4Button.MouseEnter += new System.EventHandler(this.DescribableControl_MouseEnter);
-            // 
-            // L3Button
-            // 
-            this.L3Button.AutoToolTip = false;
-            this.L3Button.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.L3Button.Image = ((System.Drawing.Image)(resources.GetObject("L3Button.Image")));
-            this.L3Button.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.L3Button.Name = "L3Button";
-            this.L3Button.Size = new System.Drawing.Size(23, 22);
-            this.L3Button.Tag = "Switch to Sprite foreground layer";
-            this.L3Button.Text = "3";
-            this.L3Button.Click += new System.EventHandler(this.L3Button_Click);
-            this.L3Button.MouseEnter += new System.EventHandler(this.DescribableControl_MouseEnter);
-            // 
-            // L2Button
-            // 
-            this.L2Button.AutoToolTip = false;
-            this.L2Button.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.L2Button.Image = ((System.Drawing.Image)(resources.GetObject("L2Button.Image")));
-            this.L2Button.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.L2Button.Name = "L2Button";
-            this.L2Button.Size = new System.Drawing.Size(23, 22);
-            this.L2Button.Tag = "Switch to Foreground layer #1";
-            this.L2Button.Text = "2";
-            this.L2Button.Click += new System.EventHandler(this.L2Button_Click);
-            this.L2Button.MouseEnter += new System.EventHandler(this.DescribableControl_MouseEnter);
-            // 
-            // L1Button
-            // 
-            this.L1Button.AutoToolTip = false;
-            this.L1Button.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.L1Button.Image = ((System.Drawing.Image)(resources.GetObject("L1Button.Image")));
-            this.L1Button.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.L1Button.Name = "L1Button";
-            this.L1Button.Size = new System.Drawing.Size(23, 22);
-            this.L1Button.Tag = "Switch to Foreground layer #2";
-            this.L1Button.Text = "1";
-            this.L1Button.Click += new System.EventHandler(this.L1Button_Click);
-            this.L1Button.MouseEnter += new System.EventHandler(this.DescribableControl_MouseEnter);
             // 
             // toolStripSeparator8
             // 
@@ -1655,13 +1542,6 @@
             // 
             this.folderBrowserDialog1.ShowNewFolderButton = false;
             // 
-            // layersToolStripMenuItem
-            // 
-            this.layersToolStripMenuItem.Name = "layersToolStripMenuItem";
-            this.layersToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
-            this.layersToolStripMenuItem.Text = "Layers...";
-            this.layersToolStripMenuItem.Click += new System.EventHandler(this.layersToolStripMenuItem_Click);
-            // 
             // Mainframe
             // 
             this.AllowDrop = true;
@@ -1756,14 +1636,6 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
         private System.Windows.Forms.ToolStripButton ClearButton;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
-        private System.Windows.Forms.ToolStripButton L8Button;
-        private System.Windows.Forms.ToolStripButton L7Button;
-        private System.Windows.Forms.ToolStripButton L6Button;
-        private System.Windows.Forms.ToolStripButton L5Button;
-        private System.Windows.Forms.ToolStripButton L4Button;
-        private System.Windows.Forms.ToolStripButton L3Button;
-        private System.Windows.Forms.ToolStripButton L2Button;
-        private System.Windows.Forms.ToolStripButton L1Button;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator8;
         private System.Windows.Forms.ToolStripButton ReplaceEventsButton;
         private System.Windows.Forms.ToolStripButton LayerPropertiesButton;

@@ -534,7 +534,7 @@ class Layer
     static readonly uint[] DefaultWidths = {864, 576, 256, 256, 171, 114, 76, 8};
     static readonly uint[] DefaultHeights = { 216, 144, 64, 64, 43, 29, 19, 8 };
     static readonly float[] DefaultSpeeds = { 3.375F, 2.25F, 1, 1, 0.666672F, 0.444458F, 0.29631F, 0 };
-    static readonly string[] DefaultNames = new string[8] { "Foreground Layer #2", "Foreground Layer #1", "Sprite Foreground Layer", "Sprite Layer", "Background Layer #1", "Background Layer #2", "Background Layer #3", "Background Layer" };
+    public static readonly string[] DefaultNames = new string[8] { "Foreground Layer #2", "Foreground Layer #1", "Sprite Foreground Layer", "Sprite Layer", "Background Layer #1", "Background Layer #2", "Background Layer #3", "Background Layer" };
     public Layer(int i) //using default values (i.e. called when creating a new level from scratch)
     {
         id = (byte)i;
