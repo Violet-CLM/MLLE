@@ -9,8 +9,8 @@ namespace MLLE
     {
         const uint CurrentMLLEData5Version = 0x101;
         const string MLLEData5MagicString = "MLLE";
-        const string CurrentMLLEData5VersionStringForComparison = "0x101";
-        const string CurrentMLLEData5VersionString = "1.1";
+        const string CurrentMLLEData5VersionStringForComparison = "0x102";
+        const string CurrentMLLEData5VersionString = "1.2";
         const string AngelscriptLibraryFilename = "MLLE-Include-" + CurrentMLLEData5VersionString + ".asc";
 
         const string AngelscriptLibraryCallStockLine = "const bool MLLESetupSuccessful = MLLE::Setup();\r\n";
@@ -25,10 +25,13 @@ namespace MLLE
 #pragma require '" + AngelscriptLibraryFilename + @"'
 namespace MLLE {
     jjPAL@ Palette;
+    dictionary@ _layers;
 
     bool Setup() {
         jjPAL palette;
         @Palette = @palette;
+        dictionary layers;
+        @_layers = @layers;
 
         jjSTREAM crcCheck('" + AngelscriptLibraryFilename + @"');
         string crcLine;
@@ -142,11 +145,29 @@ namespace MLLE {
         if (pbyte != 0)
             jjLayersFromLevel(jjLevelFileName, array<uint> = {1,2,3,4,5,6,7,8});
 
+        array<jjLAYER@> newLayerOrder;
+        data5.pop(puint);
+        for (uint i = 0; i < puint; ++i) {
+            data5.pop(pbyte);
+            jjLAYER@ layer;
+            @layer = jjLayers[pbyte + 1];
+            string layerName = _read7BitEncodedStringFromStream(data5);
+            _layers.set(layerName, @layer);
+            newLayerOrder.insertLast(layer);
+        }
+        jjLayerOrderSet(newLayerOrder);
+
         if (!data5.isEmpty()) {
             jjDebug('MLLE::Setup: Warning, Data5 longer than expected');
         }
         
         return true;
+    }
+
+    jjLAYER@ GetLayer(const string &in name) {
+        jjLAYER@ handle = null;
+        _layers.get(name, @handle);
+        return handle;
     }
 
     jjPALCOLOR _colorFromArgb(uint Argb) {

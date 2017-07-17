@@ -392,7 +392,7 @@ namespace MLLE
                 return false;
             }
         }
-        internal void CreateData5Section(ref byte[] Data5, List<J2TFile> Tilesets)
+        internal void CreateData5Section(ref byte[] Data5, List<J2TFile> Tilesets, List<Layer> Layers)
         {
             var data5header = new MemoryStream();
             using (MemoryStream data5body = new MemoryStream())
@@ -435,10 +435,10 @@ namespace MLLE
                 }
 
                 data5bodywriter.Write((byte)(Tilesets.Count - 1));
-                for (int tilesetID = 1; tilesetID < Tilesets.Count; ++tilesetID) //Tilesets[0] is already mentioned in Data5, after all
+                for (int tilesetID = 1; tilesetID < Tilesets.Count; ++tilesetID) //Tilesets[0] is already mentioned in Data1, after all
                 {
                     var tileset = Tilesets[tilesetID];
-                    data5bodywriter.Write(Tilesets[tilesetID].FilenameOnly);
+                    data5bodywriter.Write(tileset.FilenameOnly);
                     data5bodywriter.Write((ushort)tileset.FirstTile);
                     data5bodywriter.Write((ushort)tileset.TileCount);
                     byte[] remappings = tileset.ColorRemapping;
@@ -446,7 +446,14 @@ namespace MLLE
                     if (remappings != null)
                         for (int i = 0; i < remappings.Length; ++i)
                             data5bodywriter.Write(remappings[i]);
+                }
 
+                data5bodywriter.Write((uint)Layers.Count);
+                foreach (Layer layer in Layers)
+                {
+                    data5bodywriter.Write((byte)layer.id);
+                    data5bodywriter.Write(layer.Name);
+                    //other layer stuff goes here
                 }
 
                 var data5bodycompressed = ZlibStream.CompressBuffer(data5body.ToArray());
@@ -456,7 +463,7 @@ namespace MLLE
             }
             Data5 = data5header.ToArray();
         }
-        internal bool LevelIsReadable(byte[] Data5, List<J2TFile> Tilesets, string Folder)
+        internal bool LevelIsReadable(byte[] Data5, List<J2TFile> Tilesets, List<Layer> Layers, string Folder)
         {
             if (Data5 == null || Data5.Length < 20) //level stops at the end of data4, as is good and proper
             {
@@ -529,6 +536,18 @@ namespace MLLE
                             MessageBox.Show("Additional tileset \"" + tilesetFilepath + "\" not found; MLLE will stop trying to read this Data5 section.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
                             return false;
                         }
+                    }
+
+                    var defaultLayers = Layers.ToArray();
+                    Layers.Clear();
+                    var layerCount = data5bodyreader.ReadUInt32();
+                    for (uint i = 0; i < layerCount; ++i)
+                    {
+                        var layerID = data5bodyreader.ReadByte();
+                        string layerName = data5bodyreader.ReadString();
+                        Layer layer = defaultLayers[layerID];
+                        layer.Name = layerName;
+                        Layers.Add(layer);
                     }
                 }
             }

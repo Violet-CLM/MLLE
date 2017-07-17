@@ -1262,7 +1262,7 @@ namespace MLLE
             }
             else if (openResults == OpeningResults.Success || openResults == OpeningResults.SuccessfulButAmbiguous)
             {
-                if (!J2L.PlusPropertyList.LevelIsReadable(Data5, J2L.Tilesets, Path.GetDirectoryName(filename)))
+                if (!J2L.PlusPropertyList.LevelIsReadable(Data5, J2L.Tilesets, J2L.AllLayers, Path.GetDirectoryName(filename)))
                 {
                     MessageBox.Show("This level was not saved in a format that this version of MLLE understands. Please try downloading the latest MLLE release and trying again.", "This level cannot be loaded", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     SafeToDisplay = true;
@@ -1443,7 +1443,7 @@ namespace MLLE
 
             byte[] Data5 = null;
             if (EnableableBools[J2L.VersionType][EnableableTitles.BoolDevelopingForPlus] && J2L.PlusOnly)
-                J2L.PlusPropertyList.CreateData5Section(ref Data5, J2L.Tilesets);
+                J2L.PlusPropertyList.CreateData5Section(ref Data5, J2L.Tilesets, J2L.AllLayers);
 
             SavingResults result = J2L.Save(filename, eraseUndefinedTiles, allowDifferentTilesetVersion, storeGivenFilename, Data5);
             if (result == SavingResults.Success)
