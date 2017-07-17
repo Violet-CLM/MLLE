@@ -71,6 +71,7 @@
             this.listBox1.Size = new System.Drawing.Size(204, 199);
             this.listBox1.TabIndex = 13;
             this.listBox1.SelectedIndexChanged += new System.EventHandler(this.listBox1_SelectedIndexChanged);
+            this.listBox1.DoubleClick += new System.EventHandler(this.ButtonEdit_Click);
             // 
             // ButtonDelete
             // 

@@ -11,20 +11,22 @@ namespace MLLE
 {
     public partial class LayerOrderForm : Form
     {
+        Mainframe SourceForm;
         List<Layer> SourceList;
-        bool ChangesMade = false;
+        bool ChangesMade = false, ExistingLayerEdited = false;
         public LayerOrderForm()
         {
             InitializeComponent();
         }
-        internal bool ShowForm(List<Layer> layers)
+        internal bool ShowForm(Mainframe source, List<Layer> layers)
         {
+            SourceForm = source;
             SourceList = layers;
             listBox1.Items.AddRange(SourceList.ToArray());
 
             ShowDialog();
 
-            return ChangesMade;
+            return ChangesMade || ExistingLayerEdited;
         }
 
         private void ButtonOK_Click(object sender, EventArgs e)
@@ -47,7 +49,7 @@ namespace MLLE
 
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            ButtonDelete.Enabled = listBox1.SelectedItem != null && (listBox1.SelectedItem as Layer).id < 0; //non-default layer
+            ButtonDelete.Enabled = (ButtonEdit.Enabled = listBox1.SelectedItem != null) && (listBox1.SelectedItem as Layer).id < 0; //non-default layer
             ButtonUp.Enabled = listBox1.SelectedIndex > 0;
             ButtonDown.Enabled = listBox1.SelectedIndex >= 0 && listBox1.SelectedIndex < listBox1.Items.Count - 1;
         }
@@ -72,7 +74,13 @@ namespace MLLE
 
         private void ButtonEdit_Click(object sender, EventArgs e)
         {
-
+            Layer layer = listBox1.SelectedItem as Layer;
+            if (layer != null)
+            {
+                new LayerPropertiesForm(SourceForm, layer, false).ShowDialog();
+                listBox1.Items[listBox1.SelectedIndex] = layer; //refresh ToString() in case the layer's name changed
+                ExistingLayerEdited = true; //possibly
+            }
         }
 
         private void ButtonUp_Click(object sender, EventArgs e)

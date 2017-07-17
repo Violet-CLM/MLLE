@@ -793,13 +793,16 @@ namespace MLLE
         {
             _suspendEvent.Reset();
             Layer currentLayer = CurrentLayer;
-            if (new LayerOrderForm().ShowForm(J2L.AllLayers))
+            if (new LayerOrderForm().ShowForm(this, J2L.AllLayers))
             {
                 if (!J2L.AllLayers.Contains(currentLayer)) //got deleted
                     currentLayer = J2L.SpriteLayer;
                 CurrentLayerID = (byte)J2L.AllLayers.IndexOf(currentLayer);
                 SetupLayerButtons();
                 ResizeDisplay();
+                LevelHasBeenModified = true;
+                Undoable.Clear(); //too much bother to figure this out
+                Redoable.Clear(); //
             }
             _suspendEvent.Set();
         }
@@ -1042,10 +1045,9 @@ namespace MLLE
         private void ShowLayerPropertiesByOrder(int layer)
         {
             _suspendEvent.Reset();
-            LayerPropertiesForm LP = new LayerPropertiesForm(this, (byte)layer);
+            LayerPropertiesForm LP = new LayerPropertiesForm(this, J2L.AllLayers[layer], true);
             LP.ShowDialog();
-            for (int i = 0; i < LayerButtons.Length; ++i)
-                LayerButtons[i].Tag = "Switch to " + J2L.AllLayers[i].Name;
+            NameLayerButtons();
             ResizeDisplay();
             _suspendEvent.Set();
         }
@@ -3101,14 +3103,19 @@ namespace MLLE
                 var layer = J2L.AllLayers[layerIndex];
                 var button = LayerButtons[layerIndex] = new ToolStripButton((layer.id >= 0) ? (layer.id + 1).ToString() : "L");
                 button.Size = new Size(23, 22);
-                button.Tag = "Switch to " + layer.Name;
                 button.Click += (s, e) => {
                     ChangeLayerByOrder(layerIndex);
                 };
                 button.MouseEnter += DescribableControl_MouseEnter;
                 DisplayToolstrip.Items.Insert(index, button);
             }
+            NameLayerButtons();
             CheckCurrentLayerButton();
+        }
+        void NameLayerButtons()
+        {
+            for (int i = 0; i < LayerButtons.Length; ++i)
+                LayerButtons[i].Tag = "Switch to " + J2L.AllLayers[i].Name;
         }
         private void CheckCurrentLayerButton() {
             for (int i = 0; i < LayerButtons.Length; ++i)

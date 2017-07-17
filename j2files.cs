@@ -628,6 +628,8 @@ class Layer
     {
         get
         {
+            if (id < 0)
+                return true;
             if (Name != DefaultNames[id])
                 return true;
             return false;
