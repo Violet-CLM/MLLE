@@ -1845,16 +1845,16 @@ namespace MLLE
                             {
                                 SetTextureTo(AtlasID.Mask);
                                 NoParallaxReindeer(DrawingLayer);
-                                if (l == J2LFile.SpriteLayerID && ParallaxEventDisplayType == 0 && EventDisplayMode) EventReindeer();
+                                if (DrawingLayer == J2L.SpriteLayer && ParallaxEventDisplayType == 0 && EventDisplayMode) EventReindeer();
                                 SetTextureTo(AtlasID.Image);
                             }
-                            else if (l == J2LFile.SpriteLayerID && ParallaxEventDisplayType == 0 && EventDisplayMode) { EventReindeer(); SetTextureTo(AtlasID.Image); }
+                            else if (DrawingLayer == J2L.SpriteLayer && ParallaxEventDisplayType == 0 && EventDisplayMode) { EventReindeer(); SetTextureTo(AtlasID.Image); }
                             if (ParallaxDisplayMode == ParallaxMode.TemporaryParallax) GL.Color4((byte)255, (byte)255, (byte)255, (byte)64);
                         }
                         else
                         {
                             if (DrawingLayer.HasTiles) Reindeer(DrawingLayer);
-                            if (l == J2LFile.SpriteLayerID && ParallaxEventDisplayType == 0 && EventDisplayMode) { EventReindeer(); SetTextureTo(AtlasID.Image); }
+                            if (DrawingLayer == J2L.SpriteLayer && ParallaxEventDisplayType == 0 && EventDisplayMode) { EventReindeer(); SetTextureTo(AtlasID.Image); }
                         }
                     }
                     if (ParallaxEventDisplayType == 1 && EventDisplayMode) EventReindeer();
@@ -1871,13 +1871,13 @@ namespace MLLE
                         SetTextureTo(AtlasID.Mask);
                         GL.Enable(EnableCap.Blend);
                         NoParallaxReindeer(CurrentLayer);
-                        if (CurrentLayerID == J2LFile.SpriteLayerID && EventDisplayMode) EventReindeer();
+                        if (CurrentLayer == J2L.SpriteLayer && EventDisplayMode) EventReindeer();
                     }
                     else
                     {
                         SetTextureTo((MaskDisplayMode == MaskMode.FullMask) ? AtlasID.Mask : AtlasID.Image);
                         NoParallaxReindeer(CurrentLayer);
-                        if (CurrentLayerID == J2LFile.SpriteLayerID && EventDisplayMode) { GL.Enable(EnableCap.Blend); EventReindeer(); }
+                        if (CurrentLayer == J2L.SpriteLayer && EventDisplayMode) { GL.Enable(EnableCap.Blend); EventReindeer(); }
                     }
                 }
                 #endregion reindeer
@@ -2430,7 +2430,7 @@ namespace MLLE
                 {
                     MouseTile = MouseTileX + MouseTileY * (int)CurrentLayer.Width;
                 }
-                if (CurrentLayerID == J2LFile.SpriteLayerID && MouseTileX < J2L.SpriteLayer.Width && MouseTileX >= 0 && MouseTileY < J2L.SpriteLayer.Height && MouseTileY >= 0)
+                if (CurrentLayer == J2L.SpriteLayer && MouseTileX < J2L.SpriteLayer.Width && MouseTileX >= 0 && MouseTileY < J2L.SpriteLayer.Height && MouseTileY >= 0)
                 {
                     if (J2L.VersionType == Version.AGA) { MouseAGAEvent = J2L.AGA_EventMap[MouseTileX, MouseTileY]; }
                     else MouseAGAEvent.ID = J2L.EventMap[MouseTileX, MouseTileY];
