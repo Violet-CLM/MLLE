@@ -480,7 +480,7 @@ class J2TFile : J2File
 
 class Layer
 {
-    public byte id;
+    public int id;
     public bool TileWidth;
     public bool TileHeight;
     public bool LimitVisibleRegion;
@@ -489,7 +489,7 @@ class Layer
     public byte unknown1;
     public bool HasTiles
     {
-        get { return id == 3 || TileMap.Count != 0; }
+        get { return id == J2LFile.SpriteLayerID || TileMap.Count != 0; }
     }
 
     public uint Width;
@@ -512,7 +512,7 @@ class Layer
 
     public Layer(int i, uint raw, bool LEVstyle = false)
     {
-        id = (byte)i;
+        id = i;
         TileWidth = (raw & 1) == 1;
         TileHeight = (raw & 2) == 2;
         if (LEVstyle)
@@ -554,6 +554,14 @@ class Layer
 
         Name = DefaultNames[i];
 
+        TileMap = new ArrayMap<ushort>(Width, Height);
+    }
+
+    public Layer()
+    {
+        Width = RealWidth = Height = 1;
+        Name = "New Layer";
+        id = -1;
         TileMap = new ArrayMap<ushort>(Width, Height);
     }
 
@@ -641,6 +649,8 @@ class Layer
     public override string ToString()
     {
         if (NumberPrefixedNamePattern.Match(Name).Success) //.LEV files include "1: ", "2: ", etc. in their layer names, and we don't want to display "4: 4: Sprite Layer"
+            return Name;
+        if (id < 0) //non-default layer
             return Name;
         return (id + 1) + ": " + Name;
     }

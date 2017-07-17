@@ -76,6 +76,12 @@
     <Compile Include="EventForm.Designer.cs">
       <DependentUpon>EventForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="LayerOrderForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LayerOrderForm.Designer.cs">
+      <DependentUpon>LayerOrderForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="LevelProperties.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -196,6 +202,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="EventForm.resx">
       <DependentUpon>EventForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LayerOrderForm.resx">
+      <DependentUpon>LayerOrderForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="LevelProperties.resx">
       <DependentUpon>LevelProperties.cs</DependentUpon>

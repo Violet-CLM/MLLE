@@ -182,6 +182,7 @@
             this.AnimScrollbar = new System.Windows.Forms.HScrollBar();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
+            this.layersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MainMenu.SuspendLayout();
             this.DrawingTools.SuspendLayout();
             this.StatusBar.SuspendLayout();
@@ -489,6 +490,7 @@
             this.jJ2PropertiesToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.plusLevelPropertiesToolStripMenuItem,
             this.paletteToolStripMenuItem,
+            this.layersToolStripMenuItem,
             this.tilesetsToolStripMenuItem,
             this.recolorEventsToolStripMenuItem});
             this.jJ2PropertiesToolStripMenuItem.Name = "jJ2PropertiesToolStripMenuItem";
@@ -522,7 +524,7 @@
             // addNewToolStripMenuItem
             // 
             this.addNewToolStripMenuItem.Name = "addNewToolStripMenuItem";
-            this.addNewToolStripMenuItem.Size = new System.Drawing.Size(132, 22);
+            this.addNewToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.addNewToolStripMenuItem.Text = "Add New...";
             this.addNewToolStripMenuItem.Click += new System.EventHandler(this.addNewToolStripMenuItem_Click);
             // 
@@ -1218,7 +1220,7 @@
             this.LDContextMenu.Name = "LDContextMenu";
             this.LDContextMenu.ShowCheckMargin = true;
             this.LDContextMenu.ShowImageMargin = false;
-            this.LDContextMenu.Size = new System.Drawing.Size(162, 336);
+            this.LDContextMenu.Size = new System.Drawing.Size(162, 314);
             this.LDContextMenu.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip1_Opening);
             // 
             // SelectLayer
@@ -1653,6 +1655,13 @@
             // 
             this.folderBrowserDialog1.ShowNewFolderButton = false;
             // 
+            // layersToolStripMenuItem
+            // 
+            this.layersToolStripMenuItem.Name = "layersToolStripMenuItem";
+            this.layersToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.layersToolStripMenuItem.Text = "Layers...";
+            this.layersToolStripMenuItem.Click += new System.EventHandler(this.layersToolStripMenuItem_Click);
+            // 
             // Mainframe
             // 
             this.AllowDrop = true;
@@ -1860,5 +1869,6 @@
         private System.Windows.Forms.ToolStripMenuItem tilesetsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem addNewToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem recolorEventsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem layersToolStripMenuItem;
     }
 }

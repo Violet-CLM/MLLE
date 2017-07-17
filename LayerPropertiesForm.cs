@@ -132,7 +132,7 @@ namespace MLLE
                                 : (ushort)0;
                         }
 
-                    if (CurrentLayer == 3) //sprite layer, i.e. events are associated with this one
+                    if (DataSource.id == J2LFile.SpriteLayerID) //sprite layer, i.e. events are associated with this one
                     {
                         if (SourceForm.J2L.VersionType == Version.AGA)
                         {
