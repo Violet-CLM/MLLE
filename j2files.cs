@@ -1798,24 +1798,21 @@ class J2LFile : J2File
                 using (BinaryWriter data1writer = new BinaryWriter(CompressedData[0], encoding, true))
                 {
                     uint SecurityString;
-                    if (Data5 == null) //not a plus-only level
+                    if (extraDataLevel) //junk level for storing extra data in
                     {
-                        if (extraDataLevel) //junk level for storing extra data in
-                        {
-                            SecurityString = SecurityStringExtraDataNotForDirectEditing;
-                        }
-                        else if (PasswordHash[0] != 0 || PasswordHash[1] != 0xBA || PasswordHash[2] != 0xBE) //has a password
-                        {
-                            SecurityString = SecurityStringPassworded;
-                        }
-                        else
-                        {
-                            SecurityString = SecurityStringInsecure;
-                        }
+                        SecurityString = SecurityStringExtraDataNotForDirectEditing;
                     }
-                    else //damage the security envelope for JCS
+                    else if (Data5 != null) //plus-only level, so damage the security envelope for JCS
                     {
                         SecurityString = SecurityStringMLLE;
+                    }
+                    else if (PasswordHash[0] != 0 || PasswordHash[1] != 0xBA || PasswordHash[2] != 0xBE) //has a password
+                    {
+                        SecurityString = SecurityStringPassworded;
+                    }
+                    else
+                    {
+                        SecurityString = SecurityStringInsecure;
                     }
                     data1writer.Write(JCSHorizontalFocus);
                     data1writer.Write((ushort)(SecurityString >> 16));
