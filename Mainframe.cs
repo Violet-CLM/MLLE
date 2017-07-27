@@ -1392,8 +1392,21 @@ namespace MLLE
         {
             if (MusicIsPlaying) Bass.BASS_Start();
             string directory = Path.GetDirectoryName(J2L.FullFilePath);
-            File.Delete(Path.Combine(directory, "MLLEGenericFilename.j2l"));
-            File.Delete(Path.Combine(directory, "MLLEGenericFilename.j2as"));
+            string genericFilepath = Path.Combine(directory, "MLLEGenericFilename.j2l");
+            File.Delete(genericFilepath);
+            File.Delete(Path.ChangeExtension(genericFilepath, ".j2as"));
+            if (J2L.AllLayers.Count > 8) //delete extra files saved in order to store extra layers
+            {
+                int extraDataLevelID = 0;
+                while (true)
+                {
+                    string extraFilepath = PlusPropertyList.GetExtraDataLevelFilepath(genericFilepath, extraDataLevelID++);
+                    if (File.Exists(extraFilepath))
+                        File.Delete(extraFilepath);
+                    else
+                        break;
+                }
+            }
         }
         private void saveRunToolStripMenuItem_Click(object sender, EventArgs e)
         {

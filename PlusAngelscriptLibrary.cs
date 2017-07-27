@@ -250,9 +250,11 @@ namespace MLLE {
                 if (!fileContents.Contains(pragma))
                     fileContents = pragma + fileContents;
             }
-            while (true) //remove extra such pragmas if the number of layers has decreased since the last time this level was saved
+            while (true) //remove extra such pragmas/files if the number of layers has decreased since the last time this level was saved
             {
-                string pragma = GetPragmaRequire(Path.GetFileName(GetExtraDataLevelFilepath(filepath, extraDataLevelID++)));
+                string extraFilepath = GetExtraDataLevelFilepath(filepath, extraDataLevelID++);
+                File.Delete(extraFilepath);
+                string pragma = GetPragmaRequire(Path.GetFileName(extraFilepath));
                 if (fileContents.Contains(pragma))
                     fileContents = fileContents.Replace(pragma, "");
                 else
