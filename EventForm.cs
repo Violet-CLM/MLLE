@@ -552,7 +552,7 @@ namespace MLLE
                     int[] size = new int[8]; for (i = 0; i < 8; i++) size[i] = j2a.ReadInt32();
                     j2a.ReadBytes(size[0] + size[2] + size[4] + 2);
 
-                    using (var bz = new BinaryReader(new System.IO.Compression.DeflateStream(j2a.BaseStream, 0, true), J2File.FileEncoding))
+                    using (var bz = new BinaryReader(new System.IO.Compression.DeflateStream(j2a.BaseStream, System.IO.Compression.CompressionMode.Decompress, true), J2File.FileEncoding))
                     {
                         for (i = 0; i < s; i++) bz.ReadBytes(bz.ReadInt32() - 4);
                         bz.ReadBytes(64);

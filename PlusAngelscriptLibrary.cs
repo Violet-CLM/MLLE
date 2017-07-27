@@ -212,7 +212,16 @@ namespace MLLE {
     }
 }";
 
-        internal void SaveLibrary(string filepath, List<J2TFile> Tilesets)
+        static string GetPragmaRequire(string filename)
+        {
+            return "#pragma require \"" + filename + "\"\r\n";
+        }
+        public static string GetExtraDataLevelFilepath(string filepath, int index)
+        {
+            return Path.Combine(Path.GetDirectoryName(filepath), Path.GetFileNameWithoutExtension(filepath) + "-MLLE-Data-" + (index + 1) + ".j2l");
+        }
+
+        internal void SaveLibrary(string filepath, List<J2TFile> Tilesets, int numberOfExtraDataLevels)
         {
             var encoding = J2LFile.FileEncoding;
             using (BinaryWriter binwriter = new BinaryWriter(File.Open(Path.Combine(Path.GetDirectoryName(filepath), AngelscriptLibraryFilename), FileMode.Create, FileAccess.Write), encoding)) {
@@ -230,9 +239,24 @@ namespace MLLE {
                 fileContents = System.IO.File.ReadAllText(scriptFilepath, encoding);
             for (int i = 1; i < Tilesets.Count; ++i)
             {
-                string pragma = "#pragma require \"" + Tilesets[i].FilenameOnly + "\"\r\n";
+                string pragma = GetPragmaRequire(Tilesets[i].FilenameOnly);
                 if (!fileContents.Contains(pragma))
                     fileContents = pragma + fileContents;
+            }
+            int extraDataLevelID = 0;
+            for (extraDataLevelID = 0; extraDataLevelID < numberOfExtraDataLevels; ++extraDataLevelID)
+            {
+                string pragma = GetPragmaRequire(Path.GetFileName(GetExtraDataLevelFilepath(filepath, extraDataLevelID)));
+                if (!fileContents.Contains(pragma))
+                    fileContents = pragma + fileContents;
+            }
+            while (true) //remove extra such pragmas if the number of layers has decreased since the last time this level was saved
+            {
+                string pragma = GetPragmaRequire(Path.GetFileName(GetExtraDataLevelFilepath(filepath, extraDataLevelID++)));
+                if (fileContents.Contains(pragma))
+                    fileContents = fileContents.Replace(pragma, "");
+                else
+                    break;
             }
             if (!fileContents.Contains("MLLE::Setup()"))
                 fileContents = AngelscriptLibraryCallStockLine + fileContents;

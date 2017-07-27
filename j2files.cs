@@ -1521,400 +1521,263 @@ class J2LFile : J2File
         }
         if (storeGivenFilename) FilenameOnly = Path.GetFileName(FullFilePath = filename);
         Encoding encoding = FileEncoding;
-        using(BinaryWriter binwriter = new BinaryWriter(File.Open(filename, FileMode.Create, FileAccess.Write), encoding)) if (VersionType == Version.GorH)
+        if (VersionType == Version.GorH)
+        {
+            using (BinaryWriter binwriter = new BinaryWriter(File.Open(filename, FileMode.Create, FileAccess.Write), encoding))
             {
                 #region LEV_Save
-                binwriter.Write(new char[] { 'D', 'D', 'C', 'F', '&', 's','s','f' });
-            using (BinaryWriter
-                EDIT = new BinaryWriter(new MemoryStream(), encoding),
-                EDI2 = new BinaryWriter(new MemoryStream(), encoding),
-                LINF = new BinaryWriter(new MemoryStream(), encoding),
-                HSTR = new BinaryWriter(new MemoryStream(), encoding),
-                TILE = new BinaryWriter(new MemoryStream(), encoding),
-                TINFO = new BinaryWriter(new MemoryStream(), encoding),
-                TDATA = new BinaryWriter(new MemoryStream(), encoding),
-                EMSK = new BinaryWriter(new MemoryStream(), encoding),
-                MASK = new BinaryWriter(new MemoryStream(), encoding),
-                ANIM = new BinaryWriter(new MemoryStream(), encoding),
-                FLIP = new BinaryWriter(new MemoryStream(), encoding),
-                LAYR = new BinaryWriter(new MemoryStream(), encoding),
-                LINFO = new BinaryWriter(new MemoryStream(), encoding),
-                LDATA = new BinaryWriter(new MemoryStream(), encoding),
-                EVNT = new BinaryWriter(new MemoryStream(), encoding),
-                TMAP = new BinaryWriter(new MemoryStream(), encoding),
-                CMAP = new BinaryWriter(new MemoryStream(), encoding))
-            {
-                EDIT.Write((byte)3);
-                EDIT.Write(Path.GetFileNameWithoutExtension(MainTilesetFilename));
-                EDIT.Write(TileCount);
-                EDIT.Write((byte)0);
-                for (int i = 0; i < DefaultLayers.Length; i++) EDIT.Write(DefaultLayers[i].Name);
-
-                EDI2.Write(1);
-                EDI2.Write(1024);
-                for (ushort i = 0; i < 1025; i++) EDI2.Write(0);
-
-                LINF.Write((ushort)258);
-                LINF.Write(Name);
-                LINF.Write(SecretLevel);
-                LINF.Write(Music);
-                LINF.Write(NextLevel);
-                LINF.Write(BonusLevel);
-                LINF.Write((int)MinLight);
-                LINF.Write((int)StartLight);
-                for (byte i = 0; i < 8; i++) LINF.Write(0);
-
-                HSTR.Write((ushort)256);
-                for (byte i = 0; i < 16; i++) HSTR.Write(Text[i]);
-
-                TILE.Write(263);
-
-                TINFO.Write(TileCount);
-                TINFO.Write(TileTypes, 1, (int)TileCount-1);
-
-                J2TFile J2T = Tilesets[0];
-                J2T.WriteToTDATA(TDATA, TileTypes);
-                J2T.WriteToEMSK(EMSK);
-                DiscoverTilesThatAreFlippedAndOrUsedInLayer3();
-                J2T.WriteToMASK(MASK, IsEachTileUsed);
-
-                ANIM.Write((uint)NumberOfAnimations);
-                for (ushort i = 0; i < NumberOfAnimations; i++)
+                binwriter.Write(new char[] { 'D', 'D', 'C', 'F', '&', 's', 's', 'f' });
+                using (BinaryWriter
+                    EDIT = new BinaryWriter(new MemoryStream(), encoding),
+                    EDI2 = new BinaryWriter(new MemoryStream(), encoding),
+                    LINF = new BinaryWriter(new MemoryStream(), encoding),
+                    HSTR = new BinaryWriter(new MemoryStream(), encoding),
+                    TILE = new BinaryWriter(new MemoryStream(), encoding),
+                    TINFO = new BinaryWriter(new MemoryStream(), encoding),
+                    TDATA = new BinaryWriter(new MemoryStream(), encoding),
+                    EMSK = new BinaryWriter(new MemoryStream(), encoding),
+                    MASK = new BinaryWriter(new MemoryStream(), encoding),
+                    ANIM = new BinaryWriter(new MemoryStream(), encoding),
+                    FLIP = new BinaryWriter(new MemoryStream(), encoding),
+                    LAYR = new BinaryWriter(new MemoryStream(), encoding),
+                    LINFO = new BinaryWriter(new MemoryStream(), encoding),
+                    LDATA = new BinaryWriter(new MemoryStream(), encoding),
+                    EVNT = new BinaryWriter(new MemoryStream(), encoding),
+                    TMAP = new BinaryWriter(new MemoryStream(), encoding),
+                    CMAP = new BinaryWriter(new MemoryStream(), encoding))
                 {
-                    AnimatedTile an = Animations[i];
-                    ANIM.Write(an.Framewait);
-                    ANIM.Write(an.Random);
-                    ANIM.Write(an.PingPongWait);
-                    ANIM.Write(an.IsPingPong);
-                    ANIM.Write(an.Speed);
-                    ANIM.Write(an.FrameCount);
-                    for (byte j = 0; j < an.FrameCount; j++) ANIM.Write(an.Sequence[j]);
-                }
+                    EDIT.Write((byte)3);
+                    EDIT.Write(Path.GetFileNameWithoutExtension(MainTilesetFilename));
+                    EDIT.Write(TileCount);
+                    EDIT.Write((byte)0);
+                    for (int i = 0; i < DefaultLayers.Length; i++) EDIT.Write(DefaultLayers[i].Name);
 
-                for (ushort i = 1; i < TileCount; i++) if (IsEachTileFlipped[i]) FLIP.Write(i);
-                FLIP.Write((ushort)0xFFFF);
+                    EDI2.Write(1);
+                    EDI2.Write(1024);
+                    for (ushort i = 0; i < 1025; i++) EDI2.Write(0);
 
-                LAYR.Write(263);
+                    LINF.Write((ushort)258);
+                    LINF.Write(Name);
+                    LINF.Write(SecretLevel);
+                    LINF.Write(Music);
+                    LINF.Write(NextLevel);
+                    LINF.Write(BonusLevel);
+                    LINF.Write((int)MinLight);
+                    LINF.Write((int)StartLight);
+                    for (byte i = 0; i < 8; i++) LINF.Write(0);
 
-                foreach (Layer CurrentLayer in DefaultLayers)
-                {
-                    LINFO.Write(
-                                (CurrentLayer.TileWidth ? 1 : 0) |
-                                (CurrentLayer.TileHeight ? 2 : 0) |
-                                (CurrentLayer.HasTiles ? 4 : 0) |
-                                (CurrentLayer.LimitVisibleRegion ? 8 : 0) |
-                                (CurrentLayer.IsTextured ? 16 : 0)
-                                );
-                    LINFO.Write((ushort)CurrentLayer.Width);
-                    LINFO.Write((ushort)CurrentLayer.Height);
-                    LINFO.Write((short)CurrentLayer.ZAxis);
-                    LINFO.Write(CurrentLayer.unknown1);
-                    LINFO.Write(
-                                (CurrentLayer.unknown2 == 0 ? 0 : 1) |
-                                (CurrentLayer.XSpeed == 0 && CurrentLayer.YSpeed == 0 ? 0 : 2) |
-                                (CurrentLayer.AutoXSpeed == 0 && CurrentLayer.AutoYSpeed == 0 ? 0 : 4)
-                                );
-                    if (CurrentLayer.unknown2 != 0) LINFO.Write(CurrentLayer.unknown2);
-                    if (CurrentLayer.XSpeed != 0 || CurrentLayer.YSpeed != 0) { LINFO.Write((int)(CurrentLayer.XSpeed * 65536)); LINFO.Write((int)(CurrentLayer.YSpeed * 65536)); }
-                    if (CurrentLayer.AutoXSpeed != 0 || CurrentLayer.AutoYSpeed != 0) { LINFO.Write((int)(CurrentLayer.AutoXSpeed * 65536)); LINFO.Write((int)(CurrentLayer.AutoYSpeed * 65536)); }
-                }
-                
-                using (BinaryWriter data3writer = new BinaryWriter(new MemoryStream(), encoding))
-                using (BinaryWriter data4writer = new BinaryWriter(new MemoryStream(), encoding))
-                {
-                    List<ushort[]> attestedWords = new List<ushort[]>(2048);
-                    attestedWords.Add(new ushort[16] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
-                    data3writer.Write(new byte[32] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
-                    ushort[] tentativeWord = new ushort[16];
-                    int tentativeIndex;
-                    foreach (Layer CurrentLayer in DefaultLayers) if (CurrentLayer.HasTiles) for (ushort y = 0; y < CurrentLayer.Height; y++) for (ushort x = 0; x < (CurrentLayer.Width + 15) / 16 * 16; x += 16)
-                                {
-                                    for (byte j = 0; j < 16; j++) tentativeWord[j] = (x + j < CurrentLayer.Width) ? SanitizeTileValue(CurrentLayer.TileMap[x + j, y]) : (ushort)0;
-                                    if (CurrentLayer.id == 3 && //.LEV files may not care about this sort of thing?
-                                        (
-                                        (tentativeWord[0] % MaxTiles > TileCount && EventMap[x, y] != 0) ||
-                                        (tentativeWord[1] % MaxTiles > TileCount && EventMap[x + 1, y] != 0) ||
-                                        (tentativeWord[2] % MaxTiles > TileCount && EventMap[x + 2, y] != 0) ||
-                                        (tentativeWord[3] % MaxTiles > TileCount && EventMap[x + 3, y] != 0) ||
-                                        (tentativeWord[4] % MaxTiles > TileCount && EventMap[x + 4, y] != 0) ||
-                                        (tentativeWord[5] % MaxTiles > TileCount && EventMap[x + 5, y] != 0) ||
-                                        (tentativeWord[6] % MaxTiles > TileCount && EventMap[x + 6, y] != 0) ||
-                                        (tentativeWord[7] % MaxTiles > TileCount && EventMap[x + 7, y] != 0) ||
-                                        (tentativeWord[8] % MaxTiles > TileCount && EventMap[x + 8, y] != 0) ||
-                                        (tentativeWord[9] % MaxTiles > TileCount && EventMap[x + 9, y] != 0) ||
-                                        (tentativeWord[10] % MaxTiles > TileCount && EventMap[x + 10, y] != 0) ||
-                                        (tentativeWord[11] % MaxTiles > TileCount && EventMap[x + 11, y] != 0) ||
-                                        (tentativeWord[12] % MaxTiles > TileCount && EventMap[x + 12, y] != 0) ||
-                                        (tentativeWord[13] % MaxTiles > TileCount && EventMap[x + 13, y] != 0) ||
-                                        (tentativeWord[14] % MaxTiles > TileCount && EventMap[x + 14, y] != 0) ||
-                                        (tentativeWord[15] % MaxTiles > TileCount && EventMap[x + 15, y] != 0)
-                                        )
-                                        ) { tentativeIndex = -1; }
-                                    else tentativeIndex = attestedWords.FindIndex(delegate(ushort[] current)
+                    HSTR.Write((ushort)256);
+                    for (byte i = 0; i < 16; i++) HSTR.Write(Text[i]);
+
+                    TILE.Write(263);
+
+                    TINFO.Write(TileCount);
+                    TINFO.Write(TileTypes, 1, (int)TileCount - 1);
+
+                    J2TFile J2T = Tilesets[0];
+                    J2T.WriteToTDATA(TDATA, TileTypes);
+                    J2T.WriteToEMSK(EMSK);
+                    DiscoverTilesThatAreFlippedAndOrUsedInLayer3();
+                    J2T.WriteToMASK(MASK, IsEachTileUsed);
+
+                    ANIM.Write((uint)NumberOfAnimations);
+                    for (ushort i = 0; i < NumberOfAnimations; i++)
+                    {
+                        AnimatedTile an = Animations[i];
+                        ANIM.Write(an.Framewait);
+                        ANIM.Write(an.Random);
+                        ANIM.Write(an.PingPongWait);
+                        ANIM.Write(an.IsPingPong);
+                        ANIM.Write(an.Speed);
+                        ANIM.Write(an.FrameCount);
+                        for (byte j = 0; j < an.FrameCount; j++) ANIM.Write(an.Sequence[j]);
+                    }
+
+                    for (ushort i = 1; i < TileCount; i++) if (IsEachTileFlipped[i]) FLIP.Write(i);
+                    FLIP.Write((ushort)0xFFFF);
+
+                    LAYR.Write(263);
+
+                    foreach (Layer CurrentLayer in DefaultLayers)
+                    {
+                        LINFO.Write(
+                                    (CurrentLayer.TileWidth ? 1 : 0) |
+                                    (CurrentLayer.TileHeight ? 2 : 0) |
+                                    (CurrentLayer.HasTiles ? 4 : 0) |
+                                    (CurrentLayer.LimitVisibleRegion ? 8 : 0) |
+                                    (CurrentLayer.IsTextured ? 16 : 0)
+                                    );
+                        LINFO.Write((ushort)CurrentLayer.Width);
+                        LINFO.Write((ushort)CurrentLayer.Height);
+                        LINFO.Write((short)CurrentLayer.ZAxis);
+                        LINFO.Write(CurrentLayer.unknown1);
+                        LINFO.Write(
+                                    (CurrentLayer.unknown2 == 0 ? 0 : 1) |
+                                    (CurrentLayer.XSpeed == 0 && CurrentLayer.YSpeed == 0 ? 0 : 2) |
+                                    (CurrentLayer.AutoXSpeed == 0 && CurrentLayer.AutoYSpeed == 0 ? 0 : 4)
+                                    );
+                        if (CurrentLayer.unknown2 != 0) LINFO.Write(CurrentLayer.unknown2);
+                        if (CurrentLayer.XSpeed != 0 || CurrentLayer.YSpeed != 0) { LINFO.Write((int)(CurrentLayer.XSpeed * 65536)); LINFO.Write((int)(CurrentLayer.YSpeed * 65536)); }
+                        if (CurrentLayer.AutoXSpeed != 0 || CurrentLayer.AutoYSpeed != 0) { LINFO.Write((int)(CurrentLayer.AutoXSpeed * 65536)); LINFO.Write((int)(CurrentLayer.AutoYSpeed * 65536)); }
+                    }
+
+                    using (BinaryWriter data3writer = new BinaryWriter(new MemoryStream(), encoding))
+                    using (BinaryWriter data4writer = new BinaryWriter(new MemoryStream(), encoding))
+                    {
+                        List<ushort[]> attestedWords = new List<ushort[]>(2048);
+                        attestedWords.Add(new ushort[16] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
+                        data3writer.Write(new byte[32] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 });
+                        ushort[] tentativeWord = new ushort[16];
+                        int tentativeIndex;
+                        foreach (Layer CurrentLayer in DefaultLayers) if (CurrentLayer.HasTiles) for (ushort y = 0; y < CurrentLayer.Height; y++) for (ushort x = 0; x < (CurrentLayer.Width + 15) / 16 * 16; x += 16)
+                                    {
+                                        for (byte j = 0; j < 16; j++) tentativeWord[j] = (x + j < CurrentLayer.Width) ? SanitizeTileValue(CurrentLayer.TileMap[x + j, y]) : (ushort)0;
+                                        if (CurrentLayer.id == 3 && //.LEV files may not care about this sort of thing?
+                                            (
+                                            (tentativeWord[0] % MaxTiles > TileCount && EventMap[x, y] != 0) ||
+                                            (tentativeWord[1] % MaxTiles > TileCount && EventMap[x + 1, y] != 0) ||
+                                            (tentativeWord[2] % MaxTiles > TileCount && EventMap[x + 2, y] != 0) ||
+                                            (tentativeWord[3] % MaxTiles > TileCount && EventMap[x + 3, y] != 0) ||
+                                            (tentativeWord[4] % MaxTiles > TileCount && EventMap[x + 4, y] != 0) ||
+                                            (tentativeWord[5] % MaxTiles > TileCount && EventMap[x + 5, y] != 0) ||
+                                            (tentativeWord[6] % MaxTiles > TileCount && EventMap[x + 6, y] != 0) ||
+                                            (tentativeWord[7] % MaxTiles > TileCount && EventMap[x + 7, y] != 0) ||
+                                            (tentativeWord[8] % MaxTiles > TileCount && EventMap[x + 8, y] != 0) ||
+                                            (tentativeWord[9] % MaxTiles > TileCount && EventMap[x + 9, y] != 0) ||
+                                            (tentativeWord[10] % MaxTiles > TileCount && EventMap[x + 10, y] != 0) ||
+                                            (tentativeWord[11] % MaxTiles > TileCount && EventMap[x + 11, y] != 0) ||
+                                            (tentativeWord[12] % MaxTiles > TileCount && EventMap[x + 12, y] != 0) ||
+                                            (tentativeWord[13] % MaxTiles > TileCount && EventMap[x + 13, y] != 0) ||
+                                            (tentativeWord[14] % MaxTiles > TileCount && EventMap[x + 14, y] != 0) ||
+                                            (tentativeWord[15] % MaxTiles > TileCount && EventMap[x + 15, y] != 0)
+                                            )
+                                            ) { tentativeIndex = -1; }
+                                        else tentativeIndex = attestedWords.FindIndex(delegate (ushort[] current)
+                                            {
+                                                return
+                                                    tentativeWord[0] == current[0] &&
+                                                    tentativeWord[1] == current[1] &&
+                                                    tentativeWord[2] == current[2] &&
+                                                    tentativeWord[3] == current[3] &&
+                                                    tentativeWord[4] == current[4] &&
+                                                    tentativeWord[5] == current[5] &&
+                                                    tentativeWord[6] == current[6] &&
+                                                    tentativeWord[7] == current[7] &&
+                                                    tentativeWord[8] == current[8] &&
+                                                    tentativeWord[9] == current[9] &&
+                                                    tentativeWord[10] == current[10] &&
+                                                    tentativeWord[11] == current[11] &&
+                                                    tentativeWord[12] == current[12] &&
+                                                    tentativeWord[13] == current[13] &&
+                                                    tentativeWord[14] == current[14] &&
+                                                    tentativeWord[15] == current[15]
+                                                    ;
+                                            });
+                                        if (tentativeIndex == -1)
                                         {
-                                            return
-                                                tentativeWord[0] == current[0] &&
-                                                tentativeWord[1] == current[1] &&
-                                                tentativeWord[2] == current[2] &&
-                                                tentativeWord[3] == current[3] &&
-                                                tentativeWord[4] == current[4] &&
-                                                tentativeWord[5] == current[5] &&
-                                                tentativeWord[6] == current[6] &&
-                                                tentativeWord[7] == current[7] &&
-                                                tentativeWord[8] == current[8] &&
-                                                tentativeWord[9] == current[9] &&
-                                                tentativeWord[10] == current[10] &&
-                                                tentativeWord[11] == current[11] &&
-                                                tentativeWord[12] == current[12] &&
-                                                tentativeWord[13] == current[13] &&
-                                                tentativeWord[14] == current[14] &&
-                                                tentativeWord[15] == current[15]
-                                                ;
-                                        });
-                                    if (tentativeIndex == -1)
-                                    {
-                                        tentativeIndex = attestedWords.Count;
-                                        attestedWords.Add(new ushort[16]);
-                                        tentativeWord.CopyTo(attestedWords[tentativeIndex], 0);
-                                        for (byte j = 0; j < 16; j++) data3writer.Write(tentativeWord[j]);
+                                            tentativeIndex = attestedWords.Count;
+                                            attestedWords.Add(new ushort[16]);
+                                            tentativeWord.CopyTo(attestedWords[tentativeIndex], 0);
+                                            for (byte j = 0; j < 16; j++) data3writer.Write(tentativeWord[j]);
+                                        }
+                                        data4writer.Write((ushort)(tentativeIndex));
                                     }
-                                    data4writer.Write((ushort)(tentativeIndex));
-                                }
-                    LDATA.Write((ushort)(1024 - NumberOfAnimations));
-                    LDATA.Write((ushort)attestedWords.Count);
-                    LDATA.Write((ushort)0);
-                    data3writer.BaseStream.Seek(0, SeekOrigin.Begin);
-                    for (uint i = 0; i < data3writer.BaseStream.Length; i++) LDATA.Write((byte)data3writer.BaseStream.ReadByte());
-                    data4writer.BaseStream.Seek(0, SeekOrigin.Begin);
-                    for (uint i = 0; i < data4writer.BaseStream.Length; i++) LDATA.Write((byte)data4writer.BaseStream.ReadByte());
-                }
-
-                for (uint i = 0; i < EventMap.Length; i++) EVNT.Write(EventMap[i % EventMap.GetLength(0), i / EventMap.GetLength(0)]);
-
-                TMAP.Write((ushort)(257));
-                if (DefaultLayers[7].IsTextured) {
-                    TMAP.Write(1);
-                    TMAP.Write(7);
-                    TMAP.Write(0);
-                    for (uint i = 0; i < 65536; i++)
-                    {
-                        TMAP.Write(J2T.Images[J2T.ImageAddress[DefaultLayers[7].TileMap[i % 256/32, i / 8192]]][i%32+i%8192/256*32]);
+                        LDATA.Write((ushort)(1024 - NumberOfAnimations));
+                        LDATA.Write((ushort)attestedWords.Count);
+                        LDATA.Write((ushort)0);
+                        data3writer.BaseStream.Seek(0, SeekOrigin.Begin);
+                        for (uint i = 0; i < data3writer.BaseStream.Length; i++) LDATA.Write((byte)data3writer.BaseStream.ReadByte());
+                        data4writer.BaseStream.Seek(0, SeekOrigin.Begin);
+                        for (uint i = 0; i < data4writer.BaseStream.Length; i++) LDATA.Write((byte)data4writer.BaseStream.ReadByte());
                     }
-                }
-                else { TMAP.Write(0); TMAP.Write((ushort)0); }
 
-                CMAP.Write(256);
-                CMAP.Write((byte)1);
-                J2T.Palette.WriteLEVStyle(CMAP);
+                    for (uint i = 0; i < EventMap.Length; i++) EVNT.Write(EventMap[i % EventMap.GetLength(0), i / EventMap.GetLength(0)]);
 
-                InputLEVSection(TILE, TINFO, new char[4] { 'I', 'N', 'F', 'O' });
-                InputLEVSection(TILE, TDATA, new char[4] { 'D', 'A', 'T', 'A' });
-                InputLEVSection(TILE, EMSK, new char[4] { 'E', 'M', 'S', 'K' });
-                InputLEVSection(TILE, MASK, new char[4] { 'M', 'A', 'S', 'K' });
-                InputLEVSection(TILE, ANIM, new char[4] { 'A', 'N', 'I', 'M' });
-                InputLEVSection(TILE, FLIP, new char[4] { 'F', 'L', 'I', 'P' });
-
-                InputLEVSection(LAYR, LINFO, new char[4] { 'I', 'N', 'F', 'O' });
-                InputLEVSection(LAYR, LDATA, new char[4] { 'D', 'A', 'T', 'A' });
-                InputLEVSection(LAYR, EVNT, new char[4] { 'E', 'V', 'N', 'T' });
-
-                InputLEVSection(binwriter, EDIT, new char[4] { 'E', 'D', 'I', 'T' });
-                InputLEVSection(binwriter, EDI2, new char[4] { 'E', 'D', 'I', '2' });
-                InputLEVSection(binwriter, LINF, new char[4] { 'L', 'I', 'N', 'F' });
-                InputLEVSection(binwriter, HSTR, new char[4] { 'H', 'S', 'T', 'R' });
-                InputLEVSection(binwriter, TILE, new char[4] { 'T', 'I', 'L', 'E' });
-                InputLEVSection(binwriter, LAYR, new char[4] { 'L', 'A', 'Y', 'R' });
-                InputLEVSection(binwriter, TMAP, new char[4] { 'T', 'M', 'A', 'P' });
-                InputLEVSection(binwriter, CMAP, new char[4] { 'C', 'M', 'A', 'P' });
-
-                binwriter.Seek(4, 0);
-                binwriter.Write((int)binwriter.BaseStream.Length - 8);
-            }
-                #endregion LEV_Save
-            }
-        else
-        {
-            binwriter.Write(encoding.GetBytes(Header)); // In Jazz 2 levels, the copyright notice. Otherwise a blank string.
-            binwriter.Write(encoding.GetBytes(Magic)); // 'LEVL'
-            binwriter.Write(PasswordHash); // The password hash is calculated in SetPassword(), not here
-            binwriter.Write(IsHiddenInHCL);
-            binwriter.Write(getBytes(encoding, Name, 32));
-            binwriter.Write((ushort)((VersionType == Version.AGA) ? 256 : (VersionType==Version.TSF) ? 515 : 514));
-            binwriter.Write(new byte[40]); // To be filled in later with filesize, CRC32, and the compressed and uncompressed data lengths, for a total of 10 longs or 40 bytes.
-            CRC32 CRCCalculator = new CRC32();
-            for (byte i = 0; i < 4; i++) CompressedData[i] = new MemoryStream();
-            using (BinaryWriter data1writer = new BinaryWriter(CompressedData[0], encoding)) //since Data3 and Data4 are written simultaneously, they use separate BinaryWriters. Data1 and Data2 get their own just for symmetry.
-            using (BinaryWriter data2writer = new BinaryWriter(CompressedData[1], encoding))
-            using (BinaryWriter data3writer = new BinaryWriter(CompressedData[2], encoding))
-            using (BinaryWriter data4writer = new BinaryWriter(CompressedData[3], encoding))
-            {
-                #region data1
-                uint SecurityString;
-                if (Data5 == null) //not a plus-only level
-                {
-                    if (PasswordHash[0] != 0 || PasswordHash[1] != 0xBA || PasswordHash[2] != 0xBE) //has a password
+                    TMAP.Write((ushort)(257));
+                    if (DefaultLayers[7].IsTextured)
                     {
-                        SecurityString = SecurityStringPassworded;
-                    }
-                    else
-                    {
-                        SecurityString = SecurityStringInsecure;
-                    }
-                }
-                else //damage the security envelope for JCS
-                {
-                    SecurityString = SecurityStringMLLE;
-                }
-                data1writer.Write(JCSHorizontalFocus);
-                data1writer.Write((ushort)(SecurityString >> 16));
-                data1writer.Write(JCSVerticalFocus);
-                data1writer.Write((ushort)(SecurityString & 0xFFFFu));
-                data1writer.Write((byte)(JCSFocusedLayer | (SecurityString != SecurityStringInsecure ? 0xF0 : 0x00)));
-                data1writer.Write(MinLight);
-                data1writer.Write(StartLight);
-                data1writer.Write(NumberOfAnimations);
-                data1writer.Write(UsesVerticalSplitscreen);
-                if (VersionType == Version.BC) data1writer.Write((byte)2);
-                else if (VersionType == Version.O) data1writer.Write((byte)1);
-                else data1writer.Write(LevelMode);
-                data1writer.Write((uint)0); // StreamSize; this gets replaced later with an actual calculation
-                data1writer.Write(getBytes(encoding, Name, 32));
-                data1writer.Write(getBytes(encoding, MainTilesetFilename, 32));
-                data1writer.Write(getBytes(encoding, BonusLevel, 32));
-                data1writer.Write(getBytes(encoding, NextLevel, 32));
-                data1writer.Write(getBytes(encoding, SecretLevel, 32));
-                data1writer.Write(getBytes(encoding, Music, 32));
-                for (byte i = 0; i < 16; i++) data1writer.Write(getBytes(encoding, Text[i], 512));
-                if (VersionType == Version.AGA) for (byte i = 0; i < 48; i++)
-                    {
-                        if (AGA_SoundPointer[i] == null) for (byte j = 0; j < 16; j++) data1writer.Write(0); //16 longs = 64 bytes
-                        else data1writer.Write(getBytes(encoding, (AGA_SoundPointer[i][0] + "\\" + AGA_SoundPointer[i][1]), 64));
-                    }
-                foreach (Layer layer in DefaultLayers) data1writer.Write((layer.TileWidth?1:0) + (layer.TileHeight?2:0) + (layer.LimitVisibleRegion?4:0) + (layer.IsTextured?8:0) + (layer.HasStars?16:0));
-                foreach (Layer layer in DefaultLayers) data1writer.Write(layer.unknown1);
-                foreach (Layer layer in DefaultLayers) data1writer.Write(layer.HasTiles);
-                foreach (Layer layer in DefaultLayers) data1writer.Write(layer.Width);
-                foreach (Layer layer in DefaultLayers) data1writer.Write(layer.RealWidth);
-                foreach (Layer layer in DefaultLayers) data1writer.Write(layer.Height);
-                foreach (Layer layer in DefaultLayers) data1writer.Write(layer.ZAxis);
-                foreach (Layer layer in DefaultLayers) data1writer.Write(layer.unknown2);
-                foreach (Layer layer in DefaultLayers) data1writer.Write((int)(layer.WaveX * 65536));
-                foreach (Layer layer in DefaultLayers) data1writer.Write((int)(layer.WaveY * 65536));
-                foreach (Layer layer in DefaultLayers) data1writer.Write((int)(layer.XSpeed * 65536));
-                foreach (Layer layer in DefaultLayers) data1writer.Write((int)(layer.YSpeed * 65536));
-                foreach (Layer layer in DefaultLayers) data1writer.Write((int)(layer.AutoXSpeed * 65536));
-                foreach (Layer layer in DefaultLayers) data1writer.Write((int)(layer.AutoYSpeed * 65536));
-                foreach (Layer layer in DefaultLayers) data1writer.Write(layer.TextureMode);
-                foreach (Layer layer in DefaultLayers) { data1writer.Write(layer.TexturParam1); data1writer.Write(layer.TexturParam2); data1writer.Write(layer.TexturParam3); }
-                data1writer.Write((ushort)(MaxTiles - NumberOfAnimations));
-                for (ushort i = 0; i < MaxTiles; i++) data1writer.Write(EventTiles[i]); // I use MaxTiles for this and TileTypes because I upsize it to 4096 when converting to TSF, but don't bother downsizing it when converting back to 1.23
-                DiscoverTilesThatAreFlippedAndOrUsedInLayer3();
-                for (ushort i = 0; i < MaxTiles; i++) data1writer.Write(IsEachTileFlipped[i]); 
-                for (ushort i = 0; i < MaxTiles; i++) data1writer.Write(TileTypes[i]);
-                for (ushort i = 0; i < MaxTiles; i++) data1writer.Write((byte)0); // yeah, this section doesn't do anything
-                if (VersionType == Version.AGA) data1writer.Write(AGA_unknownsection); // mostly zeroes, but there are some ones, so there IS information stored here... WHAT COULD IT BE?
-                for (byte i = 0; i < NumberOfAnimations; i++) // JCS: 256 for TSF, else 128. But that's not necessary.
-                {
-                    //if (i < NumberOfAnimations)
-                    //{
-                        data1writer.Write(Animations[i].Framewait);
-                        data1writer.Write(Animations[i].Random);
-                        data1writer.Write(Animations[i].PingPongWait);
-                        data1writer.Write(Animations[i].IsPingPong);
-                        data1writer.Write(Animations[i].Speed);
-                        data1writer.Write(Animations[i].FrameCount);
-                        for (byte j = 0; j < 64; j++) data1writer.Write(SanitizeTileValue(Animations[i].Sequence[j]));
-                    //}
-                    //else data1writer.Write(new byte[137]);
-                }
-                data1writer.Seek(15,SeekOrigin.Begin); //go to the StreamSize long
-                data1writer.Write((int)CompressedData[0].Length); //and replace it with the actual length of the section
-                #endregion data1
-                #region data2
-                if (VersionType == Version.AGA) //could use some commenting
-                {
-                    CreateGlobalAGAEventsListIfNeedBe();
-                    AGA_LocalEvents = new List<String>();
-                    foreach (AGAEvent saveProspectiveEvent in AGA_EventMap)
-                    {
-                        if (saveProspectiveEvent.ID != 0 && !AGA_LocalEvents.Contains(AGA_GlobalEvents[(int)saveProspectiveEvent.ID])) AGA_LocalEvents.Add(AGA_GlobalEvents[(int)saveProspectiveEvent.ID]);
-                    }
-                    data2writer.Write((ushort)AGA_LocalEvents.Count);
-                    for (ushort i = 0; i < AGA_LocalEvents.Count; i++) data2writer.Write(getBytes(encoding, AGA_LocalEvents[i], 64));
-                    for (ushort y = 0; y < AGA_EventMap.GetLength(1); y++) for (ushort x = 0; x < AGA_EventMap.GetLength(0); x++) if (AGA_EventMap[x, y].ID != 0)
-                    {
-                        data2writer.Write((ushort)x); data2writer.Write((ushort)y);
-                        data2writer.Write((ushort)AGA_LocalEvents.FindIndex((string pointer) => { return pointer == AGA_GlobalEvents[(int)AGA_EventMap[x, y].ID]; }));
-                        data2writer.Write(
-                            (AGA_EventMap[x, y].Bits[0] ? (uint)32 : 0) |
-                            (AGA_EventMap[x, y].Bits[1] ? (uint)64 : 0) |
-                            (AGA_EventMap[x, y].Bits[2] ? (uint)128 : 0) |
-                            (AGA_EventMap[x, y].Bits[3] ? (uint)256 : 0) |
-                            (AGA_EventMap[x, y].Bits[4] ? (uint)512 : 0) |
-                            (AGA_EventMap[x, y].Bits[5] ? (uint)1024 : 0) |
-                            (AGA_EventMap[x, y].Bits[6] ? (uint)2048 : 0) |
-                            (AGA_EventMap[x, y].Bits[7] ? (uint)4096 : 0) |
-                            (AGA_EventMap[x, y].Bits[8] ? (uint)8192 : 0) |
-                            (AGA_EventMap[x, y].Bits[9] ? (uint)16384 : 0) |
-                            (AGA_EventMap[x,y].HasParameters() ? (uint)0x80000000 : 0)
-                            );
-                        if (AGA_EventMap[x, y].HasParameters())
+                        TMAP.Write(1);
+                        TMAP.Write(7);
+                        TMAP.Write(0);
+                        for (uint i = 0; i < 65536; i++)
                         {
-                            data2writer.Write(AGA_EventMap[x, y].GetNumberOfParameters() * 4 + 8 + AGA_EventMap[x, y].GetNumberOfBytesItWillTakeToWriteStrings());
-                            data2writer.Write((ushort)(AGA_EventMap[x, y].GetNumberOfBytesItWillTakeToWriteStrings() == 0 ? 0 : 2));
-                            data2writer.Write((ushort)(AGA_EventMap[x, y].GetNumberOfParameters() / 2));
-                            for (byte i = 0; i < AGA_EventMap[x, y].GetNumberOfParameters(); i++) data2writer.Write(AGA_EventMap[x, y].Longs[i]);
-                            if ((AGA_EventMap[x, y].Strings[0] ?? "") != "" || (AGA_EventMap[x, y].Strings[1] ?? "") != "" || (AGA_EventMap[x, y].Strings[2] ?? "") != "") //needs to be updated in light of the reflection that some events use more than three strings
-                            {
-                                data2writer.Write(encoding.GetByteCount(AGA_EventMap[x, y].Strings[0]) + 1);
-                                data2writer.Write(encoding.GetBytes(AGA_EventMap[x, y].Strings[0]));
-                                data2writer.Write((byte)0);
-                                if ((AGA_EventMap[x, y].Strings[1] ?? "") != "" || (AGA_EventMap[x, y].Strings[2] ?? "") != "")
-                                {
-                                    data2writer.Write(encoding.GetByteCount(AGA_EventMap[x, y].Strings[1]) + 1);
-                                    data2writer.Write(encoding.GetBytes(AGA_EventMap[x, y].Strings[1]));
-                                    data2writer.Write((byte)0);
-                                    if ((AGA_EventMap[x, y].Strings[2] ?? "") != "")
-                                    {
-                                        data2writer.Write(encoding.GetByteCount(AGA_EventMap[x, y].Strings[2]) + 1);
-                                        data2writer.Write(encoding.GetBytes(AGA_EventMap[x, y].Strings[2]));
-                                        data2writer.Write((byte)0);
-                                    }
-                                }
-                            }
+                            TMAP.Write(J2T.Images[J2T.ImageAddress[DefaultLayers[7].TileMap[i % 256 / 32, i / 8192]]][i % 32 + i % 8192 / 256 * 32]);
                         }
                     }
+                    else { TMAP.Write(0); TMAP.Write((ushort)0); }
+
+                    CMAP.Write(256);
+                    CMAP.Write((byte)1);
+                    J2T.Palette.WriteLEVStyle(CMAP);
+
+                    InputLEVSection(TILE, TINFO, new char[4] { 'I', 'N', 'F', 'O' });
+                    InputLEVSection(TILE, TDATA, new char[4] { 'D', 'A', 'T', 'A' });
+                    InputLEVSection(TILE, EMSK, new char[4] { 'E', 'M', 'S', 'K' });
+                    InputLEVSection(TILE, MASK, new char[4] { 'M', 'A', 'S', 'K' });
+                    InputLEVSection(TILE, ANIM, new char[4] { 'A', 'N', 'I', 'M' });
+                    InputLEVSection(TILE, FLIP, new char[4] { 'F', 'L', 'I', 'P' });
+
+                    InputLEVSection(LAYR, LINFO, new char[4] { 'I', 'N', 'F', 'O' });
+                    InputLEVSection(LAYR, LDATA, new char[4] { 'D', 'A', 'T', 'A' });
+                    InputLEVSection(LAYR, EVNT, new char[4] { 'E', 'V', 'N', 'T' });
+
+                    InputLEVSection(binwriter, EDIT, new char[4] { 'E', 'D', 'I', 'T' });
+                    InputLEVSection(binwriter, EDI2, new char[4] { 'E', 'D', 'I', '2' });
+                    InputLEVSection(binwriter, LINF, new char[4] { 'L', 'I', 'N', 'F' });
+                    InputLEVSection(binwriter, HSTR, new char[4] { 'H', 'S', 'T', 'R' });
+                    InputLEVSection(binwriter, TILE, new char[4] { 'T', 'I', 'L', 'E' });
+                    InputLEVSection(binwriter, LAYR, new char[4] { 'L', 'A', 'Y', 'R' });
+                    InputLEVSection(binwriter, TMAP, new char[4] { 'T', 'M', 'A', 'P' });
+                    InputLEVSection(binwriter, CMAP, new char[4] { 'C', 'M', 'A', 'P' });
+
+                    binwriter.Seek(4, 0);
+                    binwriter.Write((int)binwriter.BaseStream.Length - 8);
                 }
-                else
-                {
-                    for (uint i = 0; i < EventMap.Length; i++) data2writer.Write(EventMap[i % EventMap.GetLength(0), i / EventMap.GetLength(0)]);
-                    /*{
-                        //data2writer.Write(ParameterMap[i % EventMap.GetLength(0), i / EventMap.GetLength(0)]<<8);
-                        //data2writer.Seek(-4, SeekOrigin.Current);
-                        data2writer.Write(EventMap[i % EventMap.GetLength(0), i / EventMap.GetLength(0)]);
-                        //data2writer.Seek(3, SeekOrigin.Current);
-                    }*/
-                }
-                #endregion data2
-                #region data3 and data4
+                #endregion LEV_Save
+            }
+        }
+        else
+        {
+            var WordMapsPerLayer = new Dictionary<Layer, List<ushort>>(AllLayers.Count);
+
+            List<Layer[]> LayerArraysToSave = new List<Layer[]> { DefaultLayers };
+            var nonDefaultLayers = new List<Layer>(AllLayers.Where(l => l.id < 0));
+            while (nonDefaultLayers.Count > 0)
+            {
+                var nonDefaultLayersToAddToList = new List<Layer>(nonDefaultLayers.Take(DefaultLayers.Length));
+                nonDefaultLayers.RemoveRange(0, Math.Min(8, nonDefaultLayers.Count));
+                while (nonDefaultLayersToAddToList.Count < 8)
+                    nonDefaultLayersToAddToList.Add(new Layer());
+                LayerArraysToSave.Add(nonDefaultLayersToAddToList.ToArray());
+            }
+            for (int i = 0; i < 4; i++)
+                CompressedData[i] = new MemoryStream();
+
+            using (BinaryWriter data3writer = new BinaryWriter(CompressedData[2], encoding, true)) //do the dictionary first, since it's shared across all .j2l files being saved
+            {
                 List<ushort[]> attestedWords = new List<ushort[]>(2048);
                 attestedWords.Add(new ushort[4] { 0, 0, 0, 0 });
-                data3writer.Write(new byte[8] { 0, 0, 0, 0,0,0,0,0 });
+                data3writer.Write(new byte[8] { 0, 0, 0, 0, 0, 0, 0, 0 });
                 ushort[] tentativeWord = new ushort[4];
                 int tentativeIndex;
-                foreach (Layer CurrentLayer in DefaultLayers) if (CurrentLayer.HasTiles) for (ushort y = 0; y < CurrentLayer.Height; y++) for (ushort x = 0; x < (CurrentLayer.RealWidth + 3) / 4 * 4; x += 4) // remember to write by RealWidth (rounded up), not Width
+                foreach (Layer CurrentLayer in AllLayers)
+                {
+                    var words = WordMapsPerLayer[CurrentLayer] = new List<ushort>();
+                    if (CurrentLayer.HasTiles)
+                        for (ushort y = 0; y < CurrentLayer.Height; y++)
+                            for (ushort x = 0; x < (CurrentLayer.RealWidth + 3) / 4 * 4; x += 4) // remember to write by RealWidth (rounded up), not Width
                             {
                                 if (CurrentLayer.TileWidth) for (byte j = 0; j < 4; j++) tentativeWord[j] = SanitizeTileValue(CurrentLayer.TileMap[(x + j) % CurrentLayer.Width, y]);
                                 else for (byte j = 0; j < 4; j++) tentativeWord[j] = (x + j < CurrentLayer.Width) ? SanitizeTileValue(CurrentLayer.TileMap[x + j, y]) : (ushort)0;
-                                if (CurrentLayer.id == 3 &&
+                                if (CurrentLayer.id == SpriteLayerID &&
                                     (
-                                    (tentativeWord[0] % MaxTiles > TileCount && EventMap[x, y]     != 0 && (EventMap[x, y]     & (1 << 31)) == 0) ||
+                                    (tentativeWord[0] % MaxTiles > TileCount && EventMap[x, y] != 0 && (EventMap[x, y] & (1 << 31)) == 0) ||
                                     (tentativeWord[1] % MaxTiles > TileCount && EventMap[x + 1, y] != 0 && (EventMap[x + 1, y] & (1 << 31)) == 0) ||
                                     (tentativeWord[2] % MaxTiles > TileCount && EventMap[x + 2, y] != 0 && (EventMap[x + 2, y] & (1 << 31)) == 0) ||
                                     (tentativeWord[3] % MaxTiles > TileCount && EventMap[x + 3, y] != 0 && (EventMap[x + 3, y] & (1 << 31)) == 0)
                                     )
                                     ) { tentativeIndex = -1; }
-                                else tentativeIndex = attestedWords.FindIndex(delegate(ushort[] current) { return tentativeWord[0] == current[0] && tentativeWord[1] == current[1] && tentativeWord[2] == current[2] && tentativeWord[3] == current[3]; });
+                                else tentativeIndex = attestedWords.FindIndex(delegate (ushort[] current) { return tentativeWord[0] == current[0] && tentativeWord[1] == current[1] && tentativeWord[2] == current[2] && tentativeWord[3] == current[3]; });
                                 if (tentativeIndex == -1) // either it actually couldn't be found, or there were events on an animated tile
                                 {
                                     tentativeIndex = attestedWords.Count;
@@ -1922,31 +1785,224 @@ class J2LFile : J2File
                                     tentativeWord.CopyTo(attestedWords[tentativeIndex], 0);
                                     for (byte j = 0; j < 4; j++) data3writer.Write(tentativeWord[j]);
                                 }
-                                data4writer.Write((ushort)(tentativeIndex));
+                                words.Add((ushort)tentativeIndex);
                             }
-                #endregion data3 and data4
-                for (byte i = 0; i < 4; i++)
-                {
-                    UncompressedDataLength[i] = (int)CompressedData[i].Length;
-                    var zcomparray = ZlibStream.CompressBuffer(CompressedData[i].ToArray());
-                    binwriter.Write(zcomparray);
-                    CompressedDataLength[i] = zcomparray.Length;
-                    CRCCalculator.SlurpBlock(zcomparray, 0, zcomparray.Length);
-                }
-                if (Data5 != null)
-                {
-                    binwriter.Write(Data5); //immediately after the compressed Data4 block
-                    CRCCalculator.SlurpBlock(Data5, 0, Data5.Length);
                 }
             }
-            binwriter.Seek(encoding.GetByteCount(Header) + 42, 0);
-            binwriter.Write((int)(binwriter.BaseStream.Length));
-            binwriter.Write(CRCCalculator.Crc32Result); Crc32 = CRCCalculator.Crc32Result;
-            for (byte i = 0; i < 4; i++)
+
+            for (int layerArrayID = 0; layerArrayID < LayerArraysToSave.Count; ++layerArrayID) //per .j2l:
             {
-                binwriter.Write(CompressedDataLength[i]);
-                binwriter.Write(UncompressedDataLength[i]);
+                bool extraDataLevel = layerArrayID != 0;
+                var layersToSave = LayerArraysToSave[layerArrayID];
+
+                using (BinaryWriter data1writer = new BinaryWriter(CompressedData[0], encoding, true))
+                {
+                    uint SecurityString;
+                    if (Data5 == null) //not a plus-only level
+                    {
+                        if (extraDataLevel) //junk level for storing extra data in
+                        {
+                            SecurityString = SecurityStringExtraDataNotForDirectEditing;
+                        }
+                        else if (PasswordHash[0] != 0 || PasswordHash[1] != 0xBA || PasswordHash[2] != 0xBE) //has a password
+                        {
+                            SecurityString = SecurityStringPassworded;
+                        }
+                        else
+                        {
+                            SecurityString = SecurityStringInsecure;
+                        }
+                    }
+                    else //damage the security envelope for JCS
+                    {
+                        SecurityString = SecurityStringMLLE;
+                    }
+                    data1writer.Write(JCSHorizontalFocus);
+                    data1writer.Write((ushort)(SecurityString >> 16));
+                    data1writer.Write(JCSVerticalFocus);
+                    data1writer.Write((ushort)(SecurityString & 0xFFFFu));
+                    data1writer.Write((byte)(JCSFocusedLayer | (SecurityString != SecurityStringInsecure ? 0xF0 : 0x00)));
+                    data1writer.Write(MinLight);
+                    data1writer.Write(StartLight);
+                    data1writer.Write(NumberOfAnimations);
+                    data1writer.Write(UsesVerticalSplitscreen);
+                    if (VersionType == Version.BC) data1writer.Write((byte)2);
+                    else if (VersionType == Version.O) data1writer.Write((byte)1);
+                    else data1writer.Write(LevelMode);
+                    data1writer.Write((uint)0); // StreamSize; this gets replaced later with an actual calculation
+                    data1writer.Write(getBytes(encoding, Name, 32));
+                    data1writer.Write(getBytes(encoding, MainTilesetFilename, 32));
+                    data1writer.Write(getBytes(encoding, BonusLevel, 32));
+                    data1writer.Write(getBytes(encoding, NextLevel, 32));
+                    data1writer.Write(getBytes(encoding, SecretLevel, 32));
+                    data1writer.Write(getBytes(encoding, Music, 32));
+                    for (byte i = 0; i < 16; i++) data1writer.Write(getBytes(encoding, Text[i], 512));
+                    if (VersionType == Version.AGA) for (byte i = 0; i < 48; i++)
+                        {
+                            if (AGA_SoundPointer[i] == null) for (byte j = 0; j < 16; j++) data1writer.Write(0); //16 longs = 64 bytes
+                            else data1writer.Write(getBytes(encoding, (AGA_SoundPointer[i][0] + "\\" + AGA_SoundPointer[i][1]), 64));
+                        }
+                    foreach (Layer layer in layersToSave) data1writer.Write((layer.TileWidth ? 1 : 0) + (layer.TileHeight ? 2 : 0) + (layer.LimitVisibleRegion ? 4 : 0) + (layer.IsTextured ? 8 : 0) + (layer.HasStars ? 16 : 0));
+                    foreach (Layer layer in layersToSave) data1writer.Write(layer.unknown1);
+                    foreach (Layer layer in layersToSave) data1writer.Write(layer.HasTiles);
+                    foreach (Layer layer in layersToSave) data1writer.Write(layer.Width);
+                    foreach (Layer layer in layersToSave) data1writer.Write(layer.RealWidth);
+                    foreach (Layer layer in layersToSave) data1writer.Write(layer.Height);
+                    foreach (Layer layer in layersToSave) data1writer.Write(layer.ZAxis);
+                    foreach (Layer layer in layersToSave) data1writer.Write(layer.unknown2);
+                    foreach (Layer layer in layersToSave) data1writer.Write((int)(layer.WaveX * 65536));
+                    foreach (Layer layer in layersToSave) data1writer.Write((int)(layer.WaveY * 65536));
+                    foreach (Layer layer in layersToSave) data1writer.Write((int)(layer.XSpeed * 65536));
+                    foreach (Layer layer in layersToSave) data1writer.Write((int)(layer.YSpeed * 65536));
+                    foreach (Layer layer in layersToSave) data1writer.Write((int)(layer.AutoXSpeed * 65536));
+                    foreach (Layer layer in layersToSave) data1writer.Write((int)(layer.AutoYSpeed * 65536));
+                    foreach (Layer layer in layersToSave) data1writer.Write(layer.TextureMode);
+                    foreach (Layer layer in layersToSave) { data1writer.Write(layer.TexturParam1); data1writer.Write(layer.TexturParam2); data1writer.Write(layer.TexturParam3); }
+                    data1writer.Write((ushort)(MaxTiles - NumberOfAnimations));
+                    for (ushort i = 0; i < MaxTiles; i++) data1writer.Write(EventTiles[i]); // I use MaxTiles for this and TileTypes because I upsize it to 4096 when converting to TSF, but don't bother downsizing it when converting back to 1.23
+                    DiscoverTilesThatAreFlippedAndOrUsedInLayer3();
+                    for (ushort i = 0; i < MaxTiles; i++) data1writer.Write(IsEachTileFlipped[i]);
+                    for (ushort i = 0; i < MaxTiles; i++) data1writer.Write(TileTypes[i]);
+                    for (ushort i = 0; i < MaxTiles; i++) data1writer.Write((byte)0); // yeah, this section doesn't do anything
+                    if (VersionType == Version.AGA) data1writer.Write(AGA_unknownsection); // mostly zeroes, but there are some ones, so there IS information stored here... WHAT COULD IT BE?
+                    for (byte i = 0; i < NumberOfAnimations; i++) // JCS: 256 for TSF, else 128. But that's not necessary.
+                    {
+                        //if (i < NumberOfAnimations)
+                        //{
+                        data1writer.Write(Animations[i].Framewait);
+                        data1writer.Write(Animations[i].Random);
+                        data1writer.Write(Animations[i].PingPongWait);
+                        data1writer.Write(Animations[i].IsPingPong);
+                        data1writer.Write(Animations[i].Speed);
+                        data1writer.Write(Animations[i].FrameCount);
+                        for (byte j = 0; j < 64; j++) data1writer.Write(SanitizeTileValue(Animations[i].Sequence[j]));
+                        //}
+                        //else data1writer.Write(new byte[137]);
+                    }
+                    data1writer.Seek(15, SeekOrigin.Begin); //go to the StreamSize long
+                    data1writer.Write((int)CompressedData[0].Length); //and replace it with the actual length of the section
+                }
+                using (BinaryWriter data2writer = new BinaryWriter(CompressedData[1], encoding, true))
+                {
+                    if (VersionType == Version.AGA) //could use some commenting
+                    {
+                        CreateGlobalAGAEventsListIfNeedBe();
+                        AGA_LocalEvents = new List<String>();
+                        foreach (AGAEvent saveProspectiveEvent in AGA_EventMap)
+                        {
+                            if (saveProspectiveEvent.ID != 0 && !AGA_LocalEvents.Contains(AGA_GlobalEvents[(int)saveProspectiveEvent.ID])) AGA_LocalEvents.Add(AGA_GlobalEvents[(int)saveProspectiveEvent.ID]);
+                        }
+                        data2writer.Write((ushort)AGA_LocalEvents.Count);
+                        for (ushort i = 0; i < AGA_LocalEvents.Count; i++) data2writer.Write(getBytes(encoding, AGA_LocalEvents[i], 64));
+                        for (ushort y = 0; y < AGA_EventMap.GetLength(1); y++) for (ushort x = 0; x < AGA_EventMap.GetLength(0); x++) if (AGA_EventMap[x, y].ID != 0)
+                                {
+                                    data2writer.Write((ushort)x); data2writer.Write((ushort)y);
+                                    data2writer.Write((ushort)AGA_LocalEvents.FindIndex((string pointer) => { return pointer == AGA_GlobalEvents[(int)AGA_EventMap[x, y].ID]; }));
+                                    data2writer.Write(
+                                        (AGA_EventMap[x, y].Bits[0] ? (uint)32 : 0) |
+                                        (AGA_EventMap[x, y].Bits[1] ? (uint)64 : 0) |
+                                        (AGA_EventMap[x, y].Bits[2] ? (uint)128 : 0) |
+                                        (AGA_EventMap[x, y].Bits[3] ? (uint)256 : 0) |
+                                        (AGA_EventMap[x, y].Bits[4] ? (uint)512 : 0) |
+                                        (AGA_EventMap[x, y].Bits[5] ? (uint)1024 : 0) |
+                                        (AGA_EventMap[x, y].Bits[6] ? (uint)2048 : 0) |
+                                        (AGA_EventMap[x, y].Bits[7] ? (uint)4096 : 0) |
+                                        (AGA_EventMap[x, y].Bits[8] ? (uint)8192 : 0) |
+                                        (AGA_EventMap[x, y].Bits[9] ? (uint)16384 : 0) |
+                                        (AGA_EventMap[x, y].HasParameters() ? (uint)0x80000000 : 0)
+                                        );
+                                    if (AGA_EventMap[x, y].HasParameters())
+                                    {
+                                        data2writer.Write(AGA_EventMap[x, y].GetNumberOfParameters() * 4 + 8 + AGA_EventMap[x, y].GetNumberOfBytesItWillTakeToWriteStrings());
+                                        data2writer.Write((ushort)(AGA_EventMap[x, y].GetNumberOfBytesItWillTakeToWriteStrings() == 0 ? 0 : 2));
+                                        data2writer.Write((ushort)(AGA_EventMap[x, y].GetNumberOfParameters() / 2));
+                                        for (byte i = 0; i < AGA_EventMap[x, y].GetNumberOfParameters(); i++) data2writer.Write(AGA_EventMap[x, y].Longs[i]);
+                                        if ((AGA_EventMap[x, y].Strings[0] ?? "") != "" || (AGA_EventMap[x, y].Strings[1] ?? "") != "" || (AGA_EventMap[x, y].Strings[2] ?? "") != "") //needs to be updated in light of the reflection that some events use more than three strings
+                                        {
+                                            data2writer.Write(encoding.GetByteCount(AGA_EventMap[x, y].Strings[0]) + 1);
+                                            data2writer.Write(encoding.GetBytes(AGA_EventMap[x, y].Strings[0]));
+                                            data2writer.Write((byte)0);
+                                            if ((AGA_EventMap[x, y].Strings[1] ?? "") != "" || (AGA_EventMap[x, y].Strings[2] ?? "") != "")
+                                            {
+                                                data2writer.Write(encoding.GetByteCount(AGA_EventMap[x, y].Strings[1]) + 1);
+                                                data2writer.Write(encoding.GetBytes(AGA_EventMap[x, y].Strings[1]));
+                                                data2writer.Write((byte)0);
+                                                if ((AGA_EventMap[x, y].Strings[2] ?? "") != "")
+                                                {
+                                                    data2writer.Write(encoding.GetByteCount(AGA_EventMap[x, y].Strings[2]) + 1);
+                                                    data2writer.Write(encoding.GetBytes(AGA_EventMap[x, y].Strings[2]));
+                                                    data2writer.Write((byte)0);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                    }
+                    else
+                    {
+                        if (!extraDataLevel)
+                            for (uint i = 0; i < EventMap.Length; i++) data2writer.Write(EventMap[i % EventMap.GetLength(0), i / EventMap.GetLength(0)]);
+                        else //this is just an extra data level, so write some junk data to the event map... even though it might not ever get read by anything
+                            data2writer.Write(new byte[layersToSave[SpriteLayerID].Width * layersToSave[SpriteLayerID].Height * sizeof(uint)]);
+                    }
+                }
+                using (BinaryWriter data4writer = new BinaryWriter(CompressedData[3], encoding, true))
+                {
+                    List<ushort> words;
+                    foreach (var layer in layersToSave)
+                        if (WordMapsPerLayer.TryGetValue(layer, out words)) //not an empty filler layer
+                            foreach (ushort tileID in words)
+                                data4writer.Write(tileID);
+                }
+                using (BinaryWriter binwriter = new BinaryWriter(
+                    File.Open(
+                        !extraDataLevel ?
+                            filename :
+                            MLLE.PlusPropertyList.GetExtraDataLevelFilepath(filename, layerArrayID - 1),
+                        FileMode.Create, FileAccess.Write),
+                    encoding
+                ))
+                {
+                    binwriter.Write(encoding.GetBytes(Header)); //the copyright notice
+                    binwriter.Write(encoding.GetBytes(Magic)); // 'LEVL'
+                    binwriter.Write(!extraDataLevel ? PasswordHash : new byte[] { 0x00, 0xBA, 0xBE }); // The password hash is calculated in SetPassword(), not here
+                    binwriter.Write(IsHiddenInHCL || extraDataLevel); //extra .j2l files shouldn't appear in the HCL, obviously
+                    binwriter.Write(getBytes(encoding, !extraDataLevel ? Name : "MLLE Extra Data", 32));
+                    binwriter.Write((ushort)((VersionType == Version.AGA) ? 0x100 : (VersionType == Version.TSF) ? 0x203 : 0x202));
+                    binwriter.Write(new byte[40]); // To be filled in later with filesize, CRC32, and the compressed and uncompressed data lengths, for a total of 10 longs or 40 bytes.
+                    CRC32 CRCCalculator = new CRC32();
+                    for (byte i = 0; i < 4; i++)
+                    {
+                        UncompressedDataLength[i] = (int)CompressedData[i].Length;
+                        var zcomparray = ZlibStream.CompressBuffer(CompressedData[i].ToArray());
+                        binwriter.Write(zcomparray);
+                        CompressedDataLength[i] = zcomparray.Length;
+                        CRCCalculator.SlurpBlock(zcomparray, 0, zcomparray.Length);
+                    }
+                    if (!extraDataLevel && Data5 != null)
+                    {
+                        binwriter.Write(Data5); //immediately after the compressed Data4 block
+                        CRCCalculator.SlurpBlock(Data5, 0, Data5.Length);
+                    }
+                    binwriter.Seek(encoding.GetByteCount(Header) + 42, 0);
+                    binwriter.Write((int)(binwriter.BaseStream.Length));
+                    binwriter.Write(CRCCalculator.Crc32Result); Crc32 = CRCCalculator.Crc32Result;
+                    for (byte i = 0; i < 4; i++)
+                    {
+                        binwriter.Write(CompressedDataLength[i]);
+                        binwriter.Write(UncompressedDataLength[i]);
+                    }
+                }
+
+                foreach (MemoryStream stream in CompressedData)
+                    if (stream != CompressedData[2]) //not the dictionary
+                    {
+                        stream.Seek(0, SeekOrigin.Begin);
+                        stream.SetLength(0);
+                    }
             }
+            foreach (MemoryStream stream in CompressedData)
+                stream.Dispose();
         }
         return SavingResults.Success;
     }

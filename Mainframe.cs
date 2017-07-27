@@ -1456,7 +1456,7 @@ namespace MLLE
 
                 PlusPropertyList.RemovePriorReferencesToMLLELibrary(filename);
                 if (Data5 != null)
-                    J2L.PlusPropertyList.SaveLibrary(filename, J2L.Tilesets);
+                    J2L.PlusPropertyList.SaveLibrary(filename, J2L.Tilesets, (J2L.AllLayers.Count(l => (l.id < 0)) + 7) / 8);
             }
             else if (result == SavingResults.NoTilesetSelected)
             {
