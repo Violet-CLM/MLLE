@@ -84,7 +84,7 @@ namespace MLLE {
             return false;
         }
 
-        bool pbool; uint8 pbyte; float pfloat; int pint; uint puint, puint2;
+        bool pbool; uint8 pbyte; int8 pchar; float pfloat; int pint; uint puint, puint2;
         data5.pop(pbool); jjIsSnowing = pbool;
         data5.pop(pbool); jjIsSnowingOutdoorsOnly = pbool;
         data5.pop(pbyte); jjSnowingIntensity = pbyte;
@@ -145,12 +145,21 @@ namespace MLLE {
         if (pbyte != 0)
             jjLayersFromLevel(jjLevelFileName, array<uint> = {1,2,3,4,5,6,7,8});
 
-        array<jjLAYER@> newLayerOrder;
+        array<jjLAYER@> newLayerOrder, nonDefaultLayers;
         data5.pop(puint);
+        for (uint i = 8; i < puint; i += 8) {
+            array<jjLAYER@> extraLayers = jjLayersFromLevel(jjLevelFileName.substr(0, jjLevelFileName.length() - 4) + '-MLLE-Data-' + (i/8) + '.j2l', array<uint> = {1,2,3,4,5,6,7,8});
+            for (uint j = 0; j < 8; ++j)
+                nonDefaultLayers.insertLast(extraLayers[j]);
+        }
+        uint nextNonDefaultLayerID = 0;
         for (uint i = 0; i < puint; ++i) {
-            data5.pop(pbyte);
+            data5.pop(pchar);
             jjLAYER@ layer;
-            @layer = jjLayers[pbyte + 1];
+            if (pchar >= 0)
+                @layer = jjLayers[pchar + 1];
+            else
+                @layer = nonDefaultLayers[nextNonDefaultLayerID++];
             string layerName = _read7BitEncodedStringFromStream(data5);
             _layers.set(layerName, @layer);
             newLayerOrder.insertLast(layer);

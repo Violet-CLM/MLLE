@@ -451,7 +451,7 @@ namespace MLLE
                 data5bodywriter.Write((uint)Layers.Count);
                 foreach (Layer layer in Layers)
                 {
-                    data5bodywriter.Write((byte)layer.id);
+                    data5bodywriter.Write((sbyte)layer.id);
                     data5bodywriter.Write(layer.Name);
                     //other layer stuff goes here
                 }
