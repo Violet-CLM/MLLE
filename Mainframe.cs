@@ -1228,6 +1228,7 @@ namespace MLLE
             //TexturedJ2L TentativeJ2L = new TexturedJ2L();
             string newPassword = null;
             Encoding encoding = null;
+            filename = System.Text.RegularExpressions.Regex.Replace(filename, "-MLLE-Data-\\d+", ""); //if the user tries to open an extra data level, open its corresponding real level instead
         TRYTOOPEN:
             byte[] Data5 = null;
             OpeningResults openResults = J2L.OpenLevel(filename, ref Data5, newPassword, DefaultDirectories, encoding);
