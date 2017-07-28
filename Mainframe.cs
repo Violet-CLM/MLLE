@@ -101,7 +101,8 @@ namespace MLLE
         public byte? GeneratorEventID = null, StartPositionEventID = null;
 
         //int desiredindex;
-        byte CurrentLayer = 3;
+        byte CurrentLayerID = J2LFile.SpriteLayerID;
+        Layer CurrentLayer { get { return J2L.AllLayers[CurrentLayerID]; } }
         byte ZoomTileSize = 32;
         float ZoomTileFactor = 1;
 
@@ -485,19 +486,27 @@ namespace MLLE
             animaniacsToolStripMenuItem.Checked = J2L.VersionType == Version.AGA;
             jazz2V100ghToolStripMenuItem.Checked = J2L.VersionType == Version.GorH;
         }
-        internal void ChangeLayer(byte number)
+
+        int GetLayerOrderFromDefaultLayerID(int number)
         {
-            CurrentLayer = number;
-            ResizeDisplay();
-            L1Button.Checked = Gotolayer1.Checked = number == 0;
-            L2Button.Checked = Gotolayer2.Checked = number == 1;
-            L3Button.Checked = Gotolayer3.Checked = number == 2;
-            L4Button.Checked = Gotolayer4.Checked = number == 3;
-            L5Button.Checked = Gotolayer5.Checked = number == 4;
-            L6Button.Checked = Gotolayer6.Checked = number == 5;
-            L7Button.Checked = Gotolayer7.Checked = number == 6;
-            L8Button.Checked = Gotolayer8.Checked = number == 7;
+            for (int i = 0; i < J2L.AllLayers.Count; ++i)
+                if (J2L.AllLayers[i].id == number)
+                {
+                    return i;
+                }
+            return 0;
         }
+        internal void ChangeLayerByDefaultLayerID(int number)
+        {
+            ChangeLayerByOrder(GetLayerOrderFromDefaultLayerID(number));
+        }
+        internal void ChangeLayerByOrder(int number)
+        {
+            CurrentLayerID = (byte)number;
+            CheckCurrentLayerButton();
+            ResizeDisplay();
+        }
+        
         /*internal void ReadjustScrollbars()
         {
             MakeProposedScrollbarValueWork(TilesetScrollbar, TilesetScrollbar.Value);
@@ -517,23 +526,23 @@ namespace MLLE
                 return false;
             switch (keyData)
             {
-                case Keys.D1: { if (LastFocusedZone != FocusedZone.AnimationEditing) { ChangeLayer(0); return true; } else return false; }
-                case Keys.D2: { if (LastFocusedZone != FocusedZone.AnimationEditing) { ChangeLayer(1); return true; } else return false; }
-                case Keys.D3: { if (LastFocusedZone != FocusedZone.AnimationEditing) { ChangeLayer(2); return true; } else return false; }
-                case Keys.D4: { if (LastFocusedZone != FocusedZone.AnimationEditing) { ChangeLayer(3); return true; } else return false; }
-                case Keys.D5: { if (LastFocusedZone != FocusedZone.AnimationEditing) { ChangeLayer(4); return true; } else return false; }
-                case Keys.D6: { if (LastFocusedZone != FocusedZone.AnimationEditing) { ChangeLayer(5); return true; } else return false; }
-                case Keys.D7: { if (LastFocusedZone != FocusedZone.AnimationEditing) { ChangeLayer(6); return true; } else return false; }
-                case Keys.D8: { if (LastFocusedZone != FocusedZone.AnimationEditing) { ChangeLayer(7); return true; } else return false; }
+                case Keys.D1: { if (LastFocusedZone != FocusedZone.AnimationEditing) { ChangeLayerByDefaultLayerID(0); return true; } else return false; }
+                case Keys.D2: { if (LastFocusedZone != FocusedZone.AnimationEditing) { ChangeLayerByDefaultLayerID(1); return true; } else return false; }
+                case Keys.D3: { if (LastFocusedZone != FocusedZone.AnimationEditing) { ChangeLayerByDefaultLayerID(2); return true; } else return false; }
+                case Keys.D4: { if (LastFocusedZone != FocusedZone.AnimationEditing) { ChangeLayerByDefaultLayerID(3); return true; } else return false; }
+                case Keys.D5: { if (LastFocusedZone != FocusedZone.AnimationEditing) { ChangeLayerByDefaultLayerID(4); return true; } else return false; }
+                case Keys.D6: { if (LastFocusedZone != FocusedZone.AnimationEditing) { ChangeLayerByDefaultLayerID(5); return true; } else return false; }
+                case Keys.D7: { if (LastFocusedZone != FocusedZone.AnimationEditing) { ChangeLayerByDefaultLayerID(6); return true; } else return false; }
+                case Keys.D8: { if (LastFocusedZone != FocusedZone.AnimationEditing) { ChangeLayerByDefaultLayerID(7); return true; } else return false; }
 
-                case (Keys.D1 | Keys.Control): { ShowLayerProperties(0); return true; }
-                case (Keys.D2 | Keys.Control): { ShowLayerProperties(1); return true; }
-                case (Keys.D3 | Keys.Control): { ShowLayerProperties(2); return true; }
-                case (Keys.D4 | Keys.Control): { ShowLayerProperties(3); return true; }
-                case (Keys.D5 | Keys.Control): { ShowLayerProperties(4); return true; }
-                case (Keys.D6 | Keys.Control): { ShowLayerProperties(5); return true; }
-                case (Keys.D7 | Keys.Control): { ShowLayerProperties(6); return true; }
-                case (Keys.D8 | Keys.Control): { ShowLayerProperties(7); return true; }
+                case (Keys.D1 | Keys.Control): { ShowLayerPropertiesByDefaultLayerID(0); return true; }
+                case (Keys.D2 | Keys.Control): { ShowLayerPropertiesByDefaultLayerID(1); return true; }
+                case (Keys.D3 | Keys.Control): { ShowLayerPropertiesByDefaultLayerID(2); return true; }
+                case (Keys.D4 | Keys.Control): { ShowLayerPropertiesByDefaultLayerID(3); return true; }
+                case (Keys.D5 | Keys.Control): { ShowLayerPropertiesByDefaultLayerID(4); return true; }
+                case (Keys.D6 | Keys.Control): { ShowLayerPropertiesByDefaultLayerID(5); return true; }
+                case (Keys.D7 | Keys.Control): { ShowLayerPropertiesByDefaultLayerID(6); return true; }
+                case (Keys.D8 | Keys.Control): { ShowLayerPropertiesByDefaultLayerID(7); return true; }
 
                 case (Keys.Shift | Keys.T): { return setTileType(1); }
                 case (Keys.D0 | Keys.Shift): { return setTileType(0); }
@@ -565,7 +574,7 @@ namespace MLLE
                 case Keys.Delete:
                     {
                         if (LastFocusedZone == FocusedZone.AnimationEditing && SelectedAnimationFrame < WorkingAnimation.FrameCount) { WorkingAnimation.DeleteFrame(SelectedAnimationFrame); WorkingAnimation.JustBeenEdited(GameTick); if (AnimScrollbar.Maximum > 32) AnimScrollbar.Maximum -= 32; AnimScrollbar.Value = Math.Max(0, AnimScrollbar.Value - 32); LevelHasBeenModified = true; }
-                        else if (LastFocusedZone == FocusedZone.Level) Clear(CurrentLayer);
+                        else if (LastFocusedZone == FocusedZone.Level) Clear(CurrentLayerID);
                         return true;
                     }
                 case Keys.F:
@@ -611,8 +620,8 @@ namespace MLLE
                 case (Keys.Shift | Keys.E): { PasteEventAtMouse(); return true; }
                 case Keys.E: { SelectEventAtMouse(); return true; }
 
-                case Keys.Oemcomma: { SetStampDimensions(1, 1); CurrentStamp[0][0] = new TileAndEvent((LastFocusedZone == FocusedZone.Level) ? J2L.Layers[CurrentLayer].TileMap[MouseTileX, MouseTileY] : (ushort)MouseTile, 0); ShowBlankTileInStamp = true; DeselectAll(); return true; }
-                case (Keys.Shift | Keys.Oemcomma): { SetStampDimensions(1, 1); CurrentStamp[0][0] = new TileAndEvent((LastFocusedZone == FocusedZone.Level) ? J2L.Layers[CurrentLayer].TileMap[MouseTileX, MouseTileY] : (ushort)MouseTile, MouseAGAEvent.ID); ShowBlankTileInStamp = true; DeselectAll(); return true; }
+                case Keys.Oemcomma: { SetStampDimensions(1, 1); CurrentStamp[0][0] = new TileAndEvent((LastFocusedZone == FocusedZone.Level) ? CurrentLayer.TileMap[MouseTileX, MouseTileY] : (ushort)MouseTile, 0); ShowBlankTileInStamp = true; DeselectAll(); return true; }
+                case (Keys.Shift | Keys.Oemcomma): { SetStampDimensions(1, 1); CurrentStamp[0][0] = new TileAndEvent((LastFocusedZone == FocusedZone.Level) ? CurrentLayer.TileMap[MouseTileX, MouseTileY] : (ushort)MouseTile, MouseAGAEvent.ID); ShowBlankTileInStamp = true; DeselectAll(); return true; }
                 case Keys.Back: { ShowBlankTileInStamp = true; SetStampDimensions(1, 1); CurrentStamp[0][0] = new TileAndEvent(0, 0); DeselectAll(); return true; }
 
                 case (Keys.Control | Keys.B):
@@ -780,6 +789,24 @@ namespace MLLE
             }
         }
 
+        private void layersToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _suspendEvent.Reset();
+            Layer currentLayer = CurrentLayer;
+            if (new LayerOrderForm().ShowForm(this, J2L.AllLayers))
+            {
+                if (!J2L.AllLayers.Contains(currentLayer)) //got deleted
+                    currentLayer = J2L.SpriteLayer;
+                CurrentLayerID = (byte)J2L.AllLayers.IndexOf(currentLayer);
+                SetupLayerButtons();
+                ResizeDisplay();
+                LevelHasBeenModified = true;
+                Undoable.Clear(); //too much bother to figure this out
+                Redoable.Clear(); //
+            }
+            _suspendEvent.Set();
+        }
+
         private static readonly Bitmap[] RecolorableSpriteResources = { Properties.Resources._500Bumper, Properties.Resources.CarrotBumper, Properties.Resources.CarrotusPole, Properties.Resources.DiamondusPole, Properties.Resources.Flipper, Properties.Resources.JunglePole, Properties.Resources.Leaf, Properties.Resources.PsychPole, Properties.Resources.SmallTree, Properties.Resources.Snow, Properties.Resources.Splash };
         public static readonly string[] RecolorableSpriteNames = { "500 Bumper", "Carrot Bumper", "Carrotus Pole", "Diamondus Pole", "Flipper", "Jungle Pole", "Leaf", "Psych Pole", "Small Tree", "Snow", "Splash/Rain" };
         private void RecolorSprite(int spriteID)
@@ -838,19 +865,19 @@ namespace MLLE
 
         private void MenuTypeInstance_Click(object sender, EventArgs e) { J2L.TileTypes[MouseTile] = (byte)((ToolStripItem)sender).Tag; LevelHasBeenModified = true; RedrawTilesetHowManyTimes = 2; }
 
-        private void DropdownClear_Click(object sender, EventArgs e) { Clear(CurrentLayer); }
-        private void ClearButton_Click(object sender, EventArgs e) { Clear(CurrentLayer); }
+        private void DropdownClear_Click(object sender, EventArgs e) { Clear(CurrentLayerID); }
+        private void ClearButton_Click(object sender, EventArgs e) { Clear(CurrentLayerID); }
 
         private void saveAsImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _suspendEvent.Reset();
             byte OriginalTileSize = ZoomTileSize;
             LDScrollH.Value = LDScrollV.Value = 0;
-            Zoom((byte)(Math.Min(32, 4096 / Math.Max(J2L.Layers[3].Width, J2L.Layers[3].Height)/4*4)));
-            LevelDisplay.Width = (int)J2L.Layers[3].Width * ZoomTileSize + LDScrollH.Location.X;
-            LevelDisplay.Height = (int)J2L.Layers[3].Height * ZoomTileSize + LDScrollH.Height;
+            Zoom((byte)(Math.Min(32, 4096 / Math.Max(J2L.SpriteLayer.Width, J2L.SpriteLayer.Height)/4*4)));
+            LevelDisplay.Width = (int)J2L.SpriteLayer.Width * ZoomTileSize + LDScrollH.Location.X;
+            LevelDisplay.Height = (int)J2L.SpriteLayer.Height * ZoomTileSize + LDScrollH.Height;
             SafeToDisplay = false;
-            ChangeLayer(3);
+            ChangeLayerByDefaultLayerID(J2LFile.SpriteLayerID);
             SafeToDisplay = true;
             LevelDisplay.Refresh();
             LevelDisplay.Refresh();
@@ -869,22 +896,14 @@ namespace MLLE
             _suspendEvent.Set();
         } // this doesn't work right now
 
-        private void L1Button_Click(object sender, EventArgs e) { ChangeLayer(0); }
-        private void L2Button_Click(object sender, EventArgs e) { ChangeLayer(1); }
-        private void L3Button_Click(object sender, EventArgs e) { ChangeLayer(2); }
-        private void L4Button_Click(object sender, EventArgs e) { ChangeLayer(3); }
-        private void L5Button_Click(object sender, EventArgs e) { ChangeLayer(4); }
-        private void L6Button_Click(object sender, EventArgs e) { ChangeLayer(5); }
-        private void L7Button_Click(object sender, EventArgs e) { ChangeLayer(6); }
-        private void L8Button_Click(object sender, EventArgs e) { ChangeLayer(7); }
-        private void Gotolayer1_Click(object sender, EventArgs e) { ChangeLayer(0); }
-        private void Gotolayer2_Click(object sender, EventArgs e) { ChangeLayer(1); }
-        private void Gotolayer3_Click(object sender, EventArgs e) { ChangeLayer(2); }
-        private void Gotolayer4_Click(object sender, EventArgs e) { ChangeLayer(3); }
-        private void Gotolayer5_Click(object sender, EventArgs e) { ChangeLayer(4); }
-        private void Gotolayer6_Click(object sender, EventArgs e) { ChangeLayer(5); }
-        private void Gotolayer7_Click(object sender, EventArgs e) { ChangeLayer(6); }
-        private void Gotolayer8_Click(object sender, EventArgs e) { ChangeLayer(7); }
+        private void L1Button_Click(object sender, EventArgs e) { ChangeLayerByDefaultLayerID(0); }
+        private void L2Button_Click(object sender, EventArgs e) { ChangeLayerByDefaultLayerID(1); }
+        private void L3Button_Click(object sender, EventArgs e) { ChangeLayerByDefaultLayerID(2); }
+        private void L4Button_Click(object sender, EventArgs e) { ChangeLayerByDefaultLayerID(3); }
+        private void L5Button_Click(object sender, EventArgs e) { ChangeLayerByDefaultLayerID(4); }
+        private void L6Button_Click(object sender, EventArgs e) { ChangeLayerByDefaultLayerID(5); }
+        private void L7Button_Click(object sender, EventArgs e) { ChangeLayerByDefaultLayerID(6); }
+        private void L8Button_Click(object sender, EventArgs e) { ChangeLayerByDefaultLayerID(7); }
 
         private void SelectEvent_Click(object sender, EventArgs e) { SelectEventAtMouse(); }
         private void GrabEvent_Click(object sender, EventArgs e) { GrabEventAtMouse(); }
@@ -1019,23 +1038,20 @@ namespace MLLE
             _suspendEvent.Set();
         }
 
-        private void ShowLayerProperties(byte layer)
+        private void ShowLayerPropertiesByDefaultLayerID(int layer)
+        {
+            ShowLayerPropertiesByOrder(GetLayerOrderFromDefaultLayerID(layer));
+        }
+        private void ShowLayerPropertiesByOrder(int layer)
         {
             _suspendEvent.Reset();
-            LayerPropertiesForm LP = new LayerPropertiesForm(this, layer);
+            LayerPropertiesForm LP = new LayerPropertiesForm(this, J2L.AllLayers[layer], true);
             LP.ShowDialog();
+            NameLayerButtons();
             ResizeDisplay();
             _suspendEvent.Set();
         }
-        private void LayerPropertiesButton_Click(object sender, EventArgs e) { ShowLayerProperties(CurrentLayer); }
-        private void Properties1_Click(object sender, EventArgs e) { ShowLayerProperties(0); }
-        private void Properties2_Click(object sender, EventArgs e) { ShowLayerProperties(1); }
-        private void Properties3_Click(object sender, EventArgs e) { ShowLayerProperties(2); }
-        private void Properties4_Click(object sender, EventArgs e) { ShowLayerProperties(3); }
-        private void Properties5_Click(object sender, EventArgs e) { ShowLayerProperties(4); }
-        private void Properties6_Click(object sender, EventArgs e) { ShowLayerProperties(5); }
-        private void Properties7_Click(object sender, EventArgs e) { ShowLayerProperties(6); }
-        private void Properties8_Click(object sender, EventArgs e) { ShowLayerProperties(7); }
+        private void LayerPropertiesButton_Click(object sender, EventArgs e) { ShowLayerPropertiesByOrder(CurrentLayerID); }
 
         private void levelPropertiesToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -1047,7 +1063,7 @@ namespace MLLE
         }
         private void DropdownProperties_Click(object sender, EventArgs e)
         {
-            ShowLayerProperties(CurrentLayer);
+            ShowLayerPropertiesByOrder(CurrentLayerID);
         }
 
         private void EventsButton_CheckedChanged(object sender, EventArgs e) { EventDisplayMode = DropdownEvents.Checked = EventsButton.Checked; }
@@ -1212,6 +1228,7 @@ namespace MLLE
             //TexturedJ2L TentativeJ2L = new TexturedJ2L();
             string newPassword = null;
             Encoding encoding = null;
+            filename = System.Text.RegularExpressions.Regex.Replace(filename, "-MLLE-Data-\\d+", ""); //if the user tries to open an extra data level, open its corresponding real level instead
         TRYTOOPEN:
             byte[] Data5 = null;
             OpeningResults openResults = J2L.OpenLevel(filename, ref Data5, newPassword, DefaultDirectories, encoding);
@@ -1246,7 +1263,7 @@ namespace MLLE
             }
             else if (openResults == OpeningResults.Success || openResults == OpeningResults.SuccessfulButAmbiguous)
             {
-                if (!J2L.PlusPropertyList.LevelIsReadable(Data5, J2L.Tilesets, Path.GetDirectoryName(filename)))
+                if (!J2L.PlusPropertyList.LevelIsReadable(Data5, J2L.Tilesets, J2L.AllLayers, filename))
                 {
                     MessageBox.Show("This level was not saved in a format that this version of MLLE understands. Please try downloading the latest MLLE release and trying again.", "This level cannot be loaded", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     SafeToDisplay = true;
@@ -1275,7 +1292,8 @@ namespace MLLE
                 Redoable.Clear();
                 SafeToDisplay = true;
                 LevelHasBeenModified = encoding != null;
-                ChangeLayer(J2L.JCSFocusedLayer);
+                SetupLayerButtons();
+                ChangeLayerByOrder(J2L.JCSFocusedLayer);
                 MakeProposedScrollbarValueWork(LDScrollH, J2L.JCSHorizontalFocus);
                 MakeProposedScrollbarValueWork(LDScrollV, J2L.JCSVerticalFocus);
                 IdentifyTileset();
@@ -1300,7 +1318,8 @@ namespace MLLE
             LevelHasBeenModified = false;
             Undoable.Clear();
             Redoable.Clear();
-            ChangeLayer(J2L.JCSFocusedLayer);
+            SetupLayerButtons();
+            ChangeLayerByDefaultLayerID(J2L.JCSFocusedLayer);
             if (playMusicToolStripMenuItem.Checked) PlayMusic();
             GameTick = 0; GameTime = 0; sw.Restart();
             ResizeDisplay();
@@ -1374,8 +1393,21 @@ namespace MLLE
         {
             if (MusicIsPlaying) Bass.BASS_Start();
             string directory = Path.GetDirectoryName(J2L.FullFilePath);
-            File.Delete(Path.Combine(directory, "MLLEGenericFilename.j2l"));
-            File.Delete(Path.Combine(directory, "MLLEGenericFilename.j2as"));
+            string genericFilepath = Path.Combine(directory, "MLLEGenericFilename.j2l");
+            File.Delete(genericFilepath);
+            File.Delete(Path.ChangeExtension(genericFilepath, ".j2as"));
+            if (J2L.AllLayers.Count > 8) //delete extra files saved in order to store extra layers
+            {
+                int extraDataLevelID = 0;
+                while (true)
+                {
+                    string extraFilepath = PlusPropertyList.GetExtraDataLevelFilepath(genericFilepath, extraDataLevelID++);
+                    if (File.Exists(extraFilepath))
+                        File.Delete(extraFilepath);
+                    else
+                        break;
+                }
+            }
         }
         private void saveRunToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -1419,13 +1451,13 @@ namespace MLLE
         internal SavingResults SaveJ2L(string filename, bool eraseUndefinedTiles = false, bool allowDifferentTilesetVersion = false, bool storeGivenFilename = true)
         {
             _suspendEvent.Reset();
-            J2L.JCSFocusedLayer = CurrentLayer;
+            J2L.JCSFocusedLayer = CurrentLayerID;
             J2L.JCSHorizontalFocus = (ushort)LDScrollH.Value;
             J2L.JCSVerticalFocus = (ushort)LDScrollV.Value;
 
             byte[] Data5 = null;
             if (EnableableBools[J2L.VersionType][EnableableTitles.BoolDevelopingForPlus] && J2L.PlusOnly)
-                J2L.PlusPropertyList.CreateData5Section(ref Data5, J2L.Tilesets);
+                J2L.PlusPropertyList.CreateData5Section(ref Data5, J2L.Tilesets, J2L.AllLayers);
 
             SavingResults result = J2L.Save(filename, eraseUndefinedTiles, allowDifferentTilesetVersion, storeGivenFilename, Data5);
             if (result == SavingResults.Success)
@@ -1438,7 +1470,7 @@ namespace MLLE
 
                 PlusPropertyList.RemovePriorReferencesToMLLELibrary(filename);
                 if (Data5 != null)
-                    J2L.PlusPropertyList.SaveLibrary(filename, J2L.Tilesets);
+                    J2L.PlusPropertyList.SaveLibrary(filename, J2L.Tilesets, (J2L.AllLayers.Count(l => (l.id < 0)) + 7) / 8);
             }
             else if (result == SavingResults.NoTilesetSelected)
             {
@@ -1541,8 +1573,8 @@ namespace MLLE
             LDScrollH.LargeChange = LDScrollV.LargeChange = (LDScrollH.SmallChange = LDScrollV.SmallChange = ZoomTileSize) * 8;
             if (SafeToDisplay)
             {
-                LDScrollH.Maximum = Math.Max(0, (int)J2L.Layers[CurrentLayer].Width * ZoomTileSize - LevelDisplayViewportWidth + LDScrollH.LargeChange);
-                LDScrollV.Maximum = Math.Max(0, (int)J2L.Layers[CurrentLayer].Height * ZoomTileSize - LevelDisplayViewportHeight + LDScrollV.LargeChange);
+                LDScrollH.Maximum = Math.Max(0, (int)CurrentLayer.Width * ZoomTileSize - LevelDisplayViewportWidth + LDScrollH.LargeChange);
+                LDScrollV.Maximum = Math.Max(0, (int)CurrentLayer.Height * ZoomTileSize - LevelDisplayViewportHeight + LDScrollV.LargeChange);
                 TilesetScrollbar.Maximum = Math.Max(0, (!J2L.HasTiles) ? 0 : ((int)J2L.TileCount + J2L.NumberOfAnimations + 10) / 10 * 32 - TilesetScrollbar.Height + 256);
                 //TilesetScrollbar.Maximum += TilesetScrollbar.LargeChange;
                 TilesetScrollbar.Refresh();
@@ -1811,15 +1843,15 @@ namespace MLLE
                 GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
                 if (ParallaxDisplayMode != ParallaxMode.NoParallax && MaskDisplayMode != MaskMode.FullMask)
                 {
-                    xspeedparallax = (J2L.Layers[CurrentLayer].XSpeed == 0) ? 0 : (int)((LDScrollH.Value + widthreduced) / J2L.Layers[CurrentLayer].XSpeed);
-                    yspeedparallax = (J2L.Layers[CurrentLayer].YSpeed == 0) ? 0 : (int)((LDScrollV.Value + (J2L.Layers[CurrentLayer].LimitVisibleRegion ? heightreduced * 2 : heightreduced)) / J2L.Layers[CurrentLayer].YSpeed);
+                    xspeedparallax = (CurrentLayer.XSpeed == 0) ? 0 : (int)((LDScrollH.Value + widthreduced) / CurrentLayer.XSpeed);
+                    yspeedparallax = (CurrentLayer.YSpeed == 0) ? 0 : (int)((LDScrollV.Value + (CurrentLayer.LimitVisibleRegion ? heightreduced * 2 : heightreduced)) / CurrentLayer.YSpeed);
                     SetTextureTo(AtlasID.Image);
                     GL.Enable(EnableCap.Blend);
                     if (ParallaxDisplayMode == ParallaxMode.TemporaryParallax) GL.Color4((byte)255, (byte)255, (byte)255, (byte)64);
-                    for (sbyte l = 7; l >= 0; l--)
+                    for (int l = J2L.AllLayers.Count - 1; l >= 0; l--)
                     {
-                        DrawingLayer = J2L.Layers[l];
-                        if (l == CurrentLayer)
+                        DrawingLayer = J2L.AllLayers[l];
+                        if (l == CurrentLayerID)
                         {
                             GL.Color4((byte)255, (byte)255, (byte)255, (byte)255);
                             if (DrawingLayer.HasTiles) Reindeer(DrawingLayer);
@@ -1827,16 +1859,16 @@ namespace MLLE
                             {
                                 SetTextureTo(AtlasID.Mask);
                                 NoParallaxReindeer(DrawingLayer);
-                                if (l == 3 && ParallaxEventDisplayType == 0 && EventDisplayMode) EventReindeer();
+                                if (DrawingLayer == J2L.SpriteLayer && ParallaxEventDisplayType == 0 && EventDisplayMode) EventReindeer();
                                 SetTextureTo(AtlasID.Image);
                             }
-                            else if (l == 3 && ParallaxEventDisplayType == 0 && EventDisplayMode) { EventReindeer(); SetTextureTo(AtlasID.Image); }
+                            else if (DrawingLayer == J2L.SpriteLayer && ParallaxEventDisplayType == 0 && EventDisplayMode) { EventReindeer(); SetTextureTo(AtlasID.Image); }
                             if (ParallaxDisplayMode == ParallaxMode.TemporaryParallax) GL.Color4((byte)255, (byte)255, (byte)255, (byte)64);
                         }
                         else
                         {
-                            if (DrawingLayer.HasTiles) Reindeer(DrawingLayer);
-                            if (l == 3 && ParallaxEventDisplayType == 0 && EventDisplayMode) { EventReindeer(); SetTextureTo(AtlasID.Image); }
+                            if (DrawingLayer.HasTiles && !DrawingLayer.Hidden) Reindeer(DrawingLayer);
+                            if (DrawingLayer == J2L.SpriteLayer && ParallaxEventDisplayType == 0 && EventDisplayMode) { EventReindeer(); SetTextureTo(AtlasID.Image); }
                         }
                     }
                     if (ParallaxEventDisplayType == 1 && EventDisplayMode) EventReindeer();
@@ -1849,17 +1881,17 @@ namespace MLLE
                     if (MaskDisplayMode == MaskMode.TemporaryMask)
                     {
                         SetTextureTo(AtlasID.Image);
-                        NoParallaxReindeer(J2L.Layers[CurrentLayer]);
+                        NoParallaxReindeer(CurrentLayer);
                         SetTextureTo(AtlasID.Mask);
                         GL.Enable(EnableCap.Blend);
-                        NoParallaxReindeer(J2L.Layers[CurrentLayer]);
-                        if (CurrentLayer == 3 && EventDisplayMode) EventReindeer();
+                        NoParallaxReindeer(CurrentLayer);
+                        if (CurrentLayer == J2L.SpriteLayer && EventDisplayMode) EventReindeer();
                     }
                     else
                     {
                         SetTextureTo((MaskDisplayMode == MaskMode.FullMask) ? AtlasID.Mask : AtlasID.Image);
-                        NoParallaxReindeer(J2L.Layers[CurrentLayer]);
-                        if (CurrentLayer == 3 && EventDisplayMode) { GL.Enable(EnableCap.Blend); EventReindeer(); }
+                        NoParallaxReindeer(CurrentLayer);
+                        if (CurrentLayer == J2L.SpriteLayer && EventDisplayMode) { GL.Enable(EnableCap.Blend); EventReindeer(); }
                     }
                 }
                 #endregion reindeer
@@ -2179,7 +2211,7 @@ namespace MLLE
         }
         internal void EventReindeer()
         {
-            Layer currentlayer = J2L.Layers[3];
+            Layer currentlayer = J2L.SpriteLayer;
             SetTextureTo(AtlasID.EventNames);
             //upperleftx = xspeedparallax - /*widthreduced -*/ ZoomTileSize;
             //upperlefty = yspeedparallax - /*heightreduced -*/ ZoomTileSize;
@@ -2410,9 +2442,9 @@ namespace MLLE
                 MouseTileY = Math.Max(0, (e.Y + LDScrollV.Value) / ZoomTileSize);
                 if (SafeToDisplay)
                 {
-                    MouseTile = MouseTileX + MouseTileY * (int)J2L.Layers[CurrentLayer].Width;
+                    MouseTile = MouseTileX + MouseTileY * (int)CurrentLayer.Width;
                 }
-                if (CurrentLayer == 3 && MouseTileX < J2L.Layers[3].Width && MouseTileX >= 0 && MouseTileY < J2L.Layers[3].Height && MouseTileY >= 0)
+                if (CurrentLayer == J2L.SpriteLayer && MouseTileX < J2L.SpriteLayer.Width && MouseTileX >= 0 && MouseTileY < J2L.SpriteLayer.Height && MouseTileY >= 0)
                 {
                     if (J2L.VersionType == Version.AGA) { MouseAGAEvent = J2L.AGA_EventMap[MouseTileX, MouseTileY]; }
                     else MouseAGAEvent.ID = J2L.EventMap[MouseTileX, MouseTileY];
@@ -2542,7 +2574,7 @@ namespace MLLE
             else if (LastFocusedZone == FocusedZone.Level)
             {
                 LayerAndSpecificTiles actionCenter = new LayerAndSpecificTiles(3);
-                ActOnATile(MouseTileX, MouseTileY, J2L.Layers[3].TileMap[MouseTileX, MouseTileY], ActiveEvent, actionCenter, true);
+                ActOnATile(MouseTileX, MouseTileY, J2L.SpriteLayer.TileMap[MouseTileX, MouseTileY], ActiveEvent, actionCenter, true);
                 //actionCenter.Specifics.Add(new Point(MouseTileX, MouseTileY), new TileAndEvent(J2L.Layers[3].TileMap[MouseTileX, MouseTileY], (actionCenter.Layer == 3) ? J2L.EventMap[MouseTileX, MouseTileY] : (uint?)null));
                 Undoable.Push(actionCenter);
                 Redoable.Clear();
@@ -2695,12 +2727,13 @@ namespace MLLE
 
         internal void Clear(byte LayerNumber)
         {
-            if (J2L.Layers[LayerNumber].HasTiles)
+            Layer layer = J2L.AllLayers[LayerNumber];
+            if (layer.HasTiles)
             {
                 LayerAndSpecificTiles ActionCenter = new LayerAndSpecificTiles(LayerNumber);
                 if (WhereSelected == FocusedZone.Level)
                 {
-                    for (ushort x = 0; x < J2L.Layers[LayerNumber].TileMap.GetLength(0); x++) for (ushort y = 0; y < J2L.Layers[LayerNumber].TileMap.GetLength(1); y++) if (IsEachTileSelected[x + 1][y + 1])
+                    for (ushort x = 0; x < layer.TileMap.GetLength(0); x++) for (ushort y = 0; y < layer.TileMap.GetLength(1); y++) if (IsEachTileSelected[x + 1][y + 1])
                             {
                                 ActOnATile(x, y, 0, 0, ActionCenter, true);
                             }
@@ -2711,7 +2744,7 @@ namespace MLLE
                     DialogResult result = MessageBox.Show(String.Format("Are you sure you want to delete the contents of layer {0}?", LayerNumber + 1), "Clear Layer", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
                     if (result == DialogResult.OK)
                     {
-                        for (ushort x = 0; x < J2L.Layers[LayerNumber].TileMap.GetLength(0); x++) for (ushort y = 0; y < J2L.Layers[LayerNumber].TileMap.GetLength(1); y++) ActOnATile(x, y, 0, 0, ActionCenter, true);
+                        for (ushort x = 0; x < layer.TileMap.GetLength(0); x++) for (ushort y = 0; y < layer.TileMap.GetLength(1); y++) ActOnATile(x, y, 0, 0, ActionCenter, true);
                     }
                     _suspendEvent.Set();
                 }
@@ -2811,6 +2844,7 @@ namespace MLLE
         {
             if (WhereSelected != FocusedZone.None)
             {
+                var tileMap = CurrentLayer.TileMap;
                 SetStampDimensions(BottomRightSelectionCorner.X - UpperLeftSelectionCorner.X, BottomRightSelectionCorner.Y - UpperLeftSelectionCorner.Y);
                 for (int x = UpperLeftSelectionCorner.X; x < BottomRightSelectionCorner.X; x++)
                     for (int y = UpperLeftSelectionCorner.Y; y < BottomRightSelectionCorner.Y; y++)
@@ -2819,9 +2853,9 @@ namespace MLLE
                             TileAndEvent tileToAddToStamp;
                             if ((WhereSelected == FocusedZone.Level))
                             {
-                                tileToAddToStamp = new TileAndEvent(J2L.Layers[CurrentLayer].TileMap[x, y], J2L.EventMap[x, y]);
+                                tileToAddToStamp = new TileAndEvent(tileMap[x, y], J2L.EventMap[x, y]);
                                 if (cut) {
-                                    J2L.Layers[CurrentLayer].TileMap[x, y] = 0;
+                                    tileMap[x, y] = 0;
                                     J2L.EventMap[x, y] = 0;
                                 }
                             }
@@ -2885,17 +2919,16 @@ namespace MLLE
         private void ActOnATile(int x, int y, ushort? tile, uint ev, LayerAndSpecificTiles actionCenter, bool blankTilesOkay) { ActOnATile(x, y, tile, new AGAEvent(ev), actionCenter, blankTilesOkay); }
         private void ActOnATile(int x, int y, ushort? tile, AGAEvent? ev, LayerAndSpecificTiles actionCenter, bool blankTilesOkay)
         {
+            Layer layer = J2L.AllLayers[actionCenter.Layer];
+            if (x >= 0 && y >= 0 && x < layer.TileMap.GetLength(0) && y < layer.TileMap.GetLength(1) && tile != null && (blankTilesOkay || tile > 0))
             {
-                if (x >= 0 && y >= 0 && x < J2L.Layers[actionCenter.Layer].TileMap.GetLength(0) && y < J2L.Layers[actionCenter.Layer].TileMap.GetLength(1) && tile != null && (blankTilesOkay || tile > 0))
+                if (J2L.VersionType == Version.AGA) actionCenter.Specifics.Add(new Point(x, y), new TileAndEvent(layer.TileMap[x, y], (actionCenter.Layer == J2LFile.SpriteLayerID) ? J2L.AGA_EventMap[x, y] : (AGAEvent?)null));
+                else actionCenter.Specifics.Add(new Point(x, y), new TileAndEvent(layer.TileMap[x, y], (actionCenter.Layer == J2LFile.SpriteLayerID) ? J2L.EventMap[x, y] : (uint?)null));
+                layer.TileMap[x, y] = (ushort)tile;
+                if (actionCenter.Layer == J2LFile.SpriteLayerID)
                 {
-                    if (J2L.VersionType == Version.AGA) actionCenter.Specifics.Add(new Point(x, y), new TileAndEvent(J2L.Layers[actionCenter.Layer].TileMap[x, y], (actionCenter.Layer == 3) ? J2L.AGA_EventMap[x, y] : (AGAEvent?)null));
-                    else actionCenter.Specifics.Add(new Point(x, y), new TileAndEvent(J2L.Layers[actionCenter.Layer].TileMap[x, y], (actionCenter.Layer == 3) ? J2L.EventMap[x, y] : (uint?)null));
-                    J2L.Layers[actionCenter.Layer].TileMap[x, y] = (ushort)tile;
-                    if (actionCenter.Layer == 3)
-                    {
-                        if (J2L.VersionType == Version.AGA) J2L.AGA_EventMap[x, y] = ev ?? new AGAEvent(0);
-                        else J2L.EventMap[x, y] = (ev == null) ? 0 : ((AGAEvent)ev).ID;
-                    }
+                    if (J2L.VersionType == Version.AGA) J2L.AGA_EventMap[x, y] = ev ?? new AGAEvent(0);
+                    else J2L.EventMap[x, y] = (ev == null) ? 0 : ((AGAEvent)ev).ID;
                 }
             }
         }
@@ -2911,7 +2944,7 @@ namespace MLLE
         private void TakeAction()
         {
             if (WhereSelected == FocusedZone.Tileset) DeselectAll();
-            LayerAndSpecificTiles ActionCenter = new LayerAndSpecificTiles(CurrentLayer);
+            LayerAndSpecificTiles ActionCenter = new LayerAndSpecificTiles(CurrentLayerID);
             bool shiftPressed = Control.ModifierKeys == Keys.Shift || Control.ModifierKeys == (Keys.Control | Keys.Shift);
             #region paintbrush
             if (VisibleEditingTool == PaintbrushButton)
@@ -2932,10 +2965,11 @@ namespace MLLE
             #region fill
             else if (VisibleEditingTool == FillButton)
             {
-                if (MouseTileX < J2L.Layers[CurrentLayer].Width && MouseTileY < J2L.Layers[CurrentLayer].Height)
+                Layer layer = CurrentLayer;
+                if (MouseTileX < layer.Width && MouseTileY < layer.Height)
                 {
                     foreach (bool[] col in ShouldEachTileBeFilledIn) for (ushort y = 0; y < col.Length; y++) col[y] = false;
-                    ArrayMap<ushort> TileMap = J2L.Layers[CurrentLayer].TileMap;
+                    ArrayMap<ushort> TileMap = layer.TileMap;
                     ushort TargetTileID = TileMap[MouseTileX, MouseTileY];
                     bool SelectedOnly = IsEachTileSelected[MouseTileX + 1][MouseTileY + 1];
                     TryToFillTile(MouseTileX, MouseTileY, TileMap, ref TargetTileID, ref SelectedOnly, ref shiftPressed, ref ActionCenter);
@@ -2943,15 +2977,15 @@ namespace MLLE
                     {
                         Point FillPoint = FillingQ.Dequeue();
                         if (FillPoint.X > 0) TryToFillTile(FillPoint.X - 1, FillPoint.Y, TileMap, ref TargetTileID, ref SelectedOnly, ref shiftPressed, ref ActionCenter);
-                        if (FillPoint.X < J2L.Layers[CurrentLayer].Width - 1) TryToFillTile(FillPoint.X + 1, FillPoint.Y, TileMap, ref TargetTileID, ref SelectedOnly, ref shiftPressed, ref ActionCenter);
+                        if (FillPoint.X < layer.Width - 1) TryToFillTile(FillPoint.X + 1, FillPoint.Y, TileMap, ref TargetTileID, ref SelectedOnly, ref shiftPressed, ref ActionCenter);
                         if (FillPoint.Y > 0) TryToFillTile(FillPoint.X, FillPoint.Y - 1, TileMap, ref TargetTileID, ref SelectedOnly, ref shiftPressed, ref ActionCenter);
-                        if (FillPoint.Y < J2L.Layers[CurrentLayer].Height - 1) TryToFillTile(FillPoint.X, FillPoint.Y + 1, TileMap, ref TargetTileID, ref SelectedOnly, ref shiftPressed, ref ActionCenter);
+                        if (FillPoint.Y < layer.Height - 1) TryToFillTile(FillPoint.X, FillPoint.Y + 1, TileMap, ref TargetTileID, ref SelectedOnly, ref shiftPressed, ref ActionCenter);
                     }
-                    for (ushort x = 0; x < ShouldEachTileBeFilledIn.Length; x++)
+                    /*for (ushort x = 0; x < ShouldEachTileBeFilledIn.Length; x++)
                         for (ushort y = 0; y < ShouldEachTileBeFilledIn.Length; y++)
                             if (ShouldEachTileBeFilledIn[x][y])
                             {
-                                /*if (Control.ModifierKeys == Keys.Control) DrawPoint = MakeUpSomeValidStampCoordinates(shiftPressed, 0, 0, CurrentStamp.Length, CurrentStamp[0].Length);
+                                if (Control.ModifierKeys == Keys.Control) DrawPoint = MakeUpSomeValidStampCoordinates(shiftPressed, 0, 0, CurrentStamp.Length, CurrentStamp[0].Length);
                                 else
                                 {
                                     DrawPoint.X = x - MouseTileX;
@@ -2961,8 +2995,8 @@ namespace MLLE
                                     while (DrawPoint.Y < 0) DrawPoint.Y += CurrentStamp[0].Length;
                                     DrawPoint.Y %= CurrentStamp[0].Length;
                                 }
-                                ActOnATile(x, y, CurrentStamp[DrawPoint.X][DrawPoint.Y].Tile, CurrentStamp[DrawPoint.X][DrawPoint.Y].Event, ActionCenter, shiftPressed | ShowBlankTileInStamp);*/
-                            }
+                                ActOnATile(x, y, CurrentStamp[DrawPoint.X][DrawPoint.Y].Tile, CurrentStamp[DrawPoint.X][DrawPoint.Y].Event, ActionCenter, shiftPressed | ShowBlankTileInStamp);
+                            }*/
                 }
             }
             #endregion fill
@@ -3051,13 +3085,14 @@ namespace MLLE
         {
             if (grabFrom.Count > 0)
             {
-                LayerAndSpecificTiles ReplacedActions = grabFrom.Pop(), NewActions = new LayerAndSpecificTiles(ReplacedActions.Layer); ;
+                LayerAndSpecificTiles ReplacedActions = grabFrom.Pop(), NewActions = new LayerAndSpecificTiles(ReplacedActions.Layer);
+                var tileMap = J2L.AllLayers[ReplacedActions.Layer].TileMap;
                 foreach (Point p in ReplacedActions.Specifics.Keys)
                 {
-                    if (J2L.VersionType == Version.AGA) NewActions.Specifics.Add(p, new TileAndEvent(J2L.Layers[ReplacedActions.Layer].TileMap[p.X, p.Y], J2L.AGA_EventMap[p.X, p.Y]));
-                    else NewActions.Specifics.Add(p, new TileAndEvent(J2L.Layers[ReplacedActions.Layer].TileMap[p.X, p.Y], J2L.EventMap[p.X, p.Y]));
-                    J2L.Layers[ReplacedActions.Layer].TileMap[p.X, p.Y] = ReplacedActions.Specifics[p].Tile;
-                    if (ReplacedActions.Layer == 3)
+                    if (J2L.VersionType == Version.AGA) NewActions.Specifics.Add(p, new TileAndEvent(tileMap[p.X, p.Y], J2L.AGA_EventMap[p.X, p.Y]));
+                    else NewActions.Specifics.Add(p, new TileAndEvent(tileMap[p.X, p.Y], J2L.EventMap[p.X, p.Y]));
+                    tileMap[p.X, p.Y] = ReplacedActions.Specifics[p].Tile;
+                    if (ReplacedActions.Layer == J2LFile.SpriteLayerID)
                     {
                         if (J2L.VersionType == Version.AGA) J2L.AGA_EventMap[p.X, p.Y] = ((AGAEvent)ReplacedActions.Specifics[p].Event);
                         else J2L.EventMap[p.X, p.Y] = ((AGAEvent)ReplacedActions.Specifics[p].Event).ID;
@@ -3069,7 +3104,61 @@ namespace MLLE
 
         #endregion editing functions
 
-        private void contextMenuStrip1_Opening(object sender, CancelEventArgs e) { }
+        ToolStripButton[] LayerButtons = new ToolStripButton[0];
+        private void SetupLayerButtons()
+        {
+            foreach (var button in LayerButtons)
+                DisplayToolstrip.Items.Remove(button);
+            LayerButtons = new ToolStripButton[J2L.AllLayers.Count];
+            int index = DisplayToolstrip.Items.IndexOf(toolStripSeparator8);
+            for (int i = 0; i < LayerButtons.Length; ++i)
+            {
+                int layerIndex = i;
+                var layer = J2L.AllLayers[layerIndex];
+                var button = LayerButtons[layerIndex] = new ToolStripButton((layer.id >= 0) ? (layer.id + 1).ToString() : "L");
+                button.Size = new Size(23, 22);
+                button.Click += (s, e) => {
+                    ChangeLayerByOrder(layerIndex);
+                };
+                button.MouseEnter += DescribableControl_MouseEnter;
+                DisplayToolstrip.Items.Insert(index, button);
+            }
+            NameLayerButtons();
+            CheckCurrentLayerButton();
+        }
+        void NameLayerButtons()
+        {
+            for (int i = 0; i < LayerButtons.Length; ++i)
+                LayerButtons[i].Tag = "Switch to " + J2L.AllLayers[i].Name;
+        }
+        private void CheckCurrentLayerButton() {
+            for (int i = 0; i < LayerButtons.Length; ++i)
+                LayerButtons[i].Checked = (CurrentLayerID == i);
+        }
+
+        private void contextMenuStrip1_Opening(object sender, CancelEventArgs e) {
+            SelectLayer.DropDownItems.Clear();
+            LayerProperties.DropDownItems.Clear();
+            for (int i = 0; i < J2L.AllLayers.Count; ++i)
+            {
+                int layerIndex = i;
+                string layerName = J2L.AllLayers[layerIndex].ToString();
+
+                var toolStripItem = new ToolStripMenuItem(layerName);
+                toolStripItem.Checked = (layerIndex == CurrentLayerID);
+                toolStripItem.Click += (s, ee) => {
+                    ChangeLayerByOrder(layerIndex);
+                };
+                SelectLayer.DropDownItems.Add(toolStripItem);
+
+                toolStripItem = new ToolStripMenuItem(layerName);
+                toolStripItem.Click += (s, ee) => {
+                    ShowLayerPropertiesByOrder(layerIndex);
+                };
+                LayerProperties.DropDownItems.Add(toolStripItem);
+            }
+        }
+
         private void Mainframe_Resize(object sender, EventArgs e) { }
         private void changeVersionToolStripMenuItem_MouseHover(object sender, EventArgs e)
         {

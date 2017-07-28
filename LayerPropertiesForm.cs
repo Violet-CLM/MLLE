@@ -15,11 +15,14 @@ namespace MLLE
         Mainframe SourceForm;
         byte CurrentLayer;
         Layer DataSource;
+        bool ShowLayerSelection;
         int[] newrectangle;
-        public LayerPropertiesForm(Mainframe parent, byte Layer)
+        internal LayerPropertiesForm(Mainframe parent, Layer layer, bool showLayerSelection)
         {
             SourceForm = parent;
-            CurrentLayer = Layer;
+            DataSource = layer;
+            CurrentLayer = (byte)((showLayerSelection) ? parent.J2L.AllLayers.IndexOf(layer) : 0);
+            ShowLayerSelection = showLayerSelection;
             InitializeComponent();
         }
         private void LayerPropertiesForm_Load(object sender, EventArgs e)
@@ -60,38 +63,59 @@ namespace MLLE
             }
             TextureModeSelect.Items.Clear();
             for (ushort i = 0; i < SourceForm.TextureTypes.Count; i++) TextureModeSelect.Items.Add(SourceForm.TextureTypes[i][0].Trim());
-            LayerSelect.SelectedIndex = CurrentLayer;
+            if (!ShowLayerSelection)
+            {
+                ButtonApply.Hide();
+                groupBox1.Hide();
+                var amountToShrinkWindow = groupBox2.Location.Y - groupBox1.Location.Y;
+                foreach (GroupBox foo in new GroupBox[] { groupBox2, groupBox3, groupBox4, groupBoxPlus })
+                { foo.Location = new Point(foo.Location.X, foo.Location.Y - amountToShrinkWindow); }
+                Height -= amountToShrinkWindow;
+                if (DataSource.id == J2LFile.SpriteLayerID || DataSource.id == 7)
+                    Copy4.Hide();
+                ReadLayer(DataSource);
+            }
+            else
+            {
+                LayerSelect.Items.AddRange(SourceForm.J2L.AllLayers.ToArray());
+                LayerSelect.SelectedIndex = CurrentLayer;
+            }
         }
 
-        private void ReadLayer(byte Layer)
+        private void ReadLayer(Layer layer)
         {
-            DataSource = SourceForm.J2L.Layers[Layer];
-            WidthBox.Value = DataSource.Width;
-            HeightBox.Value = DataSource.Height;
-            //PHASEWidthBox.Text = DataSource.Width.ToString();
-            //PHASEHeightBox.Text = DataSource.Height.ToString();
-            TileWidth.Checked = DataSource.TileWidth;
-            TileHeight.Checked = DataSource.TileHeight;
-            XSpeed.Text = DataSource.XSpeed.ToString();
-            AutoXSpeed.Text = DataSource.AutoXSpeed.ToString();
-            YSpeed.Text = DataSource.YSpeed.ToString();
-            AutoYSpeed.Text = DataSource.AutoYSpeed.ToString();
-            LimitVisibleRegion.Checked = DataSource.LimitVisibleRegion;
-            TextureMode.Checked = DataSource.IsTextured;
-            Stars.Checked = DataSource.HasStars;
-            Param1.Value = DataSource.TexturParam1;
-            Param2.Value = DataSource.TexturParam2;
-            Param3.Value = DataSource.TexturParam3;
-            //PHASEParam1.Text = DataSource.TexturParam1.ToString();
-            //PHASEParam2.Text = DataSource.TexturParam2.ToString();
-            //PHASEParam3.Text = DataSource.TexturParam3.ToString();
-            ColorBox.BackColor = Color.FromArgb(DataSource.TexturParam1, DataSource.TexturParam2, DataSource.TexturParam3);
-            TextureModeSelect.SelectedIndex = DataSource.TextureMode;
-            XOffset.Text = DataSource.WaveX.ToString();
-            YOffset.Text = DataSource.WaveY.ToString();
+            WidthBox.Value = layer.Width;
+            HeightBox.Value = layer.Height;
+            //PHASEWidthBox.Text = layer.Width.ToString();
+            //PHASEHeightBox.Text = layer.Height.ToString();
+            TileWidth.Checked = layer.TileWidth;
+            TileHeight.Checked = layer.TileHeight;
+            XSpeed.Text = layer.XSpeed.ToString();
+            AutoXSpeed.Text = layer.AutoXSpeed.ToString();
+            YSpeed.Text = layer.YSpeed.ToString();
+            AutoYSpeed.Text = layer.AutoYSpeed.ToString();
+            LimitVisibleRegion.Checked = layer.LimitVisibleRegion;
+            TextureMode.Checked = layer.IsTextured;
+            Stars.Checked = layer.HasStars;
+            Param1.Value = layer.TexturParam1;
+            Param2.Value = layer.TexturParam2;
+            Param3.Value = layer.TexturParam3;
+            //PHASEParam1.Text = layer.TexturParam1.ToString();
+            //PHASEParam2.Text = layer.TexturParam2.ToString();
+            //PHASEParam3.Text = layer.TexturParam3.ToString();
+            ColorBox.BackColor = Color.FromArgb(layer.TexturParam1, layer.TexturParam2, layer.TexturParam3);
+            TextureModeSelect.SelectedIndex = layer.TextureMode;
+            XOffset.Text = layer.WaveX.ToString();
+            YOffset.Text = layer.WaveY.ToString();
+            NameBox.Text = layer.Name;
+            Hidden.Checked = layer.Hidden;
+            SpriteMode.SelectedIndex = layer.SpriteMode;
+            SpriteParam.Value = layer.SpriteParam;
+            RotationAngle.Value = layer.RotationAngle;
+            RotationRadiusMultiplier.Value = layer.RotationRadiusMultiplier;
         }
 
-        private void ApplyChanges()
+        private bool ApplyChanges()
         {
             newrectangle = null;
             lock (DataSource)
@@ -99,7 +123,7 @@ namespace MLLE
                 if (DataSource.Width != WidthBox.Value || DataSource.Height != HeightBox.Value)
                 {
                     newrectangle = LayerAlign.Show(CurrentLayer, (int)WidthBox.Value - (int)DataSource.Width, (int)HeightBox.Value - (int)DataSource.Height);
-                    if (newrectangle == null) return;
+                    if (newrectangle == null) return false;
                     SourceForm.Undoable = new Stack<MLLE.Mainframe.LayerAndSpecificTiles>(SourceForm.Undoable.Where(action => action.Layer != CurrentLayer));
                     SourceForm.Redoable = new Stack<MLLE.Mainframe.LayerAndSpecificTiles>(SourceForm.Redoable.Where(action => action.Layer != CurrentLayer));
                 }
@@ -130,7 +154,7 @@ namespace MLLE
                                 : (ushort)0;
                         }
 
-                    if (CurrentLayer == 3) //sprite layer, i.e. events are associated with this one
+                    if (DataSource.id == J2LFile.SpriteLayerID) //sprite layer, i.e. events are associated with this one
                     {
                         if (SourceForm.J2L.VersionType == Version.AGA)
                         {
@@ -190,8 +214,16 @@ namespace MLLE
                 DataSource.TexturParam2 = (byte)Param2.Value;
                 DataSource.TexturParam3 = (byte)Param3.Value;
                 DataSource.TextureMode = (byte)TextureModeSelect.SelectedIndex;
+                DataSource.Name = NameBox.Text;
+                DataSource.Hidden = Hidden.Checked;
+                DataSource.SpriteMode = (byte)SpriteMode.SelectedIndex;
+                DataSource.SpriteParam = (byte)SpriteParam.Value;
+                DataSource.RotationAngle = (int)RotationAngle.Value;
+                DataSource.RotationRadiusMultiplier = (int)RotationRadiusMultiplier.Value;
                 SourceForm.LevelHasBeenModified = true;
             }
+
+            return true;
         }
 
         private void TextureModeSelect_SelectedIndexChanged(object sender, EventArgs e)
@@ -217,6 +249,7 @@ namespace MLLE
                 if (properties.Length >= 6) { Param3.Visible = BlueLabel.Visible = true; BlueLabel.Text = properties[5].Trim(); }
                 ColorLabel.Visible = ColorBox.Visible = false;
             }
+            GenericInputChanged(sender, e);
         }
 
         private void panel1_Click(object sender, EventArgs e)
@@ -226,6 +259,7 @@ namespace MLLE
             Param1.Value = colorDialog1.Color.R;
             Param2.Value = colorDialog1.Color.G;
             Param3.Value = colorDialog1.Color.B;
+            GenericInputChanged(sender, e);
         }
 
         private void CancelButton_Click(object sender, EventArgs e) { Close(); }
@@ -233,14 +267,15 @@ namespace MLLE
         private void LayerSelect_SelectedIndexChanged(object sender, EventArgs e)
         {
             CurrentLayer = (byte)LayerSelect.SelectedIndex;
+            ReadLayer(DataSource = SourceForm.J2L.AllLayers[CurrentLayer]);
             TileWidth.Enabled = TileHeight.Enabled = (
                 (
-                    groupBoxPlus.Enabled = groupBox2.Enabled = TextureMode.Enabled = (CurrentLayer != 3)
+                    XOffset.Enabled = YOffset.Enabled = groupBox2.Enabled = TextureMode.Enabled = (DataSource.id != J2LFile.SpriteLayerID)
                 ) ||
                 SourceForm.EnableableBools[SourceForm.J2L.VersionType][EnableableTitles.BoolDevelopingForPlus]
             );
-            Copy4.Enabled = (CurrentLayer != 3 && CurrentLayer != 7);
-            ReadLayer(CurrentLayer);
+            Copy4.Enabled = (DataSource.id != J2LFile.SpriteLayerID && DataSource.id != 7);
+            ButtonApply.Enabled = false;
         }
 
         private void TextureMode_CheckedChanged(object sender, EventArgs e)
@@ -249,9 +284,12 @@ namespace MLLE
             WidthBox.Enabled = HeightBox.Enabled = WidthLabel.Enabled = HeightLabel.Enabled = !TextureMode.Checked;
             if (TextureMode.Checked) WidthBox.Value = HeightBox.Value = 8;
             else { WidthBox.Value = DataSource.Width; HeightBox.Value = DataSource.Height; }
-            LimitVisibleRegion.Enabled = !(TextureMode.Checked || TileHeight.Checked);
+            TileHeight_CheckedChanged(sender, e);
         }
-        private void TileHeight_CheckedChanged(object sender, EventArgs e) { LimitVisibleRegion.Enabled = !(TextureMode.Checked || TileHeight.Checked); }
+        private void TileHeight_CheckedChanged(object sender, EventArgs e) {
+            LimitVisibleRegion.Enabled = !(TextureMode.Checked || TileHeight.Checked);
+            GenericInputChanged(sender, e);
+        }
 
         private void OKButton_Click(object sender, EventArgs e)
         {
@@ -261,9 +299,23 @@ namespace MLLE
 
         private void Copy4_Click(object sender, EventArgs e)
         {
-            ReadLayer(3);
-            DataSource = SourceForm.J2L.Layers[CurrentLayer];
+            string name = NameBox.Text;
+            ReadLayer(SourceForm.J2L.SpriteLayer);
+            NameBox.Text = name; //I guess?
         }
 
+        private void GenericInputChanged(object sender, EventArgs e)
+        {
+            ButtonApply.Enabled = true;
+        }
+
+        private void ButtonApply_Click(object sender, EventArgs e)
+        {
+            if (ApplyChanges())
+            {
+                LayerSelect.Items[LayerSelect.SelectedIndex] = SourceForm.J2L.AllLayers[LayerSelect.SelectedIndex].ToString();
+                ButtonApply.Enabled = false;
+            }
+        }
     }
 }

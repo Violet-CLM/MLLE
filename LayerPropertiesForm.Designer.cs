@@ -64,10 +64,22 @@
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.Copy4 = new System.Windows.Forms.Button();
             this.groupBoxPlus = new System.Windows.Forms.GroupBox();
+            this.SpriteMode = new System.Windows.Forms.ComboBox();
+            this.LabelRotationAngle = new System.Windows.Forms.Label();
+            this.Hidden = new System.Windows.Forms.CheckBox();
+            this.NameBox = new System.Windows.Forms.TextBox();
+            this.LabelRotationRadiusMultiplier = new System.Windows.Forms.Label();
+            this.NameLabel = new System.Windows.Forms.Label();
             this.OffsetXLabel = new System.Windows.Forms.Label();
+            this.LabelSpriteMode = new System.Windows.Forms.Label();
             this.XOffset = new System.Windows.Forms.TextBox();
+            this.LabelSpriteParam = new System.Windows.Forms.Label();
             this.YOffset = new System.Windows.Forms.TextBox();
             this.OffsetYLabel = new System.Windows.Forms.Label();
+            this.ButtonApply = new System.Windows.Forms.Button();
+            this.RotationAngle = new System.Windows.Forms.NumericUpDown();
+            this.RotationRadiusMultiplier = new System.Windows.Forms.NumericUpDown();
+            this.SpriteParam = new System.Windows.Forms.NumericUpDown();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -78,6 +90,9 @@
             ((System.ComponentModel.ISupportInitialize)(this.Param2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.Param3)).BeginInit();
             this.groupBoxPlus.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.RotationAngle)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.RotationRadiusMultiplier)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.SpriteParam)).BeginInit();
             this.SuspendLayout();
             // 
             // OKButton
@@ -115,15 +130,6 @@
             // 
             this.LayerSelect.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.LayerSelect.FormattingEnabled = true;
-            this.LayerSelect.Items.AddRange(new object[] {
-            "1: Foreground layer #2",
-            "2: Foreground layer #1",
-            "3: Sprite foreground layer",
-            "4: Sprite layer",
-            "5: Background layer #1",
-            "6: Background layer #2",
-            "7: Background layer #3",
-            "8: Background layer"});
             this.LayerSelect.Location = new System.Drawing.Point(7, 20);
             this.LayerSelect.Name = "LayerSelect";
             this.LayerSelect.Size = new System.Drawing.Size(246, 21);
@@ -164,6 +170,7 @@
             this.YSpeed.Size = new System.Drawing.Size(50, 20);
             this.YSpeed.TabIndex = 6;
             this.YSpeed.Text = "0";
+            this.YSpeed.TextChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // AutoYLabel
             // 
@@ -182,6 +189,7 @@
             this.AutoYSpeed.Size = new System.Drawing.Size(50, 20);
             this.AutoYSpeed.TabIndex = 4;
             this.AutoYSpeed.Text = "0";
+            this.AutoYSpeed.TextChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // XLabel
             // 
@@ -200,6 +208,7 @@
             this.XSpeed.Size = new System.Drawing.Size(50, 20);
             this.XSpeed.TabIndex = 2;
             this.XSpeed.Text = "0";
+            this.XSpeed.TextChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // AutoXSpeed
             // 
@@ -209,6 +218,7 @@
             this.AutoXSpeed.Size = new System.Drawing.Size(50, 20);
             this.AutoXSpeed.TabIndex = 0;
             this.AutoXSpeed.Text = "0";
+            this.AutoXSpeed.TextChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // AutoXLabel
             // 
@@ -237,7 +247,7 @@
             this.groupBox3.Controls.Add(this.TileWidth);
             this.groupBox3.Controls.Add(this.WidthLabel);
             this.groupBox3.Controls.Add(this.HeightLabel);
-            this.groupBox3.Location = new System.Drawing.Point(13, 203);
+            this.groupBox3.Location = new System.Drawing.Point(13, 277);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(259, 93);
             this.groupBox3.TabIndex = 8;
@@ -265,6 +275,7 @@
             0,
             0,
             0});
+            this.WidthBox.ValueChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // HeightBox
             // 
@@ -287,6 +298,7 @@
             0,
             0,
             0});
+            this.HeightBox.ValueChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // LimitVisibleRegion
             // 
@@ -297,6 +309,7 @@
             this.LimitVisibleRegion.TabIndex = 6;
             this.LimitVisibleRegion.Text = "Limit visible region";
             this.LimitVisibleRegion.UseVisualStyleBackColor = true;
+            this.LimitVisibleRegion.CheckedChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // TileHeight
             // 
@@ -318,6 +331,7 @@
             this.TileWidth.TabIndex = 4;
             this.TileWidth.Text = "Tile width";
             this.TileWidth.UseVisualStyleBackColor = true;
+            this.TileWidth.CheckedChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // HeightLabel
             // 
@@ -341,7 +355,7 @@
             this.groupBox4.Controls.Add(this.Stars);
             this.groupBox4.Controls.Add(this.ColorBox);
             this.groupBox4.Controls.Add(this.TextureMode);
-            this.groupBox4.Location = new System.Drawing.Point(13, 303);
+            this.groupBox4.Location = new System.Drawing.Point(13, 377);
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.Size = new System.Drawing.Size(259, 93);
             this.groupBox4.TabIndex = 9;
@@ -359,6 +373,7 @@
             this.Param1.Name = "Param1";
             this.Param1.Size = new System.Drawing.Size(50, 20);
             this.Param1.TabIndex = 13;
+            this.Param1.ValueChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // Param2
             // 
@@ -371,6 +386,7 @@
             this.Param2.Name = "Param2";
             this.Param2.Size = new System.Drawing.Size(50, 20);
             this.Param2.TabIndex = 11;
+            this.Param2.ValueChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // Param3
             // 
@@ -383,6 +399,7 @@
             this.Param3.Name = "Param3";
             this.Param3.Size = new System.Drawing.Size(50, 20);
             this.Param3.TabIndex = 9;
+            this.Param3.ValueChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // RedLabel
             // 
@@ -416,6 +433,7 @@
             // 
             // TextureModeSelect
             // 
+            this.TextureModeSelect.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.TextureModeSelect.Enabled = false;
             this.TextureModeSelect.FormattingEnabled = true;
             this.TextureModeSelect.Location = new System.Drawing.Point(9, 15);
@@ -445,6 +463,7 @@
             this.Stars.TabIndex = 2;
             this.Stars.Text = "Parallaxing stars";
             this.Stars.UseVisualStyleBackColor = true;
+            this.Stars.CheckedChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // ColorBox
             // 
@@ -476,7 +495,7 @@
             // Copy4
             // 
             this.Copy4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.Copy4.Location = new System.Drawing.Point(278, 373);
+            this.Copy4.Location = new System.Drawing.Point(278, 447);
             this.Copy4.Name = "Copy4";
             this.Copy4.Size = new System.Drawing.Size(75, 23);
             this.Copy4.TabIndex = 10;
@@ -486,16 +505,134 @@
             // 
             // groupBoxPlus
             // 
+            this.groupBoxPlus.Controls.Add(this.SpriteParam);
+            this.groupBoxPlus.Controls.Add(this.RotationAngle);
+            this.groupBoxPlus.Controls.Add(this.RotationRadiusMultiplier);
+            this.groupBoxPlus.Controls.Add(this.SpriteMode);
+            this.groupBoxPlus.Controls.Add(this.LabelRotationAngle);
+            this.groupBoxPlus.Controls.Add(this.Hidden);
+            this.groupBoxPlus.Controls.Add(this.NameBox);
+            this.groupBoxPlus.Controls.Add(this.LabelRotationRadiusMultiplier);
+            this.groupBoxPlus.Controls.Add(this.NameLabel);
             this.groupBoxPlus.Controls.Add(this.OffsetXLabel);
+            this.groupBoxPlus.Controls.Add(this.LabelSpriteMode);
             this.groupBoxPlus.Controls.Add(this.XOffset);
+            this.groupBoxPlus.Controls.Add(this.LabelSpriteParam);
             this.groupBoxPlus.Controls.Add(this.YOffset);
             this.groupBoxPlus.Controls.Add(this.OffsetYLabel);
             this.groupBoxPlus.Location = new System.Drawing.Point(13, 149);
             this.groupBoxPlus.Name = "groupBoxPlus";
-            this.groupBoxPlus.Size = new System.Drawing.Size(259, 48);
+            this.groupBoxPlus.Size = new System.Drawing.Size(259, 122);
             this.groupBoxPlus.TabIndex = 8;
             this.groupBoxPlus.TabStop = false;
             this.groupBoxPlus.Text = "JJ2+ Properties";
+            // 
+            // SpriteMode
+            // 
+            this.SpriteMode.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.SpriteMode.DropDownWidth = 175;
+            this.SpriteMode.FormattingEnabled = true;
+            this.SpriteMode.Items.AddRange(new object[] {
+            "Normal",
+            "Translucent",
+            "Tinted",
+            "[DON\'T USE]",
+            "[DON\'T USE]",
+            "Gem",
+            "[DON\'T USE]",
+            "[DON\'T USE]",
+            "[DON\'T USE]",
+            "[DON\'T USE]",
+            "Invisible",
+            "Single Color",
+            "[DON\'T USE]",
+            "[DON\'T USE]",
+            "[DON\'T USE]",
+            "Neon Glow",
+            "Frozen",
+            "Player",
+            "Pal Shift",
+            "[DON\'T USE]",
+            "Shadow",
+            "Single Hue",
+            "Brightness",
+            "Translucent Color",
+            "Translucent Player",
+            "Translucent Pal Shift",
+            "Translucent Single Hue",
+            "Alpha Map",
+            "Menu Player",
+            "Blend Normal",
+            "Blend Darken",
+            "Blend Lighten",
+            "Blend Hue",
+            "Blend Saturation",
+            "Blend Color",
+            "Blend Luminance",
+            "Blend Multiply",
+            "Blend Screen",
+            "Blend Dissolve",
+            "Blend Overlay",
+            "Blend Hard Light",
+            "Blend Soft Light",
+            "Blend Difference",
+            "Blend Dodge",
+            "Blend Burn",
+            "Blend Exclusion",
+            "Translucent Tile"});
+            this.SpriteMode.Location = new System.Drawing.Point(60, 69);
+            this.SpriteMode.MaxDropDownItems = 10;
+            this.SpriteMode.Name = "SpriteMode";
+            this.SpriteMode.Size = new System.Drawing.Size(51, 21);
+            this.SpriteMode.TabIndex = 14;
+            this.SpriteMode.SelectedIndexChanged += new System.EventHandler(this.GenericInputChanged);
+            // 
+            // LabelRotationAngle
+            // 
+            this.LabelRotationAngle.AutoSize = true;
+            this.LabelRotationAngle.Location = new System.Drawing.Point(6, 98);
+            this.LabelRotationAngle.Name = "LabelRotationAngle";
+            this.LabelRotationAngle.Size = new System.Drawing.Size(54, 13);
+            this.LabelRotationAngle.TabIndex = 14;
+            this.LabelRotationAngle.Text = "Rot.Angle";
+            // 
+            // Hidden
+            // 
+            this.Hidden.AutoSize = true;
+            this.Hidden.Location = new System.Drawing.Point(203, 46);
+            this.Hidden.Name = "Hidden";
+            this.Hidden.Size = new System.Drawing.Size(48, 17);
+            this.Hidden.TabIndex = 9;
+            this.Hidden.Text = "Hide";
+            this.Hidden.UseVisualStyleBackColor = true;
+            this.Hidden.CheckedChanged += new System.EventHandler(this.GenericInputChanged);
+            // 
+            // NameBox
+            // 
+            this.NameBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.NameBox.Location = new System.Drawing.Point(60, 44);
+            this.NameBox.Name = "NameBox";
+            this.NameBox.Size = new System.Drawing.Size(137, 20);
+            this.NameBox.TabIndex = 5;
+            this.NameBox.TextChanged += new System.EventHandler(this.GenericInputChanged);
+            // 
+            // LabelRotationRadiusMultiplier
+            // 
+            this.LabelRotationRadiusMultiplier.AutoSize = true;
+            this.LabelRotationRadiusMultiplier.Location = new System.Drawing.Point(124, 98);
+            this.LabelRotationRadiusMultiplier.Name = "LabelRotationRadiusMultiplier";
+            this.LabelRotationRadiusMultiplier.Size = new System.Drawing.Size(72, 13);
+            this.LabelRotationRadiusMultiplier.TabIndex = 12;
+            this.LabelRotationRadiusMultiplier.Text = "Rot.Rad.Multi";
+            // 
+            // NameLabel
+            // 
+            this.NameLabel.AutoSize = true;
+            this.NameLabel.Location = new System.Drawing.Point(6, 47);
+            this.NameLabel.Name = "NameLabel";
+            this.NameLabel.Size = new System.Drawing.Size(35, 13);
+            this.NameLabel.TabIndex = 4;
+            this.NameLabel.Text = "Name";
             // 
             // OffsetXLabel
             // 
@@ -506,6 +643,15 @@
             this.OffsetXLabel.TabIndex = 3;
             this.OffsetXLabel.Text = "X-Offset";
             // 
+            // LabelSpriteMode
+            // 
+            this.LabelSpriteMode.AutoSize = true;
+            this.LabelSpriteMode.Location = new System.Drawing.Point(6, 72);
+            this.LabelSpriteMode.Name = "LabelSpriteMode";
+            this.LabelSpriteMode.Size = new System.Drawing.Size(44, 13);
+            this.LabelSpriteMode.TabIndex = 10;
+            this.LabelSpriteMode.Text = "S.Mode";
+            // 
             // XOffset
             // 
             this.XOffset.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -514,6 +660,16 @@
             this.XOffset.Size = new System.Drawing.Size(50, 20);
             this.XOffset.TabIndex = 2;
             this.XOffset.Text = "0";
+            this.XOffset.TextChanged += new System.EventHandler(this.GenericInputChanged);
+            // 
+            // LabelSpriteParam
+            // 
+            this.LabelSpriteParam.AutoSize = true;
+            this.LabelSpriteParam.Location = new System.Drawing.Point(124, 72);
+            this.LabelSpriteParam.Name = "LabelSpriteParam";
+            this.LabelSpriteParam.Size = new System.Drawing.Size(65, 13);
+            this.LabelSpriteParam.TabIndex = 9;
+            this.LabelSpriteParam.Text = "S.Parameter";
             // 
             // YOffset
             // 
@@ -523,6 +679,7 @@
             this.YOffset.Size = new System.Drawing.Size(50, 20);
             this.YOffset.TabIndex = 0;
             this.YOffset.Text = "0";
+            this.YOffset.TextChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // OffsetYLabel
             // 
@@ -533,13 +690,78 @@
             this.OffsetYLabel.TabIndex = 1;
             this.OffsetYLabel.Text = "Y-Offset";
             // 
+            // ButtonApply
+            // 
+            this.ButtonApply.Location = new System.Drawing.Point(278, 70);
+            this.ButtonApply.Name = "ButtonApply";
+            this.ButtonApply.Size = new System.Drawing.Size(75, 23);
+            this.ButtonApply.TabIndex = 11;
+            this.ButtonApply.Text = "Apply";
+            this.ButtonApply.UseVisualStyleBackColor = true;
+            this.ButtonApply.Click += new System.EventHandler(this.ButtonApply_Click);
+            // 
+            // RotationAngle
+            // 
+            this.RotationAngle.Increment = new decimal(new int[] {
+            32,
+            0,
+            0,
+            0});
+            this.RotationAngle.Location = new System.Drawing.Point(61, 94);
+            this.RotationAngle.Maximum = new decimal(new int[] {
+            1024,
+            0,
+            0,
+            0});
+            this.RotationAngle.Minimum = new decimal(new int[] {
+            1024,
+            0,
+            0,
+            -2147483648});
+            this.RotationAngle.Name = "RotationAngle";
+            this.RotationAngle.Size = new System.Drawing.Size(50, 20);
+            this.RotationAngle.TabIndex = 10;
+            this.RotationAngle.ValueChanged += new System.EventHandler(this.GenericInputChanged);
+            // 
+            // RotationRadiusMultiplier
+            // 
+            this.RotationRadiusMultiplier.Location = new System.Drawing.Point(204, 95);
+            this.RotationRadiusMultiplier.Maximum = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.RotationRadiusMultiplier.Minimum = new decimal(new int[] {
+            10,
+            0,
+            0,
+            -2147483648});
+            this.RotationRadiusMultiplier.Name = "RotationRadiusMultiplier";
+            this.RotationRadiusMultiplier.Size = new System.Drawing.Size(50, 20);
+            this.RotationRadiusMultiplier.TabIndex = 9;
+            this.RotationRadiusMultiplier.ValueChanged += new System.EventHandler(this.GenericInputChanged);
+            // 
+            // SpriteParam
+            // 
+            this.SpriteParam.Location = new System.Drawing.Point(204, 69);
+            this.SpriteParam.Maximum = new decimal(new int[] {
+            255,
+            0,
+            0,
+            0});
+            this.SpriteParam.Name = "SpriteParam";
+            this.SpriteParam.Size = new System.Drawing.Size(50, 20);
+            this.SpriteParam.TabIndex = 15;
+            this.SpriteParam.ValueChanged += new System.EventHandler(this.GenericInputChanged);
+            // 
             // LayerPropertiesForm
             // 
             this.AcceptButton = this.OKButton;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
-            this.ClientSize = new System.Drawing.Size(365, 408);
+            this.ClientSize = new System.Drawing.Size(365, 482);
+            this.Controls.Add(this.ButtonApply);
             this.Controls.Add(this.groupBoxPlus);
             this.Controls.Add(this.Copy4);
             this.Controls.Add(this.groupBox4);
@@ -570,6 +792,9 @@
             ((System.ComponentModel.ISupportInitialize)(this.Param3)).EndInit();
             this.groupBoxPlus.ResumeLayout(false);
             this.groupBoxPlus.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.RotationAngle)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.RotationRadiusMultiplier)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.SpriteParam)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -616,5 +841,17 @@
         private System.Windows.Forms.TextBox XOffset;
         private System.Windows.Forms.TextBox YOffset;
         private System.Windows.Forms.Label OffsetYLabel;
+        private System.Windows.Forms.TextBox NameBox;
+        private System.Windows.Forms.Label NameLabel;
+        private System.Windows.Forms.Button ButtonApply;
+        private System.Windows.Forms.CheckBox Hidden;
+        private System.Windows.Forms.Label LabelRotationAngle;
+        private System.Windows.Forms.Label LabelRotationRadiusMultiplier;
+        private System.Windows.Forms.Label LabelSpriteMode;
+        private System.Windows.Forms.Label LabelSpriteParam;
+        private System.Windows.Forms.ComboBox SpriteMode;
+        private System.Windows.Forms.NumericUpDown SpriteParam;
+        private System.Windows.Forms.NumericUpDown RotationAngle;
+        private System.Windows.Forms.NumericUpDown RotationRadiusMultiplier;
     }
 }

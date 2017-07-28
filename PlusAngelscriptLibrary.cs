@@ -7,10 +7,10 @@ namespace MLLE
 {
     public partial struct PlusPropertyList
     {
-        const uint CurrentMLLEData5Version = 0x101;
+        const uint CurrentMLLEData5Version = 0x102;
         const string MLLEData5MagicString = "MLLE";
-        const string CurrentMLLEData5VersionStringForComparison = "0x101";
-        const string CurrentMLLEData5VersionString = "1.1";
+        const string CurrentMLLEData5VersionStringForComparison = "0x102";
+        const string CurrentMLLEData5VersionString = "1.2";
         const string AngelscriptLibraryFilename = "MLLE-Include-" + CurrentMLLEData5VersionString + ".asc";
 
         const string AngelscriptLibraryCallStockLine = "const bool MLLESetupSuccessful = MLLE::Setup();\r\n";
@@ -25,10 +25,13 @@ namespace MLLE
 #pragma require '" + AngelscriptLibraryFilename + @"'
 namespace MLLE {
     jjPAL@ Palette;
+    dictionary@ _layers;
 
     bool Setup() {
         jjPAL palette;
         @Palette = @palette;
+        dictionary layers;
+        @_layers = @layers;
 
         jjSTREAM crcCheck('" + AngelscriptLibraryFilename + @"');
         string crcLine;
@@ -68,8 +71,8 @@ namespace MLLE {
         }
         uint levelDataVersion;
         level.pop(levelDataVersion);
-        if (levelDataVersion > " + CurrentMLLEData5VersionStringForComparison + @") {
-            jjDebug('MLLE::Setup: Level\'s Data5 section was saved in a more recent version of MLLE than this script understands!');
+        if (levelDataVersion != " + CurrentMLLEData5VersionStringForComparison + @") {
+            jjDebug('MLLE::Setup: Level\'s Data5 section was saved in a different version of MLLE than this script!');
             return false;
         }
 
@@ -81,7 +84,7 @@ namespace MLLE {
             return false;
         }
 
-        bool pbool; uint8 pbyte; float pfloat; int pint; uint puint, puint2;
+        bool pbool; uint8 pbyte; int8 pchar; float pfloat; int pint; uint puint, puint2;
         data5.pop(pbool); jjIsSnowing = pbool;
         data5.pop(pbool); jjIsSnowingOutdoorsOnly = pbool;
         data5.pop(pbyte); jjSnowingIntensity = pbyte;
@@ -139,14 +142,61 @@ namespace MLLE {
             }
             jjTilesFromTileset(tilesetFilename, tileStart, tileCount, colors);
         }
-        if (pbyte != 0)
-            jjLayersFromLevel(jjLevelFileName, array<uint> = {1,2,3,4,5,6,7,8});
+        if (pbyte != 0) {
+            array<uint> layersIDsWithTileMaps;
+            for (uint i = 1; i <= 8; ++i)
+                if (jjLayers[i].hasTileMap)
+                    layersIDsWithTileMaps.insertLast(i);
+            jjLayersFromLevel(jjLevelFileName, layersIDsWithTileMaps);
+        }
+
+        array<jjLAYER@> newLayerOrder, nonDefaultLayers;
+        data5.pop(puint);
+        for (uint i = 8; i < puint; i += 8) {
+            array<uint> layerIDsToGrab;
+            for (uint j = i; j < puint && j < i + 8; ++j) {
+                layerIDsToGrab.insertLast((j & 7) + 1);
+            }
+            array<jjLAYER@> extraLayers = jjLayersFromLevel(jjLevelFileName.substr(0, jjLevelFileName.length() - 4) + '-MLLE-Data-' + (i/8) + '.j2l', layerIDsToGrab);
+            for (uint j = 0; j < extraLayers.length(); ++j)
+                nonDefaultLayers.insertLast(extraLayers[j]);
+        }
+        uint nextNonDefaultLayerID = 0;
+        for (uint i = 0; i < puint; ++i) {
+            data5.pop(pchar);
+            jjLAYER@ layer;
+            if (pchar >= 0)
+                @layer = jjLayers[pchar + 1];
+            else
+                @layer = nonDefaultLayers[nextNonDefaultLayerID++];
+            string layerName = _read7BitEncodedStringFromStream(data5);
+            _layers.set(layerName, @layer);
+            data5.pop(pbool);
+            if (layer.hasTileMap)
+                layer.hasTiles = !pbool;
+            data5.pop(pbyte);
+            layer.spriteMode = SPRITE::Mode(pbyte);
+            data5.pop(pbyte);
+            layer.spriteParam = pbyte;
+            data5.pop(pint);
+            layer.rotationAngle = pint;
+            data5.pop(pint);
+            layer.rotationRadiusMultiplier = pint;
+            newLayerOrder.insertLast(layer);
+        }
+        jjLayerOrderSet(newLayerOrder);
 
         if (!data5.isEmpty()) {
             jjDebug('MLLE::Setup: Warning, Data5 longer than expected');
         }
         
         return true;
+    }
+
+    jjLAYER@ GetLayer(const string &in name) {
+        jjLAYER@ handle = null;
+        _layers.get(name, @handle);
+        return handle;
     }
 
     jjPALCOLOR _colorFromArgb(uint Argb) {
@@ -191,7 +241,16 @@ namespace MLLE {
     }
 }";
 
-        internal void SaveLibrary(string filepath, List<J2TFile> Tilesets)
+        static string GetPragmaRequire(string filename)
+        {
+            return "#pragma require \"" + filename + "\"\r\n";
+        }
+        public static string GetExtraDataLevelFilepath(string filepath, int index)
+        {
+            return Path.Combine(Path.GetDirectoryName(filepath), Path.GetFileNameWithoutExtension(filepath) + "-MLLE-Data-" + (index + 1) + ".j2l");
+        }
+
+        internal void SaveLibrary(string filepath, List<J2TFile> Tilesets, int numberOfExtraDataLevels)
         {
             var encoding = J2LFile.FileEncoding;
             using (BinaryWriter binwriter = new BinaryWriter(File.Open(Path.Combine(Path.GetDirectoryName(filepath), AngelscriptLibraryFilename), FileMode.Create, FileAccess.Write), encoding)) {
@@ -209,9 +268,26 @@ namespace MLLE {
                 fileContents = System.IO.File.ReadAllText(scriptFilepath, encoding);
             for (int i = 1; i < Tilesets.Count; ++i)
             {
-                string pragma = "#pragma require \"" + Tilesets[i].FilenameOnly + "\"\r\n";
+                string pragma = GetPragmaRequire(Tilesets[i].FilenameOnly);
                 if (!fileContents.Contains(pragma))
                     fileContents = pragma + fileContents;
+            }
+            int extraDataLevelID = 0;
+            for (extraDataLevelID = 0; extraDataLevelID < numberOfExtraDataLevels; ++extraDataLevelID)
+            {
+                string pragma = GetPragmaRequire(Path.GetFileName(GetExtraDataLevelFilepath(filepath, extraDataLevelID)));
+                if (!fileContents.Contains(pragma))
+                    fileContents = pragma + fileContents;
+            }
+            while (true) //remove extra such pragmas/files if the number of layers has decreased since the last time this level was saved
+            {
+                string extraFilepath = GetExtraDataLevelFilepath(filepath, extraDataLevelID++);
+                File.Delete(extraFilepath);
+                string pragma = GetPragmaRequire(Path.GetFileName(extraFilepath));
+                if (fileContents.Contains(pragma))
+                    fileContents = fileContents.Replace(pragma, "");
+                else
+                    break;
             }
             if (!fileContents.Contains("MLLE::Setup()"))
                 fileContents = AngelscriptLibraryCallStockLine + fileContents;

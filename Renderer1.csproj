@@ -10,8 +10,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>MLLE</RootNamespace>
     <AssemblyName>MLLE</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <PublishUrl>publish\</PublishUrl>
@@ -38,6 +39,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -47,6 +49,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>MLLE.Program</StartupObject>
@@ -75,6 +78,12 @@
     </Compile>
     <Compile Include="EventForm.Designer.cs">
       <DependentUpon>EventForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="LayerOrderForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LayerOrderForm.Designer.cs">
+      <DependentUpon>LayerOrderForm.cs</DependentUpon>
     </Compile>
     <Compile Include="LevelProperties.cs">
       <SubType>Form</SubType>
@@ -197,6 +206,9 @@
     <EmbeddedResource Include="EventForm.resx">
       <DependentUpon>EventForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="LayerOrderForm.resx">
+      <DependentUpon>LayerOrderForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="LevelProperties.resx">
       <DependentUpon>LevelProperties.cs</DependentUpon>
     </EmbeddedResource>
@@ -242,6 +254,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="Icons\MLLE01.ico" />
     <None Include="Images\500Bumper.png" />
     <None Include="Images\CarrotBumper.png" />

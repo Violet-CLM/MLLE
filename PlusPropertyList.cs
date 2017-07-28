@@ -392,7 +392,7 @@ namespace MLLE
                 return false;
             }
         }
-        internal void CreateData5Section(ref byte[] Data5, List<J2TFile> Tilesets)
+        internal void CreateData5Section(ref byte[] Data5, List<J2TFile> Tilesets, List<Layer> Layers)
         {
             var data5header = new MemoryStream();
             using (MemoryStream data5body = new MemoryStream())
@@ -435,10 +435,10 @@ namespace MLLE
                 }
 
                 data5bodywriter.Write((byte)(Tilesets.Count - 1));
-                for (int tilesetID = 1; tilesetID < Tilesets.Count; ++tilesetID) //Tilesets[0] is already mentioned in Data5, after all
+                for (int tilesetID = 1; tilesetID < Tilesets.Count; ++tilesetID) //Tilesets[0] is already mentioned in Data1, after all
                 {
                     var tileset = Tilesets[tilesetID];
-                    data5bodywriter.Write(Tilesets[tilesetID].FilenameOnly);
+                    data5bodywriter.Write(tileset.FilenameOnly);
                     data5bodywriter.Write((ushort)tileset.FirstTile);
                     data5bodywriter.Write((ushort)tileset.TileCount);
                     byte[] remappings = tileset.ColorRemapping;
@@ -446,7 +446,18 @@ namespace MLLE
                     if (remappings != null)
                         for (int i = 0; i < remappings.Length; ++i)
                             data5bodywriter.Write(remappings[i]);
+                }
 
+                data5bodywriter.Write((uint)Layers.Count);
+                foreach (Layer layer in Layers)
+                {
+                    data5bodywriter.Write((sbyte)layer.id);
+                    data5bodywriter.Write(layer.Name);
+                    data5bodywriter.Write(layer.Hidden);
+                    data5bodywriter.Write(layer.SpriteMode);
+                    data5bodywriter.Write(layer.SpriteParam);
+                    data5bodywriter.Write(layer.RotationAngle);
+                    data5bodywriter.Write(layer.RotationRadiusMultiplier);
                 }
 
                 var data5bodycompressed = ZlibStream.CompressBuffer(data5body.ToArray());
@@ -456,7 +467,7 @@ namespace MLLE
             }
             Data5 = data5header.ToArray();
         }
-        internal bool LevelIsReadable(byte[] Data5, List<J2TFile> Tilesets, string Folder)
+        internal bool LevelIsReadable(byte[] Data5, List<J2TFile> Tilesets, List<Layer> Layers, string Filepath)
         {
             if (Data5 == null || Data5.Length < 20) //level stops at the end of data4, as is good and proper
             {
@@ -467,7 +478,8 @@ namespace MLLE
             {
                 if (new string(data5reader.ReadChars(4)) != MLLEData5MagicString)
                     return false;
-                if (data5reader.ReadUInt32() > CurrentMLLEData5Version)
+                uint data5Version = data5reader.ReadUInt32();
+                if (data5Version > CurrentMLLEData5Version)
                     return false;
                 //should be okay to read at this point
                 
@@ -509,7 +521,7 @@ namespace MLLE
                     var extraTilesetCount = data5bodyreader.ReadByte();
                     for (uint tilesetID = 0; tilesetID < extraTilesetCount; ++tilesetID)
                     {
-                        var tilesetFilepath = Path.Combine(Folder, data5bodyreader.ReadString());
+                        var tilesetFilepath = Path.Combine(Path.GetDirectoryName(Filepath), data5bodyreader.ReadString());
                         if (File.Exists(tilesetFilepath))
                         {
                             var tileset = new J2TFile(tilesetFilepath);
@@ -528,6 +540,50 @@ namespace MLLE
                             this = new PlusPropertyList(null);
                             MessageBox.Show("Additional tileset \"" + tilesetFilepath + "\" not found; MLLE will stop trying to read this Data5 section.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
                             return false;
+                        }
+                    }
+
+                    if (data5Version >= 0x102) //layers were added in MLLE-Include-1.2
+                    {
+                        var defaultLayers = Layers.ToArray();
+                        Layers.Clear();
+                        int layerCount = (int)data5bodyreader.ReadUInt32();
+                        List<Layer> nonDefaultLayers = new List<Layer>();
+                        for (int i = 8; i < layerCount; i += 8)
+                        {
+                            J2LFile extraLevel = new J2LFile();
+                            string levelFilePath = GetExtraDataLevelFilepath(Filepath, i / 8 - 1);
+                            if (File.Exists(levelFilePath))
+                            {
+                                extraLevel.OpenLevel(levelFilePath, ref Data5, SecurityStringOverride: J2LFile.SecurityStringExtraDataNotForDirectEditing);
+                                nonDefaultLayers.AddRange(extraLevel.DefaultLayers);
+                            }
+                            else
+                            {
+                                this = new PlusPropertyList(null);
+                                MessageBox.Show("Additional file \"" + levelFilePath + "\" not found; MLLE will stop trying to read this Data5 section.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+                                return false;
+                            }
+                        }
+                        int nextNonDefaultLayerID = 0;
+                        for (uint i = 0; i < layerCount; ++i)
+                        {
+                            sbyte layerID = data5bodyreader.ReadSByte();
+                            Layer layer;
+                            if (layerID >= 0)
+                                layer = defaultLayers[layerID];
+                            else
+                            {
+                                layer = nonDefaultLayers[nextNonDefaultLayerID++];
+                                layer.id = -1;
+                            }
+                            layer.Name = data5bodyreader.ReadString();
+                            layer.Hidden = data5bodyreader.ReadBoolean();
+                            layer.SpriteMode = data5bodyreader.ReadByte();
+                            layer.SpriteParam = data5bodyreader.ReadByte();
+                            layer.RotationAngle = data5bodyreader.ReadInt32();
+                            layer.RotationRadiusMultiplier = data5bodyreader.ReadInt32();
+                            Layers.Add(layer);
                         }
                     }
                 }
