@@ -463,7 +463,7 @@ namespace MLLE
             }
             Data5 = data5header.ToArray();
         }
-        internal bool LevelIsReadable(byte[] Data5, List<J2TFile> Tilesets, List<Layer> Layers, string Folder)
+        internal bool LevelIsReadable(byte[] Data5, List<J2TFile> Tilesets, List<Layer> Layers, string Filepath)
         {
             if (Data5 == null || Data5.Length < 20) //level stops at the end of data4, as is good and proper
             {
@@ -516,7 +516,7 @@ namespace MLLE
                     var extraTilesetCount = data5bodyreader.ReadByte();
                     for (uint tilesetID = 0; tilesetID < extraTilesetCount; ++tilesetID)
                     {
-                        var tilesetFilepath = Path.Combine(Folder, data5bodyreader.ReadString());
+                        var tilesetFilepath = Path.Combine(Path.GetDirectoryName(Filepath), data5bodyreader.ReadString());
                         if (File.Exists(tilesetFilepath))
                         {
                             var tileset = new J2TFile(tilesetFilepath);
@@ -540,12 +540,27 @@ namespace MLLE
 
                     var defaultLayers = Layers.ToArray();
                     Layers.Clear();
-                    var layerCount = data5bodyreader.ReadUInt32();
+                    int layerCount = (int)data5bodyreader.ReadUInt32();
+                    List<Layer> nonDefaultLayers = new List<Layer>();
+                    for (int i = 8; i < layerCount; i += 8)
+                    {
+                        J2LFile extraLevel = new J2LFile();
+                        extraLevel.OpenLevel(GetExtraDataLevelFilepath(Filepath, i / 8 - 1), ref Data5, SecurityStringOverride: J2LFile.SecurityStringExtraDataNotForDirectEditing);
+                        nonDefaultLayers.AddRange(extraLevel.DefaultLayers);
+                    }
+                    int nextNonDefaultLayerID = 0;
                     for (uint i = 0; i < layerCount; ++i)
                     {
-                        var layerID = data5bodyreader.ReadByte();
+                        sbyte layerID = data5bodyreader.ReadSByte();
+                        Layer layer;
+                        if (layerID >= 0)
+                            layer = defaultLayers[layerID];
+                        else
+                        {
+                            layer = nonDefaultLayers[nextNonDefaultLayerID++];
+                            layer.id = -1;
+                        }
                         string layerName = data5bodyreader.ReadString();
-                        Layer layer = defaultLayers[layerID];
                         layer.Name = layerName;
                         Layers.Add(layer);
                     }

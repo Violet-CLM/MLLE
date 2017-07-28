@@ -914,7 +914,7 @@ class J2LFile : J2File
 
     const uint SecurityStringMLLE = 0xBACABEEF;
     const uint SecurityStringPassworded = 0xBA00BE00;
-    const uint SecurityStringExtraDataNotForDirectEditing = 0xBA01BE01;
+    public const uint SecurityStringExtraDataNotForDirectEditing = 0xBA01BE01;
     const uint SecurityStringInsecure = 0;
 
     internal byte LEVunknown1;
@@ -970,7 +970,7 @@ class J2LFile : J2File
 
     int[] AGAMostValues = new int[256], AGAMostStrings = new int[256];
 
-    public OpeningResults OpenLevel(string filename, ref byte[] Data5, string password = null, Dictionary<Version, string> defaultDirectories = null, Encoding encoding = null)
+    public OpeningResults OpenLevel(string filename, ref byte[] Data5, string password = null, Dictionary<Version, string> defaultDirectories = null, Encoding encoding = null, uint? SecurityStringOverride = null)
     {
         encoding = encoding ?? FileEncoding;
         using (BinaryReader binreader = new BinaryReader(File.Open(filename, FileMode.Open, FileAccess.Read), encoding))
@@ -1037,15 +1037,19 @@ class J2LFile : J2File
                     uint Secure = (uint)(data1reader.ReadUInt16()) << 16;
                     JCSVerticalFocus = data1reader.ReadUInt16();
                     Secure |= (uint)data1reader.ReadUInt16();
-                    switch (Secure)
+                    if (!SecurityStringOverride.HasValue)
                     {
-                        case SecurityStringInsecure:
-                        case SecurityStringPassworded:
-                        case SecurityStringMLLE:
-                            break;
-                        default:
-                            return OpeningResults.SecurityEnvelopeDamaged;
-                    }
+                        switch (Secure)
+                        {
+                            case SecurityStringInsecure:
+                            case SecurityStringPassworded:
+                            case SecurityStringMLLE:
+                                break;
+                            default:
+                                return OpeningResults.SecurityEnvelopeDamaged;
+                        }
+                    } else if (SecurityStringOverride.Value != Secure)
+                        return OpeningResults.SecurityEnvelopeDamaged;
                     JCSFocusedLayer = (byte)(data1reader.ReadByte() & 15);
                     MinLight = data1reader.ReadByte();
                     StartLight = data1reader.ReadByte();
