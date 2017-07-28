@@ -478,7 +478,8 @@ namespace MLLE
             {
                 if (new string(data5reader.ReadChars(4)) != MLLEData5MagicString)
                     return false;
-                if (data5reader.ReadUInt32() > CurrentMLLEData5Version)
+                uint data5Version = data5reader.ReadUInt32();
+                if (data5Version > CurrentMLLEData5Version)
                     return false;
                 //should be okay to read at this point
                 
@@ -542,35 +543,38 @@ namespace MLLE
                         }
                     }
 
-                    var defaultLayers = Layers.ToArray();
-                    Layers.Clear();
-                    int layerCount = (int)data5bodyreader.ReadUInt32();
-                    List<Layer> nonDefaultLayers = new List<Layer>();
-                    for (int i = 8; i < layerCount; i += 8)
+                    if (data5Version >= 0x102) //layers were added in MLLE-Include-1.2
                     {
-                        J2LFile extraLevel = new J2LFile();
-                        extraLevel.OpenLevel(GetExtraDataLevelFilepath(Filepath, i / 8 - 1), ref Data5, SecurityStringOverride: J2LFile.SecurityStringExtraDataNotForDirectEditing);
-                        nonDefaultLayers.AddRange(extraLevel.DefaultLayers);
-                    }
-                    int nextNonDefaultLayerID = 0;
-                    for (uint i = 0; i < layerCount; ++i)
-                    {
-                        sbyte layerID = data5bodyreader.ReadSByte();
-                        Layer layer;
-                        if (layerID >= 0)
-                            layer = defaultLayers[layerID];
-                        else
+                        var defaultLayers = Layers.ToArray();
+                        Layers.Clear();
+                        int layerCount = (int)data5bodyreader.ReadUInt32();
+                        List<Layer> nonDefaultLayers = new List<Layer>();
+                        for (int i = 8; i < layerCount; i += 8)
                         {
-                            layer = nonDefaultLayers[nextNonDefaultLayerID++];
-                            layer.id = -1;
+                            J2LFile extraLevel = new J2LFile();
+                            extraLevel.OpenLevel(GetExtraDataLevelFilepath(Filepath, i / 8 - 1), ref Data5, SecurityStringOverride: J2LFile.SecurityStringExtraDataNotForDirectEditing);
+                            nonDefaultLayers.AddRange(extraLevel.DefaultLayers);
                         }
-                        layer.Name = data5bodyreader.ReadString();
-                        layer.Hidden = data5bodyreader.ReadBoolean();
-                        layer.SpriteMode = data5bodyreader.ReadByte();
-                        layer.SpriteParam = data5bodyreader.ReadByte();
-                        layer.RotationAngle = data5bodyreader.ReadInt32();
-                        layer.RotationRadiusMultiplier = data5bodyreader.ReadInt32();
-                        Layers.Add(layer);
+                        int nextNonDefaultLayerID = 0;
+                        for (uint i = 0; i < layerCount; ++i)
+                        {
+                            sbyte layerID = data5bodyreader.ReadSByte();
+                            Layer layer;
+                            if (layerID >= 0)
+                                layer = defaultLayers[layerID];
+                            else
+                            {
+                                layer = nonDefaultLayers[nextNonDefaultLayerID++];
+                                layer.id = -1;
+                            }
+                            layer.Name = data5bodyreader.ReadString();
+                            layer.Hidden = data5bodyreader.ReadBoolean();
+                            layer.SpriteMode = data5bodyreader.ReadByte();
+                            layer.SpriteParam = data5bodyreader.ReadByte();
+                            layer.RotationAngle = data5bodyreader.ReadInt32();
+                            layer.RotationRadiusMultiplier = data5bodyreader.ReadInt32();
+                            Layers.Add(layer);
+                        }
                     }
                 }
             }

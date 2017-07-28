@@ -218,8 +218,8 @@ namespace MLLE
                 DataSource.Hidden = Hidden.Checked;
                 DataSource.SpriteMode = (byte)SpriteMode.SelectedIndex;
                 DataSource.SpriteParam = (byte)SpriteParam.Value;
-                DataSource.RotationAngle = (byte)RotationAngle.Value;
-                DataSource.RotationRadiusMultiplier = (byte)RotationRadiusMultiplier.Value;
+                DataSource.RotationAngle = (int)RotationAngle.Value;
+                DataSource.RotationRadiusMultiplier = (int)RotationRadiusMultiplier.Value;
                 SourceForm.LevelHasBeenModified = true;
             }
 
