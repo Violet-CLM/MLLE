@@ -491,6 +491,7 @@ class Layer
     {
         get { return id == J2LFile.SpriteLayerID || TileMap.Count != 0; }
     }
+    public bool isDefault { get { return id >= 0; } }
 
     public uint Width;
     public uint RealWidth;
@@ -639,7 +640,7 @@ class Layer
     {
         get
         {
-            if (id < 0)
+            if (!isDefault)
                 return true;
             if (Hidden)
                 return true;
@@ -669,7 +670,7 @@ class Layer
     {
         if (NumberPrefixedNamePattern.Match(Name).Success) //.LEV files include "1: ", "2: ", etc. in their layer names, and we don't want to display "4: 4: Sprite Layer"
             return Name;
-        if (id < 0) //non-default layer
+        if (!isDefault)
             return Name;
         return (id + 1) + ": " + Name;
     }
@@ -1762,7 +1763,7 @@ class J2LFile : J2File
             var WordMapsPerLayer = new Dictionary<Layer, List<ushort>>(AllLayers.Count);
 
             List<Layer[]> LayerArraysToSave = new List<Layer[]> { DefaultLayers };
-            var nonDefaultLayers = new List<Layer>(AllLayers.Where(l => l.id < 0));
+            var nonDefaultLayers = new List<Layer>(AllLayers.Where(l => !l.isDefault));
             while (nonDefaultLayers.Count > 0)
             {
                 var nonDefaultLayersToAddToList = new List<Layer>(nonDefaultLayers.Take(DefaultLayers.Length));

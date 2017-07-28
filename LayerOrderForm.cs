@@ -49,7 +49,7 @@ namespace MLLE
 
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            ButtonDelete.Enabled = (ButtonEdit.Enabled = listBox1.SelectedItem != null) && (listBox1.SelectedItem as Layer).id < 0; //non-default layer
+            ButtonDelete.Enabled = (ButtonEdit.Enabled = listBox1.SelectedItem != null) && !(listBox1.SelectedItem as Layer).isDefault;
             ButtonUp.Enabled = listBox1.SelectedIndex > 0;
             ButtonDown.Enabled = listBox1.SelectedIndex >= 0 && listBox1.SelectedIndex < listBox1.Items.Count - 1;
         }
@@ -65,7 +65,7 @@ namespace MLLE
         private void ButtonDelete_Click(object sender, EventArgs e)
         {
             Layer layerToDelete = listBox1.SelectedItem as Layer;
-            if (layerToDelete != null && layerToDelete.id < 0)
+            if (layerToDelete != null && !layerToDelete.isDefault)
             {
                 listBox1.Items.Remove(layerToDelete);
                 ChangesMade = true;

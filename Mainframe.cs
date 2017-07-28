@@ -1470,7 +1470,7 @@ namespace MLLE
 
                 PlusPropertyList.RemovePriorReferencesToMLLELibrary(filename);
                 if (Data5 != null)
-                    J2L.PlusPropertyList.SaveLibrary(filename, J2L.Tilesets, (J2L.AllLayers.Count(l => (l.id < 0)) + 7) / 8);
+                    J2L.PlusPropertyList.SaveLibrary(filename, J2L.Tilesets, (J2L.AllLayers.Count(l => !l.isDefault) + 7) / 8);
             }
             else if (result == SavingResults.NoTilesetSelected)
             {
@@ -3115,7 +3115,7 @@ namespace MLLE
             {
                 int layerIndex = i;
                 var layer = J2L.AllLayers[layerIndex];
-                var button = LayerButtons[layerIndex] = new ToolStripButton((layer.id >= 0) ? (layer.id + 1).ToString() : "L");
+                var button = LayerButtons[layerIndex] = new ToolStripButton(layer.isDefault ? (layer.id + 1).ToString() : "L");
                 button.Size = new Size(23, 22);
                 button.Click += (s, e) => {
                     ChangeLayerByOrder(layerIndex);
