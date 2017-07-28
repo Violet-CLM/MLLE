@@ -467,7 +467,10 @@ namespace MLLE
 
         private void LevelDisplay_MouseWheel(object sender, MouseEventArgs e)
         {
-            MakeProposedScrollbarValueWork(LDScrollV, LDScrollV.Value - LDScrollV.SmallChange * e.Delta / 120);
+            if (LastFocusedZone == FocusedZone.None)
+                return;
+            var scrollbarToMove = (LastFocusedZone == FocusedZone.Level) ? LDScrollV : TilesetScrollbar;
+            MakeProposedScrollbarValueWork(scrollbarToMove, scrollbarToMove.Value - scrollbarToMove.SmallChange * e.Delta / 120);
         }
 
         private void Mainframe_FormClosing(object sender, FormClosingEventArgs e) {
