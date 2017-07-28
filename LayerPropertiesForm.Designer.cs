@@ -605,6 +605,7 @@
             this.Hidden.TabIndex = 9;
             this.Hidden.Text = "Hide";
             this.Hidden.UseVisualStyleBackColor = true;
+            this.Hidden.CheckedChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // NameBox
             // 
