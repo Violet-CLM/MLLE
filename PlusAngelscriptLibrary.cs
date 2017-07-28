@@ -142,14 +142,23 @@ namespace MLLE {
             }
             jjTilesFromTileset(tilesetFilename, tileStart, tileCount, colors);
         }
-        if (pbyte != 0)
-            jjLayersFromLevel(jjLevelFileName, array<uint> = {1,2,3,4,5,6,7,8});
+        if (pbyte != 0) {
+            array<uint> layersIDsWithTileMaps;
+            for (uint i = 1; i <= 8; ++i)
+                if (jjLayers[i].hasTileMap)
+                    layersIDsWithTileMaps.insertLast(i);
+            jjLayersFromLevel(jjLevelFileName, layersIDsWithTileMaps);
+        }
 
         array<jjLAYER@> newLayerOrder, nonDefaultLayers;
         data5.pop(puint);
         for (uint i = 8; i < puint; i += 8) {
-            array<jjLAYER@> extraLayers = jjLayersFromLevel(jjLevelFileName.substr(0, jjLevelFileName.length() - 4) + '-MLLE-Data-' + (i/8) + '.j2l', array<uint> = {1,2,3,4,5,6,7,8});
-            for (uint j = 0; j < 8; ++j)
+            array<uint> layerIDsToGrab;
+            for (uint j = i; j < puint && j < i + 8; ++j) {
+                layerIDsToGrab.insertLast((j & 7) + 1);
+            }
+            array<jjLAYER@> extraLayers = jjLayersFromLevel(jjLevelFileName.substr(0, jjLevelFileName.length() - 4) + '-MLLE-Data-' + (i/8) + '.j2l', layerIDsToGrab);
+            for (uint j = 0; j < extraLayers.length(); ++j)
                 nonDefaultLayers.insertLast(extraLayers[j]);
         }
         uint nextNonDefaultLayerID = 0;
