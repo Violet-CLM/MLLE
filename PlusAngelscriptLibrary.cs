@@ -7,7 +7,7 @@ namespace MLLE
 {
     public partial struct PlusPropertyList
     {
-        const uint CurrentMLLEData5Version = 0x101;
+        const uint CurrentMLLEData5Version = 0x102;
         const string MLLEData5MagicString = "MLLE";
         const string CurrentMLLEData5VersionStringForComparison = "0x102";
         const string CurrentMLLEData5VersionString = "1.2";
@@ -71,8 +71,8 @@ namespace MLLE {
         }
         uint levelDataVersion;
         level.pop(levelDataVersion);
-        if (levelDataVersion > " + CurrentMLLEData5VersionStringForComparison + @") {
-            jjDebug('MLLE::Setup: Level\'s Data5 section was saved in a more recent version of MLLE than this script understands!');
+        if (levelDataVersion != " + CurrentMLLEData5VersionStringForComparison + @") {
+            jjDebug('MLLE::Setup: Level\'s Data5 section was saved in a different version of MLLE than this script!');
             return false;
         }
 

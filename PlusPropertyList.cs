@@ -552,8 +552,18 @@ namespace MLLE
                         for (int i = 8; i < layerCount; i += 8)
                         {
                             J2LFile extraLevel = new J2LFile();
-                            extraLevel.OpenLevel(GetExtraDataLevelFilepath(Filepath, i / 8 - 1), ref Data5, SecurityStringOverride: J2LFile.SecurityStringExtraDataNotForDirectEditing);
-                            nonDefaultLayers.AddRange(extraLevel.DefaultLayers);
+                            string levelFilePath = GetExtraDataLevelFilepath(Filepath, i / 8 - 1);
+                            if (File.Exists(levelFilePath))
+                            {
+                                extraLevel.OpenLevel(levelFilePath, ref Data5, SecurityStringOverride: J2LFile.SecurityStringExtraDataNotForDirectEditing);
+                                nonDefaultLayers.AddRange(extraLevel.DefaultLayers);
+                            }
+                            else
+                            {
+                                this = new PlusPropertyList(null);
+                                MessageBox.Show("Additional file \"" + levelFilePath + "\" not found; MLLE will stop trying to read this Data5 section.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+                                return false;
+                            }
                         }
                         int nextNonDefaultLayerID = 0;
                         for (uint i = 0; i < layerCount; ++i)
