@@ -108,6 +108,11 @@ namespace MLLE
             XOffset.Text = layer.WaveX.ToString();
             YOffset.Text = layer.WaveY.ToString();
             NameBox.Text = layer.Name;
+            Hidden.Checked = layer.Hidden;
+            SpriteMode.SelectedIndex = layer.SpriteMode;
+            SpriteParam.Value = layer.SpriteParam;
+            RotationAngle.Value = layer.RotationAngle;
+            RotationRadiusMultiplier.Value = layer.RotationRadiusMultiplier;
         }
 
         private bool ApplyChanges()
@@ -210,6 +215,11 @@ namespace MLLE
                 DataSource.TexturParam3 = (byte)Param3.Value;
                 DataSource.TextureMode = (byte)TextureModeSelect.SelectedIndex;
                 DataSource.Name = NameBox.Text;
+                DataSource.Hidden = Hidden.Checked;
+                DataSource.SpriteMode = (byte)SpriteMode.SelectedIndex;
+                DataSource.SpriteParam = (byte)SpriteParam.Value;
+                DataSource.RotationAngle = (byte)RotationAngle.Value;
+                DataSource.RotationRadiusMultiplier = (byte)RotationRadiusMultiplier.Value;
                 SourceForm.LevelHasBeenModified = true;
             }
 

@@ -453,7 +453,11 @@ namespace MLLE
                 {
                     data5bodywriter.Write((sbyte)layer.id);
                     data5bodywriter.Write(layer.Name);
-                    //other layer stuff goes here
+                    data5bodywriter.Write(layer.Hidden);
+                    data5bodywriter.Write(layer.SpriteMode);
+                    data5bodywriter.Write(layer.SpriteParam);
+                    data5bodywriter.Write(layer.RotationAngle);
+                    data5bodywriter.Write(layer.RotationRadiusMultiplier);
                 }
 
                 var data5bodycompressed = ZlibStream.CompressBuffer(data5body.ToArray());
@@ -560,8 +564,12 @@ namespace MLLE
                             layer = nonDefaultLayers[nextNonDefaultLayerID++];
                             layer.id = -1;
                         }
-                        string layerName = data5bodyreader.ReadString();
-                        layer.Name = layerName;
+                        layer.Name = data5bodyreader.ReadString();
+                        layer.Hidden = data5bodyreader.ReadBoolean();
+                        layer.SpriteMode = data5bodyreader.ReadByte();
+                        layer.SpriteParam = data5bodyreader.ReadByte();
+                        layer.RotationAngle = data5bodyreader.ReadInt32();
+                        layer.RotationRadiusMultiplier = data5bodyreader.ReadInt32();
                         Layers.Add(layer);
                     }
                 }

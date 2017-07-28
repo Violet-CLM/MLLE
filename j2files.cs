@@ -497,8 +497,6 @@ class Layer
     public uint Height;
     public int ZAxis;
     public byte unknown2;
-    public float WaveX;
-    public float WaveY;
     public float AutoXSpeed;
     public float AutoYSpeed;
     public float XSpeed;
@@ -507,7 +505,14 @@ class Layer
     public byte TexturParam1;
     public byte TexturParam2;
     public byte TexturParam3;
+
     public string Name;
+    public float WaveX;
+    public float WaveY;
+    public bool Hidden;
+    public byte SpriteMode, SpriteParam;
+    public int RotationAngle, RotationRadiusMultiplier;
+
     public ArrayMap<ushort> TileMap;
 
     public Layer(int i, uint raw, bool LEVstyle = false)
@@ -529,12 +534,16 @@ class Layer
         }
 
         Name = DefaultNames[i];
+        RotationAngle = DefaultRotationAngles[i];
+        RotationRadiusMultiplier = DefaultRotationRadiusMultipliers[i];
     }
 
     static readonly uint[] DefaultWidths = {864, 576, 256, 256, 171, 114, 76, 8};
     static readonly uint[] DefaultHeights = { 216, 144, 64, 64, 43, 29, 19, 8 };
     static readonly float[] DefaultSpeeds = { 3.375F, 2.25F, 1, 1, 0.666672F, 0.444458F, 0.29631F, 0 };
     public static readonly string[] DefaultNames = new string[8] { "Foreground Layer #2", "Foreground Layer #1", "Sprite Foreground Layer", "Sprite Layer", "Background Layer #1", "Background Layer #2", "Background Layer #3", "Background Layer" };
+    static readonly int[] DefaultRotationAngles = { -512, -256, 0, 0, 0, 256, 512, 768 };
+    static readonly int[] DefaultRotationRadiusMultipliers = { 4, 3, 0, 0, 2, 2, 1, 1 };
     public Layer(int i) //using default values (i.e. called when creating a new level from scratch)
     {
         id = (byte)i;
@@ -553,6 +562,8 @@ class Layer
         LimitVisibleRegion = IsTextured = HasStars = false;
 
         Name = DefaultNames[i];
+        RotationAngle = DefaultRotationAngles[i];
+        RotationRadiusMultiplier = DefaultRotationRadiusMultipliers[i];
 
         TileMap = new ArrayMap<ushort>(Width, Height);
     }
@@ -629,6 +640,12 @@ class Layer
         get
         {
             if (id < 0)
+                return true;
+            if (Hidden)
+                return true;
+            if (SpriteMode != 0 || SpriteParam != 0)
+                return true;
+            if (RotationAngle != DefaultRotationAngles[id] || RotationRadiusMultiplier != DefaultRotationRadiusMultipliers[id])
                 return true;
             if (Name != DefaultNames[id])
                 return true;

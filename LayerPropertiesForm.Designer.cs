@@ -64,13 +64,22 @@
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.Copy4 = new System.Windows.Forms.Button();
             this.groupBoxPlus = new System.Windows.Forms.GroupBox();
+            this.SpriteMode = new System.Windows.Forms.ComboBox();
+            this.LabelRotationAngle = new System.Windows.Forms.Label();
+            this.Hidden = new System.Windows.Forms.CheckBox();
             this.NameBox = new System.Windows.Forms.TextBox();
+            this.LabelRotationRadiusMultiplier = new System.Windows.Forms.Label();
             this.NameLabel = new System.Windows.Forms.Label();
             this.OffsetXLabel = new System.Windows.Forms.Label();
+            this.LabelSpriteMode = new System.Windows.Forms.Label();
             this.XOffset = new System.Windows.Forms.TextBox();
+            this.LabelSpriteParam = new System.Windows.Forms.Label();
             this.YOffset = new System.Windows.Forms.TextBox();
             this.OffsetYLabel = new System.Windows.Forms.Label();
             this.ButtonApply = new System.Windows.Forms.Button();
+            this.RotationAngle = new System.Windows.Forms.NumericUpDown();
+            this.RotationRadiusMultiplier = new System.Windows.Forms.NumericUpDown();
+            this.SpriteParam = new System.Windows.Forms.NumericUpDown();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -81,6 +90,9 @@
             ((System.ComponentModel.ISupportInitialize)(this.Param2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.Param3)).BeginInit();
             this.groupBoxPlus.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.RotationAngle)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.RotationRadiusMultiplier)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.SpriteParam)).BeginInit();
             this.SuspendLayout();
             // 
             // OKButton
@@ -235,7 +247,7 @@
             this.groupBox3.Controls.Add(this.TileWidth);
             this.groupBox3.Controls.Add(this.WidthLabel);
             this.groupBox3.Controls.Add(this.HeightLabel);
-            this.groupBox3.Location = new System.Drawing.Point(13, 227);
+            this.groupBox3.Location = new System.Drawing.Point(13, 277);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(259, 93);
             this.groupBox3.TabIndex = 8;
@@ -343,7 +355,7 @@
             this.groupBox4.Controls.Add(this.Stars);
             this.groupBox4.Controls.Add(this.ColorBox);
             this.groupBox4.Controls.Add(this.TextureMode);
-            this.groupBox4.Location = new System.Drawing.Point(13, 327);
+            this.groupBox4.Location = new System.Drawing.Point(13, 377);
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.Size = new System.Drawing.Size(259, 93);
             this.groupBox4.TabIndex = 9;
@@ -421,6 +433,7 @@
             // 
             // TextureModeSelect
             // 
+            this.TextureModeSelect.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.TextureModeSelect.Enabled = false;
             this.TextureModeSelect.FormattingEnabled = true;
             this.TextureModeSelect.Location = new System.Drawing.Point(9, 15);
@@ -482,7 +495,7 @@
             // Copy4
             // 
             this.Copy4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.Copy4.Location = new System.Drawing.Point(278, 397);
+            this.Copy4.Location = new System.Drawing.Point(278, 447);
             this.Copy4.Name = "Copy4";
             this.Copy4.Size = new System.Drawing.Size(75, 23);
             this.Copy4.TabIndex = 10;
@@ -492,27 +505,124 @@
             // 
             // groupBoxPlus
             // 
+            this.groupBoxPlus.Controls.Add(this.SpriteParam);
+            this.groupBoxPlus.Controls.Add(this.RotationAngle);
+            this.groupBoxPlus.Controls.Add(this.RotationRadiusMultiplier);
+            this.groupBoxPlus.Controls.Add(this.SpriteMode);
+            this.groupBoxPlus.Controls.Add(this.LabelRotationAngle);
+            this.groupBoxPlus.Controls.Add(this.Hidden);
             this.groupBoxPlus.Controls.Add(this.NameBox);
+            this.groupBoxPlus.Controls.Add(this.LabelRotationRadiusMultiplier);
             this.groupBoxPlus.Controls.Add(this.NameLabel);
             this.groupBoxPlus.Controls.Add(this.OffsetXLabel);
+            this.groupBoxPlus.Controls.Add(this.LabelSpriteMode);
             this.groupBoxPlus.Controls.Add(this.XOffset);
+            this.groupBoxPlus.Controls.Add(this.LabelSpriteParam);
             this.groupBoxPlus.Controls.Add(this.YOffset);
             this.groupBoxPlus.Controls.Add(this.OffsetYLabel);
             this.groupBoxPlus.Location = new System.Drawing.Point(13, 149);
             this.groupBoxPlus.Name = "groupBoxPlus";
-            this.groupBoxPlus.Size = new System.Drawing.Size(259, 72);
+            this.groupBoxPlus.Size = new System.Drawing.Size(259, 122);
             this.groupBoxPlus.TabIndex = 8;
             this.groupBoxPlus.TabStop = false;
             this.groupBoxPlus.Text = "JJ2+ Properties";
+            // 
+            // SpriteMode
+            // 
+            this.SpriteMode.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.SpriteMode.DropDownWidth = 175;
+            this.SpriteMode.FormattingEnabled = true;
+            this.SpriteMode.Items.AddRange(new object[] {
+            "Normal",
+            "Translucent",
+            "Tinted",
+            "[DON\'T USE]",
+            "[DON\'T USE]",
+            "Gem",
+            "[DON\'T USE]",
+            "[DON\'T USE]",
+            "[DON\'T USE]",
+            "[DON\'T USE]",
+            "Invisible",
+            "Single Color",
+            "[DON\'T USE]",
+            "[DON\'T USE]",
+            "[DON\'T USE]",
+            "Neon Glow",
+            "Frozen",
+            "Player",
+            "Pal Shift",
+            "[DON\'T USE]",
+            "Shadow",
+            "Single Hue",
+            "Brightness",
+            "Translucent Color",
+            "Translucent Player",
+            "Translucent Pal Shift",
+            "Translucent Single Hue",
+            "Alpha Map",
+            "Menu Player",
+            "Blend Normal",
+            "Blend Darken",
+            "Blend Lighten",
+            "Blend Hue",
+            "Blend Saturation",
+            "Blend Color",
+            "Blend Luminance",
+            "Blend Multiply",
+            "Blend Screen",
+            "Blend Dissolve",
+            "Blend Overlay",
+            "Blend Hard Light",
+            "Blend Soft Light",
+            "Blend Difference",
+            "Blend Dodge",
+            "Blend Burn",
+            "Blend Exclusion",
+            "Translucent Tile"});
+            this.SpriteMode.Location = new System.Drawing.Point(60, 69);
+            this.SpriteMode.MaxDropDownItems = 10;
+            this.SpriteMode.Name = "SpriteMode";
+            this.SpriteMode.Size = new System.Drawing.Size(51, 21);
+            this.SpriteMode.TabIndex = 14;
+            this.SpriteMode.SelectedIndexChanged += new System.EventHandler(this.GenericInputChanged);
+            // 
+            // LabelRotationAngle
+            // 
+            this.LabelRotationAngle.AutoSize = true;
+            this.LabelRotationAngle.Location = new System.Drawing.Point(6, 98);
+            this.LabelRotationAngle.Name = "LabelRotationAngle";
+            this.LabelRotationAngle.Size = new System.Drawing.Size(54, 13);
+            this.LabelRotationAngle.TabIndex = 14;
+            this.LabelRotationAngle.Text = "Rot.Angle";
+            // 
+            // Hidden
+            // 
+            this.Hidden.AutoSize = true;
+            this.Hidden.Location = new System.Drawing.Point(203, 46);
+            this.Hidden.Name = "Hidden";
+            this.Hidden.Size = new System.Drawing.Size(48, 17);
+            this.Hidden.TabIndex = 9;
+            this.Hidden.Text = "Hide";
+            this.Hidden.UseVisualStyleBackColor = true;
             // 
             // NameBox
             // 
             this.NameBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.NameBox.Location = new System.Drawing.Point(60, 44);
             this.NameBox.Name = "NameBox";
-            this.NameBox.Size = new System.Drawing.Size(193, 20);
+            this.NameBox.Size = new System.Drawing.Size(137, 20);
             this.NameBox.TabIndex = 5;
             this.NameBox.TextChanged += new System.EventHandler(this.GenericInputChanged);
+            // 
+            // LabelRotationRadiusMultiplier
+            // 
+            this.LabelRotationRadiusMultiplier.AutoSize = true;
+            this.LabelRotationRadiusMultiplier.Location = new System.Drawing.Point(124, 98);
+            this.LabelRotationRadiusMultiplier.Name = "LabelRotationRadiusMultiplier";
+            this.LabelRotationRadiusMultiplier.Size = new System.Drawing.Size(72, 13);
+            this.LabelRotationRadiusMultiplier.TabIndex = 12;
+            this.LabelRotationRadiusMultiplier.Text = "Rot.Rad.Multi";
             // 
             // NameLabel
             // 
@@ -532,6 +642,15 @@
             this.OffsetXLabel.TabIndex = 3;
             this.OffsetXLabel.Text = "X-Offset";
             // 
+            // LabelSpriteMode
+            // 
+            this.LabelSpriteMode.AutoSize = true;
+            this.LabelSpriteMode.Location = new System.Drawing.Point(6, 72);
+            this.LabelSpriteMode.Name = "LabelSpriteMode";
+            this.LabelSpriteMode.Size = new System.Drawing.Size(44, 13);
+            this.LabelSpriteMode.TabIndex = 10;
+            this.LabelSpriteMode.Text = "S.Mode";
+            // 
             // XOffset
             // 
             this.XOffset.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -541,6 +660,15 @@
             this.XOffset.TabIndex = 2;
             this.XOffset.Text = "0";
             this.XOffset.TextChanged += new System.EventHandler(this.GenericInputChanged);
+            // 
+            // LabelSpriteParam
+            // 
+            this.LabelSpriteParam.AutoSize = true;
+            this.LabelSpriteParam.Location = new System.Drawing.Point(124, 72);
+            this.LabelSpriteParam.Name = "LabelSpriteParam";
+            this.LabelSpriteParam.Size = new System.Drawing.Size(65, 13);
+            this.LabelSpriteParam.TabIndex = 9;
+            this.LabelSpriteParam.Text = "S.Parameter";
             // 
             // YOffset
             // 
@@ -571,13 +699,67 @@
             this.ButtonApply.UseVisualStyleBackColor = true;
             this.ButtonApply.Click += new System.EventHandler(this.ButtonApply_Click);
             // 
+            // RotationAngle
+            // 
+            this.RotationAngle.Increment = new decimal(new int[] {
+            32,
+            0,
+            0,
+            0});
+            this.RotationAngle.Location = new System.Drawing.Point(61, 94);
+            this.RotationAngle.Maximum = new decimal(new int[] {
+            1024,
+            0,
+            0,
+            0});
+            this.RotationAngle.Minimum = new decimal(new int[] {
+            1024,
+            0,
+            0,
+            -2147483648});
+            this.RotationAngle.Name = "RotationAngle";
+            this.RotationAngle.Size = new System.Drawing.Size(50, 20);
+            this.RotationAngle.TabIndex = 10;
+            this.RotationAngle.ValueChanged += new System.EventHandler(this.GenericInputChanged);
+            // 
+            // RotationRadiusMultiplier
+            // 
+            this.RotationRadiusMultiplier.Location = new System.Drawing.Point(204, 95);
+            this.RotationRadiusMultiplier.Maximum = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.RotationRadiusMultiplier.Minimum = new decimal(new int[] {
+            10,
+            0,
+            0,
+            -2147483648});
+            this.RotationRadiusMultiplier.Name = "RotationRadiusMultiplier";
+            this.RotationRadiusMultiplier.Size = new System.Drawing.Size(50, 20);
+            this.RotationRadiusMultiplier.TabIndex = 9;
+            this.RotationRadiusMultiplier.ValueChanged += new System.EventHandler(this.GenericInputChanged);
+            // 
+            // SpriteParam
+            // 
+            this.SpriteParam.Location = new System.Drawing.Point(204, 69);
+            this.SpriteParam.Maximum = new decimal(new int[] {
+            255,
+            0,
+            0,
+            0});
+            this.SpriteParam.Name = "SpriteParam";
+            this.SpriteParam.Size = new System.Drawing.Size(50, 20);
+            this.SpriteParam.TabIndex = 15;
+            this.SpriteParam.ValueChanged += new System.EventHandler(this.GenericInputChanged);
+            // 
             // LayerPropertiesForm
             // 
             this.AcceptButton = this.OKButton;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
-            this.ClientSize = new System.Drawing.Size(365, 432);
+            this.ClientSize = new System.Drawing.Size(365, 482);
             this.Controls.Add(this.ButtonApply);
             this.Controls.Add(this.groupBoxPlus);
             this.Controls.Add(this.Copy4);
@@ -609,6 +791,9 @@
             ((System.ComponentModel.ISupportInitialize)(this.Param3)).EndInit();
             this.groupBoxPlus.ResumeLayout(false);
             this.groupBoxPlus.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.RotationAngle)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.RotationRadiusMultiplier)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.SpriteParam)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -658,5 +843,14 @@
         private System.Windows.Forms.TextBox NameBox;
         private System.Windows.Forms.Label NameLabel;
         private System.Windows.Forms.Button ButtonApply;
+        private System.Windows.Forms.CheckBox Hidden;
+        private System.Windows.Forms.Label LabelRotationAngle;
+        private System.Windows.Forms.Label LabelRotationRadiusMultiplier;
+        private System.Windows.Forms.Label LabelSpriteMode;
+        private System.Windows.Forms.Label LabelSpriteParam;
+        private System.Windows.Forms.ComboBox SpriteMode;
+        private System.Windows.Forms.NumericUpDown SpriteParam;
+        private System.Windows.Forms.NumericUpDown RotationAngle;
+        private System.Windows.Forms.NumericUpDown RotationRadiusMultiplier;
     }
 }

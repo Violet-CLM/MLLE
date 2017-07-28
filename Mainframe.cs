@@ -1293,7 +1293,7 @@ namespace MLLE
                 SafeToDisplay = true;
                 LevelHasBeenModified = encoding != null;
                 SetupLayerButtons();
-                ChangeLayerByDefaultLayerID(J2L.JCSFocusedLayer);
+                ChangeLayerByOrder(J2L.JCSFocusedLayer);
                 MakeProposedScrollbarValueWork(LDScrollH, J2L.JCSHorizontalFocus);
                 MakeProposedScrollbarValueWork(LDScrollV, J2L.JCSVerticalFocus);
                 IdentifyTileset();
@@ -1867,7 +1867,7 @@ namespace MLLE
                         }
                         else
                         {
-                            if (DrawingLayer.HasTiles) Reindeer(DrawingLayer);
+                            if (DrawingLayer.HasTiles && !DrawingLayer.Hidden) Reindeer(DrawingLayer);
                             if (DrawingLayer == J2L.SpriteLayer && ParallaxEventDisplayType == 0 && EventDisplayMode) { EventReindeer(); SetTextureTo(AtlasID.Image); }
                         }
                     }

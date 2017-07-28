@@ -162,6 +162,17 @@ namespace MLLE {
                 @layer = nonDefaultLayers[nextNonDefaultLayerID++];
             string layerName = _read7BitEncodedStringFromStream(data5);
             _layers.set(layerName, @layer);
+            data5.pop(pbool);
+            if (layer.hasTileMap)
+                layer.hasTiles = !pbool;
+            data5.pop(pbyte);
+            layer.spriteMode = SPRITE::Mode(pbyte);
+            data5.pop(pbyte);
+            layer.spriteParam = pbyte;
+            data5.pop(pint);
+            layer.rotationAngle = pint;
+            data5.pop(pint);
+            layer.rotationRadiusMultiplier = pint;
             newLayerOrder.insertLast(layer);
         }
         jjLayerOrderSet(newLayerOrder);
