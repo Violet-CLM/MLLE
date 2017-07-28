@@ -97,6 +97,35 @@ namespace MLLE
         {Version.AGA, "MLLEProfile - AGA"},
         {Version.GorH, "MLLEProfile - 100gh"},
         };
+        static Color CommonTransparencyTransformation(byte[] pixel, byte tileType)
+        {
+            return Color.FromArgb((tileType != 1) ? byte.MaxValue : 192, pixel[0], pixel[1], pixel[2]);
+        }
+        static Color ghTransparencyTransformation(byte[] pixel, byte tileType)
+        {
+            return Color.FromArgb((tileType < 1 || tileType > 3) ? byte.MaxValue : 192, pixel[0], pixel[1], pixel[2]);
+        }
+        static Color plusTransparencyTransformation(byte[] pixel, byte tileType)
+        {
+            if (tileType == 3) //invisible
+                return Color.FromArgb(0, pixel[0], pixel[1], pixel[2]);
+            //if (tileType == 5) //heat effect
+                //?
+            if (tileType == 6)
+            { //frozen
+                int brightness = (7499 * pixel[2] + pixel[0] + 2 * (pixel[0] + 2 * (pixel[0] + 288 * 17 * pixel[0])) + 38446 * pixel[1]) >> 16;
+                return Color.FromArgb(128, brightness >> 1, Math.Min(32 + (brightness << 1), byte.MaxValue), Math.Min(brightness * brightness + 32, byte.MaxValue));
+            }
+            return CommonTransparencyTransformation(pixel, tileType);
+        }
+        public static Dictionary<Version, Func<byte[], byte, Color>> TileTypeColorTransformations = new Dictionary<Version, Func<byte[], byte, Color>> {
+        {Version.BC, CommonTransparencyTransformation},
+        {Version.O, CommonTransparencyTransformation},
+        {Version.JJ2, plusTransparencyTransformation},
+        {Version.TSF, plusTransparencyTransformation},
+        {Version.AGA, CommonTransparencyTransformation},
+        {Version.GorH, ghTransparencyTransformation},
+        };
         public static string[] DefaultFileExtensionStrings = new string[] { ".j2l", ".lvl", ".lev" };
         public byte? GeneratorEventID = null, StartPositionEventID = null;
 
@@ -694,6 +723,13 @@ namespace MLLE
                 J2TFile J2T = J2L.Tilesets[0];
                 byte[] oldTile = J2T.Images[J2T.ImageAddress[MouseTile]];
                 var tileTrans = J2T.TransparencyMaskJJ2_Style[Array.BinarySearch(J2T.TransparencyMaskOffset, 0, (int)J2T.data3Counter, J2T.TransparencyMaskAddress[MouseTile])];
+                var transformation = TileTypeColorTransformations[J2L.VersionType];
+                var transparentColor = Color.FromArgb(
+                    0,
+                    TexturedJ2L.GetLevelFromColor(TexturedJ2L.TranspColor, 0),
+                    TexturedJ2L.GetLevelFromColor(TexturedJ2L.TranspColor, 1),
+                    TexturedJ2L.GetLevelFromColor(TexturedJ2L.TranspColor, 2)
+                );
                 using (Bitmap bmp = new Bitmap(32, 32)) //using (Graphics gfx = Graphics.FromImage(bmp))
                 {
                     for (byte x = 0; x < 32; x++)
@@ -701,17 +737,9 @@ namespace MLLE
                         {
                             byte[] pixel = J2T.Palette[oldTile[x + y * 32]];
                             if (tileTrans[x + y * 32] == 0)
-                                bmp.SetPixel(x, y, Color.FromArgb(
-                                    0,
-                                    TexturedJ2L.GetLevelFromColor(TexturedJ2L.TranspColor, 0),
-                                    TexturedJ2L.GetLevelFromColor(TexturedJ2L.TranspColor, 1),
-                                    TexturedJ2L.GetLevelFromColor(TexturedJ2L.TranspColor, 2)
-                                ));
+                                bmp.SetPixel(x, y, transparentColor);
                             else
-                                bmp.SetPixel(x, y, Color.FromArgb(
-                                    (value >= 1 && value <= 3) ? 192 : 255,
-                                    pixel[0], pixel[1], pixel[2]
-                                ));
+                                bmp.SetPixel(x, y, transformation(pixel, value));
                         }
                     System.Drawing.Imaging.BitmapData data = bmp.LockBits(new Rectangle(0, 0, 32, 32), System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
                     GL.TexSubImage2D(TextureTarget.Texture2D, 0, MouseTile % J2L.AtlasLength * 32, MouseTile / J2L.AtlasLength * 32, 32, 32, PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
@@ -863,7 +891,7 @@ namespace MLLE
             DeepEditingTool.Checked = true;
         }
 
-        private void MenuTypeInstance_Click(object sender, EventArgs e) { J2L.TileTypes[MouseTile] = (byte)((ToolStripItem)sender).Tag; LevelHasBeenModified = true; RedrawTilesetHowManyTimes = 2; }
+        private void MenuTypeInstance_Click(object sender, EventArgs e) { setTileType((byte)((ToolStripItem)sender).Tag); }
 
         private void DropdownClear_Click(object sender, EventArgs e) { Clear(CurrentLayerID); }
         private void ClearButton_Click(object sender, EventArgs e) { Clear(CurrentLayerID); }
@@ -1189,6 +1217,8 @@ namespace MLLE
                             EmptyActionStackIfItContainsVerticallyFlippedTiles(Undoable);
                             EmptyActionStackIfItContainsVerticallyFlippedTiles(Redoable);
                         }
+                        J2L.Generate_Textures(); //in case any tile types are treated differently in this new version
+                        RedrawTilesetHowManyTimes = 2;
                         break;
                     case VersionChangeResults.TilesetTooBig:
                         MessageBox.Show("The current tileset has too many tiles to change the version.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);

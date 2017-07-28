@@ -30,9 +30,9 @@ internal class Palette
     {
         return Color.FromArgb(byte.MaxValue, src[0], src[1], src[2]);
     }
-    public static byte[] Convert(Color src)
+    public static byte[] Convert(Color src, bool respectAlpha = false)
     {
-        return new byte[4] { src.R, src.G, src.B, byte.MaxValue };
+        return new byte[4] { src.R, src.G, src.B, respectAlpha ? src.A : byte.MaxValue };
     }
 
     internal void CopyFrom(Palette other)

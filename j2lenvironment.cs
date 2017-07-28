@@ -101,6 +101,7 @@ class TexturedJ2L : J2LFile
     public void Generate_Textures(TransparencySource source = TransparencySource.JJ2_Style, bool includeMasks = false, Palette palette = null)
     {
         Color usedColor = Tile0Color;
+        var transformation = MLLE.Mainframe.TileTypeColorTransformations[VersionType];
         if (palette == null)
             palette = PlusPropertyList.Palette ?? Tilesets[0].Palette;
         byte[][] workingAtlases = new byte[2][];
@@ -133,18 +134,20 @@ class TexturedJ2L : J2LFile
             var tileTrans = ((source == TransparencySource.JJ2_Style) ? J2T.TransparencyMaskJJ2_Style : J2T.TransparencyMaskJCS_Style)[Array.BinarySearch(J2T.TransparencyMaskOffset, 0, (int)J2T.data3Counter, J2T.TransparencyMaskAddress[tileInTilesetID])];
             var mask = J2T.Masks[J2T.MaskAddress[tileInTilesetID]];
             var colorRemapping = J2T.ColorRemapping ?? J2TFile.DefaultColorRemapping;
-            bool transp = TileTypes[tileInTilesetID] == 1;
 
             for (short j = 0; j < 32*32*4; j += 4)
             {
-                var pixel = palette[colorRemapping[(int)tile[j / 4]]];
-                if (includeMasks) for (byte k = 0; k < 4; k++)
+                bool transparentPixel = tileTrans[j / 4] == 0;
+                var color = Palette.Convert(!transparentPixel ? transformation(palette[colorRemapping[tile[j / 4]]], TileTypes[tileInLevelID]) : usedColor, true);
+                if (transparentPixel)
+                    color[3] = 0;
+                for (byte k = 0; k < 4; k++)
                 {
                     int atlasDrawingLocation = tileInLevelID % AtlasLength * 128 + tileInLevelID / AtlasLength * AtlasLength * 4096 + j % 128 + j / 128 * AtlasLength * 128 + k;
-                    workingAtlases[0][atlasDrawingLocation] = (k == 3) ? (tileTrans[j / 4] == 1) ? ((transp) ? (byte)192 : (byte)255) : (byte)0 : (tileTrans[j / 4] == 1) ? pixel[k] : GetLevelFromColor(usedColor, k);
-                    workingAtlases[1][atlasDrawingLocation] = (k == 3) ? (mask[j / 4] == 1) ? (byte)196 : (byte)0 : (mask[j / 4] == 1) ? (byte)0 : GetLevelFromColor(usedColor, k);
+                    workingAtlases[0][atlasDrawingLocation] = color[k];
+                    if (includeMasks)
+                        workingAtlases[1][atlasDrawingLocation] = (k == 3) ? (mask[j / 4] == 1) ? (byte)196 : (byte)0 : (mask[j / 4] == 1) ? (byte)0 : GetLevelFromColor(usedColor, k);
                 }
-                else for (byte k = 0; k < 4; k++) workingAtlases[0][tileInLevelID % AtlasLength * 128 + tileInLevelID / AtlasLength * AtlasLength * 4096 + j % 128 + j / 128 * AtlasLength * 128 + k] = (k == 3) ? (tileTrans[j / 4] == 1) ? ((transp) ? (byte)192 : (byte)255) : (byte)0 : (tileTrans[j / 4] == 1) ? pixel[k] : GetLevelFromColor(usedColor, k);
             }
 
             if (tileInLevelID == 0) usedColor = TranspColor;
