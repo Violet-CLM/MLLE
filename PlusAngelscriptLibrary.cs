@@ -28,7 +28,7 @@ namespace MLLE {
     dictionary@ _layers;
 
     bool Setup() {
-        jjPAL palette;
+        jjPAL palette = jjBackupPalette;
         @Palette = @palette;
         dictionary layers;
         @_layers = @layers;
