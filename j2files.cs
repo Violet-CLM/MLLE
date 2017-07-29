@@ -539,6 +539,44 @@ class Layer
         RotationRadiusMultiplier = DefaultRotationRadiusMultipliers[i];
     }
 
+    public Layer(Layer other)
+    {
+        id = -1;
+        TileWidth = other.TileWidth;
+        TileHeight = other.TileHeight;
+        LimitVisibleRegion = other.LimitVisibleRegion;
+        IsTextured = other.IsTextured;
+        HasStars = other.HasStars;
+        unknown1 = other.unknown1;
+        Width = other.Width;
+        RealWidth = other.RealWidth;
+        Height = other.Height;
+        //ZAxis//eh idk
+        unknown2 = other.unknown2;
+        AutoXSpeed = other.AutoXSpeed;
+        AutoYSpeed = other.AutoYSpeed;
+        XSpeed = other.XSpeed;
+        YSpeed = other.YSpeed;
+        TextureMode = other.TextureMode;
+        TexturParam1 = other.TexturParam1;
+        TexturParam2 = other.TexturParam2;
+        TexturParam3 = other.TexturParam3;
+
+        Name = "Copy of " + other.Name;
+        WaveX = other.WaveX;
+        WaveY = other.WaveY;
+        Hidden = other.Hidden;
+        SpriteMode = other.SpriteMode;
+        SpriteParam = other.SpriteParam;
+        RotationAngle = other.RotationAngle;
+        RotationRadiusMultiplier = other.RotationRadiusMultiplier;
+
+        TileMap = new ArrayMap<ushort>(Width, Height);
+        for (ushort x = 0; x < Width; x++)
+            for (ushort y = 0; y < Height; y++)
+                TileMap[x, y] = other.TileMap[x, y];
+}
+
     static readonly uint[] DefaultWidths = {864, 576, 256, 256, 171, 114, 76, 8};
     static readonly uint[] DefaultHeights = { 216, 144, 64, 64, 43, 29, 19, 8 };
     static readonly float[] DefaultSpeeds = { 3.375F, 2.25F, 1, 1, 0.666672F, 0.444458F, 0.29631F, 0 };

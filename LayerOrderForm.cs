@@ -49,7 +49,7 @@ namespace MLLE
 
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            ButtonDelete.Enabled = (ButtonEdit.Enabled = listBox1.SelectedItem != null) && !(listBox1.SelectedItem as Layer).isDefault;
+            ButtonDelete.Enabled = (ButtonEdit.Enabled = ButtonClone.Enabled = listBox1.SelectedItem != null) && !(listBox1.SelectedItem as Layer).isDefault;
             ButtonUp.Enabled = listBox1.SelectedIndex > 0;
             ButtonDown.Enabled = listBox1.SelectedIndex >= 0 && listBox1.SelectedIndex < listBox1.Items.Count - 1;
         }
@@ -95,6 +95,16 @@ namespace MLLE
             listBox1.SelectedIndex = newIndex;
             ChangesMade = true;
 
+        }
+
+        private void ButtonClone_Click(object sender, EventArgs e)
+        {
+            Layer layer = listBox1.SelectedItem as Layer;
+            if (layer != null)
+            {
+                listBox1.Items.Insert(listBox1.SelectedIndex + 1, new Layer(layer));
+                ChangesMade = true;
+            }
         }
 
         private void ButtonDown_Click(object sender, EventArgs e)
