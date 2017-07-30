@@ -158,6 +158,8 @@
             this.OverTileTypes = new System.Windows.Forms.ToolStripMenuItem();
             this.OverMasks = new System.Windows.Forms.ToolStripMenuItem();
             this.TiletypeDropdown = new System.Windows.Forms.ToolStripMenuItem();
+            this.imageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.maskToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.editAnimationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.cloneAnimationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteAnimationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -175,6 +177,7 @@
             this.AnimScrollbar = new System.Windows.Forms.HScrollBar();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
+            this.toolStripSeparator15 = new System.Windows.Forms.ToolStripSeparator();
             this.MainMenu.SuspendLayout();
             this.DrawingTools.SuspendLayout();
             this.StatusBar.SuspendLayout();
@@ -1290,11 +1293,14 @@
             this.toolStripSeparator14,
             this.OverlayDropdown,
             this.TiletypeDropdown,
+            this.toolStripSeparator15,
+            this.imageToolStripMenuItem,
+            this.maskToolStripMenuItem,
             this.editAnimationToolStripMenuItem,
             this.cloneAnimationToolStripMenuItem,
             this.deleteAnimationToolStripMenuItem});
             this.TContextMenu.Name = "TContextMenu";
-            this.TContextMenu.Size = new System.Drawing.Size(167, 186);
+            this.TContextMenu.Size = new System.Drawing.Size(167, 236);
             // 
             // SetEventTS
             // 
@@ -1366,6 +1372,20 @@
             this.TiletypeDropdown.Name = "TiletypeDropdown";
             this.TiletypeDropdown.Size = new System.Drawing.Size(166, 22);
             this.TiletypeDropdown.Text = "Type";
+            // 
+            // imageToolStripMenuItem
+            // 
+            this.imageToolStripMenuItem.Name = "imageToolStripMenuItem";
+            this.imageToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.imageToolStripMenuItem.Text = "Edit Image...";
+            this.imageToolStripMenuItem.Click += new System.EventHandler(this.imageToolStripMenuItem_Click);
+            // 
+            // maskToolStripMenuItem
+            // 
+            this.maskToolStripMenuItem.Name = "maskToolStripMenuItem";
+            this.maskToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.maskToolStripMenuItem.Text = "Edit Mask...";
+            this.maskToolStripMenuItem.Click += new System.EventHandler(this.maskToolStripMenuItem_Click);
             // 
             // editAnimationToolStripMenuItem
             // 
@@ -1541,6 +1561,11 @@
             // folderBrowserDialog1
             // 
             this.folderBrowserDialog1.ShowNewFolderButton = false;
+            // 
+            // toolStripSeparator15
+            // 
+            this.toolStripSeparator15.Name = "toolStripSeparator15";
+            this.toolStripSeparator15.Size = new System.Drawing.Size(163, 6);
             // 
             // Mainframe
             // 
@@ -1742,5 +1767,8 @@
         private System.Windows.Forms.ToolStripMenuItem addNewToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem recolorEventsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem layersToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem imageToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem maskToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator15;
     }
 }

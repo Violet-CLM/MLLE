@@ -212,7 +212,7 @@ namespace MLLE
                 Bools.Add(EnableableTitles.BoolDevelopingForPlus, ini.IniReadValue("Enableable", "BoolDevelopingForPlus") != "");
                 Bools.Add(EnableableTitles.UseText, ini.IniReadValue("Enableable", "BoolText") != "");
             }
-            jJ2PropertiesToolStripMenuItem.Enabled = EnableableBools[version][EnableableTitles.BoolDevelopingForPlus];
+            imageToolStripMenuItem.Enabled = maskToolStripMenuItem.Enabled = jJ2PropertiesToolStripMenuItem.Enabled = EnableableBools[version][EnableableTitles.BoolDevelopingForPlus];
             textStringsToolStripMenuItem.Enabled = EnableableBools[version][EnableableTitles.UseText];
             saveRunToolStripMenuItem.Enabled = runToolStripMenuItem.Enabled = EnableableStrings[version][EnableableTitles.SaveAndRun] != "";
             soundEffectsToolStripMenuItem.Enabled = (version == Version.AGA);
@@ -768,6 +768,16 @@ namespace MLLE
                 return true;
             }
             else return false;
+        }
+
+        private void imageToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void maskToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
         }
         #endregion Form Business
 
@@ -2470,12 +2480,12 @@ namespace MLLE
                     MouseTile = MouseTileX + MouseTileY * 10;
                     if (!J2L.HasTiles || MouseTile < J2L.TileCount)
                     {
-                        editAnimationToolStripMenuItem.Visible = deleteAnimationToolStripMenuItem.Visible = cloneAnimationToolStripMenuItem.Visible = !(TiletypeDropdown.Visible = OverlayDropdown.Visible = true);
+                        editAnimationToolStripMenuItem.Visible = deleteAnimationToolStripMenuItem.Visible = cloneAnimationToolStripMenuItem.Visible = !(imageToolStripMenuItem.Visible = maskToolStripMenuItem.Visible = toolStripSeparator15.Visible = TiletypeDropdown.Visible = OverlayDropdown.Visible = true);
                     }
                     else
                     {
                         MouseTile = MouseTile - (int)J2L.TileCount + J2L.AnimOffset;
-                        editAnimationToolStripMenuItem.Visible = deleteAnimationToolStripMenuItem.Visible = cloneAnimationToolStripMenuItem.Visible = !(TiletypeDropdown.Visible = OverlayDropdown.Visible = false);
+                        editAnimationToolStripMenuItem.Visible = deleteAnimationToolStripMenuItem.Visible = cloneAnimationToolStripMenuItem.Visible = !(imageToolStripMenuItem.Visible = maskToolStripMenuItem.Visible = toolStripSeparator15.Visible = TiletypeDropdown.Visible = OverlayDropdown.Visible = false);
                     }
                     MouseAGAEvent.ID = (J2L.VersionType == Version.AGA || MouseTile >= J2L.MaxTiles) ? 0 : J2L.EventTiles[MouseTile];
                     if (HowSelecting == FocusedZone.Tileset) { SelectionBoxCorners[2] = MouseTileX; SelectionBoxCorners[3] = MouseTileY; }
@@ -2964,6 +2974,7 @@ namespace MLLE
         //Rectangle DrawRect = new Rectangle();
         Point DrawPoint = new Point();
         Queue<Point> FillingQ = new Queue<Point>();
+
         private void ActOnATile(int x, int y, ushort? tile, uint ev, LayerAndSpecificTiles actionCenter, bool blankTilesOkay) { ActOnATile(x, y, tile, new AGAEvent(ev), actionCenter, blankTilesOkay); }
         private void ActOnATile(int x, int y, ushort? tile, AGAEvent? ev, LayerAndSpecificTiles actionCenter, bool blankTilesOkay)
         {
