@@ -78,6 +78,35 @@ class TexturedJ2L : J2LFile
         {Version.AGA, null },
         {Version.GorH, null },
         };
+    static Color CommonTransparencyTransformation(byte[] pixel, byte tileType)
+    {
+        return Color.FromArgb((tileType != 1) ? byte.MaxValue : 192, pixel[0], pixel[1], pixel[2]);
+    }
+    static Color ghTransparencyTransformation(byte[] pixel, byte tileType)
+    {
+        return Color.FromArgb((tileType < 1 || tileType > 3) ? byte.MaxValue : 192, pixel[0], pixel[1], pixel[2]);
+    }
+    static Color plusTransparencyTransformation(byte[] pixel, byte tileType)
+    {
+        if (tileType == 3) //invisible
+            return Color.FromArgb(0, pixel[0], pixel[1], pixel[2]);
+        //if (tileType == 5) //heat effect
+        //?
+        if (tileType == 6)
+        { //frozen
+            int brightness = (7499 * pixel[2] + pixel[0] + 2 * (pixel[0] + 2 * (pixel[0] + 288 * 17 * pixel[0])) + 38446 * pixel[1]) >> 16;
+            return Color.FromArgb(128, brightness >> 1, Math.Min(32 + (brightness << 1), byte.MaxValue), Math.Min(brightness * brightness + 32, byte.MaxValue));
+        }
+        return CommonTransparencyTransformation(pixel, tileType);
+    }
+    static Dictionary<Version, Func<byte[], byte, Color>> TileTypeColorTransformations = new Dictionary<Version, Func<byte[], byte, Color>> {
+        {Version.BC, CommonTransparencyTransformation},
+        {Version.O, CommonTransparencyTransformation},
+        {Version.JJ2, plusTransparencyTransformation},
+        {Version.TSF, plusTransparencyTransformation},
+        {Version.AGA, CommonTransparencyTransformation},
+        {Version.GorH, ghTransparencyTransformation},
+        };
 
     public void Generate_Blank_Tile_Texture()
     {
@@ -101,7 +130,7 @@ class TexturedJ2L : J2LFile
     public void Generate_Textures(TransparencySource source = TransparencySource.JJ2_Style, bool includeMasks = false, Palette palette = null)
     {
         Color usedColor = Tile0Color;
-        var transformation = MLLE.Mainframe.TileTypeColorTransformations[VersionType];
+        var transformation = TileTypeColorTransformations[VersionType];
         if (palette == null)
             palette = PlusPropertyList.Palette ?? Tilesets[0].Palette;
         byte[][] workingAtlases = new byte[2][];
@@ -155,6 +184,49 @@ class TexturedJ2L : J2LFile
         ImageAtlas = TexUtil.CreateRGBATexture(AtlasLength * 32, AtlasLength * 32, workingAtlases[0]);
         if (includeMasks) MaskAtlas = TexUtil.CreateRGBATexture(AtlasLength * 32, AtlasLength * 32, workingAtlases[1]);
     }
+    public void RerenderTile(uint tileInLevelID)
+    {
+        uint tileInTilesetID = tileInLevelID;
+        int tilesetID = 0;
+        J2TFile J2T;
+        while (true)
+        {
+            J2T = Tilesets[tilesetID++];
+            if (tileInTilesetID >= J2T.TileCount)
+                tileInTilesetID -= J2T.TileCount;
+            else
+                break;
+        }
+        tileInTilesetID += J2T.FirstTile;
+
+        byte[] oldTile = J2T.Images[J2T.ImageAddress[tileInTilesetID]];
+        var tileTrans = J2T.TransparencyMaskJJ2_Style[Array.BinarySearch(J2T.TransparencyMaskOffset, 0, (int)J2T.data3Counter, J2T.TransparencyMaskAddress[tileInTilesetID])];
+        var transformation = TileTypeColorTransformations[VersionType];
+        Palette palette = PlusPropertyList.Palette ?? Tilesets[0].Palette;
+        var colorRemapping = J2T.ColorRemapping ?? J2TFile.DefaultColorRemapping;
+        var transparentColor = Color.FromArgb(
+            0,
+            GetLevelFromColor(TranspColor, 0),
+            GetLevelFromColor(TranspColor, 1),
+            GetLevelFromColor(TranspColor, 2)
+        );
+        using (Bitmap bmp = new Bitmap(32, 32)) //using (Graphics gfx = Graphics.FromImage(bmp))
+        {
+            for (byte x = 0; x < 32; x++)
+                for (byte y = 0; y < 32; y++)
+                {
+                    byte[] pixel = palette[colorRemapping[oldTile[x + y * 32]]];
+                    if (tileTrans[x + y * 32] == 0)
+                        bmp.SetPixel(x, y, transparentColor);
+                    else
+                        bmp.SetPixel(x, y, transformation(pixel, TileTypes[tileInLevelID]));
+                }
+            System.Drawing.Imaging.BitmapData data = bmp.LockBits(new Rectangle(0, 0, 32, 32), System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            GL.TexSubImage2D(TextureTarget.Texture2D, 0, (int)tileInLevelID % AtlasLength * 32, (int)tileInLevelID / AtlasLength * 32, 32, 32, PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
+            bmp.UnlockBits(data);
+        }
+    }
+
     public VersionChangeResults ChangeTileset(string filename, bool avoidRedundancy = true, Dictionary<Version, string> defaultDirectories = null, Palette overridePalette = null)
     {
         if (avoidRedundancy && Path.GetFileName(filename) == MainTilesetFilename) return VersionChangeResults.Success;
