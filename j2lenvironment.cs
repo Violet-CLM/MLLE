@@ -127,6 +127,21 @@ class TexturedJ2L : J2LFile
             default: return color.A;
         }
     }
+
+    private uint getTileInTilesetID(uint tileInLevelID, out J2TFile J2T)
+    {
+        uint tileInTilesetID = tileInLevelID;
+        int tilesetID = 0;
+        while (true)
+        {
+            J2T = Tilesets[tilesetID++];
+            if (tileInTilesetID >= J2T.TileCount)
+                tileInTilesetID -= J2T.TileCount;
+            else
+                break;
+        }
+        return tileInTilesetID + J2T.FirstTile;
+    }
     public void Generate_Textures(TransparencySource source = TransparencySource.JJ2_Style, bool includeMasks = false, Palette palette = null)
     {
         Color usedColor = Tile0Color;
@@ -146,18 +161,8 @@ class TexturedJ2L : J2LFile
             }
         for (ushort tileInLevelID = 0; tileInLevelID < TileCount; tileInLevelID++)
         {
-            uint tileInTilesetID = tileInLevelID;
-            int tilesetID = 0;
             J2TFile J2T;
-            while (true)
-            {
-                J2T = Tilesets[tilesetID++];
-                if (tileInTilesetID >= J2T.TileCount)
-                    tileInTilesetID -= J2T.TileCount;
-                else
-                    break;
-            }
-            tileInTilesetID += J2T.FirstTile;
+            uint tileInTilesetID = getTileInTilesetID(tileInLevelID, out J2T);
 
             var tile = J2T.Images[J2T.ImageAddress[tileInTilesetID]];
             var tileTrans = ((source == TransparencySource.JJ2_Style) ? J2T.TransparencyMaskJJ2_Style : J2T.TransparencyMaskJCS_Style)[Array.BinarySearch(J2T.TransparencyMaskOffset, 0, (int)J2T.data3Counter, J2T.TransparencyMaskAddress[tileInTilesetID])];
@@ -186,18 +191,8 @@ class TexturedJ2L : J2LFile
     }
     public void RerenderTile(uint tileInLevelID)
     {
-        uint tileInTilesetID = tileInLevelID;
-        int tilesetID = 0;
         J2TFile J2T;
-        while (true)
-        {
-            J2T = Tilesets[tilesetID++];
-            if (tileInTilesetID >= J2T.TileCount)
-                tileInTilesetID -= J2T.TileCount;
-            else
-                break;
-        }
-        tileInTilesetID += J2T.FirstTile;
+        uint tileInTilesetID = getTileInTilesetID(tileInLevelID, out J2T);
 
         byte[] oldTile = J2T.Images[J2T.ImageAddress[tileInTilesetID]];
         var tileTrans = J2T.TransparencyMaskJJ2_Style[Array.BinarySearch(J2T.TransparencyMaskOffset, 0, (int)J2T.data3Counter, J2T.TransparencyMaskAddress[tileInTilesetID])];
@@ -210,7 +205,7 @@ class TexturedJ2L : J2LFile
             GetLevelFromColor(TranspColor, 1),
             GetLevelFromColor(TranspColor, 2)
         );
-        using (Bitmap bmp = new Bitmap(32, 32)) //using (Graphics gfx = Graphics.FromImage(bmp))
+        using (Bitmap bmp = new Bitmap(32, 32))
         {
             for (byte x = 0; x < 32; x++)
                 for (byte y = 0; y < 32; y++)

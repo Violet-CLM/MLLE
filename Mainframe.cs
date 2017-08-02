@@ -688,18 +688,23 @@ namespace MLLE
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e) { SafeToDisplay = false; Application.Exit(); }
+
         private bool setTileType(byte value)
         {
             if (LastFocusedZone == FocusedZone.Tileset && MouseTile < J2L.TileCount && TexturedJ2L.TileTypeNames[J2L.VersionType][value] != "")
             {
-                SetTextureTo(AtlasID.Image);
                 J2L.TileTypes[MouseTile] = value;
-                J2L.RerenderTile((uint)MouseTile);
-                RedrawTilesetHowManyTimes = 2;
-                LevelHasBeenModified = true;
-                return true;
+                return RerenderTile((uint)MouseTile);
             }
             else return false;
+        }
+        private bool RerenderTile(uint tileID)
+        {
+            SetTextureTo(AtlasID.Image);
+            J2L.RerenderTile(tileID);
+            RedrawTilesetHowManyTimes = 2;
+            LevelHasBeenModified = true;
+            return true;
         }
 
         private void imageToolStripMenuItem_Click(object sender, EventArgs e)
