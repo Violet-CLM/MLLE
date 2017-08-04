@@ -128,7 +128,7 @@ class TexturedJ2L : J2LFile
         }
     }
 
-    private uint getTileInTilesetID(uint tileInLevelID, out J2TFile J2T)
+    public uint getTileInTilesetID(uint tileInLevelID, out J2TFile J2T)
     {
         uint tileInTilesetID = tileInLevelID;
         int tilesetID = 0;
@@ -147,7 +147,7 @@ class TexturedJ2L : J2LFile
         Color usedColor = Tile0Color;
         var transformation = TileTypeColorTransformations[VersionType];
         if (palette == null)
-            palette = PlusPropertyList.Palette ?? Tilesets[0].Palette;
+            palette = Palette;
         byte[][] workingAtlases = new byte[2][];
         for (byte i = 0; i < 5; i++)
             if (TileCount < 16 << (i * 2)) {
@@ -197,7 +197,7 @@ class TexturedJ2L : J2LFile
         byte[] oldTile = J2T.Images[J2T.ImageAddress[tileInTilesetID]];
         var tileTrans = J2T.TransparencyMaskJJ2_Style[Array.BinarySearch(J2T.TransparencyMaskOffset, 0, (int)J2T.data3Counter, J2T.TransparencyMaskAddress[tileInTilesetID])];
         var transformation = TileTypeColorTransformations[VersionType];
-        Palette palette = PlusPropertyList.Palette ?? Tilesets[0].Palette;
+        Palette palette = Palette;
         var colorRemapping = J2T.ColorRemapping ?? J2TFile.DefaultColorRemapping;
         var transparentColor = Color.FromArgb(
             0,

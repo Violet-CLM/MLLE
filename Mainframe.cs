@@ -709,7 +709,19 @@ namespace MLLE
 
         private void imageToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            if (MouseTile < J2L.TileCount)
+            {
+                _suspendEvent.Reset();
+                J2TFile J2T;
+                uint tileInTilesetID = J2L.getTileInTilesetID((uint)MouseTile, out J2T);
+                if (new TileImageEditorForm().ShowForm(
+                    ref J2L.PlusPropertyList.TileImages[MouseTile],
+                    J2T.Images[J2T.ImageAddress[tileInTilesetID]],
+                    J2L.Palette
+                ))
+                    RerenderTile((uint)MouseTile);
+                _suspendEvent.Set();
+            }
         }
 
         private void maskToolStripMenuItem_Click(object sender, EventArgs e)
@@ -805,7 +817,7 @@ namespace MLLE
         private void RecolorSprite(int spriteID)
         {
             _suspendEvent.Reset();
-            if (new SpriteRecolorForm().ShowForm(J2L.PlusPropertyList.Palette ?? J2L.Tilesets[0].Palette, RecolorableSpriteResources[spriteID].Clone() as Bitmap, ref J2L.PlusPropertyList.ColorRemappings[spriteID], HotKolors[1]))
+            if (new SpriteRecolorForm().ShowForm(J2L.Palette, RecolorableSpriteResources[spriteID].Clone() as Bitmap, ref J2L.PlusPropertyList.ColorRemappings[spriteID], HotKolors[1]))
             {
 
             }

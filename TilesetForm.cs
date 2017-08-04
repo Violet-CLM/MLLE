@@ -31,7 +31,7 @@ namespace MLLE
             Tileset = tileset;
             Level = level;
             Tilesets = level.Tilesets;
-            LevelPalette = level.PlusPropertyList.Palette ?? Tilesets[0].Palette;
+            LevelPalette = level.Palette;
             MaxTilesSupportedByLevel = (uint)max;
             NumberOfTilesInThisLevelBesidesThisTileset = number;
             inputLast.Maximum = Tileset.TotalNumberOfTiles;

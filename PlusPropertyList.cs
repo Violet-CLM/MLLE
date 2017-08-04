@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Windows.Forms;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using Ionic.Zlib;
 
 namespace MLLE
@@ -226,10 +227,15 @@ namespace MLLE
         internal byte[][] ColorRemappings;
 
 
+        [Browsable(false)]
+        internal byte[][] TileImages;
+
+
         const float DefaultWaterLevel = 0x7FFF;
         public PlusPropertyList(PlusPropertyList? other) : this()
         {
             ColorRemappings = new byte[Mainframe.RecolorableSpriteNames.Length][];
+            TileImages = new byte[4096][];
 
             if (other.HasValue)
             {
@@ -252,6 +258,16 @@ namespace MLLE
                     else
                     {
                         ColorRemappings[i] = other.Value.ColorRemappings[i].Clone() as byte[];
+                    }
+                }
+
+                for (int i = 0; i < TileImages.Length; ++i)
+                {
+                    if (other.Value.TileImages[i] == null)
+                        TileImages[i] = null;
+                    else
+                    {
+                        TileImages[i] = other.Value.TileImages[i].Clone() as byte[];
                     }
                 }
             }
@@ -383,12 +399,11 @@ namespace MLLE
                     WaterLevel != DefaultWaterLevel ||
                     WaterGradientStart != Color.Black ||
                     WaterGradientStop != Color.Black ||
-                    Palette != null
+                    Palette != null ||
+                    ColorRemappings.FirstOrDefault(it => it != null) != null ||
+                    TileImages.FirstOrDefault(it => it != null) != null
                 )
                     return true;
-                foreach (byte[] remappings in ColorRemappings)
-                    if (remappings != null)
-                        return true;
                 return false;
             }
         }
