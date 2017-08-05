@@ -18,6 +18,7 @@ namespace MLLE
         }
 
         byte[] Image, OriginalImage;
+        static byte[] ClipboardImage = null;
         SolidBrush[] Colors = new SolidBrush[Palette.PaletteSize];
         Bitmap ImageImage;
 
@@ -46,12 +47,6 @@ namespace MLLE
         }
 
         string FormTitle;
-
-        private void ResetButton_Click(object sender, EventArgs e)
-        {
-            Image = OriginalImage.Clone() as byte[];
-            DrawImage();
-        }
 
         void DrawImage()
         {
@@ -117,6 +112,86 @@ namespace MLLE
             result = true;
             Dispose();
         }
+        
+        private void resetToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Image = OriginalImage.Clone() as byte[];
+            DrawImage();
+        }
+
+        private void clearToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Image = new byte[Image.Length];
+            DrawImage();
+        }
+
+        private void flipHorizontallyFToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Image = Enumerable.Range(0, 32*32).Select(val => Image[(val & ~31) | (31 - (val & 31))]).ToArray();
+            DrawImage();
+        }
+
+        private void flipVerticallyIToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Image = Enumerable.Range(0, 32 * 32).Select(val => Image[(val & 31) | (32*31 - (val & ~31))]).ToArray();
+            DrawImage();
+        }
+
+        private void rotateToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Image = Enumerable.Range(0, 32 * 32).Select(val => Image[((val & 31) << 5) | (31 - (val >> 5))]).ToArray();
+            DrawImage();
+        }
+
+        private void copyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ClipboardImage = Image.Clone() as byte[];
+            pasteToolStripMenuItem.Enabled = true;
+        }
+
+        private void pasteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            for (int i = 0; i < 32 * 32; ++i)
+                if (ClipboardImage[i] != 0)
+                    Image[i] = ClipboardImage[i];
+            DrawImage();
+        }
+
+        private void TileImageEditorForm_KeyDown(object sender, KeyEventArgs e)
+        {
+            switch (e.KeyCode) {
+                case Keys.F:
+                    flipHorizontallyFToolStripMenuItem_Click(null, null);
+                    break;
+                case Keys.I:
+                    flipVerticallyIToolStripMenuItem_Click(null, null);
+                    break;
+                case Keys.R:
+                    rotateToolStripMenuItem_Click(null, null);
+                    break;
+                case Keys.Delete:
+                case Keys.X:
+                    clearToolStripMenuItem_Click(null, null);
+                    break;
+                case Keys.C:
+                    if (e.Control)
+                    {
+                        copyToolStripMenuItem_Click(null, null);
+                        break;
+                    }
+                    else return;
+                case Keys.V:
+                    if (e.Control && pasteToolStripMenuItem.Enabled)
+                    {
+                        pasteToolStripMenuItem_Click(null, null);
+                        break;
+                    }
+                    else return;
+                default:
+                    return;
+            }
+            e.SuppressKeyPress = true;  // Stops other controls on the form receiving event.
+        }
 
         void DrawColor(int x, int y)
         {
@@ -154,11 +229,15 @@ namespace MLLE
 
                 Text = FormTitle = "Edit Tile Mask";
             }
+            if (image != null)
+                Text = (FormTitle += "*");
 
             Image = (image ?? originalImage).Clone() as byte[];
             OriginalImage = originalImage;
             ImageImage = new Bitmap(pictureBox1.Width, pictureBox1.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
             DrawImage();
+
+            pasteToolStripMenuItem.Enabled = ClipboardImage != null;
 
             ShowDialog();
 
