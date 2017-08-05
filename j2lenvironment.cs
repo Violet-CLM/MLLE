@@ -164,10 +164,18 @@ class TexturedJ2L : J2LFile
             J2TFile J2T;
             uint tileInTilesetID = getTileInTilesetID(tileInLevelID, out J2T);
 
-            var tile = J2T.Images[J2T.ImageAddress[tileInTilesetID]];
-            var tileTrans = ((source == TransparencySource.JJ2_Style) ? J2T.TransparencyMaskJJ2_Style : J2T.TransparencyMaskJCS_Style)[Array.BinarySearch(J2T.TransparencyMaskOffset, 0, (int)J2T.data3Counter, J2T.TransparencyMaskAddress[tileInTilesetID])];
+            bool customTileImage;
+            byte[] tileTrans;
+            byte[] tile = PlusPropertyList.TileImages[tileInLevelID];
+            if (!(customTileImage = (tile != null)))
+            {
+                tile = J2T.Images[J2T.ImageAddress[tileInTilesetID]];
+                tileTrans = ((source == TransparencySource.JJ2_Style) ? J2T.TransparencyMaskJJ2_Style : J2T.TransparencyMaskJCS_Style)[Array.BinarySearch(J2T.TransparencyMaskOffset, 0, (int)J2T.data3Counter, J2T.TransparencyMaskAddress[tileInTilesetID])];
+            } else
+                tileTrans = tile;
+            var colorRemapping = (J2T.ColorRemapping == null || customTileImage) ? J2TFile.DefaultColorRemapping : J2T.ColorRemapping;
+
             var mask = J2T.Masks[J2T.MaskAddress[tileInTilesetID]];
-            var colorRemapping = J2T.ColorRemapping ?? J2TFile.DefaultColorRemapping;
 
             for (short j = 0; j < 32*32*4; j += 4)
             {

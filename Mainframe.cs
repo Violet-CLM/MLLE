@@ -714,9 +714,12 @@ namespace MLLE
                 _suspendEvent.Reset();
                 J2TFile J2T;
                 uint tileInTilesetID = J2L.getTileInTilesetID((uint)MouseTile, out J2T);
+                var originalTileImage = J2T.Images[J2T.ImageAddress[tileInTilesetID]];
                 if (new TileImageEditorForm().ShowForm(
                     ref J2L.PlusPropertyList.TileImages[MouseTile],
-                    J2T.Images[J2T.ImageAddress[tileInTilesetID]],
+                    (J2T.ColorRemapping == null) ?
+                        originalTileImage :
+                        Enumerable.Range(0, 32 * 32).Select(val => J2T.ColorRemapping[originalTileImage[val]]).ToArray(),
                     J2L.Palette
                 ))
                     RerenderTile((uint)MouseTile);

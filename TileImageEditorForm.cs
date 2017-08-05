@@ -139,7 +139,7 @@ namespace MLLE
 
         private void rotateToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Image = Enumerable.Range(0, 32 * 32).Select(val => Image[((val & 31) << 5) | (31 - (val >> 5))]).ToArray();
+            Image = Enumerable.Range(0, 32 * 32).Select(val => Image[(32*31 - ((val & 31) << 5)) | (val >> 5)]).ToArray();
             DrawImage();
         }
 
