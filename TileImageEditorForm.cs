@@ -60,14 +60,16 @@ namespace MLLE
                     DrawColor(x, y);
         }
 
-        private void pictureBox1_MouseLeave(object sender, EventArgs e)
+        private void control_MouseLeave(object sender, EventArgs e)
         {
             Text = FormTitle;
         }
 
-        private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
+        private void pictureBox_MouseMove(object sender, MouseEventArgs e)
         {
             PictureBox picture = sender as PictureBox;
+            if (!(picture).ClientRectangle.Contains(e.Location))
+                return;
             bool isImage = picture == pictureBox1;
             int imageDimensions = isImage ? 8 : 5;
             int x = (e.X - picture.AutoScrollOffset.X) / imageDimensions;
@@ -99,9 +101,21 @@ namespace MLLE
             Text = FormTitle + " \u2013 " + color;
         }
 
-        private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
+        private void pictureBox_MouseDown(object sender, MouseEventArgs e)
         {
-            pictureBox1_MouseMove(sender, e);
+            pictureBox_MouseMove(sender, e);
+        }
+
+        private void panel_MouseEnter(object sender, EventArgs e)
+        {
+            Text = FormTitle + " \u2013 " + ((sender == panel1) ? PrimaryColor : SecondaryColor);
+        }
+
+        bool result = false;
+        private void OKButton_Click(object sender, EventArgs e)
+        {
+            result = true;
+            Dispose();
         }
 
         void DrawColor(int x, int y)
@@ -118,9 +132,9 @@ namespace MLLE
                 PaletteImage original = new PaletteImage(5, 0, true, false);
                 original.Palette = palette;
                 original.Location = new Point(OKButton.Location.X, ButtonCancel.Location.Y + (ButtonCancel.Location.Y - OKButton.Location.Y));
-                original.MouseLeave += pictureBox1_MouseLeave;
-                original.MouseMove += pictureBox1_MouseMove;
-                original.MouseDown += pictureBox1_MouseDown;
+                original.MouseLeave += control_MouseLeave;
+                original.MouseMove += pictureBox_MouseMove;
+                original.MouseDown += pictureBox_MouseDown;
                 Controls.Add(original);
 
                 for (uint i = 0; i < Palette.PaletteSize; ++i)
@@ -152,9 +166,9 @@ namespace MLLE
                 if (brush != null)
                     brush.Dispose();
 
-            if (false)
+            if (result && (image == null || !Image.SequenceEqual(image)))
             {
-                image = Image;
+                image = (Image.SequenceEqual(originalImage)) ? null : Image;
                 return true;
             }
 

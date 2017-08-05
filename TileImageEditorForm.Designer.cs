@@ -58,6 +58,7 @@
             this.OKButton.TabIndex = 6;
             this.OKButton.Text = "OK";
             this.OKButton.UseVisualStyleBackColor = true;
+            this.OKButton.Click += new System.EventHandler(this.OKButton_Click);
             // 
             // pictureBox1
             // 
@@ -66,9 +67,9 @@
             this.pictureBox1.Size = new System.Drawing.Size(256, 256);
             this.pictureBox1.TabIndex = 8;
             this.pictureBox1.TabStop = false;
-            this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseDown);
-            this.pictureBox1.MouseLeave += new System.EventHandler(this.pictureBox1_MouseLeave);
-            this.pictureBox1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseMove);
+            this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox_MouseDown);
+            this.pictureBox1.MouseLeave += new System.EventHandler(this.control_MouseLeave);
+            this.pictureBox1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pictureBox_MouseMove);
             // 
             // ResetButton
             // 
@@ -88,6 +89,8 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(32, 32);
             this.panel1.TabIndex = 10;
+            this.panel1.MouseEnter += new System.EventHandler(this.panel_MouseEnter);
+            this.panel1.MouseLeave += new System.EventHandler(this.control_MouseLeave);
             // 
             // panel2
             // 
@@ -96,6 +99,8 @@
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(32, 32);
             this.panel2.TabIndex = 11;
+            this.panel2.MouseEnter += new System.EventHandler(this.panel_MouseEnter);
+            this.panel2.MouseLeave += new System.EventHandler(this.control_MouseLeave);
             // 
             // TileImageEditorForm
             // 
