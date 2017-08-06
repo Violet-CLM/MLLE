@@ -18,7 +18,7 @@ namespace MLLE
         }
 
         byte[] Image, OriginalImage;
-        static byte[] ClipboardImage = null;
+        static byte[] ClipboardImage = null, ClipboardMask = null;
         SolidBrush[] Colors = new SolidBrush[Palette.PaletteSize];
         Bitmap ImageImage;
 
@@ -74,7 +74,7 @@ namespace MLLE
 
             if (e.Button == MouseButtons.Left)
             {
-                if (ModifierKeys == Keys.Control || !isImage)
+                if ((ModifierKeys == Keys.Control && EditingImage) || !isImage)
                     PrimaryColor = color;
                 else if (color != PrimaryColor)
                 {
@@ -84,7 +84,7 @@ namespace MLLE
             }
             else if (e.Button == MouseButtons.Right)
             {
-                if (ModifierKeys == Keys.Control || !isImage)
+                if ((ModifierKeys == Keys.Control && EditingImage) || !isImage)
                     SecondaryColor = color;
                 else if (color != SecondaryColor)
                 {
@@ -145,15 +145,19 @@ namespace MLLE
 
         private void copyToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            ClipboardImage = Image.Clone() as byte[];
+            if (EditingImage)
+                ClipboardImage = Image.Clone() as byte[];
+            else
+                ClipboardMask = Image.Clone() as byte[];
             pasteToolStripMenuItem.Enabled = true;
         }
 
         private void pasteToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            byte[] clipboard = EditingImage ? ClipboardImage : ClipboardMask;
             for (int i = 0; i < 32 * 32; ++i)
-                if (ClipboardImage[i] != 0)
-                    Image[i] = ClipboardImage[i];
+                if (clipboard[i] != 0)
+                    Image[i] = clipboard[i];
             DrawImage();
         }
 
@@ -200,9 +204,11 @@ namespace MLLE
             pictureBox1.Image = ImageImage;
         }
 
+        bool EditingImage;
+
         internal bool ShowForm(ref byte[] image, byte[] originalImage, Palette palette)
         {
-            if (palette != null) //image
+            if (EditingImage = (palette != null)) //image
             {
                 PaletteImage original = new PaletteImage(5, 0, true, false);
                 original.Palette = palette;
@@ -237,7 +243,7 @@ namespace MLLE
             ImageImage = new Bitmap(pictureBox1.Width, pictureBox1.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
             DrawImage();
 
-            pasteToolStripMenuItem.Enabled = ClipboardImage != null;
+            pasteToolStripMenuItem.Enabled = (EditingImage ? ClipboardImage : ClipboardMask) != null;
 
             ShowDialog();
 

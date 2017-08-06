@@ -729,7 +729,19 @@ namespace MLLE
 
         private void maskToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            if (MouseTile < J2L.TileCount)
+            {
+                _suspendEvent.Reset();
+                J2TFile J2T;
+                uint tileInTilesetID = J2L.getTileInTilesetID((uint)MouseTile, out J2T);
+                if (new TileImageEditorForm().ShowForm(
+                    ref J2L.PlusPropertyList.TileMasks[MouseTile],
+                    J2T.Masks[J2T.MaskAddress[tileInTilesetID]],
+                    null
+                ))
+                    ;// RerenderTile((uint)MouseTile);
+                _suspendEvent.Set();
+            }
         }
         #endregion Form Business
 

@@ -229,6 +229,8 @@ namespace MLLE
 
         [Browsable(false)]
         internal byte[][] TileImages;
+        [Browsable(false)]
+        internal byte[][] TileMasks;
 
 
         const float DefaultWaterLevel = 0x7FFF;
@@ -236,6 +238,7 @@ namespace MLLE
         {
             ColorRemappings = new byte[Mainframe.RecolorableSpriteNames.Length][];
             TileImages = new byte[4096][];
+            TileMasks = new byte[4096][];
 
             if (other.HasValue)
             {
@@ -268,6 +271,16 @@ namespace MLLE
                     else
                     {
                         TileImages[i] = other.Value.TileImages[i].Clone() as byte[];
+                    }
+                }
+
+                for (int i = 0; i < TileMasks.Length; ++i)
+                {
+                    if (other.Value.TileMasks[i] == null)
+                        TileMasks[i] = null;
+                    else
+                    {
+                        TileMasks[i] = other.Value.TileMasks[i].Clone() as byte[];
                     }
                 }
             }
@@ -401,7 +414,8 @@ namespace MLLE
                     WaterGradientStop != Color.Black ||
                     Palette != null ||
                     ColorRemappings.FirstOrDefault(it => it != null) != null ||
-                    TileImages.FirstOrDefault(it => it != null) != null
+                    TileImages.FirstOrDefault(it => it != null) != null ||
+                    TileMasks.FirstOrDefault(it => it != null) != null
                 )
                     return true;
                 return false;

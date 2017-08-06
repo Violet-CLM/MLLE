@@ -175,7 +175,7 @@ class TexturedJ2L : J2LFile
                 tileTrans = tile;
             var colorRemapping = (J2T.ColorRemapping == null || customTileImage) ? J2TFile.DefaultColorRemapping : J2T.ColorRemapping;
 
-            var mask = J2T.Masks[J2T.MaskAddress[tileInTilesetID]];
+            var mask = PlusPropertyList.TileMasks[tileInLevelID] ?? J2T.Masks[J2T.MaskAddress[tileInTilesetID]];
 
             for (short j = 0; j < 32*32*4; j += 4)
             {
