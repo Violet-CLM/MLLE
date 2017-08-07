@@ -237,6 +237,31 @@ class TexturedJ2L : J2LFile
             bmp.UnlockBits(data);
         }
     }
+    public void RerenderTileMask(uint tileInLevelID)
+    {
+        var colors = new Color[2] { Color.FromArgb(
+            0,
+            GetLevelFromColor(TranspColor, 0),
+            GetLevelFromColor(TranspColor, 1),
+            GetLevelFromColor(TranspColor, 2)
+        ), Color.Black };
+        byte[] tileMask = PlusPropertyList.TileMasks[tileInLevelID];
+        if (tileMask == null)
+        {
+            J2TFile J2T;
+            uint tileInTilesetID = getTileInTilesetID(tileInLevelID, out J2T);
+            tileMask = J2T.Masks[J2T.MaskAddress[tileInTilesetID]];
+        }
+        using (Bitmap bmp = new Bitmap(32, 32))
+        {
+            for (int x = 0; x < 32; x++)
+                for (int y = 0; y < 32; y++)
+                    bmp.SetPixel(x, y, colors[tileMask[x + y * 32]]);
+            System.Drawing.Imaging.BitmapData data = bmp.LockBits(new Rectangle(0, 0, 32, 32), System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            GL.TexSubImage2D(TextureTarget.Texture2D, 0, (int)tileInLevelID % AtlasLength * 32, (int)tileInLevelID / AtlasLength * 32, 32, 32, PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
+            bmp.UnlockBits(data);
+        }
+    }
 
     public VersionChangeResults ChangeTileset(string filename, bool avoidRedundancy = true, Dictionary<Version, string> defaultDirectories = null, Palette overridePalette = null)
     {

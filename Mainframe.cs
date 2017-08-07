@@ -702,7 +702,17 @@ namespace MLLE
         {
             SetTextureTo(AtlasID.Image);
             J2L.RerenderTile(tileID);
-            RedrawTilesetHowManyTimes = 2;
+            if (CurrentTilesetOverlay != TilesetOverlay.Masks)
+                RedrawTilesetHowManyTimes = 2;
+            LevelHasBeenModified = true;
+            return true;
+        }
+        private bool RerenderTileMask(uint tileID)
+        {
+            SetTextureTo(AtlasID.Mask);
+            J2L.RerenderTileMask(tileID);
+            if (CurrentTilesetOverlay == TilesetOverlay.Masks)
+                RedrawTilesetHowManyTimes = 2;
             LevelHasBeenModified = true;
             return true;
         }
@@ -739,7 +749,7 @@ namespace MLLE
                     J2T.Masks[J2T.MaskAddress[tileInTilesetID]],
                     null
                 ))
-                    ;// RerenderTile((uint)MouseTile);
+                    RerenderTileMask((uint)MouseTile);
                 _suspendEvent.Set();
             }
         }
