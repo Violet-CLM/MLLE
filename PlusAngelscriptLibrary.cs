@@ -193,7 +193,7 @@ namespace MLLE {
             for (int y = 0; y < 32; ++y)
                 for (int x = 0; x < 32; ++x)
                     data5.pop(tile[x,y]);
-            tile.save(tileID);
+            tile.save(tileID, true);
         }
         data5.pop(numberOfImages);
         for (uint16 i = 0; i < numberOfImages; ++i) {
