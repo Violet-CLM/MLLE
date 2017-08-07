@@ -7,10 +7,10 @@ namespace MLLE
 {
     public partial struct PlusPropertyList
     {
-        const uint CurrentMLLEData5Version = 0x102;
+        const uint CurrentMLLEData5Version = 0x103;
         const string MLLEData5MagicString = "MLLE";
-        const string CurrentMLLEData5VersionStringForComparison = "0x102";
-        const string CurrentMLLEData5VersionString = "1.2";
+        const string CurrentMLLEData5VersionStringForComparison = "0x103";
+        const string CurrentMLLEData5VersionString = "1.3";
         const string AngelscriptLibraryFilename = "MLLE-Include-" + CurrentMLLEData5VersionString + ".asc";
 
         const string AngelscriptLibraryCallStockLine = "const bool MLLESetupSuccessful = MLLE::Setup();\r\n";
@@ -185,6 +185,25 @@ namespace MLLE {
             newLayerOrder.insertLast(layer);
         }
         jjLayerOrderSet(newLayerOrder);
+
+        uint16 numberOfImages; data5.pop(numberOfImages);
+        for (uint16 i = 0; i < numberOfImages; ++i) {
+            uint16 tileID; data5.pop(tileID);
+            jjPIXELMAP tile(32, 32);
+            for (int y = 0; y < 32; ++y)
+                for (int x = 0; x < 32; ++x)
+                    data5.pop(tile[x,y]);
+            tile.save(tileID);
+        }
+        data5.pop(numberOfImages);
+        for (uint16 i = 0; i < numberOfImages; ++i) {
+            uint16 tileID; data5.pop(tileID);
+            jjMASKMAP tile;
+            for (int y = 0; y < 32; ++y)
+                for (int x = 0; x < 32; ++x)
+                    data5.pop(tile[x,y]);
+            tile.save(tileID);
+        }
 
         if (!data5.isEmpty()) {
             jjDebug('MLLE::Setup: Warning, Data5 longer than expected');

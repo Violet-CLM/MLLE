@@ -489,6 +489,22 @@ namespace MLLE
                     data5bodywriter.Write(layer.RotationRadiusMultiplier);
                 }
 
+                int levelTileCount = Tilesets.Sum(ts => (int)ts.TileCount);
+                foreach (byte[][] images in new byte[][][] { TileImages, TileMasks }) {
+                    int numberOfImages = images.Count(it => it != null);
+                    data5bodywriter.Write((ushort)numberOfImages);
+                    if (numberOfImages > 0)
+                        for (int i = 1; i < levelTileCount; ++i)
+                        {
+                            byte[] image = images[i];
+                            if (image != null)
+                            {
+                                data5bodywriter.Write((ushort)i);
+                                data5bodywriter.Write(image);
+                            }
+                        }
+                }
+
                 var data5bodycompressed = ZlibStream.CompressBuffer(data5body.ToArray());
                 data5writer.Write((uint)data5bodycompressed.Length);
                 data5writer.Write((uint)data5body.Length);
@@ -613,6 +629,20 @@ namespace MLLE
                             layer.RotationAngle = data5bodyreader.ReadInt32();
                             layer.RotationRadiusMultiplier = data5bodyreader.ReadInt32();
                             Layers.Add(layer);
+                        }
+
+                        if (data5Version >= 0x103) //edited tiles were added in MLLE-Include-1.3
+                        {
+                            int levelTileCount = Tilesets.Sum(ts => (int)ts.TileCount);
+                            foreach (byte[][] images in new byte[][][] { TileImages, TileMasks })
+                            {
+                                int numberOfImages = data5bodyreader.ReadUInt16();
+                                for (int i = 0; i < numberOfImages; ++i)
+                                {
+                                    int tileID = data5bodyreader.ReadUInt16();
+                                    images[tileID] = data5bodyreader.ReadBytes(32 * 32);
+                                }
+                            }
                         }
                     }
                 }
