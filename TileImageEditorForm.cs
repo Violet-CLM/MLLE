@@ -161,6 +161,14 @@ namespace MLLE
             DrawImage();
         }
 
+        private void pasteUnderToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            for (int i = 0; i < 32 * 32; ++i)
+                if (Image[i] == 0)
+                    Image[i] = ClipboardImage[i];
+            DrawImage();
+        }
+
         private void TileImageEditorForm_KeyDown(object sender, KeyEventArgs e)
         {
             switch (e.KeyCode) {
@@ -244,6 +252,7 @@ namespace MLLE
             DrawImage();
 
             pasteToolStripMenuItem.Enabled = (EditingImage ? ClipboardImage : ClipboardMask) != null;
+            pasteUnderToolStripMenuItem.Enabled = (EditingImage) && (ClipboardImage != null); //no use in pasting under a mask
 
             ShowDialog();
 
