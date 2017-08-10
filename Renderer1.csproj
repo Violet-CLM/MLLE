@@ -137,6 +137,12 @@
     <Compile Include="SpriteRecolorForm.Designer.cs">
       <DependentUpon>SpriteRecolorForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="TileImageEditorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TileImageEditorForm.Designer.cs">
+      <DependentUpon>TileImageEditorForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="TilesetForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -232,6 +238,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="SpriteRecolorForm.resx">
       <DependentUpon>SpriteRecolorForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TileImageEditorForm.resx">
+      <DependentUpon>TileImageEditorForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="TilesetForm.resx">
       <DependentUpon>TilesetForm.cs</DependentUpon>

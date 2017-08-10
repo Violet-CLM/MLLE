@@ -968,6 +968,12 @@ class J2LFile : J2File
         }
     }
 
+    internal Palette Palette { get
+        {
+            return PlusPropertyList.Palette ?? Tilesets[0].Palette;
+        }
+    }
+
     const uint SecurityStringMLLE = 0xBACABEEF;
     const uint SecurityStringPassworded = 0xBA00BE00;
     public const uint SecurityStringExtraDataNotForDirectEditing = 0xBA01BE01;

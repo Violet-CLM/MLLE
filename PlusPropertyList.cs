@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Windows.Forms;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using Ionic.Zlib;
 
 namespace MLLE
@@ -226,10 +227,18 @@ namespace MLLE
         internal byte[][] ColorRemappings;
 
 
+        [Browsable(false)]
+        internal byte[][] TileImages;
+        [Browsable(false)]
+        internal byte[][] TileMasks;
+
+
         const float DefaultWaterLevel = 0x7FFF;
         public PlusPropertyList(PlusPropertyList? other) : this()
         {
             ColorRemappings = new byte[Mainframe.RecolorableSpriteNames.Length][];
+            TileImages = new byte[4096][];
+            TileMasks = new byte[4096][];
 
             if (other.HasValue)
             {
@@ -252,6 +261,26 @@ namespace MLLE
                     else
                     {
                         ColorRemappings[i] = other.Value.ColorRemappings[i].Clone() as byte[];
+                    }
+                }
+
+                for (int i = 0; i < TileImages.Length; ++i)
+                {
+                    if (other.Value.TileImages[i] == null)
+                        TileImages[i] = null;
+                    else
+                    {
+                        TileImages[i] = other.Value.TileImages[i].Clone() as byte[];
+                    }
+                }
+
+                for (int i = 0; i < TileMasks.Length; ++i)
+                {
+                    if (other.Value.TileMasks[i] == null)
+                        TileMasks[i] = null;
+                    else
+                    {
+                        TileMasks[i] = other.Value.TileMasks[i].Clone() as byte[];
                     }
                 }
             }
@@ -383,12 +412,12 @@ namespace MLLE
                     WaterLevel != DefaultWaterLevel ||
                     WaterGradientStart != Color.Black ||
                     WaterGradientStop != Color.Black ||
-                    Palette != null
+                    Palette != null ||
+                    ColorRemappings.FirstOrDefault(it => it != null) != null ||
+                    TileImages.FirstOrDefault(it => it != null) != null ||
+                    TileMasks.FirstOrDefault(it => it != null) != null
                 )
                     return true;
-                foreach (byte[] remappings in ColorRemappings)
-                    if (remappings != null)
-                        return true;
                 return false;
             }
         }
@@ -458,6 +487,22 @@ namespace MLLE
                     data5bodywriter.Write(layer.SpriteParam);
                     data5bodywriter.Write(layer.RotationAngle);
                     data5bodywriter.Write(layer.RotationRadiusMultiplier);
+                }
+
+                int levelTileCount = Tilesets.Sum(ts => (int)ts.TileCount);
+                foreach (byte[][] images in new byte[][][] { TileImages, TileMasks }) {
+                    int numberOfImages = images.Count(it => it != null);
+                    data5bodywriter.Write((ushort)numberOfImages);
+                    if (numberOfImages > 0)
+                        for (int i = 1; i < levelTileCount; ++i)
+                        {
+                            byte[] image = images[i];
+                            if (image != null)
+                            {
+                                data5bodywriter.Write((ushort)i);
+                                data5bodywriter.Write(image);
+                            }
+                        }
                 }
 
                 var data5bodycompressed = ZlibStream.CompressBuffer(data5body.ToArray());
@@ -584,6 +629,20 @@ namespace MLLE
                             layer.RotationAngle = data5bodyreader.ReadInt32();
                             layer.RotationRadiusMultiplier = data5bodyreader.ReadInt32();
                             Layers.Add(layer);
+                        }
+
+                        if (data5Version >= 0x103) //edited tiles were added in MLLE-Include-1.3
+                        {
+                            int levelTileCount = Tilesets.Sum(ts => (int)ts.TileCount);
+                            foreach (byte[][] images in new byte[][][] { TileImages, TileMasks })
+                            {
+                                int numberOfImages = data5bodyreader.ReadUInt16();
+                                for (int i = 0; i < numberOfImages; ++i)
+                                {
+                                    int tileID = data5bodyreader.ReadUInt16();
+                                    images[tileID] = data5bodyreader.ReadBytes(32 * 32);
+                                }
+                            }
                         }
                     }
                 }
