@@ -719,7 +719,7 @@ namespace MLLE
 
         private void imageToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (MouseTile < J2L.TileCount)
+            if (MouseTile > 0 && MouseTile < J2L.TileCount)
             {
                 _suspendEvent.Reset();
                 J2TFile J2T;
@@ -739,7 +739,7 @@ namespace MLLE
 
         private void maskToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (MouseTile < J2L.TileCount)
+            if (MouseTile > 0 && MouseTile < J2L.TileCount)
             {
                 _suspendEvent.Reset();
                 J2TFile J2T;
