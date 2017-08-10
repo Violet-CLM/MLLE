@@ -1168,7 +1168,7 @@ namespace MLLE
                 _suspendEvent.Reset();
                 IdentifyTileset();
                 if (result == VersionChangeResults.UnsupportedConversion) MessageBox.Show(String.Format("Sorry, {0} is not compatible with {1} levels. Please choose a different tileset and try again.", Path.GetFileName(filename), J2File.FullVersionNames[J2L.VersionType]), "Incompatible tileset", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                else if (result == VersionChangeResults.TooManyAnimatedTiles) MessageBox.Show(String.Format("Sorry, using {0} would result in the level having too many tiles (counting animated tiles). Please choose a different tileset or reduce the number of animated tiles in the level.", filename), "Too many animated tiles", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                else if (result == VersionChangeResults.TooManyAnimatedTiles) MessageBox.Show(String.Format("Sorry, using {0} would result in the level defining too many tiles (counting animated tiles and/or additional tilesets).", filename), "Too many total tiles", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 _suspendEvent.Set();
             }
             else RedrawTilesetHowManyTimes = 2;

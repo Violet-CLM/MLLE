@@ -2251,7 +2251,10 @@ class J2LFile : J2File
         //J2TFile tryout = new J2TFile(filename);
         if (VersionType == tryout.VersionType || (tryout.VersionType == Version.AmbiguousBCO && (VersionType == Version.BC || VersionType == Version.O)) || (VersionType == Version.GorH && tryout.TotalNumberOfTiles <= 1020) || (VersionType == Version.TSF && tryout.VersionType == Version.JJ2))
         {
-            if (tryout.TotalNumberOfTiles + NumberOfAnimations < MaxTiles)
+            int numberOfTilesBesidesThoseOfTheFirstTileset = NumberOfAnimations;
+            if (Tilesets.Count > 1)
+                numberOfTilesBesidesThoseOfTheFirstTileset += (int)(TileCount - Tilesets[0].TileCount);
+            if (tryout.TotalNumberOfTiles + numberOfTilesBesidesThoseOfTheFirstTileset < MaxTiles)
             {
                 if (!HasTiles)
                 {
