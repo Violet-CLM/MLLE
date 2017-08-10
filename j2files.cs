@@ -2260,6 +2260,28 @@ class J2LFile : J2File
                 {
                     Tilesets = new List<J2TFile>(1) { null };
                 }
+                else if (Tilesets.Count > 1)
+                {
+                    int oldTilesetTileCount = (int)Tilesets[0].TileCount;
+                    int newTilesetTileCount = (int)tryout.TileCount;
+                    int tileCountDifference = oldTilesetTileCount - newTilesetTileCount;
+                    if (tileCountDifference != 0) //differently sized tilesets
+                    {
+                        if (tileCountDifference > 0) //new tileset is smaller
+                            ChangeRangeOfTiles( //delete tiles used by the old tileset that no longer exist
+                                newTilesetTileCount,
+                                oldTilesetTileCount - 1,
+                                () => { return true; },
+                                (ushort tileID) => { return 0; }
+                            );
+                        ChangeRangeOfTiles( //move tiles used by subsequent tilesets up or down as needed
+                            oldTilesetTileCount,
+                            AnimOffset - 1,
+                            () => { return true; },
+                            (ushort tileID) => { return (ushort)(tileID - tileCountDifference); }
+                        );
+                    }
+                }
                 Tilesets[0] = tryout;
                 MainTilesetFilename = Path.GetFileName(filename);
                 return VersionChangeResults.Success;
