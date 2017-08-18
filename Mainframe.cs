@@ -2583,9 +2583,9 @@ namespace MLLE
         }
         internal struct LayerAndSpecificTiles
         {
-            internal byte Layer;
+            internal Layer Layer;
             internal Dictionary<Point, TileAndEvent> Specifics;
-            public LayerAndSpecificTiles(byte b) { Layer = b; Specifics = new Dictionary<Point, TileAndEvent>(); }
+            public LayerAndSpecificTiles(Layer l) { Layer = l; Specifics = new Dictionary<Point, TileAndEvent>(); }
         }
         internal Stack<LayerAndSpecificTiles> Undoable = new Stack<LayerAndSpecificTiles>(), Redoable = new Stack<LayerAndSpecificTiles>();
         TileAndEvent[][] CurrentStamp = new TileAndEvent[0][];
@@ -2605,7 +2605,7 @@ namespace MLLE
             if (LastFocusedZone == FocusedZone.Tileset) { J2L.EventTiles[MouseTile] = MouseAGAEvent.ID = ActiveEvent.ID; RedrawTilesetHowManyTimes = 2; }
             else if (LastFocusedZone == FocusedZone.Level)
             {
-                LayerAndSpecificTiles actionCenter = new LayerAndSpecificTiles(3);
+                LayerAndSpecificTiles actionCenter = new LayerAndSpecificTiles(J2L.SpriteLayer);
                 ActOnATile(MouseTileX, MouseTileY, J2L.SpriteLayer.TileMap[MouseTileX, MouseTileY], ActiveEvent, actionCenter, true);
                 //actionCenter.Specifics.Add(new Point(MouseTileX, MouseTileY), new TileAndEvent(J2L.Layers[3].TileMap[MouseTileX, MouseTileY], (actionCenter.Layer == 3) ? J2L.EventMap[MouseTileX, MouseTileY] : (uint?)null));
                 Undoable.Push(actionCenter);
@@ -2762,7 +2762,7 @@ namespace MLLE
             Layer layer = J2L.AllLayers[LayerNumber];
             if (layer.HasTiles)
             {
-                LayerAndSpecificTiles ActionCenter = new LayerAndSpecificTiles(LayerNumber);
+                LayerAndSpecificTiles ActionCenter = new LayerAndSpecificTiles(layer);
                 if (WhereSelected == FocusedZone.Level)
                 {
                     for (ushort x = 0; x < layer.TileMap.GetLength(0); x++) for (ushort y = 0; y < layer.TileMap.GetLength(1); y++) if (IsEachTileSelected[x + 1][y + 1])
@@ -2952,13 +2952,13 @@ namespace MLLE
         private void ActOnATile(int x, int y, ushort? tile, uint ev, LayerAndSpecificTiles actionCenter, bool blankTilesOkay) { ActOnATile(x, y, tile, new AGAEvent(ev), actionCenter, blankTilesOkay); }
         private void ActOnATile(int x, int y, ushort? tile, AGAEvent? ev, LayerAndSpecificTiles actionCenter, bool blankTilesOkay)
         {
-            Layer layer = J2L.AllLayers[actionCenter.Layer];
+            Layer layer = actionCenter.Layer;
             if (x >= 0 && y >= 0 && x < layer.TileMap.GetLength(0) && y < layer.TileMap.GetLength(1) && tile != null && (blankTilesOkay || tile > 0))
             {
-                if (J2L.VersionType == Version.AGA) actionCenter.Specifics.Add(new Point(x, y), new TileAndEvent(layer.TileMap[x, y], (actionCenter.Layer == J2LFile.SpriteLayerID) ? J2L.AGA_EventMap[x, y] : (AGAEvent?)null));
-                else actionCenter.Specifics.Add(new Point(x, y), new TileAndEvent(layer.TileMap[x, y], (actionCenter.Layer == J2LFile.SpriteLayerID) ? J2L.EventMap[x, y] : (uint?)null));
+                if (J2L.VersionType == Version.AGA) actionCenter.Specifics.Add(new Point(x, y), new TileAndEvent(layer.TileMap[x, y], (actionCenter.Layer == J2L.SpriteLayer) ? J2L.AGA_EventMap[x, y] : (AGAEvent?)null));
+                else actionCenter.Specifics.Add(new Point(x, y), new TileAndEvent(layer.TileMap[x, y], (actionCenter.Layer == J2L.SpriteLayer) ? J2L.EventMap[x, y] : (uint?)null));
                 layer.TileMap[x, y] = (ushort)tile;
-                if (actionCenter.Layer == J2LFile.SpriteLayerID)
+                if (actionCenter.Layer == J2L.SpriteLayer)
                 {
                     if (J2L.VersionType == Version.AGA) J2L.AGA_EventMap[x, y] = ev ?? new AGAEvent(0);
                     else J2L.EventMap[x, y] = (ev == null) ? 0 : ((AGAEvent)ev).ID;
@@ -2977,7 +2977,7 @@ namespace MLLE
         private void TakeAction()
         {
             if (WhereSelected == FocusedZone.Tileset) DeselectAll();
-            LayerAndSpecificTiles ActionCenter = new LayerAndSpecificTiles(CurrentLayerID);
+            LayerAndSpecificTiles ActionCenter = new LayerAndSpecificTiles(CurrentLayer);
             bool shiftPressed = Control.ModifierKeys == Keys.Shift || Control.ModifierKeys == (Keys.Control | Keys.Shift);
             #region paintbrush
             if (VisibleEditingTool == PaintbrushButton)
@@ -3119,13 +3119,13 @@ namespace MLLE
             if (grabFrom.Count > 0)
             {
                 LayerAndSpecificTiles ReplacedActions = grabFrom.Pop(), NewActions = new LayerAndSpecificTiles(ReplacedActions.Layer);
-                var tileMap = J2L.AllLayers[ReplacedActions.Layer].TileMap;
+                var tileMap = ReplacedActions.Layer.TileMap;
                 foreach (Point p in ReplacedActions.Specifics.Keys)
                 {
                     if (J2L.VersionType == Version.AGA) NewActions.Specifics.Add(p, new TileAndEvent(tileMap[p.X, p.Y], J2L.AGA_EventMap[p.X, p.Y]));
                     else NewActions.Specifics.Add(p, new TileAndEvent(tileMap[p.X, p.Y], J2L.EventMap[p.X, p.Y]));
                     tileMap[p.X, p.Y] = ReplacedActions.Specifics[p].Tile;
-                    if (ReplacedActions.Layer == J2LFile.SpriteLayerID)
+                    if (ReplacedActions.Layer == J2L.SpriteLayer)
                     {
                         if (J2L.VersionType == Version.AGA) J2L.AGA_EventMap[p.X, p.Y] = ((AGAEvent)ReplacedActions.Specifics[p].Event);
                         else J2L.EventMap[p.X, p.Y] = ((AGAEvent)ReplacedActions.Specifics[p].Event).ID;
