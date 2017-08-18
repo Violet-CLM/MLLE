@@ -2603,7 +2603,7 @@ namespace MLLE
             /*if (J2L.VersionType == Version.AGA) { if (LastFocusedZone == FocusedZone.Level) J2L.AGA_EventMap[MouseTileX, MouseTileY] = MouseAGAEvent = ActiveEvent; }
             else*/
             if (LastFocusedZone == FocusedZone.Tileset) { J2L.EventTiles[MouseTile] = MouseAGAEvent.ID = ActiveEvent.ID; RedrawTilesetHowManyTimes = 2; }
-            else if (LastFocusedZone == FocusedZone.Level)
+            else if (LastFocusedZone == FocusedZone.Level && CurrentLayer == J2L.SpriteLayer)
             {
                 LayerAndSpecificTiles actionCenter = new LayerAndSpecificTiles(J2L.SpriteLayer);
                 ActOnATile(MouseTileX, MouseTileY, J2L.SpriteLayer.TileMap[MouseTileX, MouseTileY], ActiveEvent, actionCenter, true);
