@@ -3190,6 +3190,7 @@ namespace MLLE
                 };
                 LayerProperties.DropDownItems.Add(toolStripItem);
             }
+            SelectEvent.Enabled = GrabEvent.Enabled = PasteEvent.Enabled = CurrentLayer == J2L.SpriteLayer;
         }
 
         private void Mainframe_Resize(object sender, EventArgs e) { }
