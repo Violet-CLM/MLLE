@@ -7,10 +7,10 @@ namespace MLLE
 {
     public partial struct PlusPropertyList
     {
-        const uint CurrentMLLEData5Version = 0x103;
+        const uint CurrentMLLEData5Version = 0x104;
         const string MLLEData5MagicString = "MLLE";
-        const string CurrentMLLEData5VersionStringForComparison = "0x103";
-        const string CurrentMLLEData5VersionString = "1.3";
+        const string CurrentMLLEData5VersionStringForComparison = "0x104";
+        const string CurrentMLLEData5VersionString = "1.4";
         const string AngelscriptLibraryFilename = "MLLE-Include-" + CurrentMLLEData5VersionString + ".asc";
 
         const string AngelscriptLibraryCallStockLine = "const bool MLLESetupSuccessful = MLLE::Setup();\r\n";
@@ -202,7 +202,7 @@ namespace MLLE {
             for (int y = 0; y < 32; ++y)
                 for (int x = 0; x < 32; ++x)
                     data5.pop(tile[x,y]);
-            tile.save(tileID);
+            tile.save(tileID, true);
         }
 
         if (!data5.isEmpty()) {
