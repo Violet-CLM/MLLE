@@ -345,6 +345,10 @@ namespace MLLE
             {Version.AGA, Settings.IniReadValue("Paths","AGA") },
             {Version.GorH, Settings.IniReadValue("Paths","GorH") },
             };
+            if (DefaultDirectories[Version.JJ2].Trim() == String.Empty)
+                DefaultDirectories[Version.JJ2] = DefaultDirectories[Version.TSF];
+            else if (DefaultDirectories[Version.TSF].Trim() == String.Empty)
+                DefaultDirectories[Version.TSF] = DefaultDirectories[Version.JJ2];
             ProcessIniColorsIntoHotKolor(0, "Colors", "Deadspace");
             ProcessIniColorsIntoHotKolor(1, "Colors", "Tile0");
             ProcessIniColorsIntoHotKolor(2, "Colors", "Transparent");
