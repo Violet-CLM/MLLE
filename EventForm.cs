@@ -408,6 +408,7 @@ namespace MLLE
 
         private void ButtonOK_Click(object sender, EventArgs e)
         {
+            SafeToCalculate = false;
             if (version == Version.AGA)
             {
                 WorkingEvent = new AGAEvent(0);
