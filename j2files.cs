@@ -1301,22 +1301,19 @@ class J2LFile : J2File
                     for (int i = 0; i < DefaultLayers.Length; i++)
                     {
                         Layer layer = DefaultLayers[i];
+                        layer.TileMap = new ArrayMap<ushort>(layer.Width, layer.Height);
                         if (hasTiles[i])
-                        {
-                            uint w4 = (layer.Width + 3) / 4;
-                            uint w = w4 * 4;
-                            layer.TileMap = new ArrayMap<ushort>(w, layer.Height);
-                            for (uint y = 0; y < layer.Height; y++) for (uint x = 0; x < w4; x++)
+                            for (uint y = 0; y < layer.Height; y++) for (uint x = 0; x < layer.RealWidth; x += 4)
                                 {
                                     ushort nuword = data4reader.ReadUInt16();
-                                    for (byte k = 0; k < 4; k++) layer.TileMap[x * 4 + k, y] = Dictionary[nuword][k];
-                                    if (layer.TileWidth && x == w4 - 1) { data4reader.ReadBytes((int)(layer.RealWidth - w) / 2); }
+                                    uint numberOfTilesToCopy =
+                                        (x + 4 <= layer.Width) ? 4u : //nowhere near right edge of layer (as defined by Width, not RealWidth, in case Tile Width makes the two different)
+                                        (x <= layer.Width) ? (layer.Width & 3) : //at right edge
+                                        0u //past right edge
+                                    ;
+                                    for (uint k = 0; k < numberOfTilesToCopy; k++)
+                                        layer.TileMap[x + k, y] = Dictionary[nuword][k];
                                 }
-                        }
-                        else
-                        {
-                            layer.TileMap = new ArrayMap<ushort>(layer.Width, layer.Height);
-                        }
                     }
                 }
                 #endregion data4
@@ -1442,21 +1439,19 @@ class J2LFile : J2File
                 for (int i = 0; i < DefaultLayers.Length; i++)
                 {
                     Layer layer = DefaultLayers[i];
+                    layer.TileMap = new ArrayMap<ushort>(layer.Width, layer.Height);
                     if (hasTiles[i])
-                    {
-                        uint w16 = (layer.Width + 15) / 16;
-                        uint w = w16 * 16;
-                        layer.TileMap = new ArrayMap<ushort>(w, layer.Height);
-                        for (uint y = 0; y < layer.Height; y++) for (uint x = 0; x < w16; x++)
+                        for (uint y = 0; y < layer.Height; y++) for (uint x = 0; x < layer.Width; x += 16)
                             {
                                 ushort nuword = binreader.ReadUInt16(); SectionOffset += 2;
-                                for (byte k = 0; k < 16; k++) layer.TileMap[x * 16 + k, y] = Dictionary[nuword][k];
+                                uint numberOfTilesToCopy =
+                                    (x + 16 <= layer.Width) ? 16u : //nowhere near right edge of layer
+                                    (x <= layer.Width) ? (layer.Width & 15) : //at right edge
+                                    0u //past right edge
+                                ;
+                                for (uint k = 0; k < numberOfTilesToCopy; k++)
+                                    layer.TileMap[x + k, y] = Dictionary[nuword][k];
                             }
-                    }
-                    else
-                    {
-                        layer.TileMap = new ArrayMap<ushort>(layer.Width, layer.Height);
-                    }
                 }
                 while (binreader.PeekChar() == 0) binreader.ReadByte(); //padding
                 Console.WriteLine(binreader.ReadChars(4)); //EVNT
