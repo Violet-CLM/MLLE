@@ -50,6 +50,10 @@ namespace MLLE {
         }
         
         jjSTREAM level(jjLevelFileName);
+        if (level.isEmpty()) {
+            jjDebug('MLLE::Setup: Level file cannot be read from that folder for security reasons!');
+            return false;
+        }
         level.discard(230);
         array<uint> CompressedDataSizes(4, 0);
         for (uint i = 0; i < CompressedDataSizes.length; ++i) {
