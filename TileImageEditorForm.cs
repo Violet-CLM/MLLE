@@ -65,6 +65,7 @@ namespace MLLE
             PictureBox picture = sender as PictureBox;
             if (!(picture).ClientRectangle.Contains(e.Location))
                 return;
+
             bool isImage = picture == pictureBox1;
             int imageDimensions = isImage ? 8 : 5;
             int x = (e.X - picture.AutoScrollOffset.X) / imageDimensions;
@@ -72,33 +73,48 @@ namespace MLLE
             int xy = y * (isImage ? 32 : 16) + x;
             byte color = isImage ? Image[xy] : (byte)xy;
 
-            if (e.Button == MouseButtons.Left)
+            if (!ReplaceColorButton.Checked || !isImage)
             {
-                if ((ModifierKeys == Keys.Control && EditingImage) || !isImage)
-                    PrimaryColor = color;
-                else if (color != PrimaryColor)
+                if (e.Button == MouseButtons.Left)
                 {
-                    Image[xy] = PrimaryColor;
-                    DrawColor(x, y);
+                    if ((ModifierKeys == Keys.Control && EditingImage) || !isImage)
+                        PrimaryColor = color;
+                    else if (color != PrimaryColor)
+                    {
+                        Image[xy] = PrimaryColor;
+                        DrawColor(x, y);
+                    }
+                }
+                else if (e.Button == MouseButtons.Right)
+                {
+                    if ((ModifierKeys == Keys.Control && EditingImage) || !isImage)
+                        SecondaryColor = color;
+                    else if (color != SecondaryColor)
+                    {
+                        Image[xy] = SecondaryColor;
+                        DrawColor(x, y);
+                    }
                 }
             }
-            else if (e.Button == MouseButtons.Right)
-            {
-                if ((ModifierKeys == Keys.Control && EditingImage) || !isImage)
-                    SecondaryColor = color;
-                else if (color != SecondaryColor)
-                {
-                    Image[xy] = SecondaryColor;
-                    DrawColor(x, y);
-                }
-            }
-
             Text = FormTitle + " \u2013 " + color;
+        }
+
+        private void ReplaceColor(byte dst, byte src)
+        {
+            for (int i = 0; i < 32 * 32; ++i)
+                if (Image[i] == src)
+                {
+                    Image[i] = dst;
+                    DrawColor(i & 31, i >> 5);
+                }
         }
 
         private void pictureBox_MouseDown(object sender, MouseEventArgs e)
         {
-            pictureBox_MouseMove(sender, e);
+            if (ReplaceColorButton.Checked && (sender as PictureBox) == pictureBox1) //and therefore this must be an image, not a mask
+                ReplaceColor(e.Button == MouseButtons.Right ? SecondaryColor : PrimaryColor, e.Button == MouseButtons.Right ? PrimaryColor : SecondaryColor);
+            else
+                pictureBox_MouseMove(sender, e);
         }
 
         private void panel_MouseEnter(object sender, EventArgs e)
@@ -205,6 +221,24 @@ namespace MLLE
             e.SuppressKeyPress = true;  // Stops other controls on the form receiving event.
         }
 
+        private void PaintbrushButton_Click(object sender, EventArgs e)
+        {
+            PaintbrushButton.Checked = true;
+            FillButton.Checked = ReplaceColorButton.Checked = false;
+        }
+
+        private void FillButton_Click(object sender, EventArgs e)
+        {
+            FillButton.Checked = true;
+            PaintbrushButton.Checked = ReplaceColorButton.Checked = false;
+        }
+
+        private void ReplaceColorButton_Click(object sender, EventArgs e)
+        {
+            ReplaceColorButton.Checked = true;
+            PaintbrushButton.Checked = FillButton.Checked = false;
+        }
+
         void DrawColor(int x, int y)
         {
             using (Graphics g = Graphics.FromImage(ImageImage))
@@ -242,6 +276,8 @@ namespace MLLE
                 SecondaryColor = 0;
 
                 Text = FormTitle = "Edit Tile Mask";
+
+                toolStrip1.Items.Remove(ReplaceColorButton);
             }
             if (image != null)
                 Text = (FormTitle += "*");

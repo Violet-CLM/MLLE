@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TileImageEditorForm));
             this.ButtonCancel = new System.Windows.Forms.Button();
             this.OKButton = new System.Windows.Forms.Button();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
@@ -45,8 +46,13 @@
             this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pasteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pasteUnderToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStrip1 = new System.Windows.Forms.ToolStrip();
+            this.PaintbrushButton = new System.Windows.Forms.ToolStripButton();
+            this.FillButton = new System.Windows.Forms.ToolStripButton();
+            this.ReplaceColorButton = new System.Windows.Forms.ToolStripButton();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.menuStrip1.SuspendLayout();
+            this.toolStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // ButtonCancel
@@ -180,23 +186,71 @@
             // copyToolStripMenuItem
             // 
             this.copyToolStripMenuItem.Name = "copyToolStripMenuItem";
-            this.copyToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.copyToolStripMenuItem.Size = new System.Drawing.Size(137, 22);
             this.copyToolStripMenuItem.Text = "Copy";
             this.copyToolStripMenuItem.Click += new System.EventHandler(this.copyToolStripMenuItem_Click);
             // 
             // pasteToolStripMenuItem
             // 
             this.pasteToolStripMenuItem.Name = "pasteToolStripMenuItem";
-            this.pasteToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.pasteToolStripMenuItem.Size = new System.Drawing.Size(137, 22);
             this.pasteToolStripMenuItem.Text = "Paste";
             this.pasteToolStripMenuItem.Click += new System.EventHandler(this.pasteToolStripMenuItem_Click);
             // 
             // pasteUnderToolStripMenuItem
             // 
             this.pasteUnderToolStripMenuItem.Name = "pasteUnderToolStripMenuItem";
-            this.pasteUnderToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.pasteUnderToolStripMenuItem.Size = new System.Drawing.Size(137, 22);
             this.pasteUnderToolStripMenuItem.Text = "Paste Under";
             this.pasteUnderToolStripMenuItem.Click += new System.EventHandler(this.pasteUnderToolStripMenuItem_Click);
+            // 
+            // toolStrip1
+            // 
+            this.toolStrip1.Dock = System.Windows.Forms.DockStyle.None;
+            this.toolStrip1.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+            this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.PaintbrushButton,
+            this.FillButton,
+            this.ReplaceColorButton});
+            this.toolStrip1.Location = new System.Drawing.Point(280, 208);
+            this.toolStrip1.Name = "toolStrip1";
+            this.toolStrip1.Size = new System.Drawing.Size(103, 25);
+            this.toolStrip1.TabIndex = 14;
+            this.toolStrip1.Text = "toolStrip1";
+            // 
+            // PaintbrushButton
+            // 
+            this.PaintbrushButton.AutoToolTip = false;
+            this.PaintbrushButton.Checked = true;
+            this.PaintbrushButton.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.PaintbrushButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.PaintbrushButton.Image = ((System.Drawing.Image)(resources.GetObject("PaintbrushButton.Image")));
+            this.PaintbrushButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.PaintbrushButton.Name = "PaintbrushButton";
+            this.PaintbrushButton.Size = new System.Drawing.Size(23, 22);
+            this.PaintbrushButton.Tag = "Paintbrush";
+            this.PaintbrushButton.Click += new System.EventHandler(this.PaintbrushButton_Click);
+            // 
+            // FillButton
+            // 
+            this.FillButton.AutoToolTip = false;
+            this.FillButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.FillButton.Image = ((System.Drawing.Image)(resources.GetObject("FillButton.Image")));
+            this.FillButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.FillButton.Name = "FillButton";
+            this.FillButton.Size = new System.Drawing.Size(23, 22);
+            this.FillButton.Tag = "Fill";
+            this.FillButton.Click += new System.EventHandler(this.FillButton_Click);
+            // 
+            // ReplaceColorButton
+            // 
+            this.ReplaceColorButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.ReplaceColorButton.Image = ((System.Drawing.Image)(resources.GetObject("ReplaceColorButton.Image")));
+            this.ReplaceColorButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.ReplaceColorButton.Name = "ReplaceColorButton";
+            this.ReplaceColorButton.Size = new System.Drawing.Size(23, 22);
+            this.ReplaceColorButton.Text = "Replace Color";
+            this.ReplaceColorButton.Click += new System.EventHandler(this.ReplaceColorButton_Click);
             // 
             // TileImageEditorForm
             // 
@@ -205,6 +259,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
             this.ClientSize = new System.Drawing.Size(367, 295);
+            this.Controls.Add(this.toolStrip1);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.pictureBox1);
@@ -225,6 +280,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
+            this.toolStrip1.ResumeLayout(false);
+            this.toolStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -249,5 +306,9 @@
         private System.Windows.Forms.ToolStripMenuItem copyToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem pasteToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem pasteUnderToolStripMenuItem;
+        private System.Windows.Forms.ToolStrip toolStrip1;
+        private System.Windows.Forms.ToolStripButton PaintbrushButton;
+        private System.Windows.Forms.ToolStripButton FillButton;
+        private System.Windows.Forms.ToolStripButton ReplaceColorButton;
     }
 }
