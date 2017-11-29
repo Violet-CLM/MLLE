@@ -1531,7 +1531,7 @@ class J2LFile : J2File
         //ParameterMap = new uint[256, 64];
     }
     internal bool IsAnUndefinedTile(ushort id) { return false;}// (id >= MaxTiles * 2 || (id % MaxTiles >= TileCount && MaxTiles - NumberOfAnimations > id % MaxTiles)); }
-    internal ushort SanitizeTileValue(ushort id) { return (IsAnUndefinedTile(id)) ? (ushort)0 : id; }
+    internal ushort SanitizeTileValue(ushort id) { return (IsAnUndefinedTile(id) || id % MaxTiles == 0) ? (ushort)0 : id; }
     internal static void InputLEVSection(BinaryWriter destination, BinaryWriter source, char[] label)
     {
         while (source.BaseStream.Length % 4 > 0) source.Write('\0');
