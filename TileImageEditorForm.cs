@@ -81,8 +81,13 @@ namespace MLLE
                         PrimaryColor = color;
                     else if (color != PrimaryColor)
                     {
-                        Image[xy] = PrimaryColor;
-                        DrawColor(x, y);
+                        if (FillButton.Checked)
+                            Fill(new Point(x, y), PrimaryColor, color);
+                        else
+                        {
+                            Image[xy] = PrimaryColor;
+                            DrawColor(x, y);
+                        }
                     }
                 }
                 else if (e.Button == MouseButtons.Right)
@@ -91,8 +96,13 @@ namespace MLLE
                         SecondaryColor = color;
                     else if (color != SecondaryColor)
                     {
-                        Image[xy] = SecondaryColor;
-                        DrawColor(x, y);
+                        if (FillButton.Checked)
+                            Fill(new Point(x, y), SecondaryColor, color);
+                        else
+                        {
+                            Image[xy] = SecondaryColor;
+                            DrawColor(x, y);
+                        }
                     }
                 }
             }
@@ -107,6 +117,31 @@ namespace MLLE
                     Image[i] = dst;
                     DrawColor(i & 31, i >> 5);
                 }
+        }
+        private void Fill(Point loc, byte color, byte colorToFill)
+        {
+            List<Point> Points = new List<Point> { loc };
+            var DrawColor = Colors[color];
+            using (Graphics g = Graphics.FromImage(ImageImage))
+                for (int i = 0; i < Points.Count; ++i)
+                {
+                    Point point = Points[i];
+                    int xy = point.X | (point.Y << 5);
+                    if (Image[xy] == colorToFill) //hasn't already been drawn to
+                    {
+                        if (point.X > 0 && Image[xy - 1] == colorToFill)
+                            Points.Add(new Point(point.X - 1, point.Y));
+                        if (point.X < 31 && Image[xy + 1] == colorToFill)
+                            Points.Add(new Point(point.X + 1, point.Y));
+                        if (point.Y > 0 && Image[xy - 32] == colorToFill)
+                            Points.Add(new Point(point.X, point.Y - 1));
+                        if (point.Y < 31 && Image[xy + 32] == colorToFill)
+                            Points.Add(new Point(point.X, point.Y + 1));
+                        Image[xy] = color;
+                        g.FillRectangle(DrawColor, new Rectangle(point.X * 8, point.Y * 8, 8, 8));
+                    }
+                }
+            pictureBox1.Image = ImageImage;
         }
 
         private void pictureBox_MouseDown(object sender, MouseEventArgs e)
