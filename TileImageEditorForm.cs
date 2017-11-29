@@ -73,7 +73,7 @@ namespace MLLE
             int xy = y * (isImage ? 32 : 16) + x;
             byte color = isImage ? Image[xy] : (byte)xy;
 
-            if (!ReplaceColorButton.Checked || !isImage)
+            if (!ReplaceColorButton.Checked || ModifierKeys == Keys.Control || !isImage)
             {
                 if (e.Button == MouseButtons.Left)
                 {
@@ -146,7 +146,7 @@ namespace MLLE
 
         private void pictureBox_MouseDown(object sender, MouseEventArgs e)
         {
-            if (ReplaceColorButton.Checked && (sender as PictureBox) == pictureBox1) //and therefore this must be an image, not a mask
+            if (ReplaceColorButton.Checked && ModifierKeys != Keys.Control && (sender as PictureBox) == pictureBox1) //and therefore this must be an image, not a mask
                 ReplaceColor(e.Button == MouseButtons.Right ? SecondaryColor : PrimaryColor, e.Button == MouseButtons.Right ? PrimaryColor : SecondaryColor);
             else
                 pictureBox_MouseMove(sender, e);
