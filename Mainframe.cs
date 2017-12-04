@@ -2878,7 +2878,7 @@ namespace MLLE
         }
         private void MakeSelectionIntoStamp(bool cut = false)
         {
-            if (WhereSelected != FocusedZone.None)
+            if (WhereSelected != FocusedZone.None && BottomRightSelectionCorner.X > UpperLeftSelectionCorner.X && BottomRightSelectionCorner.Y > UpperLeftSelectionCorner.Y)
             {
                 var tileMap = CurrentLayer.TileMap;
                 SetStampDimensions(BottomRightSelectionCorner.X - UpperLeftSelectionCorner.X, BottomRightSelectionCorner.Y - UpperLeftSelectionCorner.Y);
