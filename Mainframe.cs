@@ -1232,7 +1232,8 @@ namespace MLLE
                             EmptyActionStackIfItContainsVerticallyFlippedTiles(Undoable);
                             EmptyActionStackIfItContainsVerticallyFlippedTiles(Redoable);
                         }
-                        J2L.Generate_Textures(); //in case any tile types are treated differently in this new version
+                        if (J2L.HasTiles)
+                            J2L.Generate_Textures(); //in case any tile types are treated differently in this new version
                         RedrawTilesetHowManyTimes = 2;
                         break;
                     case VersionChangeResults.TilesetTooBig:
