@@ -4,6 +4,7 @@ using System.Linq;
 using System.IO;
 using System.Text;
 using Ionic.Zlib;
+using Ionic.Crc;
 using Extra.Collections;
 
 public enum Version { JJ2, TSF, O, GorH, BC, AGA, AmbiguousBCO };

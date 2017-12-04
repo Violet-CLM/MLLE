@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using Ionic.Zlib;
+using Ionic.Crc;
 using System.Text.RegularExpressions;
 
 namespace MLLE
