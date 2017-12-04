@@ -448,6 +448,13 @@ namespace MLLE
             MakeProposedScrollbarValueWork(scrollbarToMove, scrollbarToMove.Value - scrollbarToMove.SmallChange * e.Delta / 120);
         }
 
+        private void DeleteLevelScriptIfEmpty()
+        {
+            string scriptFilePath = Path.ChangeExtension(J2L.FullFilePath, ".j2as");
+            if (File.Exists(scriptFilePath) && new FileInfo(scriptFilePath).Length == 0) //if you created a script for this level while editing it, but didn't write anything in the script, just delete it afterwards
+                File.Delete(scriptFilePath);
+        }
+
         private void Mainframe_FormClosing(object sender, FormClosingEventArgs e) {
             if (!PromptForSaving())
             {
@@ -458,7 +465,9 @@ namespace MLLE
             if (DrawThread != null)
                 DrawThread.Abort();
 
-            bool windowIsMaximized = this.WindowState == FormWindowState.Maximized;
+            DeleteLevelScriptIfEmpty();
+
+                bool windowIsMaximized = this.WindowState == FormWindowState.Maximized;
             Settings.IniWriteValue("Window", "Maximized", windowIsMaximized.ToString());
             if (!windowIsMaximized)
             {
@@ -1255,7 +1264,11 @@ namespace MLLE
             OpenJ2LDialog.FileName = J2L.NextLevel + DefaultFileExtensionStrings[DefaultFileExtension[J2L.VersionType]];
             _suspendEvent.Reset();
             DialogResult result = OpenJ2LDialog.ShowDialog();
-            if (result == DialogResult.OK && PromptForSaving()) LoadJ2L(OpenJ2LDialog.FileName);
+            if (result == DialogResult.OK && PromptForSaving())
+            {
+                DeleteLevelScriptIfEmpty();
+                LoadJ2L(OpenJ2LDialog.FileName);
+            }
             _suspendEvent.Set();
         }
         internal void LoadJ2L(string filename)
@@ -2952,6 +2965,14 @@ namespace MLLE
         //Rectangle DrawRect = new Rectangle();
         Point DrawPoint = new Point();
         Queue<Point> FillingQ = new Queue<Point>();
+
+        private void editScriptToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            string scriptFilePath = Path.ChangeExtension(J2L.FullFilePath, ".j2as");
+            if (!File.Exists(scriptFilePath))
+                File.Create(scriptFilePath).Close(); //blank file
+           Process.Start(scriptFilePath);
+        }
 
         private void ActOnATile(int x, int y, ushort? tile, uint ev, LayerAndSpecificTiles actionCenter, bool blankTilesOkay) { ActOnATile(x, y, tile, new AGAEvent(ev), actionCenter, blankTilesOkay); }
         private void ActOnATile(int x, int y, ushort? tile, AGAEvent? ev, LayerAndSpecificTiles actionCenter, bool blankTilesOkay)
