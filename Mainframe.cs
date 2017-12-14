@@ -2996,6 +2996,7 @@ namespace MLLE
         private void fileToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
         {
             recentLevelsToolStripMenuItem.DropDownItems.Clear();
+            recentLevelsToolStripMenuItem.Enabled = RecentlyLoadedLevels.Count > 0;
             for (int i = 0; i < RecentlyLoadedLevels.Count; ++i)
             {
                 string recentLevel = RecentlyLoadedLevels[i];
