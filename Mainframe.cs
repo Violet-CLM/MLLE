@@ -1350,7 +1350,7 @@ namespace MLLE
                 SetTitle(J2L.Name, J2L.FilenameOnly);
                 RecentlyLoadedLevels.RemoveAll(fn => fn == filename); //no dupes
                 RecentlyLoadedLevels.Insert(0, filename);
-                for (int i = 0; i < 9 && i < RecentlyLoadedLevels.Count; ++i)
+                for (int i = 0; i < 10 && i < RecentlyLoadedLevels.Count; ++i)
                 {
                     Settings.IniWriteValue("RecentLevels", (i + 1).ToString(), RecentlyLoadedLevels[i]);
                 }
@@ -2991,6 +2991,22 @@ namespace MLLE
             if (!File.Exists(scriptFilePath))
                 File.Create(scriptFilePath).Close(); //blank file
            Process.Start(scriptFilePath);
+        }
+
+        private void fileToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
+        {
+            recentLevelsToolStripMenuItem.DropDownItems.Clear();
+            for (int i = 0; i < RecentlyLoadedLevels.Count; ++i)
+            {
+                string recentLevel = RecentlyLoadedLevels[i];
+
+                var toolStripItem = new ToolStripMenuItem((i + 1).ToString() + " " + Path.GetFileName(recentLevel));
+                toolStripItem.Click += (s, ee) => {
+                    LoadJ2L(recentLevel);
+                };
+
+                recentLevelsToolStripMenuItem.DropDownItems.Add(toolStripItem);
+            }
         }
 
         private void ActOnATile(int x, int y, ushort? tile, uint ev, LayerAndSpecificTiles actionCenter, bool blankTilesOkay) { ActOnATile(x, y, tile, new AGAEvent(ev), actionCenter, blankTilesOkay); }

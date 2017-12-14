@@ -72,6 +72,8 @@
             this.tilesetsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addNewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.recolorEventsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator22 = new System.Windows.Forms.ToolStripSeparator();
+            this.editScriptToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.preferencesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.eventsForemostToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator19 = new System.Windows.Forms.ToolStripSeparator();
@@ -178,8 +180,7 @@
             this.AnimScrollbar = new System.Windows.Forms.HScrollBar();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
-            this.toolStripSeparator22 = new System.Windows.Forms.ToolStripSeparator();
-            this.editScriptToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.recentLevelsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MainMenu.SuspendLayout();
             this.DrawingTools.SuspendLayout();
             this.StatusBar.SuspendLayout();
@@ -221,11 +222,13 @@
             this.saveRunToolStripMenuItem,
             this.toolStripSeparator2,
             this.pathsAndFilenamesToolStripMenuItem,
+            this.recentLevelsToolStripMenuItem,
             this.toolStripSeparator20,
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "File";
+            this.fileToolStripMenuItem.DropDownOpening += new System.EventHandler(this.fileToolStripMenuItem_DropDownOpening);
             // 
             // newToolStripMenuItem
             // 
@@ -291,7 +294,7 @@
             // 
             this.pathsAndFilenamesToolStripMenuItem.Name = "pathsAndFilenamesToolStripMenuItem";
             this.pathsAndFilenamesToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
-            this.pathsAndFilenamesToolStripMenuItem.Text = "Paths and Filenames...";
+            this.pathsAndFilenamesToolStripMenuItem.Text = "&Paths and Filenames...";
             this.pathsAndFilenamesToolStripMenuItem.Click += new System.EventHandler(this.pathsAndFilenamesToolStripMenuItem_Click);
             // 
             // toolStripSeparator20
@@ -539,6 +542,18 @@
             this.recolorEventsToolStripMenuItem.Name = "recolorEventsToolStripMenuItem";
             this.recolorEventsToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
             this.recolorEventsToolStripMenuItem.Text = "Recolor Events";
+            // 
+            // toolStripSeparator22
+            // 
+            this.toolStripSeparator22.Name = "toolStripSeparator22";
+            this.toolStripSeparator22.Size = new System.Drawing.Size(163, 6);
+            // 
+            // editScriptToolStripMenuItem
+            // 
+            this.editScriptToolStripMenuItem.Name = "editScriptToolStripMenuItem";
+            this.editScriptToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.editScriptToolStripMenuItem.Text = "Edit Script...";
+            this.editScriptToolStripMenuItem.Click += new System.EventHandler(this.editScriptToolStripMenuItem_Click);
             // 
             // preferencesToolStripMenuItem
             // 
@@ -1571,17 +1586,11 @@
             // 
             this.folderBrowserDialog1.ShowNewFolderButton = false;
             // 
-            // toolStripSeparator22
+            // recentLevelsToolStripMenuItem
             // 
-            this.toolStripSeparator22.Name = "toolStripSeparator22";
-            this.toolStripSeparator22.Size = new System.Drawing.Size(163, 6);
-            // 
-            // editScriptToolStripMenuItem
-            // 
-            this.editScriptToolStripMenuItem.Name = "editScriptToolStripMenuItem";
-            this.editScriptToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
-            this.editScriptToolStripMenuItem.Text = "Edit Script...";
-            this.editScriptToolStripMenuItem.Click += new System.EventHandler(this.editScriptToolStripMenuItem_Click);
+            this.recentLevelsToolStripMenuItem.Name = "recentLevelsToolStripMenuItem";
+            this.recentLevelsToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
+            this.recentLevelsToolStripMenuItem.Text = "Recent &Levels";
             // 
             // Mainframe
             // 
@@ -1788,5 +1797,6 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator15;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator22;
         private System.Windows.Forms.ToolStripMenuItem editScriptToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem recentLevelsToolStripMenuItem;
     }
 }
