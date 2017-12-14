@@ -290,6 +290,11 @@ namespace MLLE {
             string fileContents = "";
             if (File.Exists(scriptFilepath))
                 fileContents = System.IO.File.ReadAllText(scriptFilepath, encoding);
+            {
+                string pragma = GetPragmaRequire(Path.GetFileName(filepath));
+                if (!fileContents.Contains(pragma))
+                    fileContents = pragma + fileContents;
+            }
             for (int i = 1; i < Tilesets.Count; ++i)
             {
                 string pragma = GetPragmaRequire(Tilesets[i].FilenameOnly);
