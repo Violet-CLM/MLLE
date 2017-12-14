@@ -151,6 +151,8 @@ namespace MLLE
         }
 
         public AGAEvent ActiveEvent;
+
+        private List<string> RecentlyLoadedLevels = new List<string>();
         #endregion variable declaration
 
         #region Form Business
@@ -336,6 +338,16 @@ namespace MLLE
                 }
             }
             MakeVersionChangesAvailable();
+
+
+            for (int i = 1; i <= 10; ++i)
+            {
+                string recentLevel = Settings.IniReadValue("RecentLevels", i.ToString());
+                if (recentLevel != String.Empty)
+                    RecentlyLoadedLevels.Add(recentLevel);
+                else
+                    break;
+            }
 
             DefaultDirectories = new Dictionary<Version, string> {
             {Version.BC, Settings.IniReadValue("Paths","BC") },
@@ -1336,6 +1348,12 @@ namespace MLLE
                     ProcessIni(J2L.VersionType);
                 }
                 SetTitle(J2L.Name, J2L.FilenameOnly);
+                RecentlyLoadedLevels.RemoveAll(fn => fn == filename); //no dupes
+                RecentlyLoadedLevels.Insert(0, filename);
+                for (int i = 0; i < 9 && i < RecentlyLoadedLevels.Count; ++i)
+                {
+                    Settings.IniWriteValue("RecentLevels", (i + 1).ToString(), RecentlyLoadedLevels[i]);
+                }
                 J2L.Generate_Textures(TransparencySource.JJ2_Style, true);
                 GL.BindTexture(TextureTarget.Texture2D, J2L.ImageAtlas);
                 Undoable.Clear();
