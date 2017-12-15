@@ -2950,6 +2950,7 @@ namespace MLLE
             {
                 var tileMap = CurrentLayer.TileMap;
                 SetStampDimensions(BottomRightSelectionCorner.X - UpperLeftSelectionCorner.X, BottomRightSelectionCorner.Y - UpperLeftSelectionCorner.Y);
+                bool EditingSpriteLayer = CurrentLayer == J2L.SpriteLayer;
                 for (int x = UpperLeftSelectionCorner.X; x < BottomRightSelectionCorner.X; x++)
                     for (int y = UpperLeftSelectionCorner.Y; y < BottomRightSelectionCorner.Y; y++)
                         if (IsEachTileSelected[x + 1][y + 1])
@@ -2957,10 +2958,11 @@ namespace MLLE
                             TileAndEvent tileToAddToStamp;
                             if ((WhereSelected == FocusedZone.Level))
                             {
-                                tileToAddToStamp = new TileAndEvent(tileMap[x, y], J2L.EventMap[x, y]);
+                                tileToAddToStamp = new TileAndEvent(tileMap[x, y], EditingSpriteLayer ? J2L.EventMap[x, y] : 0);
                                 if (cut) {
                                     tileMap[x, y] = 0;
-                                    J2L.EventMap[x, y] = 0;
+                                    if (EditingSpriteLayer)
+                                        J2L.EventMap[x, y] = 0;
                                 }
                             }
                             else
