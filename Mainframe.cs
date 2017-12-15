@@ -2949,6 +2949,14 @@ namespace MLLE
             if (WhereSelected != FocusedZone.None && BottomRightSelectionCorner.X > UpperLeftSelectionCorner.X && BottomRightSelectionCorner.Y > UpperLeftSelectionCorner.Y)
             {
                 var tileMap = CurrentLayer.TileMap;
+                if (WhereSelected == FocusedZone.Level)
+                {
+                    int width = tileMap.GetLength(0), height = tileMap.GetLength(1);
+                    if (UpperLeftSelectionCorner.X >= width || UpperLeftSelectionCorner.Y >= height)
+                        return; //nothing can be done
+                    BottomRightSelectionCorner.X = Math.Min(BottomRightSelectionCorner.X, width);
+                    BottomRightSelectionCorner.Y = Math.Min(BottomRightSelectionCorner.Y, height);
+                }
                 SetStampDimensions(BottomRightSelectionCorner.X - UpperLeftSelectionCorner.X, BottomRightSelectionCorner.Y - UpperLeftSelectionCorner.Y);
                 bool EditingSpriteLayer = CurrentLayer == J2L.SpriteLayer;
                 for (int x = UpperLeftSelectionCorner.X; x < BottomRightSelectionCorner.X; x++)
