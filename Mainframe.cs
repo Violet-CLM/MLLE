@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.IO;
+using System.IO.Compression;
 using System.Text;
 using System.Windows.Forms;
 using System.Diagnostics;
@@ -1516,6 +1517,39 @@ namespace MLLE
             }
             else return true;
         }
+        void MakeBackup(string filepath)
+        {
+            List<string> filenamesToMakeBackupsOf = new List<string>();
+            filenamesToMakeBackupsOf.Add(filepath);
+
+            string scriptFilename = Path.ChangeExtension(filepath, ".j2as");
+            if (File.Exists(scriptFilename))
+            {
+                filenamesToMakeBackupsOf.Add(scriptFilename);
+                int extraDataFileID = 0;
+                while (true)
+                {
+                    string extraDataFilePath = PlusPropertyList.GetExtraDataLevelFilepath(filepath, extraDataFileID);
+                    if (File.Exists(extraDataFilePath))
+                        filenamesToMakeBackupsOf.Add(extraDataFilePath);
+                    else
+                        break;
+                    ++extraDataFileID;
+                }
+            }
+
+            var backupDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Backups");
+            if (!Directory.Exists(backupDirectory))
+                Directory.CreateDirectory(backupDirectory);
+
+            using (var zip = ZipFile.Open(Path.Combine(backupDirectory, Path.GetFileNameWithoutExtension(J2L.FilenameOnly) + " " + DateTime.Now.ToString("MM-dd-yyyy hh-mm-ss tt") + ".zip"), ZipArchiveMode.Create))
+                foreach (string filename in filenamesToMakeBackupsOf)
+                    zip.CreateEntryFromFile(filename, Path.GetFileName(filename));
+
+            var AllBackupFiles = new DirectoryInfo(backupDirectory).GetFiles("*.zip", SearchOption.TopDirectoryOnly); //check how many backups have been made now
+            if (AllBackupFiles.Length > 100) //more than a hundred backup files in this folder
+                File.Delete(AllBackupFiles.OrderBy(f => f.CreationTime).First().FullName); //delete the oldest one
+        }
         internal SavingResults SaveJ2L(string filename, bool eraseUndefinedTiles = false, bool allowDifferentTilesetVersion = false, bool storeGivenFilename = true)
         {
             _suspendEvent.Reset();
@@ -1539,6 +1573,8 @@ namespace MLLE
                 PlusPropertyList.RemovePriorReferencesToMLLELibrary(filename);
                 if (Data5 != null)
                     J2L.PlusPropertyList.SaveLibrary(filename, J2L.Tilesets, (J2L.AllLayers.Count(l => !l.isDefault) + 7) / 8);
+
+                MakeBackup(filename);
             }
             else if (result == SavingResults.NoTilesetSelected)
             {
