@@ -125,6 +125,7 @@
     <Compile Include="SFXForm.Designer.cs">
       <DependentUpon>SFXForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="SmartTiles.cs" />
     <Compile Include="TextEdit.cs">
       <SubType>Form</SubType>
     </Compile>

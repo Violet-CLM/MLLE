@@ -506,6 +506,7 @@ namespace MLLE
             //{
             //    if (item.Index == desiredindex) { TilesetSelection.SelectedIndex = TilesetSelection.Items.IndexOf(item); break; }
             //}
+
         }
         internal void CheckCurrentVersion()
         {
@@ -1208,6 +1209,7 @@ namespace MLLE
                 _suspendEvent.Set();
             }
             else RedrawTilesetHowManyTimes = 2;
+            CheckForSmartTileFile();
             SafeToDisplay = true;
             ResizeDisplay();
         }
@@ -1376,6 +1378,7 @@ namespace MLLE
                 MakeProposedScrollbarValueWork(LDScrollH, J2L.JCSHorizontalFocus);
                 MakeProposedScrollbarValueWork(LDScrollV, J2L.JCSVerticalFocus);
                 IdentifyTileset();
+                CheckForSmartTileFile();
                 if (playMusicToolStripMenuItem.Checked) PlayMusic();
                 GameTick = 0; GameTime = 0; sw.Restart();
             }
