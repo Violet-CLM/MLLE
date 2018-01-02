@@ -9,6 +9,7 @@ namespace MLLE
     class SmartTile
     {
         internal ushort TileID;
+        ushort[] NonLocalTargets;
         class Rule
         {
             ushort[] TileIDs;
@@ -81,26 +82,21 @@ namespace MLLE
                     }
                     else
                     {
-                        if (words.Length == 1)
-                        {
-                            if (words[0][0] == '\t') //tab
-                            {
-                                words[0] = words[0].Substring(1);
+                        switch (words.Length) {
+                            case 1:
                                 workingSmartTile.Rules.Add(new Rule(CreateTileIDList(words, tileGroups), workingConditions.ToArray()));
                                 workingConditions.Clear();
-                            }
-                            else
-                            {
+                                break;
+                            case 2:
                                 if (!ushort.TryParse(words[0], out workingSmartTile.TileID))
                                     Debug.WriteLine("Invalid line " + line);
-                            }
+                                else
+                                    workingSmartTile.NonLocalTargets = CreateTileIDList(words.Skip(1), tileGroups);
+                                break;
+                            default:
+                                workingConditions.Add(new Rule.Condition(words, tileGroups));
+                                break;
                         }
-                        else if (words.Length >= 3)
-                        {
-                            workingConditions.Add(new Rule.Condition(words, tileGroups));
-                        }
-                        else
-                            Debug.WriteLine("Invalid line " + line);
                     }
                 }
             }

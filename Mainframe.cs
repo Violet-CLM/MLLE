@@ -1061,8 +1061,11 @@ namespace MLLE
         public TilesetOverlay CurrentTilesetOverlay = TilesetOverlay.None;
         private void TilesetOverlaySelection_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (CurrentTilesetOverlay == TilesetOverlay.SmartTiles)
+            if (CurrentTilesetOverlay == TilesetOverlay.SmartTiles || TilesetOverlaySelection.SelectedIndex == 4)
+            {
                 DeselectAll(); //selects in smart tiles mode are fundamentally different from other ones
+                SetStampDimensions(0, 0);
+            }
             TilesetScrollbar.Enabled = true;
             switch (TilesetOverlaySelection.SelectedIndex)
             {
@@ -1077,7 +1080,6 @@ namespace MLLE
                     break;
                 case 4:
                     CurrentTilesetOverlay = TilesetOverlay.SmartTiles;
-                    DeselectAll();
                     TilesetScrollbar.Value = 0; //scroll to top
                     TilesetScrollbar.Enabled = false;
                     break;
