@@ -11,20 +11,35 @@ namespace MLLE
         ushort TileID;
         class Rule
         {
-            List<ushort> TileIDs = new List<ushort>();
-            class Condition
+            ushort[] TileIDs;
+            internal class Condition
             {
                 int X, Y;
                 bool Not;
-                List<ushort> TileIDs = new List<ushort>();
+                ushort[] TileIDs;
+                internal Condition(string[] words, Dictionary<string, ushort[]> groups)
+                {
+                    if (int.TryParse(words[0], out X) && Math.Abs(X) <= 2 && int.TryParse(words[1], out Y) && Math.Abs(Y) <= 2) //2? maybe?
+                    {
+                        Not = words[2] == "!";
+                        TileIDs = CreateTileIDList(words.Skip(Not ? 3 : 2), groups);
+                    }
+                    else
+                        Debug.WriteLine("Invalid condition coordinates");
+                }
             }
-            List<Condition> Conditions = new List<Condition>();
+            Condition[] Conditions;
+            internal Rule(ushort[] t, Condition[] c)
+            {
+                TileIDs = t;
+                Conditions = c;
+            }
         }
         List<Rule> Rules = new List<Rule>();
 
         static ushort[] CreateTileIDList(IEnumerable<string> words, Dictionary<string, ushort[]> groups)
         {
-            List<ushort> list = new List<ushort>();
+            var list = new List<ushort>();
             foreach (var potentialid in words)
             {
                 ushort id;
@@ -40,16 +55,22 @@ namespace MLLE
         }
         public static bool DefineSmartTiles(string filepath, out SmartTile[] smartTiles)
         {
-            List<SmartTile> result = new List<SmartTile>();
-            Dictionary<string, ushort[]> tileGroups = new Dictionary<string, ushort[]>();
+            var result = new List<SmartTile>();
+            var tileGroups = new Dictionary<string, ushort[]>();
             bool stillInDictionaryMode = true;
 
             var lines = File.ReadAllLines(filepath);
+            SmartTile workingSmartTile = null;
+            List<Rule.Condition> workingConditions = new List<Rule.Condition>();
             foreach (string line in lines)
             {
                 if (line == String.Empty) //section break
                 {
-                    stillInDictionaryMode = false;
+                    if (stillInDictionaryMode)
+                        stillInDictionaryMode = false;
+                    else
+                        result.Add(workingSmartTile);
+                    workingSmartTile = new SmartTile();
                 }
                 else
                 {
@@ -57,11 +78,29 @@ namespace MLLE
                     if (stillInDictionaryMode)
                     {
                         tileGroups.Add(words[0], CreateTileIDList(words.Skip(1), tileGroups));
-                        Debug.WriteLine(words[0]);
-                        Debug.WriteLine(tileGroups[words[0]].Length);
                     }
                     else
                     {
+                        if (words.Length == 1)
+                        {
+                            if (words[0][0] == '\t') //tab
+                            {
+                                words[0] = words[0].Substring(1);
+                                workingSmartTile.Rules.Add(new Rule(CreateTileIDList(words, tileGroups), workingConditions.ToArray()));
+                                workingConditions.Clear();
+                            }
+                            else
+                            {
+                                if (!ushort.TryParse(words[0], out workingSmartTile.TileID))
+                                    Debug.WriteLine("Invalid line " + line);
+                            }
+                        }
+                        else if (words.Length >= 3)
+                        {
+                            workingConditions.Add(new Rule.Condition(words, tileGroups));
+                        }
+                        else
+                            Debug.WriteLine("Invalid line " + line);
                     }
                 }
             }
