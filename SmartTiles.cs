@@ -8,7 +8,7 @@ namespace MLLE
 {
     class SmartTile
     {
-        ushort TileID;
+        internal ushort TileID;
         class Rule
         {
             ushort[] TileIDs;
@@ -104,6 +104,8 @@ namespace MLLE
                     }
                 }
             }
+            if (workingSmartTile.Rules.Count != 0)
+                result.Add(workingSmartTile);
             smartTiles = result.ToArray();
             return true;
         }
