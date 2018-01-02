@@ -1096,6 +1096,7 @@ namespace MLLE
         private void OverEvents_Click(object sender, EventArgs e) { TilesetOverlaySelection.SelectedIndex = 1; }
         private void OverTileTypes_Click(object sender, EventArgs e) { TilesetOverlaySelection.SelectedIndex = 2; }
         private void OverMasks_Click(object sender, EventArgs e) { TilesetOverlaySelection.SelectedIndex = 3; }
+        private void OverSmartTiles_Click(object sender, EventArgs e) { TilesetOverlaySelection.SelectedIndex = 4; }
 
 
         private void textStringsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -3084,6 +3085,7 @@ namespace MLLE
                 recentLevelsToolStripMenuItem.DropDownItems.Add(toolStripItem);
             }
         }
+
 
         private void ActOnATile(int x, int y, ushort? tile, uint ev, LayerAndSpecificTiles actionCenter, bool blankTilesOkay) { ActOnATile(x, y, tile, new AGAEvent(ev), actionCenter, blankTilesOkay); }
         private void ActOnATile(int x, int y, ushort? tile, AGAEvent? ev, LayerAndSpecificTiles actionCenter, bool blankTilesOkay)

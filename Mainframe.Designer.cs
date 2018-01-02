@@ -181,6 +181,7 @@
             this.AnimScrollbar = new System.Windows.Forms.HScrollBar();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
+            this.OverSmartTiles = new System.Windows.Forms.ToolStripMenuItem();
             this.MainMenu.SuspendLayout();
             this.DrawingTools.SuspendLayout();
             this.StatusBar.SuspendLayout();
@@ -1054,7 +1055,7 @@
             "Masks",
             "Smart Tiles"});
             this.TilesetOverlaySelection.Name = "TilesetOverlaySelection";
-            this.TilesetOverlaySelection.Size = new System.Drawing.Size(80, 23);
+            this.TilesetOverlaySelection.Size = new System.Drawing.Size(80, 27);
             this.TilesetOverlaySelection.Tag = "Select overlay data for tiles";
             this.TilesetOverlaySelection.SelectedIndexChanged += new System.EventHandler(this.TilesetOverlaySelection_SelectedIndexChanged);
             this.TilesetOverlaySelection.MouseEnter += new System.EventHandler(this.DescribableControl_MouseEnter);
@@ -1326,7 +1327,7 @@
             this.cloneAnimationToolStripMenuItem,
             this.deleteAnimationToolStripMenuItem});
             this.TContextMenu.Name = "TContextMenu";
-            this.TContextMenu.Size = new System.Drawing.Size(167, 236);
+            this.TContextMenu.Size = new System.Drawing.Size(167, 258);
             // 
             // SetEventTS
             // 
@@ -1360,7 +1361,8 @@
             this.OverNone,
             this.OverEvents,
             this.OverTileTypes,
-            this.OverMasks});
+            this.OverMasks,
+            this.OverSmartTiles});
             this.OverlayDropdown.Name = "OverlayDropdown";
             this.OverlayDropdown.Size = new System.Drawing.Size(166, 22);
             this.OverlayDropdown.Text = "Overlay";
@@ -1368,28 +1370,28 @@
             // OverNone
             // 
             this.OverNone.Name = "OverNone";
-            this.OverNone.Size = new System.Drawing.Size(126, 22);
+            this.OverNone.Size = new System.Drawing.Size(132, 22);
             this.OverNone.Text = "None";
             this.OverNone.Click += new System.EventHandler(this.OverNone_Click);
             // 
             // OverEvents
             // 
             this.OverEvents.Name = "OverEvents";
-            this.OverEvents.Size = new System.Drawing.Size(126, 22);
+            this.OverEvents.Size = new System.Drawing.Size(132, 22);
             this.OverEvents.Text = "Events";
             this.OverEvents.Click += new System.EventHandler(this.OverEvents_Click);
             // 
             // OverTileTypes
             // 
             this.OverTileTypes.Name = "OverTileTypes";
-            this.OverTileTypes.Size = new System.Drawing.Size(126, 22);
+            this.OverTileTypes.Size = new System.Drawing.Size(132, 22);
             this.OverTileTypes.Text = "Tile Types";
             this.OverTileTypes.Click += new System.EventHandler(this.OverTileTypes_Click);
             // 
             // OverMasks
             // 
             this.OverMasks.Name = "OverMasks";
-            this.OverMasks.Size = new System.Drawing.Size(126, 22);
+            this.OverMasks.Size = new System.Drawing.Size(132, 22);
             this.OverMasks.Text = "Masks";
             this.OverMasks.Click += new System.EventHandler(this.OverMasks_Click);
             // 
@@ -1592,6 +1594,13 @@
             // folderBrowserDialog1
             // 
             this.folderBrowserDialog1.ShowNewFolderButton = false;
+            // 
+            // OverSmartTiles
+            // 
+            this.OverSmartTiles.Name = "OverSmartTiles";
+            this.OverSmartTiles.Size = new System.Drawing.Size(152, 22);
+            this.OverSmartTiles.Text = "Smart Tiles";
+            this.OverSmartTiles.Click += new System.EventHandler(this.OverSmartTiles_Click);
             // 
             // Mainframe
             // 
@@ -1799,5 +1808,6 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator22;
         private System.Windows.Forms.ToolStripMenuItem editScriptToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem recentLevelsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem OverSmartTiles;
     }
 }
