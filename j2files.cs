@@ -1551,7 +1551,7 @@ class J2LFile : J2File
             if (frame % MaxTiles < TileCount)
             {
                 if (isLayer3) tilesUsed[frame % MaxTiles] = true;
-                if ((isFlipped || frame >= MaxTiles) && frame < Tilesets[0].TileCount) tilesFlipped[frame % MaxTiles] = true;
+                if ((isFlipped || frame >= MaxTiles) && frame % MaxTiles < Tilesets[0].TileCount) tilesFlipped[frame % MaxTiles] = true;
             }
             else
             {
@@ -2086,7 +2086,7 @@ class J2LFile : J2File
                 if (tileUsed % MaxTiles < TileCount)
                 {
                     if (CurrentLayer.id == SpriteLayerID) IsEachTileUsed[tileUsed % MaxTiles] = true; // ignore this; it's only useful for .LEV saving
-                    if (tileUsed >= MaxTiles && tileUsed < Tilesets[0].TileCount) IsEachTileFlipped[tileUsed % MaxTiles] = true;
+                    if (tileUsed >= MaxTiles && tileUsed % MaxTiles < Tilesets[0].TileCount) IsEachTileFlipped[tileUsed % MaxTiles] = true;
                 }
                 else
                 {
