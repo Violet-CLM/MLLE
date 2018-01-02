@@ -22,7 +22,7 @@ namespace MLLE
     public enum FocusedZone { None, Tileset, Level, AnimationEditing }
     public enum SelectionType { New, Add, Subtract, Rectangle, HollowRectangle }
     public enum AtlasID { Null, Image, Mask, EventNames, Selection, Generator, TileTypes }
-    public enum TilesetOverlay { None, TileTypes, Events, Masks }
+    public enum TilesetOverlay { None, TileTypes, Events, Masks, SmartTiles }
 
     public partial class Mainframe : Form
     {
@@ -458,7 +458,8 @@ namespace MLLE
             if (LastFocusedZone == FocusedZone.None)
                 return;
             var scrollbarToMove = (LastFocusedZone == FocusedZone.Level) ? LDScrollV : TilesetScrollbar;
-            MakeProposedScrollbarValueWork(scrollbarToMove, scrollbarToMove.Value - scrollbarToMove.SmallChange * e.Delta / 120);
+            if (scrollbarToMove != TilesetScrollbar || CurrentTilesetOverlay != TilesetOverlay.SmartTiles) //no scrolling of the tileset pane allowed in smart tiles mode
+                MakeProposedScrollbarValueWork(scrollbarToMove, scrollbarToMove.Value - scrollbarToMove.SmallChange * e.Delta / 120);
         }
 
         private void DeleteLevelScriptIfEmpty()
@@ -1059,6 +1060,9 @@ namespace MLLE
         public TilesetOverlay CurrentTilesetOverlay = TilesetOverlay.None;
         private void TilesetOverlaySelection_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (CurrentTilesetOverlay == TilesetOverlay.SmartTiles)
+                DeselectAll(); //selects in smart tiles mode are fundamentally different from other ones
+            TilesetScrollbar.Enabled = true;
             switch (TilesetOverlaySelection.SelectedIndex)
             {
                 case 1:
@@ -1069,6 +1073,12 @@ namespace MLLE
                     break;
                 case 3:
                     CurrentTilesetOverlay = TilesetOverlay.Masks;
+                    break;
+                case 4:
+                    CurrentTilesetOverlay = TilesetOverlay.SmartTiles;
+                    DeselectAll();
+                    TilesetScrollbar.Value = 0; //scroll to top
+                    TilesetScrollbar.Enabled = false;
                     break;
                 case 0:
                 default:
@@ -2705,7 +2715,7 @@ namespace MLLE
 
         private void OpenAnimClick()
         {
-            if (LastFocusedZone == FocusedZone.Tileset && MouseTile >= J2L.AnimOffset)
+            if (LastFocusedZone == FocusedZone.Tileset && MouseTile >= J2L.AnimOffset && CurrentTilesetOverlay != TilesetOverlay.SmartTiles)
             {
                 CurrentAnimationID = (ushort)(MouseTile);
                 EditAnimation(WorkingAnimation = (CurrentAnimationID < J2L.MaxTiles) ? new AnimatedTile(J2L.Animations[CurrentAnimationID - J2L.AnimOffset]) : new AnimatedTile());

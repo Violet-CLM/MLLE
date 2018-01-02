@@ -41,6 +41,7 @@
             this.saveRunToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.pathsAndFilenamesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.recentLevelsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator20 = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -180,7 +181,6 @@
             this.AnimScrollbar = new System.Windows.Forms.HScrollBar();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
-            this.recentLevelsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MainMenu.SuspendLayout();
             this.DrawingTools.SuspendLayout();
             this.StatusBar.SuspendLayout();
@@ -296,6 +296,12 @@
             this.pathsAndFilenamesToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
             this.pathsAndFilenamesToolStripMenuItem.Text = "&Paths and Filenames...";
             this.pathsAndFilenamesToolStripMenuItem.Click += new System.EventHandler(this.pathsAndFilenamesToolStripMenuItem_Click);
+            // 
+            // recentLevelsToolStripMenuItem
+            // 
+            this.recentLevelsToolStripMenuItem.Name = "recentLevelsToolStripMenuItem";
+            this.recentLevelsToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
+            this.recentLevelsToolStripMenuItem.Text = "Recent &Levels";
             // 
             // toolStripSeparator20
             // 
@@ -1045,9 +1051,10 @@
             "(none)",
             "Events",
             "Tile Types",
-            "Masks"});
+            "Masks",
+            "Smart Tiles"});
             this.TilesetOverlaySelection.Name = "TilesetOverlaySelection";
-            this.TilesetOverlaySelection.Size = new System.Drawing.Size(80, 27);
+            this.TilesetOverlaySelection.Size = new System.Drawing.Size(80, 23);
             this.TilesetOverlaySelection.Tag = "Select overlay data for tiles";
             this.TilesetOverlaySelection.SelectedIndexChanged += new System.EventHandler(this.TilesetOverlaySelection_SelectedIndexChanged);
             this.TilesetOverlaySelection.MouseEnter += new System.EventHandler(this.DescribableControl_MouseEnter);
@@ -1585,12 +1592,6 @@
             // folderBrowserDialog1
             // 
             this.folderBrowserDialog1.ShowNewFolderButton = false;
-            // 
-            // recentLevelsToolStripMenuItem
-            // 
-            this.recentLevelsToolStripMenuItem.Name = "recentLevelsToolStripMenuItem";
-            this.recentLevelsToolStripMenuItem.Size = new System.Drawing.Size(191, 22);
-            this.recentLevelsToolStripMenuItem.Text = "Recent &Levels";
             // 
             // Mainframe
             // 
