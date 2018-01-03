@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Diagnostics;
+using Extra.Collections;
 
 namespace MLLE
 {
@@ -28,12 +29,24 @@ namespace MLLE
                     else
                         Debug.WriteLine("Invalid condition coordinates");
                 }
+                internal bool Applies(ArrayMap<ushort> localTiles)
+                {
+                    return TileIDs.Contains(localTiles[2 + X, 2 + Y]) != Not;
+                }
             }
             Condition[] Conditions;
             internal Rule(ushort[] t, Condition[] c)
             {
                 TileIDs = t;
                 Conditions = c;
+            }
+            internal bool Applies(ArrayMap<ushort> localTiles, ref ushort result)
+            {
+                foreach (Condition condition in Conditions)
+                    if (!condition.Applies(localTiles))
+                        return false;
+                result = TileIDs[Mainframe._r.Next(TileIDs.Length)];
+                return true;
             }
         }
         List<Rule> Rules = new List<Rule>();
@@ -104,6 +117,17 @@ namespace MLLE
                 result.Add(workingSmartTile);
             smartTiles = result.ToArray();
             return true;
+        }
+        public ushort Apply(ArrayMap<ushort> localTiles, bool directAction)
+        {
+            ushort result = localTiles[2, 2]; //by default, don't change anything
+            if (directAction || NonLocalTargets.Contains(result)) //otherwise this is outside the scope of this smart tile and should be left alone
+                foreach (Rule rule in Rules)
+                {
+                    if (rule.Applies(localTiles, ref result)) //in which case, result's value will change
+                        break;
+                }
+            return result;
         }
     }
     partial class Mainframe
