@@ -651,26 +651,29 @@ namespace MLLE
                 case (Keys.Shift | Keys.E): { PasteEventAtMouse(); return true; }
                 case Keys.E: { SelectEventAtMouse(); return true; }
 
-                case Keys.Oemcomma: { SetStampDimensions(1, 1); CurrentStamp[0][0] = new TileAndEvent((LastFocusedZone == FocusedZone.Level) ? CurrentLayer.TileMap[MouseTileX, MouseTileY] : (ushort)MouseTile, 0); ShowBlankTileInStamp = true; DeselectAll(); return true; }
-                case (Keys.Shift | Keys.Oemcomma): { SetStampDimensions(1, 1); CurrentStamp[0][0] = new TileAndEvent((LastFocusedZone == FocusedZone.Level) ? CurrentLayer.TileMap[MouseTileX, MouseTileY] : (ushort)MouseTile, MouseAGAEvent.ID); ShowBlankTileInStamp = true; DeselectAll(); return true; }
-                case Keys.Back: { ShowBlankTileInStamp = true; SetStampDimensions(1, 1); CurrentStamp[0][0] = new TileAndEvent(0, 0); DeselectAll(); return true; }
+                case Keys.Oemcomma: if (CurrentTilesetOverlay == TilesetOverlay.SmartTiles) { SetStampDimensions(1, 1); CurrentStamp[0][0] = new TileAndEvent((LastFocusedZone == FocusedZone.Level) ? CurrentLayer.TileMap[MouseTileX, MouseTileY] : (ushort)MouseTile, 0); ShowBlankTileInStamp = true; DeselectAll(); } return true;
+                case (Keys.Shift | Keys.Oemcomma): if (CurrentTilesetOverlay == TilesetOverlay.SmartTiles) { SetStampDimensions(1, 1); CurrentStamp[0][0] = new TileAndEvent((LastFocusedZone == FocusedZone.Level) ? CurrentLayer.TileMap[MouseTileX, MouseTileY] : (ushort)MouseTile, MouseAGAEvent.ID); ShowBlankTileInStamp = true; DeselectAll(); } return true;
+                case Keys.Back: if (CurrentTilesetOverlay == TilesetOverlay.SmartTiles) { ShowBlankTileInStamp = true; SetStampDimensions(1, 1); CurrentStamp[0][0] = new TileAndEvent(0, 0); DeselectAll(); } return true;
 
                 case (Keys.Control | Keys.B):
                     {
-                        if (WhereSelected != FocusedZone.None && HowSelecting == FocusedZone.None) BeginSelection(SelectionType.Subtract);
+                        if (CurrentTilesetOverlay == TilesetOverlay.SmartTiles) { } //do nothing
+                        else if (WhereSelected != FocusedZone.None && HowSelecting == FocusedZone.None) BeginSelection(SelectionType.Subtract);
                         else { EndSelection(); MakeSelectionIntoStamp(); if (WhereSelected == FocusedZone.Level) DeselectAll(); }
                         return true;
                     }
                 case (Keys.Shift | Keys.B):
                     {
-                        if (LastFocusedZone == WhereSelected && HowSelecting == FocusedZone.None) BeginSelection(SelectionType.Add);
+                        if (CurrentTilesetOverlay == TilesetOverlay.SmartTiles) { } //do nothing
+                        else if (LastFocusedZone == WhereSelected && HowSelecting == FocusedZone.None) BeginSelection(SelectionType.Add);
                         else if (HowSelecting != LastFocusedZone) BeginSelection(SelectionType.New);
                         else { EndSelection(); MakeSelectionIntoStamp(); if (WhereSelected == FocusedZone.Level) DeselectAll(); }
                         return true;
                     }
                 case Keys.B:
                     {
-                        if (LastFocusedZone != HowSelecting) BeginSelection(SelectionType.New);
+                        if (CurrentTilesetOverlay == TilesetOverlay.SmartTiles) { } //do nothing
+                        else if (LastFocusedZone != HowSelecting) BeginSelection(SelectionType.New);
                         else { EndSelection(); MakeSelectionIntoStamp(); if (WhereSelected == FocusedZone.Level) DeselectAll(); }
                         return true;
                     }
@@ -681,12 +684,12 @@ namespace MLLE
                     }
                 case (Keys.Control | Keys.C):
                     {
-                        MakeSelectionIntoStamp();
+                        if (CurrentTilesetOverlay != TilesetOverlay.SmartTiles) MakeSelectionIntoStamp();
                         return true;
                     }
                 case (Keys.Control | Keys.X):
                     {
-                        MakeSelectionIntoStamp(true);
+                        if (CurrentTilesetOverlay != TilesetOverlay.SmartTiles) MakeSelectionIntoStamp(true);
                         return true;
                     }
 
@@ -3024,8 +3027,17 @@ namespace MLLE
 
         private void LevelDisplay_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
         {
-            if (AnimationSettings.Visible || e.Button == MouseButtons.Right || (LastFocusedZone == FocusedZone.Tileset && (!J2L.HasTiles || MouseTile >= J2L.MaxTiles))) return;
-            if ((DeepEditingTool == SelectionButton || LastFocusedZone == FocusedZone.Tileset) && HowSelecting == FocusedZone.None)
+            if (LastFocusedZone == FocusedZone.Tileset && CurrentTilesetOverlay == TilesetOverlay.SmartTiles)
+            {
+                if (MouseTile < SmartTiles.Length)
+                {
+                    SetStampDimensions(1, 1);
+                    CurrentStamp[0][0] = new TileAndEvent(SmartTiles[MouseTile].TileID, (uint?)MouseTile);
+                }
+            }
+            else if (AnimationSettings.Visible || e.Button == MouseButtons.Right || (LastFocusedZone == FocusedZone.Tileset && (!J2L.HasTiles || MouseTile >= J2L.MaxTiles)))
+                return;
+            else if ((DeepEditingTool == SelectionButton || LastFocusedZone == FocusedZone.Tileset) && HowSelecting == FocusedZone.None)
             {
                 MouseHeldDownSelection = true;
                 if (Control.ModifierKeys == Keys.Shift) BeginSelection(SelectionType.Add);
