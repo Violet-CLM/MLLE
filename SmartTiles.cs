@@ -86,6 +86,8 @@ namespace MLLE
                         result.Add(workingSmartTile);
                     workingSmartTile = new SmartTile();
                 }
+                else if (line[0] == '#') //ignore comments
+                    continue;
                 else
                 {
                     var words = line.Split(' ');
