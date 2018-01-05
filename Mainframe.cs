@@ -3033,6 +3033,7 @@ namespace MLLE
                 {
                     SetStampDimensions(1, 1);
                     CurrentStamp[0][0] = new TileAndEvent(SmartTiles[MouseTile].TileID, (uint?)MouseTile);
+                    ShowBlankTileInStamp = true;
                 }
             }
             else if (AnimationSettings.Visible || e.Button == MouseButtons.Right || (LastFocusedZone == FocusedZone.Tileset && (!J2L.HasTiles || MouseTile >= J2L.MaxTiles)))
@@ -3097,20 +3098,24 @@ namespace MLLE
                 recentLevelsToolStripMenuItem.DropDownItems.Add(toolStripItem);
             }
         }
-
-
-        private bool DirectAction = true;
-        private void ActOnATile(int x, int y, ushort? tile, uint ev, LayerAndSpecificTiles actionCenter, bool blankTilesOkay) { ActOnATile(x, y, tile, new AGAEvent(ev), actionCenter, blankTilesOkay); }
-        private void ActOnATile(int x, int y, ushort? tile, AGAEvent? ev, LayerAndSpecificTiles actionCenter, bool blankTilesOkay)
+        
+        private bool ActOnATile(int x, int y, ushort? tile, uint ev, LayerAndSpecificTiles actionCenter, bool blankTilesOkay) { return ActOnATile(x, y, tile, new AGAEvent(ev), actionCenter, blankTilesOkay); }
+        private bool ActOnATile(int x, int y, ushort? tile, AGAEvent? ev, LayerAndSpecificTiles actionCenter, bool blankTilesOkay, bool DirectAction = true)
         {
             Layer layer = actionCenter.Layer;
-            if (x >= 0 && y >= 0 && x < layer.TileMap.GetLength(0) && y < layer.TileMap.GetLength(1) && tile != null && (blankTilesOkay || tile > 0))
+            int layerWidth = layer.TileMap.GetLength(0), layerHeight = layer.TileMap.GetLength(1);
+            if (x >= 0 && y >= 0 && x < layerWidth && y < layerHeight && tile != null && (blankTilesOkay || tile > 0))
             {
                 if (J2L.VersionType == Version.AGA) actionCenter.Specifics[new Point(x, y)] = new TileAndEvent(layer.TileMap[x, y], (actionCenter.Layer == J2L.SpriteLayer) ? J2L.AGA_EventMap[x, y] : (AGAEvent?)null);
                 else actionCenter.Specifics[new Point(x, y)] = new TileAndEvent(layer.TileMap[x, y], (actionCenter.Layer == J2L.SpriteLayer) ? J2L.EventMap[x, y] : (uint?)null);
                 if (CurrentTilesetOverlay != TilesetOverlay.SmartTiles)
                 {
                     layer.TileMap[x, y] = (ushort)tile;
+                    if (actionCenter.Layer == J2L.SpriteLayer)
+                    {
+                        if (J2L.VersionType == Version.AGA) J2L.AGA_EventMap[x, y] = ev ?? new AGAEvent(0);
+                        else J2L.EventMap[x, y] = (ev == null) ? 0 : ((AGAEvent)ev).ID;
+                    }
                 }
                 else
                 {
@@ -3124,23 +3129,31 @@ namespace MLLE
                             localTiles[xx, yy] = layer.TileMap[xTile, yTile];
                         }
                     }
-                    layer.TileMap[x, y] = SmartTiles[ev.Value.ID].Apply(localTiles, DirectAction);
+
+                    ushort appliedTile = layer.TileMap[x, y];
+                    bool success = SmartTiles[ev.Value.ID].Apply(ref appliedTile, localTiles, DirectAction);
+                    layer.TileMap[x, y] = appliedTile;
+                    if (layer == J2L.SpriteLayer)
+                        J2L.EventMap[x, y] = 0;
+
                     if (DirectAction)
                     {
-                        DirectAction = false;
-                        for (int xx = -1; xx <= 1; ++xx)
-                            for (int yy = -1; yy <= 1; ++yy)
-                                ActOnATile(x + xx, y + yy, tile, ev, actionCenter, true);
-                        DirectAction = true;
+                        for (int xx = x - 1; xx <= x + 1; ++xx)
+                            if (xx >= 0 && x < layerWidth)
+                                for (int yy = y - 1; yy <= y + 1; ++yy)
+                                    if (xx != x || yy != y) //not the center
+                                        if (yy >= 0 && yy < layerHeight)
+                                            for (int i = 0; i < SmartTiles.Length; ++i)
+                                                if (ActOnATile(xx, yy, 0, new AGAEvent((uint)i), actionCenter, true, false))
+                                                    break;
+                        ActOnATile(x, y, 0, ev, actionCenter, true, false); //finally, do this center tile again to reflect changes in the surroundings
                     }
-                    ev = null;
+                    else
+                        return success;
                 }
-                if (actionCenter.Layer == J2L.SpriteLayer)
-                {
-                    if (J2L.VersionType == Version.AGA) J2L.AGA_EventMap[x, y] = ev ?? new AGAEvent(0);
-                    else J2L.EventMap[x, y] = (ev == null) ? 0 : ((AGAEvent)ev).ID;
-                }
+                return true;
             }
+            return false;
         }
         private Point MakeUpSomeValidStampCoordinates(bool blankTilesAreAcceptable, int MinX, int MinY, int MaxX, int MaxY, int iterations = 0)
         {

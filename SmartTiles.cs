@@ -120,16 +120,15 @@ namespace MLLE
             smartTiles = result.ToArray();
             return true;
         }
-        public ushort Apply(ArrayMap<ushort> localTiles, bool directAction)
+        public bool Apply(ref ushort result, ArrayMap<ushort> localTiles, bool directAction)
         {
-            ushort result = localTiles[2, 2]; //by default, don't change anything
             if (directAction || NonLocalTargets.Contains(result)) //otherwise this is outside the scope of this smart tile and should be left alone
                 foreach (Rule rule in Rules)
                 {
                     if (rule.Applies(localTiles, ref result)) //in which case, result's value will change
-                        break;
+                        return true;
                 }
-            return result;
+            return false;
         }
     }
     partial class Mainframe
