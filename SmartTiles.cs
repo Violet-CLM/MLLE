@@ -10,7 +10,7 @@ namespace MLLE
     class SmartTile
     {
         internal ushort TileID;
-        ushort[] NonLocalTargets;
+        internal ushort[] NonLocalTargets;
         class Rule
         {
             ushort[] TileIDs;

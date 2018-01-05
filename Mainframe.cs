@@ -651,9 +651,42 @@ namespace MLLE
                 case (Keys.Shift | Keys.E): { PasteEventAtMouse(); return true; }
                 case Keys.E: { SelectEventAtMouse(); return true; }
 
-                case Keys.Oemcomma: if (CurrentTilesetOverlay != TilesetOverlay.SmartTiles) { SetStampDimensions(1, 1); CurrentStamp[0][0] = new TileAndEvent((LastFocusedZone == FocusedZone.Level) ? CurrentLayer.TileMap[MouseTileX, MouseTileY] : (ushort)MouseTile, 0); ShowBlankTileInStamp = true; DeselectAll(); } return true;
-                case (Keys.Shift | Keys.Oemcomma): if (CurrentTilesetOverlay != TilesetOverlay.SmartTiles) { SetStampDimensions(1, 1); CurrentStamp[0][0] = new TileAndEvent((LastFocusedZone == FocusedZone.Level) ? CurrentLayer.TileMap[MouseTileX, MouseTileY] : (ushort)MouseTile, MouseAGAEvent.ID); ShowBlankTileInStamp = true; DeselectAll(); } return true;
-                case Keys.Back: if (CurrentTilesetOverlay != TilesetOverlay.SmartTiles) { ShowBlankTileInStamp = true; SetStampDimensions(1, 1); CurrentStamp[0][0] = new TileAndEvent(0, 0); DeselectAll(); } return true;
+                case Keys.Oemcomma:
+                case (Keys.Shift | Keys.Oemcomma):
+                    {
+                        uint? ev = 0;
+                        ushort tileID = (LastFocusedZone == FocusedZone.Level) ? CurrentLayer.TileMap[MouseTileX, MouseTileY] : (ushort)MouseTile;
+                        if (CurrentTilesetOverlay == TilesetOverlay.SmartTiles) {
+                            if (LastFocusedZone != FocusedZone.Level)
+                            {
+                                ev = (uint?)tileID;
+                                tileID = SmartTiles[ev.Value].TileID;
+                            }
+                            else
+                            {
+                                int i = 0;
+                                while (true)
+                                {
+                                    if (SmartTiles[i].NonLocalTargets.Contains(tileID))
+                                    {
+                                        ev = (uint?)i;
+                                        tileID = SmartTiles[i].TileID;
+                                        break;
+                                    }
+                                    else if (++i == SmartTiles.Length)
+                                        return true;
+                                }
+                            }
+                        }
+                        else if (keyData == (Keys.Shift | Keys.Oemcomma))
+                            ev = MouseAGAEvent.ID;
+                        SetStampDimensions(1, 1);
+                        CurrentStamp[0][0] = new TileAndEvent(tileID, ev);
+                        ShowBlankTileInStamp = true;
+                        DeselectAll();
+                        return true;
+                    }
+                case Keys.Back: if (CurrentTilesetOverlay != TilesetOverlay.SmartTiles || SmartTiles[0].TileID == 0) { ShowBlankTileInStamp = true; SetStampDimensions(1, 1); CurrentStamp[0][0] = new TileAndEvent(0, 0); DeselectAll(); } return true;
 
                 case (Keys.Control | Keys.B):
                     {
