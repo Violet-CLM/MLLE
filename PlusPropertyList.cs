@@ -467,7 +467,7 @@ namespace MLLE
                 for (int tilesetID = 1; tilesetID < Tilesets.Count; ++tilesetID) //Tilesets[0] is already mentioned in Data1, after all
                 {
                     var tileset = Tilesets[tilesetID];
-                    data5bodywriter.Write(tileset.FilenameOnly);
+                    data5bodywriter.Write(tileset.FilenameOnly.ToLowerInvariant());
                     data5bodywriter.Write((ushort)tileset.FirstTile);
                     data5bodywriter.Write((ushort)tileset.TileCount);
                     byte[] remappings = tileset.ColorRemapping;
