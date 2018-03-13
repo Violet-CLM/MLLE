@@ -2830,7 +2830,10 @@ namespace MLLE
                 LevelHasBeenModified = true;
                 UneditAnimation();
             }
-            else DeleteAnimation(CurrentAnimationID);
+            else if (CurrentAnimationID < J2L.MaxTiles) //exists
+                DeleteAnimation(CurrentAnimationID);
+            else //doesn't exist
+                UneditAnimation();
         }
         private void AnimCancel_Click(object sender, EventArgs e) { UneditAnimation(); }
 
