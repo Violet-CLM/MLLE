@@ -480,14 +480,17 @@ namespace MLLE
 
             DeleteLevelScriptIfEmpty();
 
-                bool windowIsMaximized = this.WindowState == FormWindowState.Maximized;
-            Settings.IniWriteValue("Window", "Maximized", windowIsMaximized.ToString());
-            if (!windowIsMaximized)
+            if (this.Location.Y > -5) //otherwise something probably went wrong, so don't record these numbers
             {
-                Settings.IniWriteValue("Window", "X", this.Location.X.ToString());
-                Settings.IniWriteValue("Window", "Y", this.Location.Y.ToString());
-                Settings.IniWriteValue("Window", "Width", this.Size.Width.ToString());
-                Settings.IniWriteValue("Window", "Height", this.Size.Height.ToString());
+                bool windowIsMaximized = this.WindowState == FormWindowState.Maximized;
+                Settings.IniWriteValue("Window", "Maximized", windowIsMaximized.ToString());
+                if (!windowIsMaximized)
+                {
+                    Settings.IniWriteValue("Window", "X", this.Location.X.ToString());
+                    Settings.IniWriteValue("Window", "Y", this.Location.Y.ToString());
+                    Settings.IniWriteValue("Window", "Width", this.Size.Width.ToString());
+                    Settings.IniWriteValue("Window", "Height", this.Size.Height.ToString());
+                }
             }
         }
         private void Mainframe_Paint(object sender, PaintEventArgs e)
