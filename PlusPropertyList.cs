@@ -467,7 +467,7 @@ namespace MLLE
                 for (int tilesetID = 1; tilesetID < Tilesets.Count; ++tilesetID) //Tilesets[0] is already mentioned in Data1, after all
                 {
                     var tileset = Tilesets[tilesetID];
-                    data5bodywriter.Write(tileset.FilenameOnly.ToLowerInvariant());
+                    data5bodywriter.Write(Path.ChangeExtension(tileset.FilenameOnly, ".j2t")); //convert "J2T" to "j2t" so JJ2+ doesn't reject the jjTilesFromTileset call
                     data5bodywriter.Write((ushort)tileset.FirstTile);
                     data5bodywriter.Write((ushort)tileset.TileCount);
                     byte[] remappings = tileset.ColorRemapping;
