@@ -1498,12 +1498,18 @@ namespace MLLE
         }
         private void PlayFromHere()
         {
-            uint oldEvent = J2L.EventMap[MouseTileX, MouseTileY];
-            J2L.EventMap[MouseTileX, MouseTileY] = uint.MaxValue;
-            J2L.SwapEvents((uint)StartPositionEventID, uint.MaxValue);
-            TrialRun();
-            J2L.SwapEvents(uint.MaxValue, (uint)StartPositionEventID);
-            J2L.EventMap[MouseTileX, MouseTileY] = oldEvent;
+            if (CurrentLayer.XSpeed == 1 && CurrentLayer.YSpeed == 1)
+            {
+                if (MouseTileX < J2L.EventMap.GetLength(0) && MouseTileY < J2L.EventMap.GetLength(1))
+                {
+                    uint oldEvent = J2L.EventMap[MouseTileX, MouseTileY];
+                    J2L.EventMap[MouseTileX, MouseTileY] = uint.MaxValue;
+                    J2L.SwapEvents((uint)StartPositionEventID, uint.MaxValue);
+                    TrialRun();
+                    J2L.SwapEvents(uint.MaxValue, (uint)StartPositionEventID);
+                    J2L.EventMap[MouseTileX, MouseTileY] = oldEvent;
+                }
+            }
         }
         private void runToolStripMenuItem_Click(object sender, EventArgs e) { TrialRun(); }
         private void DropdownPlayHere_Click(object sender, EventArgs e) { PlayFromHere(); }
