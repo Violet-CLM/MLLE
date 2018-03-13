@@ -2839,6 +2839,8 @@ namespace MLLE
                 }
                 if (CurrentAnimationID < J2L.MaxTiles) J2L.Animations[CurrentAnimationID - J2L.AnimOffset] = WorkingAnimation;
                 else J2L.InsertAnimation(WorkingAnimation);
+                for (int i = 0; i < J2L.NumberOfAnimations; ++i)
+                    J2L.Animations[i].JustBeenEdited(GameTick); //refresh frame lists in case any of those animated tiles made references to other animated tiles
                 LevelHasBeenModified = true;
                 UneditAnimation();
             }
