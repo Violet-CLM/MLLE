@@ -1275,7 +1275,7 @@ namespace MLLE
         #region Open
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            OpenJ2LDialog.FileName = J2L.NextLevel + DefaultFileExtensionStrings[DefaultFileExtension[J2L.VersionType]];
+            OpenJ2LDialog.FileName = Path.ChangeExtension(J2L.NextLevel, DefaultFileExtensionStrings[DefaultFileExtension[J2L.VersionType]]);
             _suspendEvent.Reset();
             DialogResult result = OpenJ2LDialog.ShowDialog();
             if (result == DialogResult.OK && PromptForSaving())
