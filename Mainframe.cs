@@ -1528,6 +1528,14 @@ namespace MLLE
         }
         void MakeBackup(string filepath)
         {
+            var backupDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Backups");
+            if (!Directory.Exists(backupDirectory))
+                Directory.CreateDirectory(backupDirectory);
+
+            string backupFilename = Path.Combine(backupDirectory, Path.GetFileNameWithoutExtension(J2L.FilenameOnly) + " " + DateTime.Now.ToString("MM-dd-yyyy hh-mm-ss tt") + ".zip");
+            if (File.Exists(backupFilename)) //saved twice in the same second
+                return;
+
             List<string> filenamesToMakeBackupsOf = new List<string>();
             filenamesToMakeBackupsOf.Add(filepath);
 
@@ -1547,11 +1555,7 @@ namespace MLLE
                 }
             }
 
-            var backupDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Backups");
-            if (!Directory.Exists(backupDirectory))
-                Directory.CreateDirectory(backupDirectory);
-
-            using (var zip = ZipFile.Open(Path.Combine(backupDirectory, Path.GetFileNameWithoutExtension(J2L.FilenameOnly) + " " + DateTime.Now.ToString("MM-dd-yyyy hh-mm-ss tt") + ".zip"), ZipArchiveMode.Create))
+            using (var zip = ZipFile.Open(backupFilename, ZipArchiveMode.Create))
                 foreach (string filename in filenamesToMakeBackupsOf)
                     zip.CreateEntryFromFile(filename, Path.GetFileName(filename));
 
