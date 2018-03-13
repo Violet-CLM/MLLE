@@ -1530,6 +1530,7 @@ class J2LFile : J2File
         Animations = new AnimatedTile[128]; for (byte i = 0; i < 128; i++) Animations[i] = new AnimatedTile();
         EventMap = new uint[256, 64];
         //ParameterMap = new uint[256, 64];
+        PlusPropertyList = new MLLE.PlusPropertyList(null);
     }
     internal bool IsAnUndefinedTile(ushort id) { return false;}// (id >= MaxTiles * 2 || (id % MaxTiles >= TileCount && MaxTiles - NumberOfAnimations > id % MaxTiles)); }
     internal ushort SanitizeTileValue(ushort id) { return (IsAnUndefinedTile(id) || id % MaxTiles == 0) ? (ushort)0 : id; }
