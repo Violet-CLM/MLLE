@@ -2775,7 +2775,7 @@ namespace MLLE
         {
             DeleteAnimation(MouseTile);
         }
-        private void cloneAnimationToolStripMenuItem_Click(object sender, EventArgs e) { J2L.InsertAnimation(J2L.Animations[MouseTile - J2L.AnimOffset]); LevelHasBeenModified = true; }
+        private void cloneAnimationToolStripMenuItem_Click(object sender, EventArgs e) { J2L.InsertAnimation(J2L.Animations[MouseTile - J2L.AnimOffset]); ResizeDisplay(); LevelHasBeenModified = true; }
 
         private void EditAnimation(AnimatedTile anim)
         {
@@ -2808,8 +2808,7 @@ namespace MLLE
                 AnimationSettings.Visible = AnimScrollbar.Visible = false;
                 MakeProposedScrollbarValueWork(TilesetScrollbar, TilesetScrollbar.Value);
             }
-            DetermineVisibilityOfAnimatedTiles();
-            RedrawTilesetHowManyTimes = 2;
+            ResizeDisplay();
         }
 
         private void AnimOK_Click(object sender, EventArgs e)
