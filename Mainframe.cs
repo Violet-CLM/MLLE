@@ -2825,6 +2825,18 @@ namespace MLLE
         {
             if (WorkingAnimation.FrameCount > 0)
             {
+                foreach (var frame in WorkingAnimation.FrameList) {
+                    if ((frame & 0x2000u) != 0)
+                    {
+                        _suspendEvent.Reset();
+                        bool clickedYes = MessageBox.Show(String.Format("At least one of the frames in this animated tile is vertically flipped. This is fine if you are planning on placing destruct or trigger scenery events (or similar) on all instances of this animated tile, but using it as a normal animated tile (which animates in realtime) will result in undefined behavior for JJ2+. Do you wish to continue?"), "Vertically Flipped Tile", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes;
+                        _suspendEvent.Set();
+                        if (clickedYes)
+                            break;
+                        else
+                            return;
+                    }
+                }
                 if (CurrentAnimationID < J2L.MaxTiles) J2L.Animations[CurrentAnimationID - J2L.AnimOffset] = WorkingAnimation;
                 else J2L.InsertAnimation(WorkingAnimation);
                 LevelHasBeenModified = true;
