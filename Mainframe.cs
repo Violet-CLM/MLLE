@@ -1208,7 +1208,7 @@ namespace MLLE
         {
             if (EnableableBools[version] != null)
                 return EnableableBools[version][EnableableTitles.BoolDevelopingForPlus];
-            return new IniFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ProfileIniFilename[J2L.VersionType] + ".ini")).IniReadValue("Enableable", "BoolDevelopingForPlus") == "";
+            return new IniFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ProfileIniFilename[J2L.VersionType] + ".ini")).IniReadValue("Enableable", "BoolDevelopingForPlus") != "";
         }
         private bool EmptyActionStackIfItContainsVerticallyFlippedTiles(Stack<LayerAndSpecificTiles> stack)
         {
