@@ -149,6 +149,12 @@
     <Compile Include="TilesetForm.Designer.cs">
       <DependentUpon>TilesetForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="TileSetOrganizer.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TileSetOrganizer.Designer.cs">
+      <DependentUpon>TileSetOrganizer.cs</DependentUpon>
+    </Compile>
     <Compile Include="TriggerSelect.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -246,6 +252,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="TilesetForm.resx">
       <DependentUpon>TilesetForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TileSetOrganizer.resx">
+      <DependentUpon>TileSetOrganizer.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="TriggerSelect.resx">
       <DependentUpon>TriggerSelect.cs</DependentUpon>

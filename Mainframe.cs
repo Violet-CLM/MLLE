@@ -3337,6 +3337,16 @@ namespace MLLE
             SelectEvent.Enabled = GrabEvent.Enabled = PasteEvent.Enabled = CurrentLayer == J2L.SpriteLayer;
         }
 
+
+        private void TilesetMakerButton_Click(object sender, EventArgs e)
+        {
+            _suspendEvent.Reset();
+            new TileSetOrganizer().ShowForm(Settings, J2L.VersionType.ToString(), Path.Combine(DefaultDirectories[J2L.VersionType], "Tiles"));
+            _suspendEvent.Set();
+
+        }
+
+
         private void Mainframe_Resize(object sender, EventArgs e) { }
         private void changeVersionToolStripMenuItem_MouseHover(object sender, EventArgs e)
         {
