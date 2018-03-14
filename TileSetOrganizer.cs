@@ -37,7 +37,7 @@ namespace MLLE
                 if (!match.Success) //something went wrong
                     continue; //oh well!
                 ListViewItem newRecord = new ListViewItem(match.Groups[2].Value);
-                newRecord.SubItems.Add(match.Groups[2].Value);
+                newRecord.SubItems.Add(match.Groups[1].Value);
                 newRecord.SubItems.Add(match.Groups[4].Value);
                 newRecord.SubItems.Add(match.Groups[3].Value);
                 newRecord.Tag = match.Groups[5].Value;
@@ -50,6 +50,7 @@ namespace MLLE
         void SaveList()
         {
             int iniTilesetIndex = 0;
+            AllTilesets.Sort((x,y) => x.SubItems[1].Text.CompareTo(y.SubItems[1].Text));
             while (true)
             {
                 string keyName = (iniTilesetIndex + 1).ToString();
@@ -105,6 +106,16 @@ namespace MLLE
         {
             if (listView1.SelectedItems.Count == 1)
                 Select(listView1.SelectedItems[0]);
+        }
+
+        private void Remove_Click(object sender, EventArgs e)
+        {
+            if (listView1.SelectedItems.Count == 1 && MessageBox.Show("This will remove MLLE's record of which image files you used to make this tileset. The tileset file will still exist, but you will not be able to rebuild it. Do you wish to continue?", "Remove Tileset Listing", MessageBoxButtons.OKCancel) == DialogResult.OK)
+            {
+                AllTilesets.Remove(listView1.SelectedItems[0]);
+                listView1.Items.Remove(listView1.SelectedItems[0]);
+                SaveList();
+            }
         }
     }
 }
