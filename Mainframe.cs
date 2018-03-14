@@ -1767,9 +1767,17 @@ namespace MLLE
                     accumulator -= 1000;
                     idleCounter = 0; // don't forget to reset the counter!
                 }
-                float deltaGametime = (float)milliseconds / 20.0f;
+                float deltaGametime = (float)milliseconds / 14.2857143f; //= 70
                 GameTime += deltaGametime;
-                if (SafeToDisplay) for (; GameTick < GameTime; GameTick++) //Advance Frame
+                if (deltaGametime < 10.0f)
+                    Thread.Sleep((int)Math.Ceiling(10.0f - deltaGametime));
+                if (!SafeToDisplay || WindowState == FormWindowState.Minimized)
+                {
+                    GameTick = (int)GameTime;
+                }
+                else
+                {
+                    for (; GameTick < GameTime; GameTick++) //Advance Frame
                     {
                         foreach (AnimatedTile anim in J2L.Animations)
                         {
@@ -1778,8 +1786,8 @@ namespace MLLE
                         }
                         if (AnimationSettings.Visible) WorkingAnimation.Advance(GameTick, (WorkingAnimation.Random != 0) ? _r.Next(WorkingAnimation.Random + 1) : 0);
                     }
-                else GameTick = (int)GameTime;
-                if (SafeToDisplay) Invoke(new MethodInvoker(delegate () { LevelDisplay.Invalidate(); }));
+                    Invoke(new MethodInvoker(delegate () { LevelDisplay.Invalidate(); }));
+                }
             }
         }
 
