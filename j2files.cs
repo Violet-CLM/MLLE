@@ -1315,7 +1315,17 @@ class J2LFile : J2File
             raw %= (ushort)MaxTiles;
         }
         if (raw < TileCount) return raw;
-        else if (NumberOfAnimations >= MaxTiles - raw) return GetFrame(Animations[NumberOfAnimations - (MaxTiles - raw)].FrameList.Peek(), ref isFlipped, ref isVFlipped);
+        else if (NumberOfAnimations >= MaxTiles - raw)
+        {
+            try
+            {
+                return GetFrame(Animations[NumberOfAnimations - (MaxTiles - raw)].FrameList.Peek(), ref isFlipped, ref isVFlipped);
+            }
+            catch //threading issue, I think
+            {
+                return 0;
+            }
+        }
         else return 0;
     }
     public void SetPassword() { PasswordHash[0] = 0; PasswordHash[1] = 0xBA; PasswordHash[2] = 0xBE; }
