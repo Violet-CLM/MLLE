@@ -54,6 +54,13 @@ abstract class J2File //The fields shared by .j2l and .j2t files. No methods/int
         {Version.AmbiguousBCO, "Battery Check/Jazz 2 BETA v1.10o"},
         {Version.AGA, "Animaniacs: A Gigantic Adventure"},
         {Version.GorH, "Jazz 2 OEM v1.00g/h"} };
+
+    protected static byte[] getBytes(Encoding encoding, string s, int length)
+    {
+        byte[] bytes = new byte[length];
+        encoding.GetBytes(s, 0, s.Length, bytes, 0);
+        return bytes;
+    }
 }
 
 class J2TFile : J2File
@@ -90,6 +97,18 @@ class J2TFile : J2File
     {
         byte[] output = new byte[1024];
         for (short i = 0; i < 1024; i++) output[i] = ((bits[i / 8] & (byte)Math.Pow(2, (i % 8))) != 0) ? (byte)1 : (byte)0;
+        return output;
+    }
+    static internal byte[] ConvertByteMaskTo128Bits(byte[] bytes)
+    {
+        byte[] output = new byte[128];
+        for (int i = 0; i < 128; ++i)
+        {
+            byte val = 0;
+            for (int j = 0; j < 8; ++j)
+                val |= (byte)(bytes[i << 3] << j);
+            output[i] = val;
+        }
         return output;
     }
     static internal byte[] ProduceMasklessTileByteMask()
@@ -538,7 +557,7 @@ class J2TFile : J2File
                         int tileIndex = xx | (yy << 5);
                         int sourceIndex = (x | xx) + (y | yy) * 320;
                         if ((transpArray[tileIndex] = (byte)((imageArray[tileIndex] = imageIndices[sourceIndex]) != 0 ? 1 : 0)) == 0) IsFullyOpaque[tileID] = false;
-                        maskArray[tileIndex] = maskIndices[sourceIndex];
+                        maskArray[tileIndex] = (byte)(maskIndices[sourceIndex] != 0 ? 1 : 0);
                     }
             }
         }
@@ -547,11 +566,184 @@ class J2TFile : J2File
 
         return BuildResults.Success;
     }
+
+    public struct ByteArrayKey //https://stackoverflow.com/questions/33031968/using-byte-array-as-dictionary-key?noredirect=1&lq=1
+    {
+        public readonly byte[] Bytes;
+        private readonly int _hashCode;
+
+        public override bool Equals(object obj)
+        {
+            var other = (ByteArrayKey)obj;
+            return Compare(Bytes, other.Bytes);
+        }
+
+        public override int GetHashCode()
+        {
+            return _hashCode;
+        }
+
+        private static int GetHashCode(byte[] bytes)
+        {
+            unchecked
+            {
+                var hash = 17;
+                for (var i = 0; i < bytes.Length; i++)
+                {
+                    hash = hash * 23 + bytes[i];
+                }
+                return hash;
+            }
+        }
+
+        public ByteArrayKey(byte[] bytes)
+        {
+            Bytes = bytes;
+            _hashCode = GetHashCode(bytes);
+        }
+
+        public static ByteArrayKey Create(byte[] bytes)
+        {
+            return new ByteArrayKey(bytes);
+        }
+
+        public static unsafe bool Compare(byte[] a1, byte[] a2)
+        {
+            if (a1 == null || a2 == null || a1.Length != a2.Length)
+                return false;
+            fixed (byte* p1 = a1, p2 = a2)
+            {
+                byte* x1 = p1, x2 = p2;
+                var l = a1.Length;
+                for (var i = 0; i < l / 8; i++, x1 += 8, x2 += 8)
+                    if (*(long*)x1 != *(long*)x2) return false;
+                if ((l & 4) != 0)
+                {
+                    if (*(int*)x1 != *(int*)x2) return false;
+                    x1 += 4;
+                    x2 += 4;
+                }
+                if ((l & 2) != 0)
+                {
+                    if (*(short*)x1 != *(short*)x2) return false;
+                    x1 += 2;
+                    x2 += 2;
+                }
+                if ((l & 1) != 0) if (*x1 != *x2) return false;
+                return true;
+            }
+        }
+    }
+
+    static byte[] GenerateTransparencyInstructionsFromTransparencyMask(byte[] input) //based on JJ2+'s jjPIXELMAP tile saving code
+    {
+        var instructions = new List<byte>(ConvertByteMaskTo128Bits(input));
+        
+        for (int pixelID = 0; pixelID < 32*32; ) { //see http://www.jazz2online.com/wiki/index.php?J2T_File_Format
+            byte numberOfOpaqueRegionsInRow = 0;
+            byte lastByteOpacity = 0;
+            byte lengthOfLastByteSeries = 0;
+            var rowInstructions = new List<byte>();
+            for (int column = 0; column < 32; ++column)
+            {
+                if (input[pixelID++] != lastByteOpacity)
+                {
+                    rowInstructions.Add(lengthOfLastByteSeries);
+                    lengthOfLastByteSeries = 1;
+                    if ((lastByteOpacity ^= 1) == 1)
+                        ++numberOfOpaqueRegionsInRow;
+                }
+                else
+                {
+                    lengthOfLastByteSeries += 1;
+                }
+            }
+            if (lastByteOpacity == 1)
+                rowInstructions.Add(lengthOfLastByteSeries);
+            instructions.Add(numberOfOpaqueRegionsInRow);
+            instructions.AddRange(rowInstructions);
+        }
+
+        return instructions.ToArray();
+    }
+
     public SavingResults Save(string filepath)
     {
         FilenameOnly = Path.GetFileName(FullFilePath = filepath);
+        Encoding encoding = FileEncoding;
 
-        //todo
+        for (int i = 0; i < 4; i++)
+            UncompressedData[i] = new MemoryStream();
+        using (BinaryWriter data1writer = new BinaryWriter(UncompressedData[0], encoding))
+        using (BinaryWriter data2writer = new BinaryWriter(UncompressedData[1], encoding))
+        using (BinaryWriter data3writer = new BinaryWriter(UncompressedData[2], encoding))
+        using (BinaryWriter data4writer = new BinaryWriter(UncompressedData[3], encoding))
+        {
+            foreach (var color in Palette.Colors)
+                data1writer.Write(color);
+            data1writer.Write(TileCount);
+            for (int i = 0; i < MaxTiles * 2; ++i)
+                data1writer.Write(i < TileCount ? IsFullyOpaque[i] : false);
+
+            var TransparencyInstructions = new byte[TileCount][];
+            for (uint i = 0; i < TileCount; ++i)
+                TransparencyInstructions[i] = GenerateTransparencyInstructionsFromTransparencyMask(TransparencyMaskJCS_Style[i]);
+            
+            var Sources = new byte[][][] { Images, Masks, TransparencyInstructions };
+            var Destinations = new Dictionary<ByteArrayKey, int>[] { new Dictionary<ByteArrayKey, int>(), new Dictionary<ByteArrayKey, int>(), new Dictionary<ByteArrayKey, int>() };
+            var Writers = new BinaryWriter[] { data2writer, data3writer, data4writer };
+
+            for (int dataID = 0; dataID < 3; ++dataID)
+            {
+                var dest = Destinations[dataID];
+                var writer = Writers[dataID];
+                for (uint tileID = 0; tileID < MaxTiles * 2; ++tileID)
+                {
+                    if (tileID < TileCount) //todo flipped masks
+                    {
+                        var bytes = new ByteArrayKey(Sources[dataID][tileID]);
+                        if (!dest.ContainsKey(bytes))
+                        {
+                            dest[bytes] = (int)writer.BaseStream.Length;
+                            writer.Write(bytes.Bytes);
+                        }
+                        data1writer.Write(dest[bytes]);
+                    }
+                    else
+                        data1writer.Write(0);
+                }
+            }
+
+            using (BinaryWriter binwriter = new BinaryWriter(
+                File.Open(FullFilePath, FileMode.Create, FileAccess.Write),
+                encoding
+            ))
+            {
+                binwriter.Write(encoding.GetBytes(Header)); //the copyright notice
+                binwriter.Write(encoding.GetBytes(Magic)); // 'TILE'
+                binwriter.Write(Signature); // 'DEADBEAF'
+                binwriter.Write(getBytes(encoding, Name, 32));
+                binwriter.Write((ushort)((VersionType == Version.TSF) ? 0x201 : 0x200));
+                binwriter.Write(new byte[40]); // To be filled in later with filesize, CRC32, and the compressed and uncompressed data lengths, for a total of 10 longs or 40 bytes.
+                CRC32 CRCCalculator = new CRC32();
+                for (int i = 0; i < 4; i++)
+                {
+                    UncompressedDataLength[i] = (int)UncompressedData[i].Length;
+                    var zcomparray = ZlibStream.CompressBuffer(UncompressedData[i].ToArray());
+                    binwriter.Write(zcomparray);
+                    CompressedDataLength[i] = zcomparray.Length;
+                    CRCCalculator.SlurpBlock(zcomparray, 0, zcomparray.Length);
+                }
+                binwriter.Seek(encoding.GetByteCount(Header) + 42, 0);
+                binwriter.Write((int)(binwriter.BaseStream.Length));
+                binwriter.Write(CRCCalculator.Crc32Result); Crc32 = CRCCalculator.Crc32Result;
+                for (int i = 0; i < 4; i++)
+                {
+                    binwriter.Write(CompressedDataLength[i]);
+                    binwriter.Write(UncompressedDataLength[i]);
+                }
+            }
+        }
 
         return SavingResults.Success;
     }
@@ -2143,13 +2335,6 @@ class J2LFile : J2File
                 stream.Dispose();
         }
         return SavingResults.Success;
-    }
-
-    private byte[] getBytes(Encoding encoding, string s, int length)
-    {
-        byte[] bytes = new byte[length];
-        encoding.GetBytes(s, 0, s.Length, bytes, 0);
-        return bytes;
     }
 
     private void DiscoverTilesThatAreFlippedAndOrUsedInLayer3()
