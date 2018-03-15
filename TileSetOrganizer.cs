@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.IO;
 using Ini;
 
 namespace MLLE
@@ -19,12 +20,14 @@ namespace MLLE
         }
         List<ListViewItem> AllTilesets = new List<ListViewItem>();
         IniFile Settings;
+        Version VersionType;
         string VersionString;
         string TileDirectory;
-        internal void ShowForm(IniFile settings, string versionString, string tileDirectory)
+        internal void ShowForm(IniFile settings, Version versionType, string tileDirectory)
         {
             Settings = settings;
-            VersionString = versionString;
+            VersionType = versionType;
+            VersionString = VersionType.ToString();
             TileDirectory = tileDirectory;
             int iniTilesetIndex = 1;
             listView1.Columns[listView1.Columns.Count - 1].Width = -2;
@@ -123,7 +126,46 @@ namespace MLLE
             if (listView1.SelectedItems.Count == 1)
             {
                 var record = listView1.SelectedItems[0];
-
+                var J2T = new J2TFile();
+                Image image, mask;
+                string sourceFilepath = Path.Combine(TileDirectory, record.SubItems[2].Text);
+                try
+                {
+                    image = Bitmap.FromFile(sourceFilepath);
+                    sourceFilepath = Path.Combine(TileDirectory, record.SubItems[3].Text);
+                    mask = Bitmap.FromFile(sourceFilepath);
+                }
+                catch (FileNotFoundException)
+                {
+                    MessageBox.Show(sourceFilepath + " not found!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+                catch (OutOfMemoryException)
+                {
+                    MessageBox.Show(sourceFilepath + " does not use an image format supported by this program. (Try PNG, GIF, TIFF, or BMP.)", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+                switch (J2T.Build(image, mask ))
+                {
+                    case BuildResults.DifferentDimensions:
+                        MessageBox.Show(String.Format("The image and the mask must be the same dimensions. Your image is {0} by {1}, and your mask is {2} by {3}.", image.Width, image.Height, mask.Width, mask.Height), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        break;
+                    case BuildResults.BadDimensions:
+                        MessageBox.Show(String.Format("A tileset image must be 320 pixels wide and a multiple of 32 pixels high. Your image is {0} by {1}.", image.Width, image.Height), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        break;
+                    case BuildResults.ImageWrongFormat:
+                        MessageBox.Show("Your image file is saved in an incorrect color mode. A tileset image must use 8-bit color with no transparency (color 0 is used for transparency instead).", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        break;
+                    case BuildResults.MaskWrongFormat:
+                        MessageBox.Show("Your mask file is saved in an incorrect color mode. A tileset mask must use 8-bit color with no transparency (color 0 is used for transparency instead).", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        break;
+                    case BuildResults.TooBigForVersion:
+                        MessageBox.Show(String.Format("Your tileset images are too big. The tile limit for a {0} tileset is {1} tiles, but your tileset contains {2}.", J2File.FullVersionNames[VersionType], J2T.MaxTiles, (image.Height / 32 * 10)), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        break;
+                    case BuildResults.Success:
+                        //todo
+                        break;
+                }
             }
         }
     }

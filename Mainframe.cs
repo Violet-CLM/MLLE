@@ -3341,7 +3341,7 @@ namespace MLLE
         private void TilesetMakerButton_Click(object sender, EventArgs e)
         {
             _suspendEvent.Reset();
-            new TileSetOrganizer().ShowForm(Settings, J2L.VersionType.ToString(), Path.Combine(DefaultDirectories[J2L.VersionType], "Tiles"));
+            new TileSetOrganizer().ShowForm(Settings, J2L.VersionType, Path.Combine(DefaultDirectories[J2L.VersionType], "Tiles"));
             _suspendEvent.Set();
 
         }

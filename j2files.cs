@@ -12,6 +12,7 @@ public enum VersionChangeResults { Success, TilesetTooBig, TooManyAnimatedTiles,
 public enum SavingResults { Success, UndefinedTiles, NoTilesetSelected, TilesetIsDifferentVersion, Error };
 public enum OpeningResults { Success, SuccessfulButAmbiguous, PasswordNeeded, WrongPassword, UnexpectedFourCC, IncorrectEncoding, SecurityEnvelopeDamaged, Error };
 public enum InsertFrameResults { Success, Full, StackOverflow };
+public enum BuildResults { Success, DifferentDimensions, BadDimensions, ImageWrongFormat, MaskWrongFormat, TooBigForVersion };
 
 abstract class J2File //The fields shared by .j2l and .j2t files. No methods/interface just yet, though that would be cool too.
 {
@@ -477,6 +478,12 @@ class J2TFile : J2File
     //public byte[] GetImage(ushort id) { return Images[ImageAddress[id]]; }
     //public byte[] GetMask(ushort id) { return Masks[MaskAddress[id]]; }
     //public byte[] GetFMask(ushort id) { return Masks[FlippedMaskAddress[id]]; }
+
+    internal BuildResults Build(System.Drawing.Image image, System.Drawing.Image mask)
+    {
+        return (BuildResults)MLLE.Mainframe._r.Next((int)BuildResults.TooBigForVersion + 1);
+        //return BuildResults.Success;
+    }
 }
 
 class Layer
