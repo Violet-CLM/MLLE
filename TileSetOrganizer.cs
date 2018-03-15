@@ -29,6 +29,8 @@ namespace MLLE
             VersionType = versionType;
             VersionString = VersionType.ToString();
             TileDirectory = tileDirectory;
+            if (!Directory.Exists(tileDirectory))
+                Directory.CreateDirectory(tileDirectory);
             listView1.Columns[listView1.Columns.Count - 1].Width = -2;
             RefreshList();
             ShowDialog();
