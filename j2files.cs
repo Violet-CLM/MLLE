@@ -687,26 +687,38 @@ class J2TFile : J2File
 
             byte[][]
                 TransparencyInstructions = new byte[TileCount][],
-                MaskBits = new byte[TileCount][];
+                MaskBits = new byte[TileCount][],
+                ReversedMaskBits = new byte[TileCount][];
             for (uint i = 0; i < TileCount; ++i)
             {
                 TransparencyInstructions[i] = GenerateTransparencyInstructionsFromTransparencyMask(TransparencyMaskJCS_Style[i]);
                 MaskBits[i] = ConvertByteMaskTo128Bits(Masks[i]);
+                ReversedMaskBits[i] = ConvertByteMaskTo128Bits(
+                    Masks[i]
+                     .Select((x, index) => new { x, index }) //https://stackoverflow.com/questions/11427413/linq-select-5-items-per-iteration
+                     .GroupBy(x => x.index / 32, y => y.x)
+                     .Select(r => r.Reverse())
+                     .SelectMany(b => b) //https://stackoverflow.com/questions/1590723/flatten-list-in-linq
+                     .ToArray()
+               );
             }
 
-            var Sources = new byte[][][] { Images, TransparencyInstructions, MaskBits };
-            var Destinations = new Dictionary<ByteArrayKey, int>[] { new Dictionary<ByteArrayKey, int>(), new Dictionary<ByteArrayKey, int>(), new Dictionary<ByteArrayKey, int>() };
-            var Writers = new BinaryWriter[] { data2writer, data3writer, data4writer };
+            var Sources = new byte[][][] { Images, TransparencyInstructions, MaskBits, ReversedMaskBits };
+            var MaskDictionary = new Dictionary<ByteArrayKey, int>();
+            var Destinations = new Dictionary<ByteArrayKey, int>[] { new Dictionary<ByteArrayKey, int>(), new Dictionary<ByteArrayKey, int>(), MaskDictionary, MaskDictionary };
+            var Writers = new BinaryWriter[] { data2writer, data3writer, data4writer, data4writer };
 
-            for (int dataID = 0; dataID < 3; ++dataID)
+            for (int dataID = 0; dataID < 4; ++dataID)
             {
+                var source = Sources[dataID];
                 var dest = Destinations[dataID];
                 var writer = Writers[dataID];
-                for (uint tileID = 0; tileID < MaxTiles * 2; ++tileID)
+                int numberOfTimesToWrite = (dataID < 2) ? MaxTiles * 2 : MaxTiles;
+                for (int tileID = 0; tileID < numberOfTimesToWrite; ++tileID)
                 {
-                    if (tileID < TileCount) //todo flipped masks
+                    if (tileID < TileCount)
                     {
-                        var bytes = new ByteArrayKey(Sources[dataID][tileID]);
+                        var bytes = new ByteArrayKey(source[tileID]);
                         if (!dest.ContainsKey(bytes))
                         {
                             dest[bytes] = (int)writer.BaseStream.Length;
