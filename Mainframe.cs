@@ -421,7 +421,7 @@ namespace MLLE
             try { SubtractSelectionKey = StK[Settings.IniReadValue("Hotkeys", "SubtractFromSelection")]; }
             catch { SubtractSelectionKey = Keys.Control; }
             ParallaxEventDisplayType = (Settings.IniReadValue("Miscellaneous", "EventParallaxMode") == "0") ? (byte)0 : (byte)1; eventsForemostToolStripMenuItem.Checked = ParallaxEventDisplayType == 1;
-            AllowExtraZooming = (Settings.IniReadValue("Miscellaneous", "ZoomingAbove100") == "1"); zoomingAbove100ToolStripMenuItem.Checked = AllowExtraZooming;
+            AllowExtraZooming = (Settings.IniReadValue("Miscellaneous", "ZoomingAbove100") == "1"); zoomingAbove100ToolStripMenuItem.Checked = Zoom200.Enabled = Zoom400.Enabled = AllowExtraZooming;
 
             for (int i = 0; i < RecolorableSpriteNames.Length; ++i)
             {
@@ -917,7 +917,7 @@ namespace MLLE
         }
         private void zoomingAbove100ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Settings.IniWriteValue("Miscellaneous", "ZoomingAbove100", (AllowExtraZooming = zoomingAbove100ToolStripMenuItem.Checked) ? "1" : "0");
+            Settings.IniWriteValue("Miscellaneous", "ZoomingAbove100", (AllowExtraZooming = Zoom200.Enabled = Zoom400.Enabled = zoomingAbove100ToolStripMenuItem.Checked) ? "1" : "0");
             if (!AllowExtraZooming && ZoomTileSize > 32)
                 Zoom(32);
         }
@@ -987,6 +987,8 @@ namespace MLLE
         private void Zoom50_Click(object sender, EventArgs e) { Zoom(16); }
         private void Zoom25_Click(object sender, EventArgs e) { Zoom(8); }
         private void Zoom12p5_Click(object sender, EventArgs e) { Zoom(4); }
+        private void Zoom200_Click(object sender, EventArgs e) { Zoom(64); }
+        private void Zoom400_Click(object sender, EventArgs e) { Zoom(128); }
         private void Zoom(byte newTileSize)
         {
             float Factor = newTileSize / 32F / ZoomTileFactor;
@@ -1000,6 +1002,8 @@ namespace MLLE
             Zoom50.Checked = newTileSize == 16;
             Zoom25.Checked = newTileSize == 8;
             Zoom12p5.Checked = newTileSize == 4;
+            Zoom200.Checked = newTileSize == 64;
+            Zoom400.Checked = newTileSize == 128;
         }
 
         int stream = 0;

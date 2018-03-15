@@ -140,6 +140,8 @@
             this.Zoom25 = new System.Windows.Forms.ToolStripMenuItem();
             this.Zoom50 = new System.Windows.Forms.ToolStripMenuItem();
             this.Zoom100 = new System.Windows.Forms.ToolStripMenuItem();
+            this.Zoom200 = new System.Windows.Forms.ToolStripMenuItem();
+            this.Zoom400 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator12 = new System.Windows.Forms.ToolStripSeparator();
             this.SelectEvent = new System.Windows.Forms.ToolStripMenuItem();
             this.GrabEvent = new System.Windows.Forms.ToolStripMenuItem();
@@ -1210,7 +1212,9 @@
             this.Zoom12p5,
             this.Zoom25,
             this.Zoom50,
-            this.Zoom100});
+            this.Zoom100,
+            this.Zoom200,
+            this.Zoom400});
             this.DropdownZoom.Name = "DropdownZoom";
             this.DropdownZoom.Size = new System.Drawing.Size(161, 22);
             this.DropdownZoom.Text = "Zoom";
@@ -1218,21 +1222,21 @@
             // Zoom12p5
             // 
             this.Zoom12p5.Name = "Zoom12p5";
-            this.Zoom12p5.Size = new System.Drawing.Size(105, 22);
+            this.Zoom12p5.Size = new System.Drawing.Size(152, 22);
             this.Zoom12p5.Text = "12.5%";
             this.Zoom12p5.Click += new System.EventHandler(this.Zoom12p5_Click);
             // 
             // Zoom25
             // 
             this.Zoom25.Name = "Zoom25";
-            this.Zoom25.Size = new System.Drawing.Size(105, 22);
+            this.Zoom25.Size = new System.Drawing.Size(152, 22);
             this.Zoom25.Text = "25%";
             this.Zoom25.Click += new System.EventHandler(this.Zoom25_Click);
             // 
             // Zoom50
             // 
             this.Zoom50.Name = "Zoom50";
-            this.Zoom50.Size = new System.Drawing.Size(105, 22);
+            this.Zoom50.Size = new System.Drawing.Size(152, 22);
             this.Zoom50.Text = "50%";
             this.Zoom50.Click += new System.EventHandler(this.Zoom50_Click);
             // 
@@ -1241,9 +1245,23 @@
             this.Zoom100.Checked = true;
             this.Zoom100.CheckState = System.Windows.Forms.CheckState.Checked;
             this.Zoom100.Name = "Zoom100";
-            this.Zoom100.Size = new System.Drawing.Size(105, 22);
+            this.Zoom100.Size = new System.Drawing.Size(152, 22);
             this.Zoom100.Text = "100%";
             this.Zoom100.Click += new System.EventHandler(this.Zoom100_Click);
+            // 
+            // Zoom200
+            // 
+            this.Zoom200.Name = "Zoom200";
+            this.Zoom200.Size = new System.Drawing.Size(152, 22);
+            this.Zoom200.Text = "200%";
+            this.Zoom200.Click += new System.EventHandler(this.Zoom200_Click);
+            // 
+            // Zoom400
+            // 
+            this.Zoom400.Name = "Zoom400";
+            this.Zoom400.Size = new System.Drawing.Size(152, 22);
+            this.Zoom400.Text = "400%";
+            this.Zoom400.Click += new System.EventHandler(this.Zoom400_Click);
             // 
             // toolStripSeparator12
             // 
@@ -1809,5 +1827,7 @@
         private System.Windows.Forms.ToolStripMenuItem editScriptToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem recentLevelsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem zoomingAbove100ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem Zoom200;
+        private System.Windows.Forms.ToolStripMenuItem Zoom400;
     }
 }
