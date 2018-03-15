@@ -526,9 +526,11 @@ class J2TFile : J2File
         TileCount = (uint)image.Height / 32 * 10;
 
         Palette = new Palette();
-        for (uint i = 0; i < Palette.PaletteSize; ++i)
+        for (uint i = 1; i < Palette.PaletteSize - 1; ++i)
             Palette.Colors[i] = Palette.Convert(image.Palette.Entries[i]);
-        
+        Palette.Colors[0] = new byte[] { 0, 0, 0, 0 }; //transparency must always be black, for MMX reasons
+        Palette.Colors[15] = Palette.Colors[255] = new byte[] { 255, 255, 255, 255 }; //these colors are both always white
+
         {
             var imageIndices = new byte[image.Width * image.Height];
             var maskIndices = new byte[mask.Width * mask.Height];
