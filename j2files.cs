@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Text;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.Runtime.InteropServices;
 using Ionic.Zlib;
 using Ionic.Crc;
 using Extra.Collections;
@@ -479,7 +482,7 @@ class J2TFile : J2File
     //public byte[] GetMask(ushort id) { return Masks[MaskAddress[id]]; }
     //public byte[] GetFMask(ushort id) { return Masks[FlippedMaskAddress[id]]; }
 
-    internal BuildResults Build(System.Drawing.Image image, System.Drawing.Image mask)
+    internal BuildResults Build(System.Drawing.Image image, System.Drawing.Image mask, string name)
     {
         if (image.Width != mask.Width || image.Height != mask.Height)
             return BuildResults.DifferentDimensions;
@@ -489,10 +492,58 @@ class J2TFile : J2File
             return BuildResults.TooBigForVersion;
         if (image.PixelFormat != System.Drawing.Imaging.PixelFormat.Format8bppIndexed)
             return BuildResults.ImageWrongFormat;
-        if (mask.PixelFormat != System.Drawing.Imaging.PixelFormat.Format8bppIndexed) //this is more restrictive than it needs to be, since masks only need TWO colors, but nobody's going out of their way to save two-color images just to test this, are they?
+        if ((mask.PixelFormat & System.Drawing.Imaging.PixelFormat.Indexed) == 0)
             return BuildResults.MaskWrongFormat;
         
-        //todo
+        Header = (VersionType == Version.JJ2 || VersionType == Version.TSF) ? StandardHeader : "";
+        Magic = "TILE";
+        Signature = 0xAFBEADDEu; //DEADBEAF, rather
+        Name = name;
+
+        Images = new byte[MaxTiles][];
+        Masks = new byte[MaxTiles][];
+        IsFullyOpaque = new bool[MaxTiles];
+        TransparencyMaskJCS_Style = new byte[MaxTiles][];
+        TileCount = (uint)image.Height / 32 * 10;
+
+        Palette = new Palette();
+        for (uint i = 0; i < Palette.PaletteSize; ++i)
+            Palette.Colors[i] = Palette.Convert(image.Palette.Entries[i]);
+
+        using (Bitmap imageBmp = new Bitmap(image))
+        using (Bitmap maskBmp = new Bitmap(mask))
+        {
+            var imageIndices = new byte[imageBmp.Width * imageBmp.Height];
+            var maskIndices = new byte[maskBmp.Width * maskBmp.Height];
+            var bothBmps = new Bitmap[] { imageBmp, maskBmp };
+            var bothIndices = new byte[][] { imageIndices, maskIndices };
+
+            for (int i = 0; i < 2; ++i)
+            {
+                var data = bothBmps[i].LockBits(new Rectangle(0, 0, bothBmps[i].Width, bothBmps[i].Height), ImageLockMode.ReadOnly, PixelFormat.Format8bppIndexed);
+                for (int y = 0; y < bothBmps[i].Height; ++y)
+                    Marshal.Copy(new IntPtr((int)data.Scan0 + data.Stride * y), bothIndices[i], bothBmps[i].Width * y, bothBmps[i].Width);
+                bothBmps[i].UnlockBits(data);
+            }
+
+            for (int tileID = 0; tileID < (int)TileCount; ++tileID)
+            {
+                var imageArray =    Images[tileID] =                    new byte[32*32];
+                var transpArray =   TransparencyMaskJCS_Style[tileID] = new byte[32*32];
+                var maskArray =     Masks[tileID] =                     new byte[32*32];
+                int x = (tileID % 10) * 32, y = (tileID / 10) * 32;
+                for (int xx = 0; xx < 32; ++xx)
+                    for (int yy = 0; yy < 32; ++yy)
+                    {
+                        int tileIndex = xx | (yy << 5);
+                        int sourceIndex = (x | xx) + (y | yy) * 320;
+                        if ((transpArray[tileIndex] = (byte)((imageArray[tileIndex] = imageIndices[sourceIndex]) != 0 ? 1 : 0)) == 0) IsFullyOpaque[tileID] = false;
+                        maskArray[tileIndex] = maskIndices[sourceIndex];
+                    }
+            }
+        }
+
+        TransparencyMaskJJ2_Style = TransparencyMaskJCS_Style.Clone() as byte[][];
 
         return BuildResults.Success;
     }

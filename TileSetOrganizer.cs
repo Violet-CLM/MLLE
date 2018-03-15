@@ -146,7 +146,7 @@ namespace MLLE
                     MessageBox.Show(sourceFilepath + " does not use an image format supported by this program. (Try PNG, GIF, TIFF, or BMP.)", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
-                switch (J2T.Build(image, mask ))
+                switch (J2T.Build(image, mask, record.Text))
                 {
                     case BuildResults.DifferentDimensions:
                         MessageBox.Show(String.Format("The image and the mask must be the same dimensions. Your image is {0} by {1}, and your mask is {2} by {3}.", image.Width, image.Height, mask.Width, mask.Height), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
