@@ -106,7 +106,7 @@ class J2TFile : J2File
         {
             byte val = 0;
             for (int j = 0; j < 8; ++j)
-                val |= (byte)(bytes[i << 3] << j);
+                val |= (byte)(bytes[(i << 3) | j] << j);
             output[i] = val;
         }
         return output;
@@ -685,11 +685,16 @@ class J2TFile : J2File
             for (int i = 0; i < MaxTiles * 2; ++i)
                 data1writer.Write(i < TileCount ? IsFullyOpaque[i] : false);
 
-            var TransparencyInstructions = new byte[TileCount][];
+            byte[][]
+                TransparencyInstructions = new byte[TileCount][],
+                MaskBits = new byte[TileCount][];
             for (uint i = 0; i < TileCount; ++i)
+            {
                 TransparencyInstructions[i] = GenerateTransparencyInstructionsFromTransparencyMask(TransparencyMaskJCS_Style[i]);
-            
-            var Sources = new byte[][][] { Images, TransparencyInstructions , Masks};
+                MaskBits[i] = ConvertByteMaskTo128Bits(Masks[i]);
+            }
+
+            var Sources = new byte[][][] { Images, TransparencyInstructions, MaskBits };
             var Destinations = new Dictionary<ByteArrayKey, int>[] { new Dictionary<ByteArrayKey, int>(), new Dictionary<ByteArrayKey, int>(), new Dictionary<ByteArrayKey, int>() };
             var Writers = new BinaryWriter[] { data2writer, data3writer, data4writer };
 
