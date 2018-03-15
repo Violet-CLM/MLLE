@@ -127,6 +127,7 @@ namespace MLLE
             {
                 var record = listView1.SelectedItems[0];
                 var J2T = new J2TFile();
+                J2T.VersionType = VersionType;
                 Image image, mask;
                 string sourceFilepath = Path.Combine(TileDirectory, record.SubItems[2].Text);
                 try

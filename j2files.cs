@@ -481,8 +481,20 @@ class J2TFile : J2File
 
     internal BuildResults Build(System.Drawing.Image image, System.Drawing.Image mask)
     {
-        return (BuildResults)MLLE.Mainframe._r.Next((int)BuildResults.TooBigForVersion + 1);
-        //return BuildResults.Success;
+        if (image.Width != mask.Width || image.Height != mask.Height)
+            return BuildResults.DifferentDimensions;
+        if (image.Width != 320 || image.Height % 32 != 0)
+            return BuildResults.BadDimensions;
+        if (image.Height / 32 * 10 > MaxTiles)
+            return BuildResults.TooBigForVersion;
+        if (image.PixelFormat != System.Drawing.Imaging.PixelFormat.Format8bppIndexed)
+            return BuildResults.ImageWrongFormat;
+        if (mask.PixelFormat != System.Drawing.Imaging.PixelFormat.Format8bppIndexed) //this is more restrictive than it needs to be, since masks only need TWO colors, but nobody's going out of their way to save two-color images just to test this, are they?
+            return BuildResults.MaskWrongFormat;
+        
+        //todo
+
+        return BuildResults.Success;
     }
 }
 
