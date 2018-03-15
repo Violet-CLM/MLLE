@@ -164,7 +164,12 @@ namespace MLLE
                         MessageBox.Show(String.Format("Your tileset images are too big. The tile limit for a {0} tileset is {1} tiles, but your tileset contains {2}.", J2File.FullVersionNames[VersionType], J2T.MaxTiles, (image.Height / 32 * 10)), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         break;
                     case BuildResults.Success:
-                        //todo
+                        if (J2T.Save(Path.Combine(Directory.GetParent(TileDirectory).ToString(), record.SubItems[1].Text)) != SavingResults.Success)
+                            MessageBox.Show("Something went wrong.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        else
+                        {
+                            //todo
+                        }
                         break;
                 }
             }

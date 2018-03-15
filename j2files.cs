@@ -482,7 +482,7 @@ class J2TFile : J2File
     //public byte[] GetMask(ushort id) { return Masks[MaskAddress[id]]; }
     //public byte[] GetFMask(ushort id) { return Masks[FlippedMaskAddress[id]]; }
 
-    internal BuildResults Build(System.Drawing.Image image, System.Drawing.Image mask, string name)
+    public BuildResults Build(System.Drawing.Image image, System.Drawing.Image mask, string name)
     {
         if (image.Width != mask.Width || image.Height != mask.Height)
             return BuildResults.DifferentDimensions;
@@ -546,6 +546,14 @@ class J2TFile : J2File
         TransparencyMaskJJ2_Style = TransparencyMaskJCS_Style.Clone() as byte[][];
 
         return BuildResults.Success;
+    }
+    public SavingResults Save(string filepath)
+    {
+        FilenameOnly = Path.GetFileName(FullFilePath = filepath);
+
+        //todo
+
+        return SavingResults.Success;
     }
 }
 
