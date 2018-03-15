@@ -52,6 +52,7 @@
             // 
             // Cancel
             // 
+            this.Cancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.Cancel.Location = new System.Drawing.Point(227, 37);
             this.Cancel.Name = "Cancel";
             this.Cancel.Size = new System.Drawing.Size(75, 23);
@@ -98,6 +99,7 @@
             // boxName
             // 
             this.boxName.Location = new System.Drawing.Point(67, 8);
+            this.boxName.MaxLength = 31;
             this.boxName.Name = "boxName";
             this.boxName.Size = new System.Drawing.Size(154, 20);
             this.boxName.TabIndex = 6;
@@ -105,6 +107,7 @@
             // boxFilename
             // 
             this.boxFilename.Location = new System.Drawing.Point(67, 34);
+            this.boxFilename.MaxLength = 250;
             this.boxFilename.Name = "boxFilename";
             this.boxFilename.Size = new System.Drawing.Size(154, 20);
             this.boxFilename.TabIndex = 7;

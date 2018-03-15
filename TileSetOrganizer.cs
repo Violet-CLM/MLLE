@@ -117,5 +117,14 @@ namespace MLLE
                 SaveList();
             }
         }
+
+        private void Build_Click(object sender, EventArgs e)
+        {
+            if (listView1.SelectedItems.Count == 1)
+            {
+                var record = listView1.SelectedItems[0];
+
+            }
+        }
     }
 }

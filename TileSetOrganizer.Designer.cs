@@ -93,6 +93,7 @@
             this.Build.TabIndex = 4;
             this.Build.Text = "Build";
             this.Build.UseVisualStyleBackColor = true;
+            this.Build.Click += new System.EventHandler(this.Build_Click);
             // 
             // listView1
             // 
