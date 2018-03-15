@@ -507,8 +507,16 @@ class J2TFile : J2File
             return BuildResults.DifferentDimensions;
         if (image.Width != 320 || image.Height % 32 != 0)
             return BuildResults.BadDimensions;
-        if (image.Height / 32 * 10 > MaxTiles)
-            return BuildResults.TooBigForVersion;
+        TileCount = (uint)image.Height / 32 * 10;
+        if (TileCount > MaxTiles)
+        {
+            if (VersionType == Version.JJ2)
+                VersionType = Version.TSF; //cheat
+            if (TileCount > MaxTiles) //still
+                return BuildResults.TooBigForVersion;
+        }
+        else if (TileCount <= 1020 && VersionType == Version.TSF)
+            VersionType = Version.JJ2; //increase accessibility
         if (image.PixelFormat != System.Drawing.Imaging.PixelFormat.Format8bppIndexed)
             return BuildResults.ImageWrongFormat;
         if ((mask.PixelFormat & System.Drawing.Imaging.PixelFormat.Indexed) == 0)
@@ -523,7 +531,6 @@ class J2TFile : J2File
         Masks = new byte[MaxTiles][];
         IsFullyOpaque = new bool[MaxTiles];
         TransparencyMaskJCS_Style = new byte[MaxTiles][];
-        TileCount = (uint)image.Height / 32 * 10;
 
         Palette = new Palette();
         for (uint i = 1; i < Palette.PaletteSize - 1; ++i)

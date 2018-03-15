@@ -23,7 +23,7 @@ namespace MLLE
         internal bool ShowForm(ListViewItem newRecord, string tileDirectory)
         {
             Record = newRecord;
-            var allImages = (Directory.GetFiles(tileDirectory, "*.pcx").Concat(Directory.GetFiles(tileDirectory, "*.bmp"))).Select(val => Path.GetFileName(val)).ToArray();
+            var allImages = (Directory.GetFiles(tileDirectory, "*.png").Concat(Directory.GetFiles(tileDirectory, "*.gif")).Concat(Directory.GetFiles(tileDirectory, "*.tif")).Concat(Directory.GetFiles(tileDirectory, "*.tiff")).Concat(Directory.GetFiles(tileDirectory, "*.bmp"))).Select(val => Path.GetFileName(val)).ToArray();
             boxImage.Items.AddRange(allImages);
             boxMask.Items.AddRange(allImages);
             if (!string.IsNullOrWhiteSpace(boxFilename.Text = newRecord.SubItems[1].Text))

@@ -161,7 +161,7 @@ namespace MLLE
                         MessageBox.Show("Your mask file is saved in an incorrect color mode. A tileset mask must use 8-bit color with no transparency (color 0 is used for transparency instead).", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         break;
                     case BuildResults.TooBigForVersion:
-                        MessageBox.Show(String.Format("Your tileset images are too big. The tile limit for a {0} tileset is {1} tiles, but your tileset contains {2}.", J2File.FullVersionNames[VersionType], J2T.MaxTiles, (image.Height / 32 * 10)), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show(String.Format("Your tileset images are too big. The tile limit for a {0} tileset is {1} tiles, but your tileset contains {2}.", J2File.FullVersionNames[J2T.VersionType], J2T.MaxTiles, (image.Height / 32 * 10)), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         break;
                     case BuildResults.Success:
                         string fullFilePath = Path.Combine(Directory.GetParent(TileDirectory).ToString(), record.SubItems[1].Text);
