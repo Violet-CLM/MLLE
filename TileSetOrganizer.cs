@@ -18,7 +18,7 @@ namespace MLLE
         {
             InitializeComponent();
         }
-        List<ListViewItem> AllTilesets = new List<ListViewItem>();
+        List<ListViewItem> AllTilesets;
         IniFile Settings;
         Version VersionType;
         string VersionString;
@@ -29,14 +29,20 @@ namespace MLLE
             VersionType = versionType;
             VersionString = VersionType.ToString();
             TileDirectory = tileDirectory;
-            int iniTilesetIndex = 1;
             listView1.Columns[listView1.Columns.Count - 1].Width = -2;
+            RefreshList();
+            ShowDialog();
+        }
+        private void RefreshList() {
+            AllTilesets = new List<ListViewItem>();
+            listView1.Items.Clear();
+            int iniTilesetIndex = 1;
             while (true)
             {
                 string iniText = Settings.IniReadValue("Tilesets", (iniTilesetIndex++).ToString());
                 if (string.IsNullOrWhiteSpace(iniText)) //run out of subsequently numbered ini lines
                     break;
-                var match = System.Text.RegularExpressions.Regex.Match(iniText, "\\s*\"([^\"]+)\",\\s*\"([^\"]+)\",\\s*\"([^\"]+)\",\\s*\"([^\"]+)\",\\s*(TSF|JJ2|BC\\AGA\\GorH)\\s*");
+                var match = System.Text.RegularExpressions.Regex.Match(iniText, "\\s*\"([^\"]+)\",\\s*\"([^\"]+)\",\\s*\"([^\"]+)\",\\s*\"([^\"]+)\",\\s*(TSF|JJ2|BC|AGA|GorH)\\s*");
                 if (!match.Success) //something went wrong
                     continue; //oh well!
                 ListViewItem newRecord = new ListViewItem(match.Groups[2].Value);
@@ -45,9 +51,7 @@ namespace MLLE
                 newRecord.SubItems.Add(match.Groups[3].Value);
                 newRecord.Tag = match.Groups[5].Value;
                 ThinkAboutAdding(newRecord);
-
             }
-            ShowDialog();
         }
 
         void SaveList()
@@ -98,7 +102,7 @@ namespace MLLE
 
         private void Select(ListViewItem newRecord)
         {
-            if (new SelectTileSet().ShowForm(newRecord, TileDirectory))
+            if (new SelectTileSet().ShowForm(newRecord, TileDirectory, VersionType != Version.AGA ? ".j2t" : ".til"))
             {
                 ThinkAboutAdding(newRecord);
                 SaveList();
@@ -172,6 +176,11 @@ namespace MLLE
                         break;
                 }
             }
+        }
+
+        private void Refresh_Click(object sender, EventArgs e)
+        {
+            RefreshList();
         }
     }
 }

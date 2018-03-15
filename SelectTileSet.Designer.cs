@@ -103,6 +103,7 @@
             this.boxName.Name = "boxName";
             this.boxName.Size = new System.Drawing.Size(154, 20);
             this.boxName.TabIndex = 6;
+            this.boxName.TextChanged += new System.EventHandler(this.boxName_TextChanged);
             // 
             // boxFilename
             // 
@@ -111,6 +112,7 @@
             this.boxFilename.Name = "boxFilename";
             this.boxFilename.Size = new System.Drawing.Size(154, 20);
             this.boxFilename.TabIndex = 7;
+            this.boxFilename.TextChanged += new System.EventHandler(this.boxFilename_TextChanged);
             // 
             // boxImage
             // 
