@@ -141,7 +141,7 @@ namespace MLLE
                     MessageBox.Show(sourceFilepath + " not found!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
-                catch (OutOfMemoryException)
+                catch
                 {
                     MessageBox.Show(sourceFilepath + " does not use an image format supported by this program. (Try PNG, GIF, TIFF, or BMP.)", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
@@ -164,12 +164,11 @@ namespace MLLE
                         MessageBox.Show(String.Format("Your tileset images are too big. The tile limit for a {0} tileset is {1} tiles, but your tileset contains {2}.", J2File.FullVersionNames[VersionType], J2T.MaxTiles, (image.Height / 32 * 10)), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         break;
                     case BuildResults.Success:
-                        if (J2T.Save(Path.Combine(Directory.GetParent(TileDirectory).ToString(), record.SubItems[1].Text)) != SavingResults.Success)
+                        string fullFilePath = Path.Combine(Directory.GetParent(TileDirectory).ToString(), record.SubItems[1].Text);
+                        if (J2T.Save(fullFilePath) != SavingResults.Success)
                             MessageBox.Show("Something went wrong.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         else
-                        {
-                            //todo
-                        }
+                            MessageBox.Show(String.Format("OK: Your tileset '{0}' has been built at {1} with {2} tiles ({3} Kb).", record.Text, fullFilePath, (image.Height / 32 * 10), new System.IO.FileInfo(fullFilePath).Length / 1024), "Successful Build", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         break;
                 }
             }
