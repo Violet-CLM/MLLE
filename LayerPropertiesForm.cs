@@ -104,7 +104,14 @@ namespace MLLE
             //PHASEParam2.Text = layer.TexturParam2.ToString();
             //PHASEParam3.Text = layer.TexturParam3.ToString();
             ColorBox.BackColor = Color.FromArgb(layer.TexturParam1, layer.TexturParam2, layer.TexturParam3);
-            TextureModeSelect.SelectedIndex = layer.TextureMode;
+            try
+            {
+                TextureModeSelect.SelectedIndex = layer.TextureMode;
+            }
+            catch
+            {
+                //oh well
+            }
             XOffset.Text = layer.WaveX.ToString();
             YOffset.Text = layer.WaveY.ToString();
             NameBox.Text = layer.Name;
