@@ -77,6 +77,7 @@
             this.editScriptToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.preferencesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.eventsForemostToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.zoomingAbove100ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator19 = new System.Windows.Forms.ToolStripSeparator();
             this.setTransparentColorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.setTile0ColorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -565,6 +566,7 @@
             // 
             this.preferencesToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.eventsForemostToolStripMenuItem,
+            this.zoomingAbove100ToolStripMenuItem,
             this.toolStripSeparator19,
             this.setTransparentColorToolStripMenuItem,
             this.setTile0ColorToolStripMenuItem,
@@ -580,6 +582,14 @@
             this.eventsForemostToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             this.eventsForemostToolStripMenuItem.Text = "Events Foremost";
             this.eventsForemostToolStripMenuItem.CheckedChanged += new System.EventHandler(this.eventsForemostToolStripMenuItem_CheckedChanged);
+            // 
+            // zoomingAbove100ToolStripMenuItem
+            // 
+            this.zoomingAbove100ToolStripMenuItem.CheckOnClick = true;
+            this.zoomingAbove100ToolStripMenuItem.Name = "zoomingAbove100ToolStripMenuItem";
+            this.zoomingAbove100ToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
+            this.zoomingAbove100ToolStripMenuItem.Text = "Zooming Above 100%";
+            this.zoomingAbove100ToolStripMenuItem.Click += new System.EventHandler(this.zoomingAbove100ToolStripMenuItem_Click);
             // 
             // toolStripSeparator19
             // 
@@ -1053,7 +1063,7 @@
             "Tile Types",
             "Masks"});
             this.TilesetOverlaySelection.Name = "TilesetOverlaySelection";
-            this.TilesetOverlaySelection.Size = new System.Drawing.Size(80, 23);
+            this.TilesetOverlaySelection.Size = new System.Drawing.Size(80, 27);
             this.TilesetOverlaySelection.Tag = "Select overlay data for tiles";
             this.TilesetOverlaySelection.SelectedIndexChanged += new System.EventHandler(this.TilesetOverlaySelection_SelectedIndexChanged);
             this.TilesetOverlaySelection.MouseEnter += new System.EventHandler(this.DescribableControl_MouseEnter);
@@ -1798,5 +1808,6 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator22;
         private System.Windows.Forms.ToolStripMenuItem editScriptToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem recentLevelsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem zoomingAbove100ToolStripMenuItem;
     }
 }

@@ -112,6 +112,7 @@ namespace MLLE
         MaskMode MaskDisplayMode;
         ParallaxMode ParallaxDisplayMode;
         internal byte ParallaxEventDisplayType = 0;
+        internal bool AllowExtraZooming = false;
         internal uint PlusTriggerZone = 0;
 
         private bool levelHasBeenModified = false;
@@ -420,7 +421,8 @@ namespace MLLE
             try { SubtractSelectionKey = StK[Settings.IniReadValue("Hotkeys", "SubtractFromSelection")]; }
             catch { SubtractSelectionKey = Keys.Control; }
             ParallaxEventDisplayType = (Settings.IniReadValue("Miscellaneous", "EventParallaxMode") == "0") ? (byte)0 : (byte)1; eventsForemostToolStripMenuItem.Checked = ParallaxEventDisplayType == 1;
-            
+            AllowExtraZooming = (Settings.IniReadValue("Miscellaneous", "ZoomingAbove100") == "1"); zoomingAbove100ToolStripMenuItem.Checked = AllowExtraZooming;
+
             for (int i = 0; i < RecolorableSpriteNames.Length; ++i)
             {
                 ToolStripMenuItem toolstripitem = new ToolStripMenuItem(RecolorableSpriteNames[i]);
@@ -913,6 +915,12 @@ namespace MLLE
         {
             Settings.IniWriteValue("Miscellaneous", "EventParallaxMode", (ParallaxEventDisplayType = eventsForemostToolStripMenuItem.Checked ? (byte)1 : (byte)0).ToString());
         }
+        private void zoomingAbove100ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Settings.IniWriteValue("Miscellaneous", "ZoomingAbove100", (AllowExtraZooming = zoomingAbove100ToolStripMenuItem.Checked) ? "1" : "0");
+            if (!AllowExtraZooming && ZoomTileSize > 32)
+                Zoom(32);
+        }
 
         private void DrawingToolButton_Click(object sender, EventArgs e)
         {
@@ -971,7 +979,7 @@ namespace MLLE
         private void GrabEventTS_Click(object sender, EventArgs e) { GrabEventAtMouse(); }
         private void PutEventTS_Click(object sender, EventArgs e) { PasteEventAtMouse(); }
 
-        internal void ZoomIn() { if (ZoomTileSize < 32) { Zoom((byte)(ZoomTileSize << 1)); } }
+        internal void ZoomIn() { if (ZoomTileSize < (AllowExtraZooming ? 128 : 32)) { Zoom((byte)(ZoomTileSize << 1)); } }
         internal void ZoomOut() { if (ZoomTileSize > 4) { Zoom((byte)(ZoomTileSize >> 1)); } }
         private void ZoomInButton_Click(object sender, EventArgs e) { ZoomIn(); }
         private void ZoomOutButton_Click(object sender, EventArgs e) { ZoomOut(); }
@@ -1966,6 +1974,8 @@ namespace MLLE
                 GL.MatrixMode(MatrixMode.Modelview);
                 GL.LoadIdentity();
                 GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+                //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
                 if (ParallaxDisplayMode != ParallaxMode.NoParallax && MaskDisplayMode != MaskMode.FullMask)
                 {
                     xspeedparallax = (CurrentLayer.XSpeed == 0) ? 0 : (int)((LDScrollH.Value + widthreduced) / CurrentLayer.XSpeed);
