@@ -128,13 +128,13 @@ namespace MLLE
                 var record = listView1.SelectedItems[0];
                 var J2T = new J2TFile();
                 J2T.VersionType = VersionType;
-                Image image, mask;
+                Bitmap image, mask;
                 string sourceFilepath = Path.Combine(TileDirectory, record.SubItems[2].Text);
                 try
                 {
-                    image = Bitmap.FromFile(sourceFilepath);
+                    image = new Bitmap(sourceFilepath);
                     sourceFilepath = Path.Combine(TileDirectory, record.SubItems[3].Text);
-                    mask = Bitmap.FromFile(sourceFilepath);
+                    mask = new Bitmap(sourceFilepath);
                 }
                 catch (FileNotFoundException)
                 {

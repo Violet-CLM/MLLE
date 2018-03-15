@@ -501,7 +501,7 @@ class J2TFile : J2File
     //public byte[] GetMask(ushort id) { return Masks[MaskAddress[id]]; }
     //public byte[] GetFMask(ushort id) { return Masks[FlippedMaskAddress[id]]; }
 
-    public BuildResults Build(System.Drawing.Image image, System.Drawing.Image mask, string name)
+    public BuildResults Build(Bitmap image, Bitmap mask, string name)
     {
         if (image.Width != mask.Width || image.Height != mask.Height)
             return BuildResults.DifferentDimensions;
@@ -528,13 +528,11 @@ class J2TFile : J2File
         Palette = new Palette();
         for (uint i = 0; i < Palette.PaletteSize; ++i)
             Palette.Colors[i] = Palette.Convert(image.Palette.Entries[i]);
-
-        using (Bitmap imageBmp = new Bitmap(image))
-        using (Bitmap maskBmp = new Bitmap(mask))
+        
         {
-            var imageIndices = new byte[imageBmp.Width * imageBmp.Height];
-            var maskIndices = new byte[maskBmp.Width * maskBmp.Height];
-            var bothBmps = new Bitmap[] { imageBmp, maskBmp };
+            var imageIndices = new byte[image.Width * image.Height];
+            var maskIndices = new byte[mask.Width * mask.Height];
+            var bothBmps = new Bitmap[] { image, mask };
             var bothIndices = new byte[][] { imageIndices, maskIndices };
 
             for (int i = 0; i < 2; ++i)
@@ -556,7 +554,9 @@ class J2TFile : J2File
                     {
                         int tileIndex = xx | (yy << 5);
                         int sourceIndex = (x | xx) + (y | yy) * 320;
-                        if ((transpArray[tileIndex] = (byte)((imageArray[tileIndex] = imageIndices[sourceIndex]) != 0 ? 1 : 0)) == 0) IsFullyOpaque[tileID] = false;
+                        byte color = imageIndices[sourceIndex];
+                        if (color == 1) color = 0;
+                        if ((transpArray[tileIndex] = (byte)((imageArray[tileIndex] = color) != 0 ? 1 : 0)) == 0) IsFullyOpaque[tileID] = false;
                         maskArray[tileIndex] = (byte)(maskIndices[sourceIndex] != 0 ? 1 : 0);
                     }
             }
@@ -689,7 +689,7 @@ class J2TFile : J2File
             for (uint i = 0; i < TileCount; ++i)
                 TransparencyInstructions[i] = GenerateTransparencyInstructionsFromTransparencyMask(TransparencyMaskJCS_Style[i]);
             
-            var Sources = new byte[][][] { Images, Masks, TransparencyInstructions };
+            var Sources = new byte[][][] { Images, TransparencyInstructions , Masks};
             var Destinations = new Dictionary<ByteArrayKey, int>[] { new Dictionary<ByteArrayKey, int>(), new Dictionary<ByteArrayKey, int>(), new Dictionary<ByteArrayKey, int>() };
             var Writers = new BinaryWriter[] { data2writer, data3writer, data4writer };
 
