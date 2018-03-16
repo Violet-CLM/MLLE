@@ -160,10 +160,12 @@
             this.Bitfield.AutoSize = true;
             this.Bitfield.ForeColor = System.Drawing.SystemColors.ControlDark;
             this.Bitfield.Location = new System.Drawing.Point(142, 15);
+            this.Bitfield.Margin = new System.Windows.Forms.Padding(0);
             this.Bitfield.Name = "Bitfield";
             this.Bitfield.Size = new System.Drawing.Size(199, 13);
             this.Bitfield.TabIndex = 20;
             this.Bitfield.Text = "00000000000000000000000000000000";
+            this.Bitfield.MouseClick += new System.Windows.Forms.MouseEventHandler(this.Bitfield_MouseClick);
             // 
             // numericUpDown1
             // 

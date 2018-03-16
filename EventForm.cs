@@ -174,15 +174,20 @@ namespace MLLE
             }
             else
             {
-                ModeSelect.SelectedIndex = (int)J2LFile.GetRawBits(WorkingEvent.ID, 8, 2);
-                Illuminate.Checked = (WorkingEvent.ID & 1024) == 1024;
-                int[] parmvalues = Mainframe.ExtractParameterValues(WorkingEvent.ID, CurrentEvent);
-                for (byte i = 0; i < MostParametersSeenThusFar; i++) LastParameterValues[i] = parmvalues[i];
-                if (CurrentEventID == SourceForm.GeneratorEventID) { SetupEvent(); Generator.Checked = true; Findit((byte)parmvalues[0]); }
-                else Findit(CurrentEventID);
+                CheckEverythingForThisNewEvent();
             }
             //SafeToCalculate = true;
             SafeToCacheOldParameters = true;
+        }
+
+        private void CheckEverythingForThisNewEvent()
+        {
+            ModeSelect.SelectedIndex = (int)J2LFile.GetRawBits(WorkingEvent.ID, 8, 2);
+            Illuminate.Checked = (WorkingEvent.ID & 1024) == 1024;
+            int[] parmvalues = Mainframe.ExtractParameterValues(WorkingEvent.ID, CurrentEvent);
+            for (byte i = 0; i < MostParametersSeenThusFar; i++) LastParameterValues[i] = parmvalues[i];
+            if (CurrentEventID == SourceForm.GeneratorEventID) { SetupEvent(); Generator.Checked = true; Findit((byte)parmvalues[0]); }
+            else Findit(CurrentEventID);
         }
 
         private void Findit(byte value)
@@ -329,7 +334,14 @@ namespace MLLE
                             ParamBoxes[i].Minimum = range[0]; ParamBoxes[i].Maximum = range[1];
                             foreach (Control c in ParamBoxes[i].Controls)
                                 toolTip.SetToolTip(c, String.Format("Enter a number between {0} and {1}.", range[0], range[1]));
-                            ParamBoxes[i].Value = LastParameterValues[ReadCycledValues];
+                            try
+                            {
+                                ParamBoxes[i].Value = LastParameterValues[ReadCycledValues];
+                            }
+                            catch
+                            {
+                                ParamBoxes[i].Value = 0;
+                            }
                             ReadCycledValues++;
                             break;
                         case "A":
@@ -377,7 +389,14 @@ namespace MLLE
                                     ParamBoxes[i].Minimum = int.MinValue; ParamBoxes[i].Maximum = int.MaxValue;
                                     foreach (Control c in ParamBoxes[i].Controls)
                                         toolTip.SetToolTip(c, String.Format("Enter a number between {0} and {1}.", int.MinValue, int.MaxValue));
-                                    ParamBoxes[i].Value = LastParameterValues[ReadCycledValues];
+                                    try
+                                    {
+                                        ParamBoxes[i].Value = LastParameterValues[ReadCycledValues];
+                                    }
+                                    catch
+                                    {
+                                        ParamBoxes[i].Value = 0;
+                                    }
                                     ReadCycledValues++;
                                     break;
                             }
@@ -391,7 +410,14 @@ namespace MLLE
                             ParamBoxes[i].Minimum = range[0]; ParamBoxes[i].Maximum = range[1];
                             foreach (Control c in ParamBoxes[i].Controls)
                                 toolTip.SetToolTip(c, String.Format("Enter a number between {0} and {1}.", range[0], range[1]));
-                            ParamBoxes[i].Value = LastParameterValues[ReadCycledValues];
+                            try
+                            {
+                                ParamBoxes[i].Value = LastParameterValues[ReadCycledValues];
+                            }
+                            catch
+                            {
+                                ParamBoxes[i].Value = 0;
+                            }
                             ReadCycledValues++;
                             break;
                     }
@@ -479,6 +505,7 @@ namespace MLLE
                 //bitpush += Convert.ToByte(size.Substring(size.Length-1,1));
                 bitpush += GetNumberAtEndOfString(CurrentEvent[i + 5], false);
             }
+            result |= WorkingEvent.ID & (0xFFFFFFFFu << bitpush); //keep hidden parameter values
             return result;
         }
 
@@ -521,6 +548,19 @@ namespace MLLE
         }
 
         BinaryReader j2a; //sound code by Neobeo
+
+        private void Bitfield_MouseClick(object sender, MouseEventArgs e)
+        {
+            uint newEvent = (WorkingEvent.ID ^= (0x80000000u >> ((e.X - 3) / 6)));
+            CurrentEventID = (byte)(WorkingEvent.ID & 255);
+            CurrentEvent = TexturedJ2L.IniEventListing[SourceForm.J2L.VersionType][CurrentEventID];
+            SafeToCacheOldParameters = false;
+            CheckEverythingForThisNewEvent();
+            Tree_AfterSelect(null, null);
+            SafeToCacheOldParameters = true;
+            Bitfield.Text = Convert.ToString((int)WorkingEvent.ID, 2).PadLeft(32, '0');
+        }
+
         int i, s, v, sets;
         static readonly byte[] magic = { 82, 73, 70, 70, 87, 65, 86, 69, 102, 109, 116, 32,
                                                 16, 0, 0, 0, 1, 0, 1, 0, 100, 97, 116, 97 };
