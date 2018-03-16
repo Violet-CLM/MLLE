@@ -481,18 +481,15 @@ namespace MLLE
                 DrawThread.Abort();
 
             DeleteLevelScriptIfEmpty();
-
-            if (this.Location.Y > -5) //otherwise something probably went wrong, so don't record these numbers
+            
+            bool windowIsMaximized = this.WindowState == FormWindowState.Maximized;
+            Settings.IniWriteValue("Window", "Maximized", windowIsMaximized.ToString());
+            if (!windowIsMaximized && this.Location.Y > -5) //otherwise something probably went wrong, so don't record these numbers
             {
-                bool windowIsMaximized = this.WindowState == FormWindowState.Maximized;
-                Settings.IniWriteValue("Window", "Maximized", windowIsMaximized.ToString());
-                if (!windowIsMaximized)
-                {
-                    Settings.IniWriteValue("Window", "X", this.Location.X.ToString());
-                    Settings.IniWriteValue("Window", "Y", this.Location.Y.ToString());
-                    Settings.IniWriteValue("Window", "Width", this.Size.Width.ToString());
-                    Settings.IniWriteValue("Window", "Height", this.Size.Height.ToString());
-                }
+                Settings.IniWriteValue("Window", "X", this.Location.X.ToString());
+                Settings.IniWriteValue("Window", "Y", this.Location.Y.ToString());
+                Settings.IniWriteValue("Window", "Width", this.Size.Width.ToString());
+                Settings.IniWriteValue("Window", "Height", this.Size.Height.ToString());
             }
         }
         private void Mainframe_Paint(object sender, PaintEventArgs e)
@@ -3280,8 +3277,10 @@ namespace MLLE
                 var tileMap = ReplacedActions.Layer.TileMap;
                 foreach (Point p in ReplacedActions.Specifics.Keys)
                 {
-                    if (J2L.VersionType == Version.AGA) NewActions.Specifics.Add(p, new TileAndEvent(tileMap[p.X, p.Y], J2L.AGA_EventMap[p.X, p.Y]));
-                    else NewActions.Specifics.Add(p, new TileAndEvent(tileMap[p.X, p.Y], J2L.EventMap[p.X, p.Y]));
+                    ushort tileID = tileMap[p.X, p.Y];
+                    if (ReplacedActions.Layer != J2L.SpriteLayer) NewActions.Specifics.Add(p, new TileAndEvent(tileID, 0));
+                    else if (J2L.VersionType == Version.AGA) NewActions.Specifics.Add(p, new TileAndEvent(tileID, J2L.AGA_EventMap[p.X, p.Y]));
+                    else NewActions.Specifics.Add(p, new TileAndEvent(tileID, J2L.EventMap[p.X, p.Y]));
                     tileMap[p.X, p.Y] = ReplacedActions.Specifics[p].Tile;
                     if (ReplacedActions.Layer == J2L.SpriteLayer)
                     {
