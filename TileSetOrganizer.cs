@@ -23,7 +23,8 @@ namespace MLLE
         Version VersionType;
         string VersionString;
         string TileDirectory;
-        internal void ShowForm(IniFile settings, Version versionType, string tileDirectory)
+        bool VersionIsPlusCompatible;
+        internal void ShowForm(IniFile settings, Version versionType, string tileDirectory, bool versionIsPlusCompatible)
         {
             Settings = settings;
             VersionType = versionType;
@@ -31,6 +32,7 @@ namespace MLLE
             TileDirectory = tileDirectory;
             if (!Directory.Exists(tileDirectory))
                 Directory.CreateDirectory(tileDirectory);
+            VersionIsPlusCompatible = versionIsPlusCompatible;
             listView1.Columns[listView1.Columns.Count - 1].Width = -2;
             RefreshList();
             ShowDialog();
@@ -152,7 +154,7 @@ namespace MLLE
                     MessageBox.Show(sourceFilepath + " does not use an image format supported by this program. (Try PNG, GIF, TIFF, or BMP.)", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;
                 }
-                switch (J2T.Build(image, mask, record.Text))
+                switch (J2T.Build(image, mask, record.Text, VersionIsPlusCompatible))
                 {
                     case BuildResults.DifferentDimensions:
                         MessageBox.Show(String.Format("The image and the mask must be the same dimensions. Your image is {0} by {1}, and your mask is {2} by {3}.", image.Width, image.Height, mask.Width, mask.Height), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -168,6 +170,9 @@ namespace MLLE
                         break;
                     case BuildResults.TooBigForVersion:
                         MessageBox.Show(String.Format("Your tileset images are too big. The tile limit for a {0} tileset is {1} tiles, but your tileset contains {2}.", J2File.FullVersionNames[J2T.VersionType], J2T.MaxTiles, (image.Height / 32 * 10)), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        break;
+                    case BuildResults.MaskNeedsPaletteFor32BitImages:
+                        MessageBox.Show("When building a 24- or 32-bit color tileset, the mask image must define the tileset's palette, using 8-bit color with no transparency (color 0 is used for transparency instead).", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         break;
                     case BuildResults.Success:
                         string fullFilePath = Path.Combine(Directory.GetParent(TileDirectory).ToString(), record.SubItems[1].Text);
