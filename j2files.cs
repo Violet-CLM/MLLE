@@ -560,8 +560,16 @@ class J2TFile : J2File
             for (int i = 0; i < 2; ++i)
             {
                 var data = bothBmps[i].LockBits(new Rectangle(0, 0, bothBmps[i].Width, bothBmps[i].Height), ImageLockMode.ReadOnly, bothBmps[i].PixelFormat);
+                int width = bothBmps[i].Width;
+                if (i == 0)
+                {
+                    if (bothBmps[i].PixelFormat == PixelFormat.Format24bppRgb)
+                        width *= 3;
+                    else if (plusOnlyTileset) //not 8-bit
+                        width *= 4;
+                }
                 for (int y = 0; y < bothBmps[i].Height; ++y)
-                    Marshal.Copy(new IntPtr((int)data.Scan0 + data.Stride * y), bothIndices[i], bothBmps[i].Width * y, bothBmps[i].Width);
+                    Marshal.Copy(new IntPtr((int)data.Scan0 + data.Stride * y), bothIndices[i], width * y, width);
                 bothBmps[i].UnlockBits(data);
             }
 
@@ -588,16 +596,16 @@ class J2TFile : J2File
                                 break;
                             case PixelFormat.Format32bppArgb:
                                 sourceIndex <<= 2;
-                                for (int ch = 0; ch < 4; ++ch)
-                                    imageArray[tileIndex | ch] = imageIndices[sourceIndex | ch];
-                                pixelIsFullyOpaque = imageIndices[sourceIndex + 3] == 255; //RGBA
+                                for (int ch = 0; ch < 3; ++ch)
+                                    imageArray[tileIndex | (2 - ch)] = imageIndices[sourceIndex | ch]; //reverse BGR to RGB
+                                pixelIsFullyOpaque = (imageArray[tileIndex | 3] = imageIndices[sourceIndex | 3]) == 255; //...A
                                 break;
                             case PixelFormat.Format32bppRgb:
                             case PixelFormat.Format24bppRgb:
                                 sourceIndex *= (image.PixelFormat == PixelFormat.Format24bppRgb) ? 3 : 4;
                                 for (int ch = 0; ch < 3; ++ch)
                                     imageArray[tileIndex | ch] = imageIndices[sourceIndex | ch];
-                                pixelIsFullyOpaque = (imageIndices[sourceIndex + 0] | imageIndices[sourceIndex + 1] | imageIndices[sourceIndex + 0]) != 0; //at least one non-0 channel
+                                pixelIsFullyOpaque = (imageIndices[sourceIndex + 0] | imageIndices[sourceIndex + 1] | imageIndices[sourceIndex + 2]) != 0; //at least one non-0 channel
                                 imageArray[tileIndex | 3] = (byte)(pixelIsFullyOpaque ? 255 : 0); //transparent is color 0,0,0
                                 break;
                         }
