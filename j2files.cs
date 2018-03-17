@@ -10,7 +10,7 @@ using Ionic.Zlib;
 using Ionic.Crc;
 using Extra.Collections;
 
-public enum Version { JJ2, TSF, O, GorH, BC, AGA, AmbiguousBCO };
+public enum Version { JJ2, TSF, O, GorH, BC, AGA, AmbiguousBCO, Plus };
 public enum VersionChangeResults { Success, TilesetTooBig, TooManyAnimatedTiles, UnsupportedConversion };
 public enum SavingResults { Success, UndefinedTiles, NoTilesetSelected, TilesetIsDifferentVersion, Error };
 public enum OpeningResults { Success, SuccessfulButAmbiguous, PasswordNeeded, WrongPassword, UnexpectedFourCC, IncorrectEncoding, SecurityEnvelopeDamaged, Error };
@@ -36,6 +36,7 @@ abstract class J2File //The fields shared by .j2l and .j2t files. No methods/int
             {
                 case Version.AGA:
                 case Version.TSF:
+                case Version.Plus:
                     return 4096;
                 default:
                     return 1024;
@@ -149,13 +150,15 @@ class J2TFile : J2File
             Crc32 = binreader.ReadInt32();
             for (byte i = 0; i < 4; i++)
             {
+                if (i == 2 && VersionNumber == 0x300) //plus sets have no transparency instructions
+                    continue;
                 CompressedDataLength[i] = binreader.ReadInt32();
                 UncompressedDataLength[i] = binreader.ReadInt32();
             }
             #region setup version-specific sizes
             switch (VersionNumber)
             {
-                case 512:
+                case 0x200:
                     if (UncompressedDataLength[0] == 107524)
                     {
                         VersionType = Version.AGA;
@@ -169,8 +172,11 @@ class J2TFile : J2File
                         VersionType = Version.JJ2;
                     }
                     break;
-                case 513:
+                case 0x201:
                     VersionType = Version.TSF;
+                    break;
+                case 0x300:
+                    VersionType = Version.Plus;
                     break;
             }
             IsFullyOpaque = new bool[MaxTiles];
@@ -182,10 +188,17 @@ class J2TFile : J2File
             //unknown3 = new uint[MaxTiles];
             MaskAddress = new uint[MaxTiles];
             //FlippedMaskAddress = new uint[MaxTiles];
-            TransparencyMaskJCS_Style = new byte[MaxTiles][];
-            TransparencyMaskJJ2_Style = new byte[MaxTiles][];
+            if (VersionType != Version.Plus)
+            {
+                TransparencyMaskJCS_Style = new byte[MaxTiles][];
+                TransparencyMaskJJ2_Style = new byte[MaxTiles][];
+            }
             #endregion setup version-specific sizes
-            for (byte i = 0; i < 4; i++) UncompressedData[i] = new MemoryStream(ZlibStream.UncompressBuffer(binreader.ReadBytes(CompressedDataLength[i])));
+            for (byte i = 0; i < 4; i++)
+                if (i == 2 && VersionType == Version.Plus)
+                    continue;
+                else
+                    UncompressedData[i] = new MemoryStream(ZlibStream.UncompressBuffer(binreader.ReadBytes(CompressedDataLength[i])));
             #endregion header
             #region data1
             BinaryReader data1reader = new BinaryReader(UncompressedData[0], encoding);
@@ -193,38 +206,45 @@ class J2TFile : J2File
             TileCount = TotalNumberOfTiles = data1reader.ReadUInt32();
             for (short i = 0; i < MaxTiles; i++) IsFullyOpaque[i] = data1reader.ReadBoolean();
             data1reader.BaseStream.Seek(MaxTiles * sizeof(byte), SeekOrigin.Current); // for(short i = 0; i < MaxTiles; i++) unknown1[i] = data1reader.ReadByte();
-            for (short i = 0; i < MaxTiles; i++) ImageAddress[i] = data1reader.ReadUInt32() / 1024;
+            int imageByteLength = (VersionType != Version.Plus) ? 1024 : 4096;
+            for (short i = 0; i < MaxTiles; i++) ImageAddress[i] = data1reader.ReadUInt32() / (uint)imageByteLength;
             data1reader.BaseStream.Seek(MaxTiles * sizeof(UInt32), SeekOrigin.Current); // for (short i = 0; i < MaxTiles; i++) unknown2[i] = data1reader.ReadUInt32();
-            for (short i = 0; i < MaxTiles; i++) TransparencyMaskAddress[i] = data1reader.ReadUInt32();
-            data1reader.BaseStream.Seek(MaxTiles * sizeof(UInt32), SeekOrigin.Current); // for (short i = 0; i < MaxTiles; i++) unknown3[i] = data1reader.ReadUInt32();
+            if (VersionType != Version.Plus)
+            {
+                for (short i = 0; i < MaxTiles; i++) TransparencyMaskAddress[i] = data1reader.ReadUInt32();
+                data1reader.BaseStream.Seek(MaxTiles * sizeof(UInt32), SeekOrigin.Current); // for (short i = 0; i < MaxTiles; i++) unknown3[i] = data1reader.ReadUInt32();
+            }
             for (short i = 0; i < MaxTiles; i++) MaskAddress[i] = data1reader.ReadUInt32() / 128;
             data1reader.BaseStream.Seek(MaxTiles * sizeof(UInt32), SeekOrigin.Current); // for (short i = 0; i < MaxTiles; i++) FlippedMaskAddress[i] = data1reader.ReadUInt32() / 128;
             #endregion data1
             #region data2
             BinaryReader data2reader = new BinaryReader(UncompressedData[1], encoding);
-            Images = new byte[UncompressedDataLength[1] / 1024][];
-            for (short i = 0; i < UncompressedDataLength[1] / 1024; i++) Images[i] = data2reader.ReadBytes(1024);
+            Images = new byte[UncompressedDataLength[1] / imageByteLength][];
+            for (short i = 0; i < UncompressedDataLength[1] / imageByteLength; i++) Images[i] = data2reader.ReadBytes(imageByteLength);
             #endregion
             #region data3
-            BinaryReader data3reader = new BinaryReader(UncompressedData[2], encoding);
-            uint data3Pointer = 0;
-            while (data3Pointer < UncompressedDataLength[2])
+            if (VersionType != Version.Plus)
             {
-                TransparencyMaskOffset[data3Counter] = data3Pointer;
-                TransparencyMaskJCS_Style[data3Counter] = Convert128BitsToByteMask(data3reader.ReadBytes(128)); data3Pointer += 128;
-                TransparencyMaskJJ2_Style[data3Counter] = new byte[1024];// for (ushort i = 0; i < 1024; i++) tmasksjj2[data3counter][i] = 0;
-                for (int row = 0; row < 32; row++)
+                BinaryReader data3reader = new BinaryReader(UncompressedData[2], encoding);
+                uint data3Pointer = 0;
+                while (data3Pointer < UncompressedDataLength[2])
                 {
-                    int data3Skip = row * 32;
-                    int data3BlockNumber = data3reader.ReadByte(); data3Pointer++;
-                    for (int i = 0; i < data3BlockNumber; i++)
+                    TransparencyMaskOffset[data3Counter] = data3Pointer;
+                    TransparencyMaskJCS_Style[data3Counter] = Convert128BitsToByteMask(data3reader.ReadBytes(128)); data3Pointer += 128;
+                    TransparencyMaskJJ2_Style[data3Counter] = new byte[1024];// for (ushort i = 0; i < 1024; i++) tmasksjj2[data3counter][i] = 0;
+                    for (int row = 0; row < 32; row++)
                     {
-                        data3Skip += data3reader.ReadByte(); data3Pointer++;
-                        int data3BlockNumber2 = data3Skip + data3reader.ReadByte(); data3Pointer++;
-                        for (; data3Skip < data3BlockNumber2; data3Skip++) TransparencyMaskJJ2_Style[data3Counter][data3Skip] = 1;
+                        int data3Skip = row * 32;
+                        int data3BlockNumber = data3reader.ReadByte(); data3Pointer++;
+                        for (int i = 0; i < data3BlockNumber; i++)
+                        {
+                            data3Skip += data3reader.ReadByte(); data3Pointer++;
+                            int data3BlockNumber2 = data3Skip + data3reader.ReadByte(); data3Pointer++;
+                            for (; data3Skip < data3BlockNumber2; data3Skip++) TransparencyMaskJJ2_Style[data3Counter][data3Skip] = 1;
+                        }
                     }
+                    data3Counter++;
                 }
-                data3Counter++;
             }
             #endregion data3
             #region data4
@@ -1931,7 +1951,7 @@ class J2LFile : J2File
         {
             return SavingResults.NoTilesetSelected;
         }
-        if (!allowDifferentTilesetVersion && Tilesets[0].VersionType != VersionType && !((VersionType == Version.GorH) || ((VersionType == Version.BC || VersionType == Version.O) && Tilesets[0].VersionType == Version.AmbiguousBCO) || (VersionType == Version.TSF && Tilesets[0].VersionType == Version.JJ2)))
+        if (!allowDifferentTilesetVersion && Tilesets[0].VersionType != VersionType && !((VersionType == Version.GorH) || ((VersionType == Version.BC || VersionType == Version.O) && Tilesets[0].VersionType == Version.AmbiguousBCO) || (VersionType == Version.TSF && Tilesets[0].VersionType == Version.JJ2) || (Tilesets[0].VersionType == Version.Plus && (VersionType == Version.TSF || VersionType == Version.JJ2))))
         {
             return SavingResults.TilesetIsDifferentVersion;
         }
@@ -2597,7 +2617,7 @@ class J2LFile : J2File
         if (avoidRedundancy && Path.GetFileName(filename) == MainTilesetFilename) return VersionChangeResults.Success;
         J2TFile tryout = new J2TFile(Path.Combine((defaultDirectories == null) ? Path.GetDirectoryName(filename) : defaultDirectories[VersionType], filename));         
         //J2TFile tryout = new J2TFile(filename);
-        if (VersionType == tryout.VersionType || (tryout.VersionType == Version.AmbiguousBCO && (VersionType == Version.BC || VersionType == Version.O)) || (VersionType == Version.GorH && tryout.TotalNumberOfTiles <= 1020) || (VersionType == Version.TSF && tryout.VersionType == Version.JJ2))
+        if (VersionType == tryout.VersionType || (tryout.VersionType == Version.AmbiguousBCO && (VersionType == Version.BC || VersionType == Version.O)) || (VersionType == Version.GorH && tryout.TotalNumberOfTiles <= 1020) || (VersionType == Version.TSF && tryout.VersionType == Version.JJ2) || (tryout.VersionType == Version.Plus && (VersionType == Version.TSF || VersionType == Version.JJ2)))
         {
             int numberOfTilesBesidesThoseOfTheFirstTileset = NumberOfAnimations;
             if (Tilesets.Count > 1)
