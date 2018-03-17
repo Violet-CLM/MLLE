@@ -78,15 +78,15 @@ class TexturedJ2L : J2LFile
         {Version.AGA, null },
         {Version.GorH, null },
         };
-    static Color CommonTransparencyTransformation(byte[] pixel, byte tileType)
+    static Color CommonTransparencyTransformation(byte[] pixel, byte tileType, byte alpha)
     {
-        return Color.FromArgb((tileType != 1) ? byte.MaxValue : 192, pixel[0], pixel[1], pixel[2]);
+        return Color.FromArgb((tileType != 1) ? alpha : alpha * 3 / 4, pixel[0], pixel[1], pixel[2]);
     }
-    static Color ghTransparencyTransformation(byte[] pixel, byte tileType)
+    static Color ghTransparencyTransformation(byte[] pixel, byte tileType, byte alpha)
     {
-        return Color.FromArgb((tileType < 1 || tileType > 3) ? byte.MaxValue : 192, pixel[0], pixel[1], pixel[2]);
+        return Color.FromArgb((tileType < 1 || tileType > 3) ? alpha : alpha * 3 / 4, pixel[0], pixel[1], pixel[2]);
     }
-    static Color plusTransparencyTransformation(byte[] pixel, byte tileType)
+    static Color plusTransparencyTransformation(byte[] pixel, byte tileType, byte alpha)
     {
         if (tileType == 3) //invisible
             return Color.FromArgb(0, pixel[0], pixel[1], pixel[2]);
@@ -95,11 +95,11 @@ class TexturedJ2L : J2LFile
         if (tileType == 6)
         { //frozen
             int brightness = (7499 * pixel[2] + pixel[0] + 2 * (pixel[0] + 2 * (pixel[0] + 288 * 17 * pixel[0])) + 38446 * pixel[1]) >> 16;
-            return Color.FromArgb(128, brightness >> 1, Math.Min(32 + (brightness << 1), byte.MaxValue), Math.Min(brightness * brightness + 32, byte.MaxValue));
+            return Color.FromArgb(alpha / 2, brightness >> 1, Math.Min(32 + (brightness << 1), byte.MaxValue), Math.Min(brightness * brightness + 32, byte.MaxValue));
         }
-        return CommonTransparencyTransformation(pixel, tileType);
+        return CommonTransparencyTransformation(pixel, tileType, alpha);
     }
-    static Dictionary<Version, Func<byte[], byte, Color>> TileTypeColorTransformations = new Dictionary<Version, Func<byte[], byte, Color>> {
+    static Dictionary<Version, Func<byte[], byte, byte, Color>> TileTypeColorTransformations = new Dictionary<Version, Func<byte[], byte, byte, Color>> {
         {Version.BC, CommonTransparencyTransformation},
         {Version.O, CommonTransparencyTransformation},
         {Version.JJ2, plusTransparencyTransformation},
@@ -187,7 +187,7 @@ class TexturedJ2L : J2LFile
                 if (tileTrans != null) //8-bit
                 {
                     bool transparentPixel = tileTrans[j / 4] == 0;
-                    color = !transparentPixel ? Palette.Convert(transformation(palette[colorRemapping[tile[j / 4]]], TileTypes[tileInLevelID]), true) : usedColor;
+                    color = !transparentPixel ? Palette.Convert(transformation(palette[colorRemapping[tile[j / 4]]], TileTypes[tileInLevelID], byte.MaxValue), true) : usedColor;
                     if (transparentPixel)
                         color[3] = 0;
                 }
@@ -200,11 +200,12 @@ class TexturedJ2L : J2LFile
                         color = new byte[4];
                         for (uint k = 0; k < 4; ++k)
                             color[k] = tile[j + k];
+                        color = Palette.Convert(transformation(color, TileTypes[tileInLevelID], color[3]), true);
                     }
                 }
-                for (byte k = 0; k < 4; k++)
+                int atlasDrawingLocation = tileInLevelID % AtlasLength * 128 + tileInLevelID / AtlasLength * AtlasLength * 4096 + j % 128 + j / 128 * AtlasLength * 128;
+                for (byte k = 0; k < 4; k++, ++atlasDrawingLocation)
                 {
-                    int atlasDrawingLocation = tileInLevelID % AtlasLength * 128 + tileInLevelID / AtlasLength * AtlasLength * 4096 + j % 128 + j / 128 * AtlasLength * 128 + k;
                     workingAtlases[0][atlasDrawingLocation] = color[k];
                     if (includeMasks)
                         workingAtlases[1][atlasDrawingLocation] = (k == 3) ? (mask[j / 4] == 1) ? (byte)196 : (byte)0 : (mask[j / 4] == 1) ? (byte)0 : usedColor[k];
@@ -247,7 +248,7 @@ class TexturedJ2L : J2LFile
                     {
                         int startingIndex = (x + y * 32) * 4;
                         byte alpha = src[startingIndex + 3];
-                        bmp.SetPixel(x, y, alpha != 0 ? Color.FromArgb(alpha, src[startingIndex + 0], src[startingIndex + 1], src[startingIndex + 2]) : transparentColor);
+                        bmp.SetPixel(x, y, alpha != 0 ? transformation(new byte[] { src[startingIndex + 0], src[startingIndex + 1], src[startingIndex + 2] }, TileTypes[tileInLevelID], alpha) : transparentColor);
                     }
             } else if (J2T == null) { //tileset's normal 8-bit image
                 byte[] tileTrans = J2T.TransparencyMaskJJ2_Style[Array.BinarySearch(J2T.TransparencyMaskOffset, 0, (int)J2T.data3Counter, J2T.TransparencyMaskAddress[tileInTilesetID])];
@@ -257,14 +258,14 @@ class TexturedJ2L : J2LFile
                         if (tileTrans[x + y * 32] == 0)
                             bmp.SetPixel(x, y, transparentColor);
                         else
-                            bmp.SetPixel(x, y, transformation(palette[colorRemapping[src[x + y * 32]]], TileTypes[tileInLevelID]));
+                            bmp.SetPixel(x, y, transformation(palette[colorRemapping[src[x + y * 32]]], TileTypes[tileInLevelID], byte.MaxValue));
             } else { //for angelscript-edited tile images, there is no distinction between image and transparency
                 for (int x = 0; x < 32; x++)
                     for (int y = 0; y < 32; y++)
                         if (src[x + y * 32] == 0)
                             bmp.SetPixel(x, y, transparentColor);
                         else
-                            bmp.SetPixel(x, y, transformation(palette[src[x + y * 32]], TileTypes[tileInLevelID]));
+                            bmp.SetPixel(x, y, transformation(palette[src[x + y * 32]], TileTypes[tileInLevelID], byte.MaxValue));
             }
             System.Drawing.Imaging.BitmapData data = bmp.LockBits(new Rectangle(0, 0, 32, 32), System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
             GL.TexSubImage2D(TextureTarget.Texture2D, 0, (int)tileInLevelID % AtlasLength * 32, (int)tileInLevelID / AtlasLength * 32, 32, 32, PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
