@@ -935,28 +935,36 @@ namespace MLLE
         private void saveAsImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _suspendEvent.Reset();
-            byte OriginalTileSize = ZoomTileSize;
-            LDScrollH.Value = LDScrollV.Value = 0;
-            Zoom((byte)(Math.Min(32, 4096 / Math.Max(J2L.SpriteLayer.Width, J2L.SpriteLayer.Height)/4*4)));
-            LevelDisplay.Width = (int)J2L.SpriteLayer.Width * ZoomTileSize + LDScrollH.Location.X;
-            LevelDisplay.Height = (int)J2L.SpriteLayer.Height * ZoomTileSize + LDScrollH.Height;
-            SafeToDisplay = false;
-            ChangeLayerByDefaultLayerID(J2LFile.SpriteLayerID);
-            SafeToDisplay = true;
-            LevelDisplay.Refresh();
-            LevelDisplay.Refresh();
-            using (Bitmap bmp = new Bitmap(LevelDisplay.Width - LDScrollH.Location.X, LevelDisplay.Height - LDScrollH.Height))
+
+            var levelImageSaveDialog = new SaveFileDialog();
+            levelImageSaveDialog.DefaultExt = "png";
+            levelImageSaveDialog.Filter = "Portable Network Graphics|*.png";
+            levelImageSaveDialog.FileName = Path.ChangeExtension(J2L.FilenameOnly, "png");
+            if (levelImageSaveDialog.ShowDialog() == DialogResult.OK)
             {
-                System.Drawing.Imaging.BitmapData data =
-                    bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), System.Drawing.Imaging.ImageLockMode.WriteOnly, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
-                GL.ReadPixels(LDScrollH.Location.X, LDScrollH.Height, LevelDisplay.Width - LDScrollH.Location.X, LevelDisplay.Height - LDScrollH.Height, PixelFormat.Bgr, PixelType.UnsignedByte, data.Scan0);
-                bmp.UnlockBits(data);
-                bmp.RotateFlip(RotateFlipType.RotateNoneFlipY);
-                bmp.Save(Path.ChangeExtension(J2L.FilenameOnly, "png"), System.Drawing.Imaging.ImageFormat.Png);
+                byte OriginalTileSize = ZoomTileSize;
+                LDScrollH.Value = LDScrollV.Value = 0;
+                Zoom((byte)(Math.Min(32, 4096 / Math.Max(J2L.SpriteLayer.Width, J2L.SpriteLayer.Height) / 4 * 4)));
+                LevelDisplay.Width = (int)J2L.SpriteLayer.Width * ZoomTileSize + LDScrollH.Location.X;
+                LevelDisplay.Height = (int)J2L.SpriteLayer.Height * ZoomTileSize + LDScrollH.Height;
+                SafeToDisplay = false;
+                ChangeLayerByDefaultLayerID(J2LFile.SpriteLayerID);
+                SafeToDisplay = true;
+                LevelDisplay.Refresh();
+                LevelDisplay.Refresh();
+                using (Bitmap bmp = new Bitmap(LevelDisplay.Width - LDScrollH.Location.X, LevelDisplay.Height - LDScrollH.Height))
+                {
+                    System.Drawing.Imaging.BitmapData data =
+                        bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), System.Drawing.Imaging.ImageLockMode.WriteOnly, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
+                    GL.ReadPixels(LDScrollH.Location.X, LDScrollH.Height, LevelDisplay.Width - LDScrollH.Location.X, LevelDisplay.Height - LDScrollH.Height, PixelFormat.Bgr, PixelType.UnsignedByte, data.Scan0);
+                    bmp.UnlockBits(data);
+                    bmp.RotateFlip(RotateFlipType.RotateNoneFlipY);
+                    bmp.Save(Path.ChangeExtension(levelImageSaveDialog.FileName, "png"), System.Drawing.Imaging.ImageFormat.Png);
+                }
+                LevelDisplay.Width = Width - LDScrollV.Width;
+                LevelDisplay.Height = LDScrollV.Height + LDScrollH.Height;
+                Zoom(OriginalTileSize);
             }
-            LevelDisplay.Width = Width - LDScrollV.Width;
-            LevelDisplay.Height = LDScrollV.Height + LDScrollH.Height;
-            Zoom(OriginalTileSize);
             _suspendEvent.Set();
         } // this doesn't work right now
 
