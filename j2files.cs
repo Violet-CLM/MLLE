@@ -1252,16 +1252,21 @@ class J2LFile : J2File
     internal AGAEvent[,] AGA_EventMap;
 
     internal MLLE.PlusPropertyList PlusPropertyList = new MLLE.PlusPropertyList(null);
-    internal bool PlusOnly { get
+    internal bool ContainsVerticallyFlippedTiles { get
         {
-            if (Tilesets.Count > 1 || !AllLayers.SequenceEqual(DefaultLayers) || PlusPropertyList.LevelNeedsData5)
-                return true;
             if (DefaultLayers.FirstOrDefault(layer => (layer.PlusOnly || layer.ContainsVerticallyFlippedTiles)) != null)
                 return true;
             foreach (AnimatedTile CurrentAnimatedTile in Animations)
                 foreach (ushort tileID in CurrentAnimatedTile.Sequence)
                     if ((tileID & 0x2000) != 0) //flipped vertically
                         return true;
+            return false;
+        }
+    }
+    internal bool LevelNeedsData5 { get
+        {
+            if (Tilesets.Count > 1 || !AllLayers.SequenceEqual(DefaultLayers) || PlusPropertyList.LevelNeedsData5)
+                return true;
             return false;
         }
     }

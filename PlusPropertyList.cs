@@ -396,6 +396,7 @@ namespace MLLE
         {
             get
             {
+                var comparableBlack = Color.Black.ToArgb();
                 if (
                     IsSnowing ||
                     IsSnowingOutdoorsOnly ||
@@ -404,14 +405,14 @@ namespace MLLE
                     !WarpsTransmuteCoins ||
                     DelayGeneratedCrateOrigins ||
                     Echo != 0 ||
-                    DarknessColor != Color.Black ||
+                    DarknessColor.ToArgb() != comparableBlack ||
                     WaterChangeSpeed != 1 ||
                     WaterInteraction != WaterInteractionEnum.PositionBased ||
                     WaterLayer != 1 ||
                     WaterLighting != WaterLightingEnum.None ||
                     WaterLevel != DefaultWaterLevel ||
-                    WaterGradientStart != Color.Black ||
-                    WaterGradientStop != Color.Black ||
+                    WaterGradientStart.ToArgb() != comparableBlack ||
+                    WaterGradientStop.ToArgb() != comparableBlack ||
                     Palette != null ||
                     ColorRemappings.FirstOrDefault(it => it != null) != null ||
                     TileImages.FirstOrDefault(it => it != null) != null ||

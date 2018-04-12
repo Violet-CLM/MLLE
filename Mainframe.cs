@@ -1241,7 +1241,7 @@ namespace MLLE
         internal void ChangeVersion(Version nuversion)
         {
             _suspendEvent.Reset();
-            if (!VersionIsPlusCompatible(nuversion) && J2L.PlusOnly)
+            if (!VersionIsPlusCompatible(nuversion) && (J2L.LevelNeedsData5 || J2L.ContainsVerticallyFlippedTiles))
                 MessageBox.Show("This level uses one or more features exclusive to JJ2+ and cannot be changed to a version that JJ2+ does not support.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             else
             {
@@ -1588,7 +1588,7 @@ namespace MLLE
             J2L.JCSVerticalFocus = (ushort)LDScrollV.Value;
 
             byte[] Data5 = null;
-            if (EnableableBools[J2L.VersionType][EnableableTitles.BoolDevelopingForPlus] && J2L.PlusOnly)
+            if (EnableableBools[J2L.VersionType][EnableableTitles.BoolDevelopingForPlus] && J2L.LevelNeedsData5)
                 J2L.PlusPropertyList.CreateData5Section(ref Data5, J2L.Tilesets, J2L.AllLayers);
 
             SavingResults result = J2L.Save(filename, eraseUndefinedTiles, allowDifferentTilesetVersion, storeGivenFilename, Data5);
