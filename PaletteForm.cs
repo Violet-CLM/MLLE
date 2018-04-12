@@ -26,6 +26,8 @@ namespace MLLE
                 PaletteImage.ColorDisabled[i] = PaletteImage.ColorDisabled[Palette.PaletteSize - 10 + i] = true; //transparency, and default windows colors
             PaletteImage.Location = new Point(12, OKButton.Location.Y);
             PaletteImage.Palette = InitialPalette;
+            PaletteImage.MouseMove += PaletteImageMouseMove;
+            PaletteImage.MouseLeave += PaletteImageMouseLeave;
             Controls.Add(PaletteImage);
 
             ShowDialog();
@@ -138,6 +140,17 @@ namespace MLLE
         private void toolsToolStripMenuItem_DropDownClosed(object sender, EventArgs e)
         {
             gradientToolStripMenuItem.Enabled = true; //so that Ctrl+G is always available
+        }
+        private void PaletteImageMouseMove(object sender, MouseEventArgs e)
+        {
+            if (!(sender as Control).ClientRectangle.Contains(e.Location))
+                return;
+            Text = "Level Palette \u2013 " + PaletteImage.getSelectedColor(e);
+        }
+        
+        private void PaletteImageMouseLeave(object sender, EventArgs e)
+        {
+            Text = "Level Palette";
         }
     }
 }
