@@ -1108,7 +1108,7 @@ namespace MLLE
         private void textStringsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _suspendEvent.Reset();
-            TextEdit TE = new TextEdit(J2L.Text);
+            TextEdit TE = new TextEdit(J2L.Text, J2L.VersionType != Version.AGA, VersionIsPlusCompatible(J2L.VersionType));
             TE.ShowDialog();
             if (TE.result == DialogResult.OK) { J2L.Text = TE.workTexts; LevelHasBeenModified = true; }
             _suspendEvent.Set();
