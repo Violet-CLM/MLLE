@@ -36,6 +36,7 @@ namespace MLLE
         TextBox[] ParamTextboxes;
         Dictionary<ComboBox, List<ComboBox>> CombosPointingToCombos;
         bool SafeToCalculate = false, SafeToCacheOldParameters = false;
+        static List<UInt32> LastUsedEvents = new List<UInt32>(0);
         public EventForm(Mainframe parent, TreeNode[] nodes, Version theVersion, AGAEvent inputevent)
         {
             WorkingEvent = inputevent;
@@ -56,8 +57,24 @@ namespace MLLE
             }
             else textBox1.Dispose();
             CombosPointingToCombos = new Dictionary<ComboBox, List<ComboBox>> { { comboBox1, new List<ComboBox>() } };
+            Tree.Nodes.Add("0", "(none)"); //always present
             Tree.Nodes.AddRange(nodes);
             Tree.Sort();
+            if (version != Version.AGA)
+            {
+                Tree.Sorted = false; //add new things freely in arbitary orders
+                if (LastUsedEvents.Count > 0)
+                {
+                    var recentNodes = new TreeNode("[Recent]");
+                    foreach (UInt32 lastEvent in LastUsedEvents)
+                    {
+                        var node = new TreeNode(SourceForm.NameEvent(lastEvent, "(unknown)"));
+                        node.Tag = lastEvent;
+                        recentNodes.Nodes.Add(node);
+                    }
+                    Tree.Nodes.Add(recentNodes);
+                }
+            }
         }
 
         void SetTextOfAndPossiblyCreateLabel(byte id, string text)
@@ -185,7 +202,7 @@ namespace MLLE
             ModeSelect.SelectedIndex = (int)J2LFile.GetRawBits(WorkingEvent.ID, 8, 2);
             Illuminate.Checked = (WorkingEvent.ID & 1024) == 1024;
             int[] parmvalues = Mainframe.ExtractParameterValues(WorkingEvent.ID, CurrentEvent);
-            for (byte i = 0; i < MostParametersSeenThusFar; i++) LastParameterValues[i] = parmvalues[i];
+            for (byte i = 0; i < 6; i++) LastParameterValues[i] = parmvalues[i];
             if (CurrentEventID == SourceForm.GeneratorEventID) { SetupEvent(); Generator.Checked = true; Findit((byte)parmvalues[0]); }
             else Findit(CurrentEventID);
         }
@@ -214,8 +231,15 @@ namespace MLLE
                 }
                 else
                 {
-                    CurrentEventID = Convert.ToByte(Tree.SelectedNode.Name);
-                    SetupEvent();
+                    try //regular event
+                    {
+                        CurrentEventID = Convert.ToByte(Tree.SelectedNode.Name);
+                        SetupEvent();
+                    }
+                    catch //[Recent] event
+                    {
+                        useNewArbitaryEvent(Convert.ToUInt32(Tree.SelectedNode.Tag));
+                    }
                 }
             }
         }
@@ -462,7 +486,18 @@ namespace MLLE
                 }
                 SourceForm.SelectReturnAGAEvent = WorkingEvent;
             }
-            else SourceForm.SelectReturnAGAEvent = new AGAEvent(CalculateOutputEvent());
+            else
+            {
+                var outputEvent = CalculateOutputEvent();
+                if (outputEvent != 0)
+                { //not a strictly necessary check, I guess, but it feels a little silly keeping track of event 0
+                    while (LastUsedEvents.Remove(outputEvent)) { } //no duplicates
+                    LastUsedEvents.Insert(0, outputEvent);
+                    while (LastUsedEvents.Count > 10)
+                        LastUsedEvents.RemoveAt(10);
+                }
+                SourceForm.SelectReturnAGAEvent = new AGAEvent(outputEvent);
+            }
             Close();
         }
 
@@ -551,7 +586,11 @@ namespace MLLE
 
         private void Bitfield_MouseClick(object sender, MouseEventArgs e)
         {
-            uint newEvent = (WorkingEvent.ID ^= (0x80000000u >> ((e.X - 3) / 6)));
+            useNewArbitaryEvent(WorkingEvent.ID ^ (0x80000000u >> ((e.X - 3) / 6)));
+        }
+        private void useNewArbitaryEvent(uint newEvent)
+        {
+            WorkingEvent.ID = newEvent;
             CurrentEventID = (byte)(WorkingEvent.ID & 255);
             CurrentEvent = TexturedJ2L.IniEventListing[SourceForm.J2L.VersionType][CurrentEventID];
             SafeToCacheOldParameters = false;

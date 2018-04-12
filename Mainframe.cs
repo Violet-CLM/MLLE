@@ -2607,17 +2607,19 @@ namespace MLLE
         {
             OldMouseTile = MouseTile;
             MouseTilePrintout.Text = String.Format("({0}, {1})", MouseTileX, MouseTileY);
-            MouseEventPrintout.Text =
-                (TexturedJ2L.IniEventListing[J2L.VersionType][MouseAGAEvent.ID & 255][0] ?? "") +
-                (
-                    (TexturedJ2L.IniEventListing[J2L.VersionType][MouseAGAEvent.ID & 255].Length > 5 && J2L.VersionType != Version.AGA) ?
-                        " (" + String.Join(
+            MouseEventPrintout.Text = NameEvent(MouseAGAEvent.ID, "");
+        }
+        public string NameEvent(uint ID, string defaultName) {
+            string[] eventEntryInINI = TexturedJ2L.IniEventListing[J2L.VersionType][ID & 255];
+            string name = eventEntryInINI[0] ?? defaultName;
+            if (J2L.VersionType != Version.AGA && eventEntryInINI.Length > 5)
+            {
+                name += " (" + String.Join(
                             ", ",
-                            PresentParameterValues(MouseAGAEvent.ID, TexturedJ2L.IniEventListing[J2L.VersionType][MouseAGAEvent.ID & 255])
-                        ) + ")" :
-                        ""
-                )
-            ;
+                            PresentParameterValues(ID, eventEntryInINI)
+                        ) + ")";
+            }
+            return name;
         }
         string[] PresentParameterValues(uint rawEvent, string[] iniEntry)
         {
