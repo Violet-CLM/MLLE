@@ -1083,10 +1083,11 @@ class AnimatedTile
     }
     public void Advance(int frame, int random=0)
     {
-        if (frame * Speed / 70 > hitherto)
+        int newTime = frame * Speed / 70;
+        if (newTime > hitherto)
         {
             if (FrameCount>0) FrameList.Dequeue();
-            hitherto++;
+            hitherto = newTime;
         }
         if (FrameList.Count() == 0) GenerateFrameList(random);
     }
