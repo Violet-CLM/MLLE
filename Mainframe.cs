@@ -113,6 +113,7 @@ namespace MLLE
         ParallaxMode ParallaxDisplayMode;
         internal byte ParallaxEventDisplayType = 0;
         internal bool AllowExtraZooming = false;
+        private bool PreviewHelpStringColors = true;
         internal uint PlusTriggerZone = 0;
 
         private bool levelHasBeenModified = false;
@@ -422,6 +423,7 @@ namespace MLLE
             catch { SubtractSelectionKey = Keys.Control; }
             ParallaxEventDisplayType = (Settings.IniReadValue("Miscellaneous", "EventParallaxMode") == "0") ? (byte)0 : (byte)1; eventsForemostToolStripMenuItem.Checked = ParallaxEventDisplayType == 1;
             AllowExtraZooming = (Settings.IniReadValue("Miscellaneous", "ZoomingAbove100") == "1"); zoomingAbove100ToolStripMenuItem.Checked = Zoom200.Enabled = Zoom400.Enabled = AllowExtraZooming;
+            PreviewHelpStringColors = (Settings.IniReadValue("Miscellaneous", "PreviewHelpStringColors") != "0"); previewHelpStringColorsToolStripMenuItem.Checked = PreviewHelpStringColors;
 
             for (int i = 0; i < RecolorableSpriteNames.Length; ++i)
             {
@@ -918,6 +920,10 @@ namespace MLLE
             if (!AllowExtraZooming && ZoomTileSize > 32)
                 Zoom(32);
         }
+        private void previewHelpStringColorsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Settings.IniWriteValue("Miscellaneous", "PreviewHelpStringColors", (PreviewHelpStringColors = previewHelpStringColorsToolStripMenuItem.Checked) ? "1" : "0");
+        }
 
         private void DrawingToolButton_Click(object sender, EventArgs e)
         {
@@ -1108,7 +1114,7 @@ namespace MLLE
         private void textStringsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _suspendEvent.Reset();
-            TextEdit TE = new TextEdit(J2L.Text, J2L.VersionType != Version.AGA, VersionIsPlusCompatible(J2L.VersionType));
+            TextEdit TE = new TextEdit(J2L.Text, PreviewHelpStringColors && J2L.VersionType != Version.AGA, VersionIsPlusCompatible(J2L.VersionType));
             TE.ShowDialog();
             if (TE.result == DialogResult.OK) { J2L.Text = TE.workTexts; LevelHasBeenModified = true; }
             _suspendEvent.Set();

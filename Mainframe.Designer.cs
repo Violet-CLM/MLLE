@@ -78,6 +78,7 @@
             this.preferencesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.eventsForemostToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.zoomingAbove100ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.previewHelpStringColorsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator19 = new System.Windows.Forms.ToolStripSeparator();
             this.setTransparentColorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.setTile0ColorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -569,6 +570,7 @@
             this.preferencesToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.eventsForemostToolStripMenuItem,
             this.zoomingAbove100ToolStripMenuItem,
+            this.previewHelpStringColorsToolStripMenuItem,
             this.toolStripSeparator19,
             this.setTransparentColorToolStripMenuItem,
             this.setTile0ColorToolStripMenuItem,
@@ -581,7 +583,7 @@
             // 
             this.eventsForemostToolStripMenuItem.CheckOnClick = true;
             this.eventsForemostToolStripMenuItem.Name = "eventsForemostToolStripMenuItem";
-            this.eventsForemostToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
+            this.eventsForemostToolStripMenuItem.Size = new System.Drawing.Size(214, 22);
             this.eventsForemostToolStripMenuItem.Text = "Events Foremost";
             this.eventsForemostToolStripMenuItem.CheckedChanged += new System.EventHandler(this.eventsForemostToolStripMenuItem_CheckedChanged);
             // 
@@ -589,33 +591,41 @@
             // 
             this.zoomingAbove100ToolStripMenuItem.CheckOnClick = true;
             this.zoomingAbove100ToolStripMenuItem.Name = "zoomingAbove100ToolStripMenuItem";
-            this.zoomingAbove100ToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
+            this.zoomingAbove100ToolStripMenuItem.Size = new System.Drawing.Size(214, 22);
             this.zoomingAbove100ToolStripMenuItem.Text = "Zooming Above 100%";
             this.zoomingAbove100ToolStripMenuItem.Click += new System.EventHandler(this.zoomingAbove100ToolStripMenuItem_Click);
+            // 
+            // previewHelpStringColorsToolStripMenuItem
+            // 
+            this.previewHelpStringColorsToolStripMenuItem.CheckOnClick = true;
+            this.previewHelpStringColorsToolStripMenuItem.Name = "previewHelpStringColorsToolStripMenuItem";
+            this.previewHelpStringColorsToolStripMenuItem.Size = new System.Drawing.Size(214, 22);
+            this.previewHelpStringColorsToolStripMenuItem.Text = "Preview Help String Colors";
+            this.previewHelpStringColorsToolStripMenuItem.Click += new System.EventHandler(this.previewHelpStringColorsToolStripMenuItem_Click);
             // 
             // toolStripSeparator19
             // 
             this.toolStripSeparator19.Name = "toolStripSeparator19";
-            this.toolStripSeparator19.Size = new System.Drawing.Size(193, 6);
+            this.toolStripSeparator19.Size = new System.Drawing.Size(211, 6);
             // 
             // setTransparentColorToolStripMenuItem
             // 
             this.setTransparentColorToolStripMenuItem.Name = "setTransparentColorToolStripMenuItem";
-            this.setTransparentColorToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
+            this.setTransparentColorToolStripMenuItem.Size = new System.Drawing.Size(214, 22);
             this.setTransparentColorToolStripMenuItem.Text = "Set Transparent Color...";
             this.setTransparentColorToolStripMenuItem.Click += new System.EventHandler(this.setTransparentColorToolStripMenuItem_Click);
             // 
             // setTile0ColorToolStripMenuItem
             // 
             this.setTile0ColorToolStripMenuItem.Name = "setTile0ColorToolStripMenuItem";
-            this.setTile0ColorToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
+            this.setTile0ColorToolStripMenuItem.Size = new System.Drawing.Size(214, 22);
             this.setTile0ColorToolStripMenuItem.Text = "Set Tile 0 Color...";
             this.setTile0ColorToolStripMenuItem.Click += new System.EventHandler(this.setTile0ColorToolStripMenuItem_Click);
             // 
             // setDeadspaceColorToolStripMenuItem
             // 
             this.setDeadspaceColorToolStripMenuItem.Name = "setDeadspaceColorToolStripMenuItem";
-            this.setDeadspaceColorToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
+            this.setDeadspaceColorToolStripMenuItem.Size = new System.Drawing.Size(214, 22);
             this.setDeadspaceColorToolStripMenuItem.Text = "Set Deadspace Color...";
             this.setDeadspaceColorToolStripMenuItem.Click += new System.EventHandler(this.setDeadspaceColorToolStripMenuItem_Click);
             // 
@@ -1222,21 +1232,21 @@
             // Zoom12p5
             // 
             this.Zoom12p5.Name = "Zoom12p5";
-            this.Zoom12p5.Size = new System.Drawing.Size(152, 22);
+            this.Zoom12p5.Size = new System.Drawing.Size(105, 22);
             this.Zoom12p5.Text = "12.5%";
             this.Zoom12p5.Click += new System.EventHandler(this.Zoom12p5_Click);
             // 
             // Zoom25
             // 
             this.Zoom25.Name = "Zoom25";
-            this.Zoom25.Size = new System.Drawing.Size(152, 22);
+            this.Zoom25.Size = new System.Drawing.Size(105, 22);
             this.Zoom25.Text = "25%";
             this.Zoom25.Click += new System.EventHandler(this.Zoom25_Click);
             // 
             // Zoom50
             // 
             this.Zoom50.Name = "Zoom50";
-            this.Zoom50.Size = new System.Drawing.Size(152, 22);
+            this.Zoom50.Size = new System.Drawing.Size(105, 22);
             this.Zoom50.Text = "50%";
             this.Zoom50.Click += new System.EventHandler(this.Zoom50_Click);
             // 
@@ -1245,21 +1255,21 @@
             this.Zoom100.Checked = true;
             this.Zoom100.CheckState = System.Windows.Forms.CheckState.Checked;
             this.Zoom100.Name = "Zoom100";
-            this.Zoom100.Size = new System.Drawing.Size(152, 22);
+            this.Zoom100.Size = new System.Drawing.Size(105, 22);
             this.Zoom100.Text = "100%";
             this.Zoom100.Click += new System.EventHandler(this.Zoom100_Click);
             // 
             // Zoom200
             // 
             this.Zoom200.Name = "Zoom200";
-            this.Zoom200.Size = new System.Drawing.Size(152, 22);
+            this.Zoom200.Size = new System.Drawing.Size(105, 22);
             this.Zoom200.Text = "200%";
             this.Zoom200.Click += new System.EventHandler(this.Zoom200_Click);
             // 
             // Zoom400
             // 
             this.Zoom400.Name = "Zoom400";
-            this.Zoom400.Size = new System.Drawing.Size(152, 22);
+            this.Zoom400.Size = new System.Drawing.Size(105, 22);
             this.Zoom400.Text = "400%";
             this.Zoom400.Click += new System.EventHandler(this.Zoom400_Click);
             // 
@@ -1829,5 +1839,6 @@
         private System.Windows.Forms.ToolStripMenuItem zoomingAbove100ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem Zoom200;
         private System.Windows.Forms.ToolStripMenuItem Zoom400;
+        private System.Windows.Forms.ToolStripMenuItem previewHelpStringColorsToolStripMenuItem;
     }
 }
