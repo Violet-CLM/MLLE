@@ -48,6 +48,14 @@ namespace MLLE
 
         string FormTitle;
 
+        struct ChangedPixel
+        {
+            public byte Color;
+            public int Location;
+            public ChangedPixel(byte c, int l) { Color = c; Location = l; }
+        }
+        Stack<List<ChangedPixel>> UndoBuffer = new Stack<List<ChangedPixel>>(), RedoBuffer = new Stack<List<ChangedPixel>>();
+
         void DrawImage()
         {
             for (int x = 0; x < 32; ++x)
@@ -73,35 +81,33 @@ namespace MLLE
             int xy = y * (isImage ? 32 : 16) + x;
             byte color = isImage ? Image[xy] : (byte)xy;
 
-            if (!ReplaceColorButton.Checked || ModifierKeys == Keys.Control || !isImage)
+            if (e.Button != MouseButtons.None)
             {
-                if (e.Button == MouseButtons.Left)
+                if (!ReplaceColorButton.Checked || ModifierKeys == Keys.Control || !isImage)
                 {
-                    if ((ModifierKeys == Keys.Control && EditingImage) || !isImage)
-                        PrimaryColor = color;
-                    else if (color != PrimaryColor)
+                    if ((ModifierKeys == Keys.Control && EditingImage) || !isImage) //eyedropper
                     {
-                        if (FillButton.Checked)
-                            Fill(new Point(x, y), PrimaryColor, color);
+                        if (e.Button == MouseButtons.Left)
+                            PrimaryColor = color;
                         else
-                        {
-                            Image[xy] = PrimaryColor;
-                            DrawColor(x, y);
-                        }
+                            SecondaryColor = color;
                     }
-                }
-                else if (e.Button == MouseButtons.Right)
-                {
-                    if ((ModifierKeys == Keys.Control && EditingImage) || !isImage)
-                        SecondaryColor = color;
-                    else if (color != SecondaryColor)
+                    else
                     {
-                        if (FillButton.Checked)
-                            Fill(new Point(x, y), SecondaryColor, color);
-                        else
+                        byte colorToDraw = (e.Button == MouseButtons.Left) ? PrimaryColor : SecondaryColor;
+                        if (color != colorToDraw) //otherwise there's no point in doing anything
                         {
-                            Image[xy] = SecondaryColor;
-                            DrawColor(x, y);
+                            RedoBuffer.Clear();
+                            var PixelsBeingChanged = new List<ChangedPixel>();
+                            if (FillButton.Checked)
+                                Fill(new Point(x, y), PrimaryColor, color, PixelsBeingChanged);
+                            else
+                            {
+                                PixelsBeingChanged.Add(new ChangedPixel(Image[xy], xy));
+                                Image[xy] = colorToDraw;
+                                DrawColor(x, y);
+                            }
+                            UndoBuffer.Push(PixelsBeingChanged);
                         }
                     }
                 }
@@ -111,14 +117,18 @@ namespace MLLE
 
         private void ReplaceColor(byte dst, byte src)
         {
+            RedoBuffer.Clear();
+            var PixelsBeingChanged = new List<ChangedPixel>();
             for (int i = 0; i < 32 * 32; ++i)
                 if (Image[i] == src)
                 {
+                    PixelsBeingChanged.Add(new ChangedPixel(Image[i], i));
                     Image[i] = dst;
                     DrawColor(i & 31, i >> 5);
                 }
+            UndoBuffer.Push(PixelsBeingChanged);
         }
-        private void Fill(Point loc, byte color, byte colorToFill)
+        private void Fill(Point loc, byte color, byte colorToFill, List<ChangedPixel> PixelsBeingChanged)
         {
             List<Point> Points = new List<Point> { loc };
             var DrawColor = Colors[color];
@@ -137,6 +147,7 @@ namespace MLLE
                             Points.Add(new Point(point.X, point.Y - 1));
                         if (point.Y < 31 && Image[xy + 32] == colorToFill)
                             Points.Add(new Point(point.X, point.Y + 1));
+                        PixelsBeingChanged.Add(new ChangedPixel(Image[xy], xy));
                         Image[xy] = color;
                         g.FillRectangle(DrawColor, new Rectangle(point.X * 8, point.Y * 8, 8, 8));
                     }
@@ -166,30 +177,35 @@ namespace MLLE
         
         private void resetToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            MakeEntireImageUndoable();
             Image = OriginalImage.Clone() as byte[];
             DrawImage();
         }
 
         private void clearToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            MakeEntireImageUndoable();
             Image = new byte[Image.Length];
             DrawImage();
         }
 
         private void flipHorizontallyFToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            MakeEntireImageUndoable();
             Image = Enumerable.Range(0, 32*32).Select(val => Image[(val & ~31) | (31 - (val & 31))]).ToArray();
             DrawImage();
         }
 
         private void flipVerticallyIToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            MakeEntireImageUndoable();
             Image = Enumerable.Range(0, 32 * 32).Select(val => Image[(val & 31) | (32*31 - (val & ~31))]).ToArray();
             DrawImage();
         }
 
         private void rotateToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            MakeEntireImageUndoable();
             Image = Enumerable.Range(0, 32 * 32).Select(val => Image[(32*31 - ((val & 31) << 5)) | (val >> 5)]).ToArray();
             DrawImage();
         }
@@ -205,6 +221,7 @@ namespace MLLE
 
         private void pasteToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            MakeEntireImageUndoable();
             byte[] clipboard = EditingImage ? ClipboardImage : ClipboardMask;
             for (int i = 0; i < 32 * 32; ++i)
                 if (clipboard[i] != 0)
@@ -214,6 +231,7 @@ namespace MLLE
 
         private void pasteUnderToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            MakeEntireImageUndoable();
             for (int i = 0; i < 32 * 32; ++i)
                 if (Image[i] == 0)
                     Image[i] = ClipboardImage[i];
@@ -247,6 +265,20 @@ namespace MLLE
                     if (e.Control && pasteToolStripMenuItem.Enabled)
                     {
                         pasteToolStripMenuItem_Click(null, null);
+                        break;
+                    }
+                    else return;
+                case Keys.Z:
+                    if (e.Control)
+                    {
+                        Undo();
+                        break;
+                    }
+                    else return;
+                case Keys.Y:
+                    if (e.Control)
+                    {
+                        Redo();
                         break;
                     }
                     else return;
@@ -338,6 +370,55 @@ namespace MLLE
             }
 
             return false;
+        }
+
+
+        private void toolsToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
+        {
+            undoToolStripMenuItem.Enabled = UndoBuffer.Count > 0;
+            redoToolStripMenuItem.Enabled = RedoBuffer.Count > 0;
+        }
+
+        private void undoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Undo();
+        }
+        private void redoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Redo();
+        }
+        private void Undo()
+        {
+            SwapBuffers(UndoBuffer, RedoBuffer);
+        }
+        private void Redo()
+        {
+            SwapBuffers(RedoBuffer, UndoBuffer);
+        }
+        private void SwapBuffers(Stack<List<ChangedPixel>> a, Stack<List<ChangedPixel>> b)
+        {
+            if (a.Count > 0)
+            {
+                var oldRecord = a.Pop();
+                var newRecord = new List<ChangedPixel>();
+                foreach (var pixels in oldRecord)
+                {
+                    int xy = pixels.Location;
+                    newRecord.Add(new ChangedPixel(Image[xy], xy));
+                    Image[xy] = pixels.Color;
+                    DrawColor(xy & 31, xy >> 5);
+                }
+                b.Push(newRecord);
+            }
+        }
+
+        void MakeEntireImageUndoable()
+        {
+            RedoBuffer.Clear();
+            var PixelsBeingChanged = new List<ChangedPixel>();
+            for (int i = 0; i < 32*32; ++i)
+                PixelsBeingChanged.Add(new ChangedPixel(Image[i], i));
+            UndoBuffer.Push(PixelsBeingChanged);
         }
     }
 }
