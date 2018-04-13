@@ -972,7 +972,25 @@ namespace MLLE
                 Zoom(OriginalTileSize);
             }
             _suspendEvent.Set();
-        } // this doesn't work right now
+        }
+        private void saveTilesetImageToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _suspendEvent.Reset();
+
+            var tilesetImageSaveDialog = new SaveFileDialog();
+            tilesetImageSaveDialog.DefaultExt = "png";
+            tilesetImageSaveDialog.Filter = "Portable Network Graphics|*.png";
+            tilesetImageSaveDialog.FileName = Path.ChangeExtension(J2L.Tilesets[0].FilenameOnly, "png");
+            if (tilesetImageSaveDialog.ShowDialog() == DialogResult.OK)
+            {
+                J2L.RenderTilesetAsImage(TransparencySource.JCS_Style).Save(Path.ChangeExtension(tilesetImageSaveDialog.FileName, "png"));
+            }
+            _suspendEvent.Set();
+        }
+        private void toolsToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
+        {
+            saveTilesetImageToolStripMenuItem.Enabled = J2L.HasTiles;
+        }
 
         private void L1Button_Click(object sender, EventArgs e) { ChangeLayerByDefaultLayerID(0); }
         private void L2Button_Click(object sender, EventArgs e) { ChangeLayerByDefaultLayerID(1); }
@@ -3121,6 +3139,7 @@ namespace MLLE
         }
 
         private void ActOnATile(int x, int y, ushort? tile, uint ev, LayerAndSpecificTiles actionCenter, bool blankTilesOkay) { ActOnATile(x, y, tile, new AGAEvent(ev), actionCenter, blankTilesOkay); }
+
         private void ActOnATile(int x, int y, ushort? tile, AGAEvent? ev, LayerAndSpecificTiles actionCenter, bool blankTilesOkay)
         {
             Layer layer = actionCenter.Layer;

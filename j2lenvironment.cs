@@ -197,6 +197,54 @@ class TexturedJ2L : J2LFile
         ImageAtlas = TexUtil.CreateRGBATexture(AtlasLength * 32, AtlasLength * 32, workingAtlases[0]);
         if (includeMasks) MaskAtlas = TexUtil.CreateRGBATexture(AtlasLength * 32, AtlasLength * 32, workingAtlases[1]);
     }
+    public Bitmap RenderTilesetAsImage(TransparencySource source, Palette palette = null) //very similar to TilesetForm::CreateImageFromTileset
+    {
+        if (palette == null)
+            palette = Palette;
+        uint imageHeight = (TileCount + 9) / 10 * 32;
+
+        var image = new Bitmap(320, (int)imageHeight, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
+        var paletteD = image.Palette;
+        var entries = paletteD.Entries;
+        entries[0] = Color.FromArgb(87, 0, 203);
+        for (uint i = 1; i < Palette.PaletteSize; ++i)
+            entries[i] = Palette.Convert(palette.Colors[i]);
+        image.Palette = paletteD;
+        var data = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), System.Drawing.Imaging.ImageLockMode.WriteOnly, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
+        byte[] bytes = new byte[data.Height * data.Stride];
+
+        for (ushort tileInLevelID = 0; tileInLevelID < TileCount; tileInLevelID++)
+        {
+            J2TFile J2T;
+            uint tileInTilesetID = getTileInTilesetID(tileInLevelID, out J2T);
+
+            bool customTileImage;
+            byte[] tileTrans;
+            byte[] tile = PlusPropertyList.TileImages[tileInLevelID];
+            if (!(customTileImage = (tile != null)))
+            {
+                tile = J2T.Images[J2T.ImageAddress[tileInTilesetID]];
+                tileTrans = ((source == TransparencySource.JJ2_Style) ? J2T.TransparencyMaskJJ2_Style : J2T.TransparencyMaskJCS_Style)[Array.BinarySearch(J2T.TransparencyMaskOffset, 0, (int)J2T.data3Counter, J2T.TransparencyMaskAddress[tileInTilesetID])];
+            }
+            else
+                tileTrans = tile;
+            var colorRemapping = (J2T.ColorRemapping == null || customTileImage) ? J2TFile.DefaultColorRemapping : J2T.ColorRemapping;
+            
+            var xOrg = (tileInLevelID % 10) * 32;
+            var yOrg = tileInLevelID / 10 * 32;
+            for (uint x = 0; x < 32; ++x)
+                for (uint y = 0; y < 32; ++y)
+                {
+                    uint xy = x + y * 32;
+                    if (tileTrans[xy] != 0)
+                        bytes[xOrg + x + (yOrg + y) * data.Stride] = colorRemapping[tile[xy]];
+                }
+        }
+
+        Marshal.Copy(bytes, 0, data.Scan0, bytes.Length);
+        image.UnlockBits(data);
+        return image;
+    }
     public void RerenderTile(uint tileInLevelID)
     {
         var transformation = TileTypeColorTransformations[VersionType];
@@ -233,7 +281,7 @@ class TexturedJ2L : J2LFile
                             bmp.SetPixel(x, y, transformation(palette[newTile[x + y * 32]], TileTypes[tileInLevelID]));
             }
             System.Drawing.Imaging.BitmapData data = bmp.LockBits(new Rectangle(0, 0, 32, 32), System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-            GL.TexSubImage2D(TextureTarget.Texture2D, 0, (int)tileInLevelID % AtlasLength * 32, (int)tileInLevelID / AtlasLength * 32, 32, 32, PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
+            GL.TexSubImage2D(TextureTarget.Texture2D, 0, (int)tileInLevelID % AtlasLength * 32, (int)tileInLevelID / AtlasLength * 32, 32, 32, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
             bmp.UnlockBits(data);
         }
     }
@@ -258,7 +306,7 @@ class TexturedJ2L : J2LFile
                 for (int y = 0; y < 32; y++)
                     bmp.SetPixel(x, y, colors[tileMask[x + y * 32]]);
             System.Drawing.Imaging.BitmapData data = bmp.LockBits(new Rectangle(0, 0, 32, 32), System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-            GL.TexSubImage2D(TextureTarget.Texture2D, 0, (int)tileInLevelID % AtlasLength * 32, (int)tileInLevelID / AtlasLength * 32, 32, 32, PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
+            GL.TexSubImage2D(TextureTarget.Texture2D, 0, (int)tileInLevelID % AtlasLength * 32, (int)tileInLevelID / AtlasLength * 32, 32, 32, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
             bmp.UnlockBits(data);
         }
     }
