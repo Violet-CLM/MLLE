@@ -68,8 +68,35 @@ namespace MLLE
                                 switch (MessageBox.Show("Warning: could not locate file " + quotedFilename + " in the expected folder. Do you wish to add this file manually?", "File Not Found", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning))
                                 {
                                     case DialogResult.Yes:
+                                        while (true) {
+                                            var alternateFileOpenDialog = new OpenFileDialog();
+                                            alternateFileOpenDialog.DefaultExt = Path.GetExtension(newFilepath);
+                                            alternateFileOpenDialog.FileName = newFilepath;
+                                            if (alternateFileOpenDialog.ShowDialog() == DialogResult.OK)
+                                            {
+                                                if (StringComparer.InvariantCultureIgnoreCase.Compare(Path.GetFileName(alternateFileOpenDialog.FileName), newFilename) != 0) //different filename than the original
+                                                {
+                                                    switch (MessageBox.Show("Warning: a file with the filename " + quotedFilename + " was expected, but you found a file with the filename \"" + Path.GetFileName(alternateFileOpenDialog.FileName) + "\". Is this okay (Yes), or would you like to try again (No)?", "Different Filename", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning)) {
+                                                        case DialogResult.Yes:
+                                                            break;
+                                                        case DialogResult.No:
+                                                            continue;
+                                                        case DialogResult.Cancel:
+                                                            textBox1.AppendText(Environment.NewLine + "Could not find " + quotedFilename);
+                                                            textBox1.AppendText(Environment.NewLine + "Packaging cancelled by user.");
+                                                            return DialogResult.Cancel;
+                                                    }
+                                                }
+                                                newFilepath = alternateFileOpenDialog.FileName;
+                                                break;
+                                            }
+                                            else
+                                                goto lblCouldNotFind; //it's not my fault C# doesn't allow falling through for switch statements
+                                        }
                                         break;
                                     case DialogResult.No:
+                                        lblCouldNotFind:
+                                        fileNamesToInclude.Add(newFilename); //so this one doesn't get asked about again
                                         textBox1.AppendText(Environment.NewLine + "Could not find " + quotedFilename + ", skipping");
                                         return DialogResult.No;
                                     case DialogResult.Cancel:
