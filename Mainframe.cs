@@ -1019,7 +1019,6 @@ namespace MLLE
                     );
                 }
             }
-                //var Levels = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
             _suspendEvent.Set();
         }
 
