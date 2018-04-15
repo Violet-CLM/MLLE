@@ -15,6 +15,7 @@ namespace MLLE
     public partial class PackageLevelForm : Form
     {
         string initialLevelFilepath, finalZipFilepath, levelExtension, tilesetExtension;
+        bool checkScripts;
 
         static readonly string[] DefaultFilenames = {
             "Battle1.j2l", "Battle2.j2l", "Battle3.j2l", "Capture1.j2l", "Capture2.j2l", "Capture3.j2l", "Capture4.j2l", "Race1.j2l", "Race2.j2l", "Race3.j2l", "Treasur1.j2l", "Treasur2.j2l", "Treasur3.j2l",
@@ -39,32 +40,102 @@ namespace MLLE
             }
             else
             {
+                textBox1.AppendText(Environment.NewLine + "Start!");
                 checkboxExcludeDefault.Enabled = checkboxIncludeMusic.Enabled = checkboxMissing.Enabled = checkboxMultipleLevels.Enabled = OKButton.Enabled = false;
-                textBox1.AppendText(Environment.NewLine + "Beginning ZIP...");
+                Directory.SetCurrentDirectory(Path.GetDirectoryName(initialLevelFilepath));
 
-                var fileNamesToInclude = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
-                var filePathsToInclude = new List<string>();
-                Func<string, bool> addFilepath = delegate(string newFilepath) {
+                var fileNamesToInclude = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase); //filenames only, to prevent duplicate files from getting included
+                var filePathsToInclude = new List<string>(); //full paths, for when creating the final ZIP
+                Func<string, DialogResult> addFilepath = delegate(string newFilepath) { //this doesn't care about file extension at all
                     string newFilename = Path.GetFileName(newFilepath);
+                    string quotedFilename = '"' + newFilename + '"';
                     if (fileNamesToInclude.Contains(newFilename)) //test only the filename, not the directory
                     {
-                        textBox1.AppendText(Environment.NewLine + "Duplicate filename " + newFilename);
-                        return false;
+                        textBox1.AppendText(Environment.NewLine + "Duplicate filename " + quotedFilename);
+                        return DialogResult.No;
                     }
                     else if (checkboxExcludeDefault.Checked && DefaultFilenames.Contains(newFilename, StringComparer.InvariantCultureIgnoreCase))
                     {
-                        textBox1.AppendText(Environment.NewLine + "Official filename " + newFilename);
-                        return false;
+                        textBox1.AppendText(Environment.NewLine + "Official filename " + quotedFilename);
+                        return DialogResult.No;
                     }
                     else
                     {
+                        if (!File.Exists(newFilepath))
+                        {
+                            if (checkboxMissing.Checked)
+                            {
+                                switch (MessageBox.Show("Warning: could not locate file " + quotedFilename + " in the expected folder. Do you wish to add this file manually?", "File Not Found", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning))
+                                {
+                                    case DialogResult.Yes:
+                                        break;
+                                    case DialogResult.No:
+                                        textBox1.AppendText(Environment.NewLine + "Could not find " + quotedFilename + ", skipping");
+                                        return DialogResult.No;
+                                    case DialogResult.Cancel:
+                                        textBox1.AppendText(Environment.NewLine + "Packaging cancelled by user.");
+                                        return DialogResult.Cancel;
+                                }
+                            }
+                            else
+                            {
+                                textBox1.AppendText(Environment.NewLine + "Could not find " + quotedFilename + ", skipping");
+                                return DialogResult.No;
+                            }
+                        }
                         filePathsToInclude.Add(newFilepath);
                         fileNamesToInclude.Add(newFilename);
-                        textBox1.AppendText(Environment.NewLine + "Found and adding" + newFilename);
-                        return true;
+                        textBox1.AppendText(Environment.NewLine + "Found " + quotedFilename);
+                        return DialogResult.Yes;
                     }
                 };
 
+                var levelFilepaths = new List<string>();
+                levelFilepaths.Add(initialLevelFilepath);
+
+                for (int levelID = 0; levelID < levelFilepaths.Count; ++levelID)
+                {
+                    string levelFilepath = levelFilepaths[levelID];
+                    switch (addFilepath(levelFilepath))
+                    {
+                        case DialogResult.Yes:
+                            break;
+                        case DialogResult.No: //e.g. file not found
+                            continue;
+                        case DialogResult.Cancel:
+                            return;
+                    }
+                    J2LFile j2l = new J2LFile();
+                    var Data5 = new byte[0];
+                    var openResults = j2l.OpenLevel(levelFilepath, ref Data5, onlyInterestedInData1:true);
+                    if (!(openResults == OpeningResults.Success || openResults == OpeningResults.SuccessfulButAmbiguous))
+                    {
+                        textBox1.AppendText(Environment.NewLine + "Unexpected error while opening level." + Environment.NewLine + "Packaging cancelled.");
+                        return;
+                    }
+                    var tilesetFilename = Path.ChangeExtension(j2l.MainTilesetFilename, tilesetExtension);
+                    if (addFilepath(tilesetFilename) == DialogResult.Cancel)
+                        return;
+                    if (checkboxIncludeMusic.Checked)
+                    {
+                        var musicFilename = j2l.Music;
+                        if (musicFilename.Trim() != String.Empty)
+                        {
+                            if (!Path.HasExtension(musicFilename))
+                                musicFilename = Path.ChangeExtension(musicFilename, "j2b");
+                            if (addFilepath(musicFilename) == DialogResult.Cancel)
+                                return;
+                        }
+                    }
+                    if (checkboxMultipleLevels.Checked)
+                        foreach (var additionalLevelFilename in new string[] { j2l.NextLevel, j2l.SecretLevel })
+                            if (additionalLevelFilename != String.Empty && !(additionalLevelFilename.Length >= 3 && StringComparer.InvariantCultureIgnoreCase.Compare(additionalLevelFilename.Substring(0,3), "end") == 0)) //any level filename starting with END is invalid (to JJ2, at least)
+                                levelFilepaths.Add(Path.ChangeExtension(additionalLevelFilename, levelExtension)); //come back to this level later in the loop
+                }
+
+                textBox1.AppendText(Environment.NewLine + "Beginning ZIP...");
+                if (File.Exists(finalZipFilepath))
+                    File.Delete(finalZipFilepath);
                 using (var zip = ZipFile.Open(finalZipFilepath, ZipArchiveMode.Create))
                 {
                     foreach (string filepath in filePathsToInclude)
@@ -72,15 +143,15 @@ namespace MLLE
                         textBox1.AppendText(Environment.NewLine + "Compressing " + filepath);
                         zip.CreateEntryFromFile(filepath, Path.GetFileName(filepath));
                     }
-                    textBox1.AppendText(Environment.NewLine + "Done! Packaged " + zip.Entries.Count.ToString() + " files (" + (new System.IO.FileInfo(finalZipFilepath).Length / 1024).ToString() + " kb)");
                 }
-                
+
+                textBox1.AppendText(Environment.NewLine + "Done! Packaged " + filePathsToInclude.Count.ToString() + " files (" + (new System.IO.FileInfo(finalZipFilepath).Length / 1024).ToString() + " kb)");
                 textBox1.AppendText(Environment.NewLine + "Click OK to finish.");
+                OKButton.Enabled = true;
                 OKButton.Text = "OK";
             }
         }
 
-        bool checkScripts;
         public PackageLevelForm()
         {
             InitializeComponent();
