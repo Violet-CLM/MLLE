@@ -995,6 +995,34 @@ namespace MLLE
             saveTilesetImageToolStripMenuItem.Enabled = J2L.HasTiles;
         }
 
+        private void packageAsZiptoolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _suspendEvent.Reset();
+            if (PromptForSaving())
+            {
+                var packageSaveDialog = new SaveFileDialog();
+                packageSaveDialog.DefaultExt = "zip";
+                packageSaveDialog.Filter = "Zip Files|*.zip";
+                string initialFilename = Path.GetFileNameWithoutExtension(J2L.FilenameOnly);
+                var match = System.Text.RegularExpressions.Regex.Match(initialFilename, "^(.*[^\\d])\\d+$"); //strip numbers at end
+                if (match.Success)
+                    initialFilename = match.Groups[1].Value;
+                packageSaveDialog.FileName = Path.ChangeExtension(initialFilename, "zip");
+                if (packageSaveDialog.ShowDialog() == DialogResult.OK)
+                {
+                    new PackageLevelForm().ShowForm(
+                        J2L.FullFilePath,
+                        Path.ChangeExtension(packageSaveDialog.FileName, "zip"),
+                        DefaultFileExtensionStrings[DefaultFileExtension[J2L.VersionType]],
+                        J2L.VersionType != Version.AGA ? (J2L.VersionType != Version.GorH ? "j2t" : String.Empty) : "til",
+                        VersionIsPlusCompatible(J2L.VersionType)
+                    );
+                }
+            }
+                //var Levels = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
+            _suspendEvent.Set();
+        }
+
         private void L1Button_Click(object sender, EventArgs e) { ChangeLayerByDefaultLayerID(0); }
         private void L2Button_Click(object sender, EventArgs e) { ChangeLayerByDefaultLayerID(1); }
         private void L3Button_Click(object sender, EventArgs e) { ChangeLayerByDefaultLayerID(2); }
@@ -3142,7 +3170,6 @@ namespace MLLE
         }
 
         private void ActOnATile(int x, int y, ushort? tile, uint ev, LayerAndSpecificTiles actionCenter, bool blankTilesOkay) { ActOnATile(x, y, tile, new AGAEvent(ev), actionCenter, blankTilesOkay); }
-
         private void ActOnATile(int x, int y, ushort? tile, AGAEvent? ev, LayerAndSpecificTiles actionCenter, bool blankTilesOkay)
         {
             Layer layer = actionCenter.Layer;

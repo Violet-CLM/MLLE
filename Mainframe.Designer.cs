@@ -500,10 +500,10 @@
             // 
             // packageAsZiptoolStripMenuItem
             // 
-            this.packageAsZiptoolStripMenuItem.Enabled = false;
             this.packageAsZiptoolStripMenuItem.Name = "packageAsZiptoolStripMenuItem";
             this.packageAsZiptoolStripMenuItem.Size = new System.Drawing.Size(185, 22);
             this.packageAsZiptoolStripMenuItem.Text = "Package in ZIP file...";
+            this.packageAsZiptoolStripMenuItem.Click += new System.EventHandler(this.packageAsZiptoolStripMenuItem_Click);
             // 
             // jJ2PropertiesToolStripMenuItem
             // 
