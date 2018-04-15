@@ -197,7 +197,7 @@ class TexturedJ2L : J2LFile
         ImageAtlas = TexUtil.CreateRGBATexture(AtlasLength * 32, AtlasLength * 32, workingAtlases[0]);
         if (includeMasks) MaskAtlas = TexUtil.CreateRGBATexture(AtlasLength * 32, AtlasLength * 32, workingAtlases[1]);
     }
-    public Bitmap RenderTilesetAsImage(TransparencySource source, Palette palette = null) //very similar to TilesetForm::CreateImageFromTileset
+    public Bitmap[] RenderTilesetAsImage(TransparencySource source, bool includeMasks, Palette palette = null) //very similar to TilesetForm::CreateImageFromTileset
     {
         if (palette == null)
             palette = Palette;
@@ -212,6 +212,20 @@ class TexturedJ2L : J2LFile
         image.Palette = paletteD;
         var data = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), System.Drawing.Imaging.ImageLockMode.WriteOnly, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
         byte[] bytes = new byte[data.Height * data.Stride];
+
+        Bitmap mask = null;
+        System.Drawing.Imaging.BitmapData maskData = null;
+        byte[] maskBytes = null;
+        if (includeMasks)
+        {
+            mask = new Bitmap(320, (int)imageHeight, System.Drawing.Imaging.PixelFormat.Format1bppIndexed);
+            maskData = mask.LockBits(new Rectangle(0, 0, image.Width, image.Height), System.Drawing.Imaging.ImageLockMode.WriteOnly, System.Drawing.Imaging.PixelFormat.Format1bppIndexed);
+            maskBytes = new byte[maskData.Height * maskData.Stride];
+            var paletteM = mask.Palette;
+            paletteM.Entries[0] = Color.FromArgb(87, 0, 203);
+            paletteM.Entries[1] = Color.Black;
+            mask.Palette = paletteD;
+        }
 
         for (ushort tileInLevelID = 0; tileInLevelID < TileCount; tileInLevelID++)
         {
@@ -239,11 +253,27 @@ class TexturedJ2L : J2LFile
                     if (tileTrans[xy] != 0)
                         bytes[xOrg + x + (yOrg + y) * data.Stride] = colorRemapping[tile[xy]];
                 }
+
+            if (includeMasks)
+            {
+                byte[] tileMask = PlusPropertyList.TileMasks[tileInLevelID] ?? J2T.Masks[J2T.MaskAddress[tileInTilesetID]];
+                xOrg = (tileInLevelID % 10) * 32 / 8;
+                yOrg = tileInLevelID / 10 * 32;
+                for (uint x = 0; x < 32; ++x)
+                    for (uint y = 0; y < 32; ++y)
+                        if (tileMask[x + y * 32] != 0)
+                            maskBytes[xOrg + (x >> 3) + (yOrg + y) * maskData.Stride] |= (byte)(0x80 >> (int)(x & 7));
+            }
         }
 
         Marshal.Copy(bytes, 0, data.Scan0, bytes.Length);
         image.UnlockBits(data);
-        return image;
+        if (includeMasks)
+        {
+            Marshal.Copy(maskBytes, 0, maskData.Scan0, maskBytes.Length);
+            mask.UnlockBits(maskData);
+        }
+        return new Bitmap[] { image, mask };
     }
     public void RerenderTile(uint tileInLevelID)
     {

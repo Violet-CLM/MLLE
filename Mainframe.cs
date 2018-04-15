@@ -983,7 +983,10 @@ namespace MLLE
             tilesetImageSaveDialog.FileName = Path.ChangeExtension(J2L.Tilesets[0].FilenameOnly, "png");
             if (tilesetImageSaveDialog.ShowDialog() == DialogResult.OK)
             {
-                J2L.RenderTilesetAsImage(TransparencySource.JCS_Style).Save(Path.ChangeExtension(tilesetImageSaveDialog.FileName, "png"));
+                Bitmap[] images = J2L.RenderTilesetAsImage(TransparencySource.JCS_Style, true);
+                string mainFilename = Path.Combine(Path.GetDirectoryName(tilesetImageSaveDialog.FileName), Path.GetFileNameWithoutExtension(tilesetImageSaveDialog.FileName));
+                images[0].Save(mainFilename + "-image.png");
+                images[1].Save(mainFilename + "-mask.png");
             }
             _suspendEvent.Set();
         }
