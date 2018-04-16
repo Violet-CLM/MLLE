@@ -196,7 +196,7 @@ namespace MLLE
                                 foreach (System.Text.RegularExpressions.Match match in System.Text.RegularExpressions.Regex.Matches(fileContents, "#include\\s+(['\"])(.+?)\\1", System.Text.RegularExpressions.RegexOptions.IgnoreCase)) { //actually I don't even know whether #include is case-insensitive   jjSampleLoad(SOUND::ORANGE_BOEMR, "expmine.wav");
                                     scriptFilepaths.Add(match.Groups[2].Value); //come back to this script later in the loop
                                 }
-                                foreach (System.Text.RegularExpressions.Match match in System.Text.RegularExpressions.Regex.Matches(fileContents, "(#pragma\\s+require|#pragma\\s+offer|jjNxt\\s*\\(|jjMusicLoad\\s*\\(|jjSampleLoad\\s*\\(\\s*SOUND\\s*::\\s*[a-z0-9_]+\\s*,)\\s*(['\"])(.+?)\\2", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+                                foreach (System.Text.RegularExpressions.Match match in System.Text.RegularExpressions.Regex.Matches(fileContents, "(#pragma\\s+require|#pragma\\s+offer|jjNxt\\s*\\(|jjMusicLoad\\s*\\(|jjLayersFromLevel\\s*\\(|jjTilesFromTileset\\s*\\(|jjSampleLoad\\s*\\(\\s*SOUND\\s*::\\s*[a-z0-9_]+\\s*,)\\s*(['\"])(.+?)\\2", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
                                 {
                                     string foundFilepath = match.Groups[3].Value;
                                     if (match.Groups[1].Value.Contains("jjN")) //don't need to worry about case here, because it's a function.
