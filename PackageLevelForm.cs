@@ -32,6 +32,92 @@ namespace MLLE
             //todo AGA files I guess
         };
 
+        HashSet<string> fileNamesToInclude = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase); //filenames only, to prevent duplicate files from getting included
+        HashSet<string> fileNamesThatHaveBeenProcessedAsLevelsOrScripts = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase); //what it says
+        List<string> filePathsToInclude = new List<string>(); //full paths, for when creating the final ZIP
+        DialogResult addFilepath (ref string newFilepath) { //this doesn't care about file extension at all
+            string newFilename = Path.GetFileName(newFilepath);
+            string quotedFilename = '"' + newFilename + '"';
+            if (fileNamesToInclude.Contains(newFilename)) //test only the filename, not the directory
+            {
+                textBox1.AppendText(Environment.NewLine + "Duplicate filename " + quotedFilename);
+                return DialogResult.No;
+            }
+            else if (checkboxExcludeDefault.Checked && DefaultFilenames.Contains(newFilename, StringComparer.InvariantCultureIgnoreCase))
+            {
+                textBox1.AppendText(Environment.NewLine + "Official filename " + quotedFilename);
+                return DialogResult.No;
+            }
+            else
+            {
+                if (!File.Exists(newFilepath))
+                {
+                    if (checkboxMissing.Checked)
+                    {
+                        switch (MessageBox.Show("Warning: could not locate file " + quotedFilename + " in the expected folder. Do you wish to add this file manually?", "File Not Found", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning))
+                        {
+                            case DialogResult.Yes:
+                                while (true)
+                                {
+                                    var alternateFileOpenDialog = new OpenFileDialog();
+                                    alternateFileOpenDialog.DefaultExt = Path.GetExtension(newFilepath);
+                                    alternateFileOpenDialog.FileName = newFilepath;
+                                    if (alternateFileOpenDialog.ShowDialog() == DialogResult.OK)
+                                    {
+                                        if (StringComparer.InvariantCultureIgnoreCase.Compare(Path.GetFileName(alternateFileOpenDialog.FileName), newFilename) != 0) //different filename than the original
+                                        {
+                                            switch (MessageBox.Show("Warning: a file with the filename " + quotedFilename + " was expected, but you found a file with the filename \"" + Path.GetFileName(alternateFileOpenDialog.FileName) + "\". Is this okay (Yes), or would you like to try again (No)?", "Different Filename", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning))
+                                            {
+                                                case DialogResult.Yes:
+                                                    break;
+                                                case DialogResult.No:
+                                                    continue;
+                                                case DialogResult.Cancel:
+                                                    textBox1.AppendText(Environment.NewLine + "Could not find " + quotedFilename);
+                                                    textBox1.AppendText(Environment.NewLine + "Packaging cancelled by user.");
+                                                    return DialogResult.Cancel;
+                                            }
+                                        }
+                                        newFilepath = alternateFileOpenDialog.FileName;
+                                        textBox1.AppendText(Environment.NewLine + "Asked user for help...");
+                                        break;
+                                    }
+                                    else
+                                        goto lblCouldNotFind; //it's not my fault C# doesn't allow falling through for switch statements
+                                }
+                                break;
+                            case DialogResult.No:
+                                lblCouldNotFind:
+                                fileNamesToInclude.Add(newFilename); //so this one doesn't get asked about again
+                                textBox1.AppendText(Environment.NewLine + "Could not find " + quotedFilename + ", skipping");
+                                return DialogResult.No;
+                            case DialogResult.Cancel:
+                                textBox1.AppendText(Environment.NewLine + "Packaging cancelled by user.");
+                                return DialogResult.Cancel;
+                        }
+                    }
+                    else
+                    {
+                        textBox1.AppendText(Environment.NewLine + "Could not find " + quotedFilename + ", skipping");
+                        return DialogResult.No;
+                    }
+                }
+                filePathsToInclude.Add(newFilepath);
+                fileNamesToInclude.Add(newFilename);
+                textBox1.AppendText(Environment.NewLine + "Found " + quotedFilename);
+                return DialogResult.Yes;
+            }
+        }
+        private DialogResult extendedAddFilepath(ref string newFilepath) //for scripts or levels
+        {
+            DialogResult result = addFilepath(ref newFilepath);
+            string newFilename = Path.GetFileName(newFilepath);
+            if (result == DialogResult.No && File.Exists(newFilepath) && !fileNamesThatHaveBeenProcessedAsLevelsOrScripts.Contains(newFilename)) //hasn't been processed yet
+                result = DialogResult.Yes;
+            if (result == DialogResult.Yes)
+                fileNamesThatHaveBeenProcessedAsLevelsOrScripts.Add(newFilename);
+            return result;
+        }
         private void OKButton_Click(object sender, EventArgs e)
         {
             if (OKButton.Text == "OK")
@@ -44,86 +130,14 @@ namespace MLLE
                 checkboxExcludeDefault.Enabled = checkboxIncludeMusic.Enabled = checkboxMissing.Enabled = checkboxMultipleLevels.Enabled = OKButton.Enabled = false;
                 Directory.SetCurrentDirectory(Path.GetDirectoryName(initialLevelFilepath));
 
-                var fileNamesToInclude = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase); //filenames only, to prevent duplicate files from getting included
-                var filePathsToInclude = new List<string>(); //full paths, for when creating the final ZIP
-                Func<string, DialogResult> addFilepath = delegate(string newFilepath) { //this doesn't care about file extension at all
-                    string newFilename = Path.GetFileName(newFilepath);
-                    string quotedFilename = '"' + newFilename + '"';
-                    if (fileNamesToInclude.Contains(newFilename)) //test only the filename, not the directory
-                    {
-                        textBox1.AppendText(Environment.NewLine + "Duplicate filename " + quotedFilename);
-                        return DialogResult.No;
-                    }
-                    else if (checkboxExcludeDefault.Checked && DefaultFilenames.Contains(newFilename, StringComparer.InvariantCultureIgnoreCase))
-                    {
-                        textBox1.AppendText(Environment.NewLine + "Official filename " + quotedFilename);
-                        return DialogResult.No;
-                    }
-                    else
-                    {
-                        if (!File.Exists(newFilepath))
-                        {
-                            if (checkboxMissing.Checked)
-                            {
-                                switch (MessageBox.Show("Warning: could not locate file " + quotedFilename + " in the expected folder. Do you wish to add this file manually?", "File Not Found", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning))
-                                {
-                                    case DialogResult.Yes:
-                                        while (true) {
-                                            var alternateFileOpenDialog = new OpenFileDialog();
-                                            alternateFileOpenDialog.DefaultExt = Path.GetExtension(newFilepath);
-                                            alternateFileOpenDialog.FileName = newFilepath;
-                                            if (alternateFileOpenDialog.ShowDialog() == DialogResult.OK)
-                                            {
-                                                if (StringComparer.InvariantCultureIgnoreCase.Compare(Path.GetFileName(alternateFileOpenDialog.FileName), newFilename) != 0) //different filename than the original
-                                                {
-                                                    switch (MessageBox.Show("Warning: a file with the filename " + quotedFilename + " was expected, but you found a file with the filename \"" + Path.GetFileName(alternateFileOpenDialog.FileName) + "\". Is this okay (Yes), or would you like to try again (No)?", "Different Filename", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning)) {
-                                                        case DialogResult.Yes:
-                                                            break;
-                                                        case DialogResult.No:
-                                                            continue;
-                                                        case DialogResult.Cancel:
-                                                            textBox1.AppendText(Environment.NewLine + "Could not find " + quotedFilename);
-                                                            textBox1.AppendText(Environment.NewLine + "Packaging cancelled by user.");
-                                                            return DialogResult.Cancel;
-                                                    }
-                                                }
-                                                newFilepath = alternateFileOpenDialog.FileName;
-                                                break;
-                                            }
-                                            else
-                                                goto lblCouldNotFind; //it's not my fault C# doesn't allow falling through for switch statements
-                                        }
-                                        break;
-                                    case DialogResult.No:
-                                        lblCouldNotFind:
-                                        fileNamesToInclude.Add(newFilename); //so this one doesn't get asked about again
-                                        textBox1.AppendText(Environment.NewLine + "Could not find " + quotedFilename + ", skipping");
-                                        return DialogResult.No;
-                                    case DialogResult.Cancel:
-                                        textBox1.AppendText(Environment.NewLine + "Packaging cancelled by user.");
-                                        return DialogResult.Cancel;
-                                }
-                            }
-                            else
-                            {
-                                textBox1.AppendText(Environment.NewLine + "Could not find " + quotedFilename + ", skipping");
-                                return DialogResult.No;
-                            }
-                        }
-                        filePathsToInclude.Add(newFilepath);
-                        fileNamesToInclude.Add(newFilename);
-                        textBox1.AppendText(Environment.NewLine + "Found " + quotedFilename);
-                        return DialogResult.Yes;
-                    }
-                };
-
                 var levelFilepaths = new List<string>();
                 levelFilepaths.Add(initialLevelFilepath);
 
                 for (int levelID = 0; levelID < levelFilepaths.Count; ++levelID)
                 {
                     string levelFilepath = levelFilepaths[levelID];
-                    switch (addFilepath(levelFilepath))
+                    textBox1.AppendText(Environment.NewLine + "Inspecting level \"" + levelFilepath + '"');
+                    switch (extendedAddFilepath(ref levelFilepath))
                     {
                         case DialogResult.Yes:
                             break;
@@ -141,7 +155,7 @@ namespace MLLE
                         return;
                     }
                     var tilesetFilename = Path.ChangeExtension(j2l.MainTilesetFilename, tilesetExtension);
-                    if (addFilepath(tilesetFilename) == DialogResult.Cancel)
+                    if (addFilepath(ref tilesetFilename) == DialogResult.Cancel)
                         return;
                     if (checkboxIncludeMusic.Checked)
                     {
@@ -150,7 +164,7 @@ namespace MLLE
                         {
                             if (!Path.HasExtension(musicFilename))
                                 musicFilename = Path.ChangeExtension(musicFilename, "j2b");
-                            if (addFilepath(musicFilename) == DialogResult.Cancel)
+                            if (addFilepath(ref musicFilename) == DialogResult.Cancel)
                                 return;
                         }
                     }
@@ -158,6 +172,41 @@ namespace MLLE
                         foreach (var additionalLevelFilename in new string[] { j2l.NextLevel, j2l.SecretLevel })
                             if (additionalLevelFilename != String.Empty && !(additionalLevelFilename.Length >= 3 && StringComparer.InvariantCultureIgnoreCase.Compare(additionalLevelFilename.Substring(0,3), "end") == 0)) //any level filename starting with END is invalid (to JJ2, at least)
                                 levelFilepaths.Add(Path.ChangeExtension(additionalLevelFilename, levelExtension)); //come back to this level later in the loop
+                    if (checkScripts)
+                    {
+                        string mainScriptFilename = Path.ChangeExtension(levelFilepath, "j2as");
+                        if (File.Exists(mainScriptFilename)) //not all levels have them, and we don't want to go down this path otherwise
+                        {
+                            var scriptFilepaths = new List<string>();
+                            scriptFilepaths.Add(mainScriptFilename);
+
+                            for (int scriptID = 0; scriptID < scriptFilepaths.Count; ++scriptID)
+                            {
+                                string scriptFilepath = scriptFilepaths[scriptID];
+                                switch (extendedAddFilepath(ref scriptFilepath))
+                                {
+                                    case DialogResult.Yes:
+                                        break;
+                                    case DialogResult.No: //e.g. file not found
+                                        continue;
+                                    case DialogResult.Cancel:
+                                        return;
+                                }
+                                var fileContents = System.IO.File.ReadAllText(scriptFilepath, J2LFile.FileEncoding);
+                                foreach (System.Text.RegularExpressions.Match match in System.Text.RegularExpressions.Regex.Matches(fileContents, "#include\\s+(['\"])(.+?)\\1", System.Text.RegularExpressions.RegexOptions.IgnoreCase)) { //actually I don't even know whether #include is case-insensitive   jjSampleLoad(SOUND::ORANGE_BOEMR, "expmine.wav");
+                                    scriptFilepaths.Add(match.Groups[2].Value); //come back to this script later in the loop
+                                }
+                                foreach (System.Text.RegularExpressions.Match match in System.Text.RegularExpressions.Regex.Matches(fileContents, "(#pragma\\s+require|#pragma\\s+offer|jjNxt\\s*\\(|jjMusicLoad\\s*\\(|jjSampleLoad\\s*\\(\\s*SOUND\\s*::\\s*[a-z0-9_]+\\s*,)\\s*(['\"])(.+?)\\2", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+                                {
+                                    string foundFilepath = match.Groups[3].Value;
+                                    if (match.Groups[1].Value.Contains("jjN")) //don't need to worry about case here, because it's a function.
+                                        levelFilepaths.Add(foundFilepath);
+                                    else if (addFilepath(ref foundFilepath) == DialogResult.Cancel)
+                                        return;
+                                }
+                            }
+                        }
+                    }
                 }
 
                 textBox1.AppendText(Environment.NewLine + "Beginning ZIP...");
@@ -175,6 +224,7 @@ namespace MLLE
                 textBox1.AppendText(Environment.NewLine + "Done! Packaged " + filePathsToInclude.Count.ToString() + " files (" + (new System.IO.FileInfo(finalZipFilepath).Length / 1024).ToString() + " kb)");
                 textBox1.AppendText(Environment.NewLine + "Click OK to finish.");
                 OKButton.Enabled = true;
+                CancelButton.Enabled = false;
                 OKButton.Text = "OK";
             }
         }
