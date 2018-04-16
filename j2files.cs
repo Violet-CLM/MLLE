@@ -2183,7 +2183,7 @@ class J2LFile : J2File
                     {
                         SecurityString = SecurityStringExtraDataNotForDirectEditing;
                     }
-                    else if (Data5 != null) //plus-only level, so damage the security envelope for JCS
+                    else if (Data5 != null || ContainsVerticallyFlippedTiles) //plus-only level, so damage the security envelope for JCS
                     {
                         SecurityString = SecurityStringMLLE;
                     }
