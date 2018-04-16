@@ -154,9 +154,12 @@ namespace MLLE
                         textBox1.AppendText(Environment.NewLine + "Unexpected error while opening level." + Environment.NewLine + "Packaging cancelled.");
                         return;
                     }
-                    var tilesetFilename = Path.ChangeExtension(j2l.MainTilesetFilename, tilesetExtension);
-                    if (addFilepath(ref tilesetFilename) == DialogResult.Cancel)
-                        return;
+                    if (tilesetExtension != String.Empty) //not GorH
+                    {
+                        var tilesetFilename = Path.ChangeExtension(j2l.MainTilesetFilename, tilesetExtension);
+                        if (addFilepath(ref tilesetFilename) == DialogResult.Cancel)
+                            return;
+                    }
                     if (checkboxIncludeMusic.Checked)
                     {
                         var musicFilename = j2l.Music;
