@@ -127,8 +127,13 @@ namespace MLLE
             else
             {
                 textBox1.AppendText(Environment.NewLine + "Start!");
-                checkboxExcludeDefault.Enabled = checkboxIncludeMusic.Enabled = checkboxMissing.Enabled = checkboxMultipleLevels.Enabled = OKButton.Enabled = false;
+                checkboxAngelscriptFunctions.Enabled = checkboxExcludeDefault.Enabled = checkboxIncludeMusic.Enabled = checkboxMissing.Enabled = checkboxMultipleLevels.Enabled = OKButton.Enabled = false;
                 Directory.SetCurrentDirectory(Path.GetDirectoryName(initialLevelFilepath));
+
+                string angelscriptPragmaPattern = "(#pragma\\s+require|#pragma\\s+offer";
+                if (checkboxAngelscriptFunctions.Checked)
+                    angelscriptPragmaPattern += "|jjNxt\\s*\\(|jjMusicLoad\\s*\\(|jjLayersFromLevel\\s*\\(|jjTilesFromTileset\\s*\\(|jjSampleLoad\\s*\\(\\s*SOUND\\s*::\\s*[a-z0-9_]+\\s*,";
+                angelscriptPragmaPattern += ")\\s*(['\"])(.+?)\\2";
 
                 var levelFilepaths = new List<string>();
                 levelFilepaths.Add(initialLevelFilepath);
@@ -199,7 +204,7 @@ namespace MLLE
                                 foreach (System.Text.RegularExpressions.Match match in System.Text.RegularExpressions.Regex.Matches(fileContents, "#include\\s+(['\"])(.+?)\\1", System.Text.RegularExpressions.RegexOptions.IgnoreCase)) { //actually I don't even know whether #include is case-insensitive   jjSampleLoad(SOUND::ORANGE_BOEMR, "expmine.wav");
                                     scriptFilepaths.Add(match.Groups[2].Value); //come back to this script later in the loop
                                 }
-                                foreach (System.Text.RegularExpressions.Match match in System.Text.RegularExpressions.Regex.Matches(fileContents, "(#pragma\\s+require|#pragma\\s+offer|jjNxt\\s*\\(|jjMusicLoad\\s*\\(|jjLayersFromLevel\\s*\\(|jjTilesFromTileset\\s*\\(|jjSampleLoad\\s*\\(\\s*SOUND\\s*::\\s*[a-z0-9_]+\\s*,)\\s*(['\"])(.+?)\\2", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+                                foreach (System.Text.RegularExpressions.Match match in System.Text.RegularExpressions.Regex.Matches(fileContents, angelscriptPragmaPattern, System.Text.RegularExpressions.RegexOptions.IgnoreCase))
                                 {
                                     string foundFilepath = match.Groups[3].Value;
                                     if (match.Groups[1].Value.Contains("jjN")) //don't need to worry about case here, because it's a function.
@@ -257,7 +262,7 @@ namespace MLLE
                 checkboxExcludeDefault.Enabled = false;
                 checkboxExcludeDefault.Checked = false;
             }
-
+            checkboxAngelscriptFunctions.Enabled = checkScripts;
 
             textBox1.AppendText("Level filename: " + ilf + " ->");
             textBox1.AppendText(Environment.NewLine + "ZIP filename: " + fzp);

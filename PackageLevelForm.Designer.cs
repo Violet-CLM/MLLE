@@ -35,12 +35,13 @@
             this.checkboxMultipleLevels = new System.Windows.Forms.CheckBox();
             this.checkboxExcludeDefault = new System.Windows.Forms.CheckBox();
             this.checkboxIncludeMusic = new System.Windows.Forms.CheckBox();
+            this.checkboxAngelscriptFunctions = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // textBox1
             // 
             this.textBox1.BackColor = System.Drawing.SystemColors.Window;
-            this.textBox1.Location = new System.Drawing.Point(12, 57);
+            this.textBox1.Location = new System.Drawing.Point(12, 78);
             this.textBox1.Multiline = true;
             this.textBox1.Name = "textBox1";
             this.textBox1.ReadOnly = true;
@@ -50,7 +51,7 @@
             // 
             // OKButton
             // 
-            this.OKButton.Location = new System.Drawing.Point(327, 170);
+            this.OKButton.Location = new System.Drawing.Point(327, 191);
             this.OKButton.Name = "OKButton";
             this.OKButton.Size = new System.Drawing.Size(75, 23);
             this.OKButton.TabIndex = 1;
@@ -73,7 +74,7 @@
             // CancelButton
             // 
             this.CancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.CancelButton.Location = new System.Drawing.Point(246, 171);
+            this.CancelButton.Location = new System.Drawing.Point(246, 192);
             this.CancelButton.Name = "CancelButton";
             this.CancelButton.Size = new System.Drawing.Size(75, 23);
             this.CancelButton.TabIndex = 4;
@@ -116,13 +117,24 @@
             this.checkboxIncludeMusic.Text = "Include Music";
             this.checkboxIncludeMusic.UseVisualStyleBackColor = true;
             // 
+            // checkboxAngelscriptFunctions
+            // 
+            this.checkboxAngelscriptFunctions.AutoSize = true;
+            this.checkboxAngelscriptFunctions.Location = new System.Drawing.Point(16, 55);
+            this.checkboxAngelscriptFunctions.Name = "checkboxAngelscriptFunctions";
+            this.checkboxAngelscriptFunctions.Size = new System.Drawing.Size(281, 17);
+            this.checkboxAngelscriptFunctions.TabIndex = 8;
+            this.checkboxAngelscriptFunctions.Text = "Search for Filenames Passed to AngelScript Functions";
+            this.checkboxAngelscriptFunctions.UseVisualStyleBackColor = true;
+            // 
             // PackageLevelForm
             // 
             this.AcceptButton = this.OKButton;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.CancelButton;
-            this.ClientSize = new System.Drawing.Size(414, 202);
+            this.ClientSize = new System.Drawing.Size(414, 226);
+            this.Controls.Add(this.checkboxAngelscriptFunctions);
             this.Controls.Add(this.checkboxIncludeMusic);
             this.Controls.Add(this.checkboxExcludeDefault);
             this.Controls.Add(this.checkboxMultipleLevels);
@@ -150,5 +162,6 @@
         private System.Windows.Forms.CheckBox checkboxMultipleLevels;
         private System.Windows.Forms.CheckBox checkboxExcludeDefault;
         private System.Windows.Forms.CheckBox checkboxIncludeMusic;
+        private System.Windows.Forms.CheckBox checkboxAngelscriptFunctions;
     }
 }
