@@ -100,7 +100,7 @@ namespace MLLE
                             RedoBuffer.Clear();
                             var PixelsBeingChanged = new List<ChangedPixel>();
                             if (FillButton.Checked)
-                                Fill(new Point(x, y), PrimaryColor, color, PixelsBeingChanged);
+                                Fill(new Point(x, y), colorToDraw, color, PixelsBeingChanged);
                             else
                             {
                                 PixelsBeingChanged.Add(new ChangedPixel(Image[xy], xy));
