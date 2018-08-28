@@ -652,9 +652,9 @@ namespace MLLE
                 case (Keys.Control | Keys.E): { GrabEventAtMouse(); return true; }
                 case (Keys.Shift | Keys.E): { PasteEventAtMouse(); return true; }
                 case Keys.E: { SelectEventAtMouse(); return true; }
-
-                case Keys.Oemcomma: { SetStampDimensions(1, 1); CurrentStamp[0][0] = new TileAndEvent((LastFocusedZone == FocusedZone.Level) ? CurrentLayer.TileMap[MouseTileX, MouseTileY] : (ushort)MouseTile, 0); ShowBlankTileInStamp = true; DeselectAll(); return true; }
-                case (Keys.Shift | Keys.Oemcomma): { SetStampDimensions(1, 1); CurrentStamp[0][0] = new TileAndEvent((LastFocusedZone == FocusedZone.Level) ? CurrentLayer.TileMap[MouseTileX, MouseTileY] : (ushort)MouseTile, MouseAGAEvent.ID); ShowBlankTileInStamp = true; DeselectAll(); return true; }
+                    
+                case Keys.Oemcomma: { CommaPressed(0); return true; }
+                case (Keys.Shift | Keys.Oemcomma): { CommaPressed(CurrentLayer == J2L.SpriteLayer ? MouseAGAEvent.ID : 0); return true; }
                 case Keys.Back: { ShowBlankTileInStamp = true; SetStampDimensions(1, 1); CurrentStamp[0][0] = new TileAndEvent(0, 0); DeselectAll(); return true; }
 
                 case (Keys.Control | Keys.B):
@@ -3103,6 +3103,19 @@ namespace MLLE
 
         bool MouseHeldDownSelection = false, MouseHeldDownAction = false;
         ToolStripButton DeepEditingTool, VisibleEditingTool;
+
+        private void CommaPressed(uint eventID) {
+            if (LastFocusedZone == FocusedZone.Level)
+            {
+                var tileMap = CurrentLayer.TileMap;
+                if (MouseTileX >= tileMap.GetLength(0) || MouseTileY >= tileMap.GetLength(1))
+                    return; //nothing can be done
+            }
+            SetStampDimensions(1, 1);
+            CurrentStamp[0][0] = new TileAndEvent((LastFocusedZone == FocusedZone.Level) ? CurrentLayer.TileMap[MouseTileX, MouseTileY] : (ushort)MouseTile, eventID);
+            ShowBlankTileInStamp = true;
+            DeselectAll();
+        }
 
         private void LevelDisplay_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
         {
