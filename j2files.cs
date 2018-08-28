@@ -2513,6 +2513,7 @@ class J2LFile : J2File
                             Array.Resize(ref unknownsection2, 1024);
                             Array.Resize(ref TileTypes, 1024);
                             Array.Resize(ref unknownsection3, 1024);*/
+                            AnimOffset -= 4096 - 1024;
                         }
                         VersionType = nuVersion;
                         return VersionChangeResults.Success;
@@ -2536,6 +2537,7 @@ class J2LFile : J2File
                             Array.Resize(ref TileTypes, 4096);
                             Array.Resize(ref IsEachTileUsed, 4096);
                         }
+                        AnimOffset += 4096 - 1024;
                     }
                     if (nuVersion == Version.AGA) //pretend support!
                     {
