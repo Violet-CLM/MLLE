@@ -57,6 +57,14 @@ namespace MLLE
         {Version.AGA, null },
         {Version.GorH, null },
         };
+        public Dictionary<Version, List<StringAndIndex>> FlatEventLists = new Dictionary<Version, List<StringAndIndex>> {
+        {Version.BC, null },
+        {Version.O, null },
+        {Version.JJ2, null },
+        {Version.TSF, null },
+        {Version.AGA, null },
+        {Version.GorH, null },
+        };
         //public string BonusLevelName;
         public Dictionary<Version, Dictionary<EnableableTitles, string>> EnableableStrings = new Dictionary<Version, Dictionary<EnableableTitles, string>> {
         {Version.BC, null },
@@ -212,6 +220,7 @@ namespace MLLE
             if (TreeStructure[version] == null)
             {
                 List<TreeNode>[] TreeNodeLists = TreeStructure[version] = new List<TreeNode>[2];
+                List<StringAndIndex> FlatEventList = FlatEventLists[version] = new List<StringAndIndex>();
                 TreeNodeLists[0] = new List<TreeNode>();
                 TreeNodeLists[1] = new List<TreeNode>();
                 for (ushort i = 0; i < 256; i++)
@@ -239,6 +248,7 @@ namespace MLLE
                 {
                     if (EventsFromIni[i][2].Trim() != "")
                     {
+                        FlatEventList.Add(new StringAndIndex(EventsFromIni[i][0], i));
                         TreeNodeLists[0].First((TreeNode node) => { return node.Nodes.ContainsKey(EventsFromIni[i][2].TrimEnd()); }).Nodes.Find(EventsFromIni[i][2].TrimEnd(), false)[0].Nodes.Add(i.ToString(), EventsFromIni[i][0].TrimEnd());
                         if (EventsFromIni[i][1] == "+") TreeNodeLists[1].First((TreeNode node) => { return node.Nodes.ContainsKey(EventsFromIni[i][2].TrimEnd()); }).Nodes.Find(EventsFromIni[i][2].TrimEnd(), false)[0].Nodes.Add(i.ToString(), EventsFromIni[i][0].TrimEnd());
                     }

@@ -37,6 +37,7 @@ namespace MLLE
         Dictionary<ComboBox, List<ComboBox>> CombosPointingToCombos;
         bool SafeToCalculate = false, SafeToCacheOldParameters = false;
         static List<UInt32> LastUsedEvents = new List<UInt32>(0);
+        List<Mainframe.StringAndIndex> FlatEventList;
         public EventForm(Mainframe parent, TreeNode[] nodes, Version theVersion, AGAEvent inputevent)
         {
             WorkingEvent = inputevent;
@@ -75,6 +76,8 @@ namespace MLLE
                     Tree.Nodes.Add(recentNodes);
                 }
             }
+            ListBox.Size = Tree.Size;
+            FlatEventList = SourceForm.FlatEventLists[SourceForm.J2L.VersionType];
         }
 
         void SetTextOfAndPossiblyCreateLabel(byte id, string text)
@@ -598,6 +601,28 @@ namespace MLLE
             Tree_AfterSelect(null, null);
             SafeToCacheOldParameters = true;
             Bitfield.Text = Convert.ToString((int)WorkingEvent.ID, 2).PadLeft(32, '0');
+        }
+
+        private void EventNameInput_TextChanged(object sender, EventArgs e)
+        {
+            ListBox.Items.Clear();
+            if (ListBox.Visible = (EventNameInput.Text.Length > 0))
+            {
+                ListBox.Items.AddRange(FlatEventList.Where(i => System.Globalization.CultureInfo.InvariantCulture.CompareInfo.IndexOf(i.String, EventNameInput.Text, System.Globalization.CompareOptions.IgnoreCase) >= 0).Cast<object>().ToArray());
+            }
+        }
+
+        private void ListBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (ListBox.SelectedItem != null)
+            {
+                var results = Tree.Nodes.Find(((Mainframe.StringAndIndex)ListBox.SelectedItem).Index.ToString(), true);
+                if (results.Length == 1)
+                {
+                    EventNameInput.Clear();
+                    Tree.SelectedNode = results[0];
+                }
+            }
         }
 
         int i, s, v, sets;
