@@ -352,6 +352,8 @@ namespace MLLE
             }
             MakeVersionChangesAvailable();
 
+            SetStampDimensions(1, 1);
+            CurrentStamp[0][0] = new TileAndEvent(0, 0);
 
             for (int i = 1; i <= 10; ++i)
             {
