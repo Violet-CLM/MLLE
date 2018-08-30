@@ -2055,6 +2055,11 @@ namespace MLLE
                 {
                     xspeedparallax = (CurrentLayer.XSpeed == 0) ? 0 : (int)((LDScrollH.Value + widthreduced) / CurrentLayer.XSpeed);
                     yspeedparallax = (CurrentLayer.YSpeed == 0) ? 0 : (int)((LDScrollV.Value + (CurrentLayer.LimitVisibleRegion ? heightreduced * 2 : heightreduced)) / CurrentLayer.YSpeed);
+                    if (EnableableBools[J2L.VersionType][EnableableTitles.BoolDevelopingForPlus])
+                    {
+                        xspeedparallax -= (int)CurrentLayer.WaveX;
+                        yspeedparallax -= (int)CurrentLayer.WaveY;
+                    }
                     SetTextureTo(AtlasID.Image);
                     GL.Enable(EnableCap.Blend);
                     if (ParallaxDisplayMode == ParallaxMode.TemporaryParallax) GL.Color4((byte)255, (byte)255, (byte)255, (byte)64);
