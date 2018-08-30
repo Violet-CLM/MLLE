@@ -921,9 +921,9 @@ class Layer
         if (x < RealWidth && y < Height && x >= 0 && y >= 0) return TileMap[x, y];
         else return 0;
     }*/
-    public void GetOriginNumbers(int xPosition, int yPosition, ref int widthReduced, ref int heightReduced, ref int xOrigin, ref int yOrigin, ref int upperLeftX, ref int upperLeftY)
+    public void GetOriginNumbers(int xPosition, int yPosition, ref int widthReduced, ref int heightReduced, ref int xOrigin, ref int yOrigin, ref int upperLeftX, ref int upperLeftY, bool useLayer8Speeds)
     {
-        if (id == 7)
+        if (id == 7 && !useLayer8Speeds)
         {
             upperLeftX = -32 - widthReduced;
             upperLeftY = -32 - (LimitVisibleRegion ? heightReduced * 2 : heightReduced);
@@ -938,7 +938,7 @@ class Layer
         yOrigin = -32 - (upperLeftY % 32);
         upperLeftY /= 32;
     }
-    public void GetFixedCornerOriginNumbers(int xPosition, int yPosition, int widthReduced, int heightReduced, ref int xOrigin, ref int yOrigin, ref int upperLeftX, ref int upperLeftY, byte tileSize, bool applyWaveAsOffsets)
+    public void GetFixedCornerOriginNumbers(int xPosition, int yPosition, int widthReduced, int heightReduced, ref int xOrigin, ref int yOrigin, ref int upperLeftX, ref int upperLeftY, byte tileSize, bool applyWaveAsOffsets, bool useLayer8Speeds)
     {
         /*if (id == 7)
         {
@@ -950,7 +950,7 @@ class Layer
             upperLeftX = (int)Math.Floor(xPosition * XSpeed) - tileSize;
             upperLeftY = (int)(yPosition * YSpeed - (LimitVisibleRegion ? heightReduced * 2 : 0)) - tileSize;
         }*/
-        if (id == 7)
+        if (id == 7 && !useLayer8Speeds)
         {
             upperLeftX = -32;
             upperLeftY = -32;

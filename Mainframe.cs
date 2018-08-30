@@ -2318,7 +2318,7 @@ namespace MLLE
 
         internal void Reindeer(Layer currentlayer)
         {
-            currentlayer.GetFixedCornerOriginNumbers(xspeedparallax, yspeedparallax, widthreduced, heightreduced, ref xorigin, ref yorigin, ref upperleftx, ref upperlefty, ZoomTileSize, EnableableBools[J2L.VersionType][EnableableTitles.BoolDevelopingForPlus]);
+            currentlayer.GetFixedCornerOriginNumbers(xspeedparallax, yspeedparallax, widthreduced, heightreduced, ref xorigin, ref yorigin, ref upperleftx, ref upperlefty, ZoomTileSize, EnableableBools[J2L.VersionType][EnableableTitles.BoolDevelopingForPlus], J2L.VersionType == Version.AGA);
             tempxorigin = xorigin; tempupperleftx = upperleftx;
             if (currentlayer.TileWidth)
             {
@@ -2430,7 +2430,7 @@ namespace MLLE
             //yorigin = -ZoomTileSize - (upperlefty % ZoomTileSize);
             //upperlefty /= ZoomTileSize;
             //tempxorigin = xorigin; tempupperleftx = upperleftx;
-            currentlayer.GetFixedCornerOriginNumbers(xspeedparallax, yspeedparallax, widthreduced, heightreduced, ref xorigin, ref yorigin, ref upperleftx, ref upperlefty, ZoomTileSize, false);
+            currentlayer.GetFixedCornerOriginNumbers(xspeedparallax, yspeedparallax, widthreduced, heightreduced, ref xorigin, ref yorigin, ref upperleftx, ref upperlefty, ZoomTileSize, false, false);
             tempxorigin = xorigin; tempupperleftx = upperleftx;
             for (xloop = 0; xloop < drawxloopsize; xloop++)
             {
