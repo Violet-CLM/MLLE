@@ -543,7 +543,7 @@ namespace MLLE
                 //bitpush += Convert.ToByte(size.Substring(size.Length-1,1));
                 bitpush += GetNumberAtEndOfString(CurrentEvent[i + 5], false);
             }
-            result |= WorkingEvent.ID & (0xFFFFFFFFu << bitpush); //keep hidden parameter values
+            result |= WorkingEvent.ID & (uint)(0xFFFFFFFFuL << bitpush); //keep hidden parameter values
             return result;
         }
 
