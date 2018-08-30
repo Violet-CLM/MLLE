@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -18,7 +20,7 @@ namespace MLLE
         }
 
         byte[] Image, OriginalImage;
-        static byte[] ClipboardImage = null, ClipboardMask = null;
+        static byte[] ClipboardMask = null;
         SolidBrush[] Colors = new SolidBrush[Palette.PaletteSize];
         Bitmap ImageImage;
 
@@ -210,32 +212,106 @@ namespace MLLE
             DrawImage();
         }
 
+        static readonly byte[] DIBHeaderFor32x32PalettedImages = {
+            0x28,0,0,0, //bV5Size
+            0x20,0,0,0, //bV5Width
+            0x20,0,0,0, //bV5Height
+            1,0, //bV5Planes
+            8,0, //bV5Size
+            0,0,0,0, //bV5Compression
+            0,4,0,0, //bV5SizeImage
+            0xD4,0x0E,0,0, //bV5XPelsPerMeter
+            0xD4,0x0E,0,0, //bV5YPelsPerMeter
+            0,1,0,0, //bV5ClrUsed
+            0,1,0,0 //bV5ClrImportant
+        };
         private void copyToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (EditingImage)
-                ClipboardImage = Image.Clone() as byte[];
+            {
+                using (System.IO.MemoryStream memStream = new System.IO.MemoryStream())
+                {
+                    using (var writer = new System.IO.BinaryWriter(memStream, J2File.FileEncoding, true))
+                    {
+                        writer.Write(DIBHeaderFor32x32PalettedImages);
+                        for (uint i = 0; i < Palette.PaletteSize; ++i) //reverse color order
+                        {
+                            var bytesToRearrange = originalPalette.Palette.Colors[i];
+                            writer.Write(bytesToRearrange[2]);
+                            writer.Write(bytesToRearrange[1]);
+                            writer.Write(bytesToRearrange[0]);
+                            writer.Write(bytesToRearrange[3]);
+                        }
+                        for (int y = 31; y >= 0; --y)
+                            writer.Write(Image.Skip(y * 32).Take(32).ToArray()); //reverse row order
+                    }
+
+                    memStream.Seek(0, System.IO.SeekOrigin.Begin);
+                    var dob = new DataObject();
+                    dob.SetData(DataFormats.Dib, false, memStream);
+                    Clipboard.SetDataObject(dob, true);
+                }
+            }
             else
-                ClipboardMask = Image.Clone() as byte[];
-            pasteToolStripMenuItem.Enabled = true;
+            {
+                ClipboardMask = Image.Clone() as byte[]; //a lot simpler but limited to this particular application
+                pasteToolStripMenuItem.Enabled = true;
+            }
         }
 
+        private void pasteImage(bool over)
+        {
+            if (Clipboard.ContainsData(DataFormats.Dib))
+                using (var memStream = Clipboard.GetData(DataFormats.Dib) as System.IO.MemoryStream)
+                    if (memStream.Length == DIBHeaderFor32x32PalettedImages.Length + 256 * 4 + 32 * 32)
+                        using (var reader = new System.IO.BinaryReader(memStream, J2File.FileEncoding, true))
+                        {
+                            var header = reader.ReadBytes(DIBHeaderFor32x32PalettedImages.Length);
+                            header[24] = header[28] = 0xD4; //we don't really care what the image editing program thinks are optimal pixels per meter, so normalize these in advance of the SequenceEqual comparison below
+                            header[25] = header[29] = 0x0E;
+                            header[37] = 1; //0 is as valid a number for bV5ClrImportant as 256 is, so again, normalize.
+                            if (header.SequenceEqual(DIBHeaderFor32x32PalettedImages))
+                            {
+                                reader.ReadBytes(256 * 4); //skip over palette
+
+                                MakeEntireImageUndoable();
+                                var clipboard = new List<byte>();
+                                for (int y = 0; y < 32; ++y)
+                                    clipboard.InsertRange(0, reader.ReadBytes(32));
+                                if (over)
+                                {
+                                    for (int i = 0; i < 32 * 32; ++i)
+                                        if (clipboard[i] != 0)
+                                            Image[i] = clipboard[i];
+                                }
+                                else //under
+                                {
+                                    for (int i = 0; i < 32 * 32; ++i)
+                                        if (Image[i] == 0)
+                                            Image[i] = clipboard[i];
+                                }
+                                DrawImage();
+                            }
+                        }
+
+        }
         private void pasteToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MakeEntireImageUndoable();
-            byte[] clipboard = EditingImage ? ClipboardImage : ClipboardMask;
-            for (int i = 0; i < 32 * 32; ++i)
-                if (clipboard[i] != 0)
-                    Image[i] = clipboard[i];
-            DrawImage();
+            if (EditingImage)
+                pasteImage(true);
+            else
+            {
+                MakeEntireImageUndoable();
+                for (int i = 0; i < 32 * 32; ++i)
+                    if (ClipboardMask[i] != 0)
+                        Image[i] = ClipboardMask[i];
+                DrawImage();
+            }
         }
 
         private void pasteUnderToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MakeEntireImageUndoable();
-            for (int i = 0; i < 32 * 32; ++i)
-                if (Image[i] == 0)
-                    Image[i] = ClipboardImage[i];
-            DrawImage();
+            pasteImage(false);
         }
 
         private void TileImageEditorForm_KeyDown(object sender, KeyEventArgs e)
@@ -315,17 +391,18 @@ namespace MLLE
 
         bool EditingImage;
 
+        PaletteImage originalPalette;
         internal bool ShowForm(ref byte[] image, byte[] originalImage, Palette palette)
         {
             if (EditingImage = (palette != null)) //image
             {
-                PaletteImage original = new PaletteImage(5, 0, true, false);
-                original.Palette = palette;
-                original.Location = new Point(OKButton.Location.X, ButtonCancel.Location.Y + (ButtonCancel.Location.Y - OKButton.Location.Y));
-                original.MouseLeave += control_MouseLeave;
-                original.MouseMove += pictureBox_MouseMove;
-                original.MouseDown += pictureBox_MouseDown;
-                Controls.Add(original);
+                originalPalette = new PaletteImage(5, 0, true, false);
+                originalPalette.Palette = palette;
+                originalPalette.Location = new Point(OKButton.Location.X, ButtonCancel.Location.Y + (ButtonCancel.Location.Y - OKButton.Location.Y));
+                originalPalette.MouseLeave += control_MouseLeave;
+                originalPalette.MouseMove += pictureBox_MouseMove;
+                originalPalette.MouseDown += pictureBox_MouseDown;
+                Controls.Add(originalPalette);
 
                 for (uint i = 0; i < Palette.PaletteSize; ++i)
                     Colors[i] = new SolidBrush(Palette.Convert(palette.Colors[i]));
@@ -354,8 +431,8 @@ namespace MLLE
             ImageImage = new Bitmap(pictureBox1.Width, pictureBox1.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
             DrawImage();
 
-            pasteToolStripMenuItem.Enabled = (EditingImage ? ClipboardImage : ClipboardMask) != null;
-            pasteUnderToolStripMenuItem.Enabled = (EditingImage) && (ClipboardImage != null); //no use in pasting under a mask
+            pasteToolStripMenuItem.Enabled = EditingImage || ClipboardMask != null;
+            pasteUnderToolStripMenuItem.Enabled = EditingImage; //no use in pasting under a mask
 
             ShowDialog();
 
