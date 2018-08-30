@@ -186,6 +186,7 @@
             this.AnimScrollbar = new System.Windows.Forms.HScrollBar();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
+            this.automaskToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MainMenu.SuspendLayout();
             this.DrawingTools.SuspendLayout();
             this.StatusBar.SuspendLayout();
@@ -1369,11 +1370,12 @@
             this.toolStripSeparator15,
             this.imageToolStripMenuItem,
             this.maskToolStripMenuItem,
+            this.automaskToolStripMenuItem,
             this.editAnimationToolStripMenuItem,
             this.cloneAnimationToolStripMenuItem,
             this.deleteAnimationToolStripMenuItem});
             this.TContextMenu.Name = "TContextMenu";
-            this.TContextMenu.Size = new System.Drawing.Size(167, 236);
+            this.TContextMenu.Size = new System.Drawing.Size(167, 280);
             // 
             // SetEventTS
             // 
@@ -1640,6 +1642,13 @@
             // 
             this.folderBrowserDialog1.ShowNewFolderButton = false;
             // 
+            // automaskToolStripMenuItem
+            // 
+            this.automaskToolStripMenuItem.Name = "automaskToolStripMenuItem";
+            this.automaskToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.automaskToolStripMenuItem.Text = "Automask";
+            this.automaskToolStripMenuItem.Click += new System.EventHandler(this.automaskToolStripMenuItem_Click);
+            // 
             // Mainframe
             // 
             this.AllowDrop = true;
@@ -1851,5 +1860,6 @@
         private System.Windows.Forms.ToolStripMenuItem Zoom400;
         private System.Windows.Forms.ToolStripMenuItem previewHelpStringColorsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem saveTilesetImageToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem automaskToolStripMenuItem;
     }
 }
