@@ -32,7 +32,6 @@
             this.Tree = new System.Windows.Forms.TreeView();
             this.ButtonOK = new System.Windows.Forms.Button();
             this.ButtonCancel = new System.Windows.Forms.Button();
-            this.TreeLabel = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.Illuminate = new System.Windows.Forms.CheckBox();
             this.Generator = new System.Windows.Forms.CheckBox();
@@ -56,6 +55,8 @@
             this.BitBox8 = new System.Windows.Forms.CheckBox();
             this.BitBox7 = new System.Windows.Forms.CheckBox();
             this.BitBox6 = new System.Windows.Forms.CheckBox();
+            this.ListBox = new System.Windows.Forms.ListBox();
+            this.EventNameInput = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
@@ -66,7 +67,7 @@
             this.Tree.Location = new System.Drawing.Point(12, 31);
             this.Tree.Name = "Tree";
             this.Tree.Size = new System.Drawing.Size(329, 233);
-            this.Tree.TabIndex = 0;
+            this.Tree.TabIndex = 51;
             this.Tree.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.Tree_ItemDrag);
             this.Tree.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.Tree_AfterSelect);
             // 
@@ -90,16 +91,6 @@
             this.ButtonCancel.Text = "Cancel";
             this.ButtonCancel.UseVisualStyleBackColor = true;
             this.ButtonCancel.Click += new System.EventHandler(this.ButtonCancel_Click);
-            // 
-            // TreeLabel
-            // 
-            this.TreeLabel.AutoSize = true;
-            this.TreeLabel.Location = new System.Drawing.Point(12, 15);
-            this.TreeLabel.Name = "TreeLabel";
-            this.TreeLabel.RightToLeft = System.Windows.Forms.RightToLeft.No;
-            this.TreeLabel.Size = new System.Drawing.Size(67, 13);
-            this.TreeLabel.TabIndex = 4;
-            this.TreeLabel.Text = "Select event";
             // 
             // label1
             // 
@@ -344,6 +335,24 @@
             this.BitBox6.Text = "Bit 6";
             this.BitBox6.UseVisualStyleBackColor = true;
             // 
+            // ListBox
+            // 
+            this.ListBox.FormattingEnabled = true;
+            this.ListBox.Location = new System.Drawing.Point(12, 31);
+            this.ListBox.Name = "ListBox";
+            this.ListBox.Size = new System.Drawing.Size(329, 225);
+            this.ListBox.TabIndex = 50;
+            this.ListBox.Visible = false;
+            this.ListBox.SelectedIndexChanged += new System.EventHandler(this.ListBox_SelectedIndexChanged);
+            // 
+            // EventNameInput
+            // 
+            this.EventNameInput.Location = new System.Drawing.Point(12, 8);
+            this.EventNameInput.Name = "EventNameInput";
+            this.EventNameInput.Size = new System.Drawing.Size(127, 20);
+            this.EventNameInput.TabIndex = 0;
+            this.EventNameInput.TextChanged += new System.EventHandler(this.EventNameInput_TextChanged);
+            // 
             // EventForm
             // 
             this.AcceptButton = this.ButtonOK;
@@ -351,6 +360,8 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
             this.ClientSize = new System.Drawing.Size(474, 322);
+            this.Controls.Add(this.EventNameInput);
+            this.Controls.Add(this.ListBox);
             this.Controls.Add(this.BitBox10);
             this.Controls.Add(this.BitBox9);
             this.Controls.Add(this.BitBox8);
@@ -367,7 +378,6 @@
             this.Controls.Add(this.ModeSelect);
             this.Controls.Add(this.Generator);
             this.Controls.Add(this.Illuminate);
-            this.Controls.Add(this.TreeLabel);
             this.Controls.Add(this.ButtonCancel);
             this.Controls.Add(this.ButtonOK);
             this.Controls.Add(this.Tree);
@@ -393,7 +403,6 @@
         private System.Windows.Forms.TreeView Tree;
         private System.Windows.Forms.Button ButtonOK;
         private System.Windows.Forms.Button ButtonCancel;
-        private System.Windows.Forms.Label TreeLabel;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.CheckBox Illuminate;
         private System.Windows.Forms.CheckBox Generator;
@@ -417,5 +426,7 @@
         private System.Windows.Forms.CheckBox BitBox6;
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.ListBox ListBox;
+        private System.Windows.Forms.TextBox EventNameInput;
     }
 }

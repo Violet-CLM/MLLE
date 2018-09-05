@@ -47,6 +47,7 @@
             this.swapGreenBlueToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.swapBlueRedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.SaveButton = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -87,7 +88,7 @@
             // LoadButton
             // 
             this.LoadButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.LoadButton.Location = new System.Drawing.Point(327, 287);
+            this.LoadButton.Location = new System.Drawing.Point(327, 229);
             this.LoadButton.Name = "LoadButton";
             this.LoadButton.Size = new System.Drawing.Size(75, 23);
             this.LoadButton.TabIndex = 5;
@@ -212,7 +213,18 @@
             // openFileDialog1
             // 
             this.openFileDialog1.DefaultExt = "j2t";
-            this.openFileDialog1.Filter = "Tilesets|*.j2t|Palettes|*.pal|All files|*.*";
+            this.openFileDialog1.Filter = "Tilesets|*.j2t|Color Tables|*.pal|All files|*.*";
+            // 
+            // SaveButton
+            // 
+            this.SaveButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.SaveButton.Location = new System.Drawing.Point(327, 258);
+            this.SaveButton.Name = "SaveButton";
+            this.SaveButton.Size = new System.Drawing.Size(75, 23);
+            this.SaveButton.TabIndex = 7;
+            this.SaveButton.Text = "Save...";
+            this.SaveButton.UseVisualStyleBackColor = true;
+            this.SaveButton.Click += new System.EventHandler(this.SaveButton_Click);
             // 
             // PaletteForm
             // 
@@ -221,6 +233,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
             this.ClientSize = new System.Drawing.Size(414, 351);
+            this.Controls.Add(this.SaveButton);
             this.Controls.Add(this.LoadButton);
             this.Controls.Add(this.ResetButton);
             this.Controls.Add(this.ButtonCancel);
@@ -263,5 +276,6 @@
         private System.Windows.Forms.ToolStripMenuItem swapGreenBlueToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem swapBlueRedToolStripMenuItem;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
+        private System.Windows.Forms.Button SaveButton;
     }
 }

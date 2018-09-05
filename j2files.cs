@@ -993,9 +993,9 @@ class Layer
         if (x < RealWidth && y < Height && x >= 0 && y >= 0) return TileMap[x, y];
         else return 0;
     }*/
-    public void GetOriginNumbers(int xPosition, int yPosition, ref int widthReduced, ref int heightReduced, ref int xOrigin, ref int yOrigin, ref int upperLeftX, ref int upperLeftY)
+    public void GetOriginNumbers(int xPosition, int yPosition, ref int widthReduced, ref int heightReduced, ref int xOrigin, ref int yOrigin, ref int upperLeftX, ref int upperLeftY, bool useLayer8Speeds)
     {
-        if (id == 7)
+        if (id == 7 && !useLayer8Speeds)
         {
             upperLeftX = -32 - widthReduced;
             upperLeftY = -32 - (LimitVisibleRegion ? heightReduced * 2 : heightReduced);
@@ -1010,7 +1010,7 @@ class Layer
         yOrigin = -32 - (upperLeftY % 32);
         upperLeftY /= 32;
     }
-    public void GetFixedCornerOriginNumbers(int xPosition, int yPosition, int widthReduced, int heightReduced, ref int xOrigin, ref int yOrigin, ref int upperLeftX, ref int upperLeftY, byte tileSize, bool applyWaveAsOffsets)
+    public void GetFixedCornerOriginNumbers(int xPosition, int yPosition, int widthReduced, int heightReduced, ref int xOrigin, ref int yOrigin, ref int upperLeftX, ref int upperLeftY, byte tileSize, bool applyWaveAsOffsets, bool useLayer8Speeds)
     {
         /*if (id == 7)
         {
@@ -1022,7 +1022,7 @@ class Layer
             upperLeftX = (int)Math.Floor(xPosition * XSpeed) - tileSize;
             upperLeftY = (int)(yPosition * YSpeed - (LimitVisibleRegion ? heightReduced * 2 : 0)) - tileSize;
         }*/
-        if (id == 7)
+        if (id == 7 && !useLayer8Speeds)
         {
             upperLeftX = -32;
             upperLeftY = -32;
@@ -1155,10 +1155,11 @@ class AnimatedTile
     }
     public void Advance(int frame, int random=0)
     {
-        if (frame * Speed / 70 > hitherto)
+        int newTime = frame * Speed / 70;
+        if (newTime > hitherto)
         {
             if (FrameCount>0) FrameList.Dequeue();
-            hitherto++;
+            hitherto = newTime;
         }
         if (FrameList.Count() == 0) GenerateFrameList(random);
     }
@@ -1323,16 +1324,21 @@ class J2LFile : J2File
     internal AGAEvent[,] AGA_EventMap;
 
     internal MLLE.PlusPropertyList PlusPropertyList = new MLLE.PlusPropertyList(null);
-    internal bool PlusOnly { get
+    internal bool ContainsVerticallyFlippedTiles { get
         {
-            if (Tilesets.Count > 1 || !AllLayers.SequenceEqual(DefaultLayers) || PlusPropertyList.LevelNeedsData5)
-                return true;
             if (DefaultLayers.FirstOrDefault(layer => (layer.PlusOnly || layer.ContainsVerticallyFlippedTiles)) != null)
                 return true;
             foreach (AnimatedTile CurrentAnimatedTile in Animations)
                 foreach (ushort tileID in CurrentAnimatedTile.Sequence)
                     if ((tileID & 0x2000) != 0) //flipped vertically
                         return true;
+            return false;
+        }
+    }
+    internal bool LevelNeedsData5 { get
+        {
+            if (Tilesets.Count > 1 || !AllLayers.SequenceEqual(DefaultLayers) || PlusPropertyList.LevelNeedsData5)
+                return true;
             return false;
         }
     }
@@ -1411,7 +1417,7 @@ class J2LFile : J2File
 
     int[] AGAMostValues = new int[256], AGAMostStrings = new int[256];
 
-    public OpeningResults OpenLevel(string filename, ref byte[] Data5, string password = null, Dictionary<Version, string> defaultDirectories = null, Encoding encoding = null, uint? SecurityStringOverride = null)
+    public OpeningResults OpenLevel(string filename, ref byte[] Data5, string password = null, Dictionary<Version, string> defaultDirectories = null, Encoding encoding = null, uint? SecurityStringOverride = null, bool onlyInterestedInData1 = false)
     {
         encoding = encoding ?? FileEncoding;
         using (BinaryReader binreader = new BinaryReader(File.Open(filename, FileMode.Open, FileAccess.Read), encoding))
@@ -1424,13 +1430,16 @@ class J2LFile : J2File
                 char[] tempHeader = (binreader.PeekChar() == 32) ? binreader.ReadChars(180) : new char[0];
                 char[] tempMagic = binreader.ReadChars(4);
                 byte[] tempPasswordHash = binreader.ReadBytes(3);
-                if (tempPasswordHash[0] != 0x00 || tempPasswordHash[1] != 0xBA || tempPasswordHash[2] != 0xBE)
+                if (!onlyInterestedInData1)
                 {
-                    if (password == null) return OpeningResults.PasswordNeeded;
-                    else
+                    if (tempPasswordHash[0] != 0x00 || tempPasswordHash[1] != 0xBA || tempPasswordHash[2] != 0xBE)
                     {
-                        int inPutWord = new CRC32().GetCrc32(new MemoryStream(Encoding.ASCII.GetBytes(password)));
-                        if ((inPutWord >> 16 & 0xff) != tempPasswordHash[0] || (inPutWord >> 8 & 0xff) != tempPasswordHash[1] || (inPutWord & 0xff) != tempPasswordHash[2]) return OpeningResults.WrongPassword;
+                        if (password == null) return OpeningResults.PasswordNeeded;
+                        else
+                        {
+                            int inPutWord = new CRC32().GetCrc32(new MemoryStream(Encoding.ASCII.GetBytes(password)));
+                            if ((inPutWord >> 16 & 0xff) != tempPasswordHash[0] || (inPutWord >> 8 & 0xff) != tempPasswordHash[1] || (inPutWord & 0xff) != tempPasswordHash[2]) return OpeningResults.WrongPassword;
+                        }
                     }
                 }
                 Header = new string(tempHeader); Magic = new string(tempMagic); PasswordHash = tempPasswordHash;
@@ -1582,125 +1591,128 @@ class J2LFile : J2File
                     }
                 }
                 #endregion data1
-                #region data2
-                EventMap = new uint[SpriteLayer.Width, SpriteLayer.Height];
-                using (BinaryReader data2reader = new BinaryReader(UncompressedData[1], encoding))
+                if (!onlyInterestedInData1)
                 {
-                    //ParameterMap = new uint[SpriteLayer.Width, SpriteLayer.Height];
-                    if (VersionNumber != 256) // not AGA
+                    #region data2
+                    EventMap = new uint[SpriteLayer.Width, SpriteLayer.Height];
+                    using (BinaryReader data2reader = new BinaryReader(UncompressedData[1], encoding))
                     {
-                        uint rlong;
-                        for (uint i = 0; i < UncompressedDataLength[1] / 4; i++)
+                        //ParameterMap = new uint[SpriteLayer.Width, SpriteLayer.Height];
+                        if (VersionNumber != 256) // not AGA
                         {
-                            rlong = data2reader.ReadUInt32();
-                            EventMap[i % SpriteLayer.Width, i / SpriteLayer.Width] = rlong;
-                            //ParameterMap[i % SpriteLayer.Width, i / SpriteLayer.Width] = rlong >> 8;
-                        }
-                    }
-                    else // AGA
-                    {
-                        CreateGlobalAGAEventsListIfNeedBe();
-                        AGA_LocalEvents = new List<String>();
-                        AGA_EventMap = new AGAEvent[SpriteLayer.Width, SpriteLayer.Height];
-                        //AGA_ParameterMap = new byte[SpriteLayer.Width, SpriteLayer.Height][];
-                        ushort numberOfLocalEvents = data2reader.ReadUInt16();
-                        for (ushort i = 0; i < numberOfLocalEvents; i++) AGA_LocalEvents.Add(new string(data2reader.ReadChars(64)).TrimEnd('\0'));
-                        ushort loadX, loadY, loadLongCount; int loadParamSize, loadMarker, loadOffset, loadStringSize; string loadEventName = ""; bool loadHasStrings; AGAEvent loadCurrentEvent;
-                        while (true)
-                        {
-                            try
+                            uint rlong;
+                            for (uint i = 0; i < UncompressedDataLength[1] / 4; i++)
                             {
-                                loadX = data2reader.ReadUInt16();
-                                loadY = data2reader.ReadUInt16();
-                                loadEventName = AGA_LocalEvents[data2reader.ReadUInt16()];
-                                //Console.WriteLine(String.Format("{0},{1}: {2}", loadX, loadY, loadEventName));
-                                loadMarker = data2reader.ReadInt32();
-                                loadCurrentEvent = new AGAEvent(loadMarker);
-                                loadCurrentEvent.ID = (uint)AGA_GlobalEvents.FindIndex((string pointer) => { return pointer == loadEventName; });
-                                //if ((loadMarker & ((2 << 16) - 1)) != 15840) Console.Write(String.Format("{0}: {1}", Convert.ToString(loadMarker, 2).PadLeft(32, '0'), loadEventName));
-                                if (loadMarker < 0)
-                                {
-                                    loadParamSize = data2reader.ReadInt32();
-                                    loadHasStrings = data2reader.ReadUInt16() == 2;
-                                    loadLongCount = data2reader.ReadUInt16();
-                                    /*if (loadLongCount > AGAMostValues[loadCurrentEvent.ID])
-                                    {
-                                        AGAMostValues[loadCurrentEvent.ID] = loadLongCount;
-                                        Console.WriteLine(String.Format("{0} ({1}): {2} parameters", loadEventName, loadCurrentEvent.ID, loadLongCount * 2));
-                                    }*/
-                                    for (byte i = 0; i < loadLongCount * 2; i++) loadCurrentEvent.Longs[i] = data2reader.ReadInt32();
-                                    if (loadHasStrings)
-                                    {
-                                        int numStrings = 0;
-                                        loadOffset = (loadLongCount + 1) * 8;
-                                        for (byte i = 0; loadOffset < loadParamSize; i++)
-                                        {
-                                            loadStringSize = data2reader.ReadInt32();
-                                            loadCurrentEvent.Strings[i] = new String(data2reader.ReadChars(loadStringSize - 1));
-                                            data2reader.ReadByte();
-                                            loadOffset += loadStringSize + 4;
-                                            numStrings++;
-                                        }
-                                        /*if (numStrings > AGAMostStrings[loadCurrentEvent.ID])
-                                        {
-                                            AGAMostStrings[loadCurrentEvent.ID] = loadLongCount;
-                                            Console.WriteLine(String.Format("{0} ({1}): {2} strings", loadEventName, loadCurrentEvent.ID, numStrings));
-                                        }*/
-                                    }
-                                    //AGA_ParameterMap[loadX, loadY] = data2reader.ReadBytes(loadParamSize - 4);
-                                    //if ((loadMarker & ((2 << 16) - 1)) != 15840) Console.WriteLine(String.Format(" ({0})", AGA_ParameterMap[loadX, loadY][2]));
-                                    //Console.WriteLine(String.Format("{0}: {1}, {2}; {3}", loadEventName, AGA_ParameterMap[loadX, loadY][0], AGA_ParameterMap[loadX, loadY][2], AGA_ParameterMap[loadX, loadY].Length - 4 - AGA_ParameterMap[loadX, loadY][2]*8));
-                                    //Console.WriteLine(String.Format("{0}: {1} bytes", loadEventName, loadParamSize));
-                                    //foreach (byte Byte in AGA_ParameterMap[loadX, loadY]) { Console.Write(Byte.ToString().PadLeft(3,'0')); Console.Write(' '); }
-                                    //Console.WriteLine();
-                                }
-                                else { /*if ((loadMarker & ((2 << 16) - 1)) != 15840) Console.WriteLine();*/ }
-                                AGA_EventMap[loadX, loadY] = loadCurrentEvent;
+                                rlong = data2reader.ReadUInt32();
+                                EventMap[i % SpriteLayer.Width, i / SpriteLayer.Width] = rlong;
+                                //ParameterMap[i % SpriteLayer.Width, i / SpriteLayer.Width] = rlong >> 8;
                             }
-                            catch { /*Console.WriteLine(loadEventName);*/ break; }
+                        }
+                        else // AGA
+                        {
+                            CreateGlobalAGAEventsListIfNeedBe();
+                            AGA_LocalEvents = new List<String>();
+                            AGA_EventMap = new AGAEvent[SpriteLayer.Width, SpriteLayer.Height];
+                            //AGA_ParameterMap = new byte[SpriteLayer.Width, SpriteLayer.Height][];
+                            ushort numberOfLocalEvents = data2reader.ReadUInt16();
+                            for (ushort i = 0; i < numberOfLocalEvents; i++) AGA_LocalEvents.Add(new string(data2reader.ReadChars(64)).TrimEnd('\0'));
+                            ushort loadX, loadY, loadLongCount; int loadParamSize, loadMarker, loadOffset, loadStringSize; string loadEventName = ""; bool loadHasStrings; AGAEvent loadCurrentEvent;
+                            while (true)
+                            {
+                                try
+                                {
+                                    loadX = data2reader.ReadUInt16();
+                                    loadY = data2reader.ReadUInt16();
+                                    loadEventName = AGA_LocalEvents[data2reader.ReadUInt16()];
+                                    //Console.WriteLine(String.Format("{0},{1}: {2}", loadX, loadY, loadEventName));
+                                    loadMarker = data2reader.ReadInt32();
+                                    loadCurrentEvent = new AGAEvent(loadMarker);
+                                    loadCurrentEvent.ID = (uint)AGA_GlobalEvents.FindIndex((string pointer) => { return pointer == loadEventName; });
+                                    //if ((loadMarker & ((2 << 16) - 1)) != 15840) Console.Write(String.Format("{0}: {1}", Convert.ToString(loadMarker, 2).PadLeft(32, '0'), loadEventName));
+                                    if (loadMarker < 0)
+                                    {
+                                        loadParamSize = data2reader.ReadInt32();
+                                        loadHasStrings = data2reader.ReadUInt16() == 2;
+                                        loadLongCount = data2reader.ReadUInt16();
+                                        /*if (loadLongCount > AGAMostValues[loadCurrentEvent.ID])
+                                        {
+                                            AGAMostValues[loadCurrentEvent.ID] = loadLongCount;
+                                            Console.WriteLine(String.Format("{0} ({1}): {2} parameters", loadEventName, loadCurrentEvent.ID, loadLongCount * 2));
+                                        }*/
+                                        for (byte i = 0; i < loadLongCount * 2; i++) loadCurrentEvent.Longs[i] = data2reader.ReadInt32();
+                                        if (loadHasStrings)
+                                        {
+                                            int numStrings = 0;
+                                            loadOffset = (loadLongCount + 1) * 8;
+                                            for (byte i = 0; loadOffset < loadParamSize; i++)
+                                            {
+                                                loadStringSize = data2reader.ReadInt32();
+                                                loadCurrentEvent.Strings[i] = new String(data2reader.ReadChars(loadStringSize - 1));
+                                                data2reader.ReadByte();
+                                                loadOffset += loadStringSize + 4;
+                                                numStrings++;
+                                            }
+                                            /*if (numStrings > AGAMostStrings[loadCurrentEvent.ID])
+                                            {
+                                                AGAMostStrings[loadCurrentEvent.ID] = loadLongCount;
+                                                Console.WriteLine(String.Format("{0} ({1}): {2} strings", loadEventName, loadCurrentEvent.ID, numStrings));
+                                            }*/
+                                        }
+                                        //AGA_ParameterMap[loadX, loadY] = data2reader.ReadBytes(loadParamSize - 4);
+                                        //if ((loadMarker & ((2 << 16) - 1)) != 15840) Console.WriteLine(String.Format(" ({0})", AGA_ParameterMap[loadX, loadY][2]));
+                                        //Console.WriteLine(String.Format("{0}: {1}, {2}; {3}", loadEventName, AGA_ParameterMap[loadX, loadY][0], AGA_ParameterMap[loadX, loadY][2], AGA_ParameterMap[loadX, loadY].Length - 4 - AGA_ParameterMap[loadX, loadY][2]*8));
+                                        //Console.WriteLine(String.Format("{0}: {1} bytes", loadEventName, loadParamSize));
+                                        //foreach (byte Byte in AGA_ParameterMap[loadX, loadY]) { Console.Write(Byte.ToString().PadLeft(3,'0')); Console.Write(' '); }
+                                        //Console.WriteLine();
+                                    }
+                                    else { /*if ((loadMarker & ((2 << 16) - 1)) != 15840) Console.WriteLine();*/ }
+                                    AGA_EventMap[loadX, loadY] = loadCurrentEvent;
+                                }
+                                catch { /*Console.WriteLine(loadEventName);*/ break; }
+                            }
                         }
                     }
-                }
-                Console.WriteLine();
-                #endregion data2
-                #region data3
-                using (BinaryReader data3reader = new BinaryReader(UncompressedData[2], encoding))
-                {
-                    Dictionary = new ushort[UncompressedDataLength[2] / 8][];
-                    for (uint i = 0; i < UncompressedDataLength[2] / 8; i++)
+                    Console.WriteLine();
+                    #endregion data2
+                    #region data3
+                    using (BinaryReader data3reader = new BinaryReader(UncompressedData[2], encoding))
                     {
-                        Dictionary[i] = new ushort[4];
-                        for (byte j = 0; j < 4; j++) Dictionary[i][j] = data3reader.ReadUInt16();
+                        Dictionary = new ushort[UncompressedDataLength[2] / 8][];
+                        for (uint i = 0; i < UncompressedDataLength[2] / 8; i++)
+                        {
+                            Dictionary[i] = new ushort[4];
+                            for (byte j = 0; j < 4; j++) Dictionary[i][j] = data3reader.ReadUInt16();
+                        }
                     }
-                }
-                #endregion data3
-                #region data4
-                using (BinaryReader data4reader = new BinaryReader(UncompressedData[3], encoding))
-                {
-                    for (int i = 0; i < DefaultLayers.Length; i++)
+                    #endregion data3
+                    #region data4
+                    using (BinaryReader data4reader = new BinaryReader(UncompressedData[3], encoding))
                     {
-                        Layer layer = DefaultLayers[i];
-                        layer.TileMap = new ArrayMap<ushort>(layer.Width, layer.Height);
-                        if (hasTiles[i])
-                            for (uint y = 0; y < layer.Height; y++) for (uint x = 0; x < layer.RealWidth; x += 4)
-                                {
-                                    ushort nuword = data4reader.ReadUInt16();
-                                    uint numberOfTilesToCopy =
-                                        (x + 4 <= layer.Width) ? 4u : //nowhere near right edge of layer (as defined by Width, not RealWidth, in case Tile Width makes the two different)
-                                        (x <= layer.Width) ? (layer.Width & 3) : //at right edge
-                                        0u //past right edge
-                                    ;
-                                    for (uint k = 0; k < numberOfTilesToCopy; k++)
-                                        layer.TileMap[x + k, y] = Dictionary[nuword][k];
-                                }
+                        for (int i = 0; i < DefaultLayers.Length; i++)
+                        {
+                            Layer layer = DefaultLayers[i];
+                            layer.TileMap = new ArrayMap<ushort>(layer.Width, layer.Height);
+                            if (hasTiles[i])
+                                for (uint y = 0; y < layer.Height; y++) for (uint x = 0; x < layer.RealWidth; x += 4)
+                                    {
+                                        ushort nuword = data4reader.ReadUInt16();
+                                        uint numberOfTilesToCopy =
+                                            (x + 4 <= layer.Width) ? 4u : //nowhere near right edge of layer (as defined by Width, not RealWidth, in case Tile Width makes the two different)
+                                            (x <= layer.Width) ? (layer.Width & 3) : //at right edge
+                                            0u //past right edge
+                                        ;
+                                        for (uint k = 0; k < numberOfTilesToCopy; k++)
+                                            layer.TileMap[x + k, y] = Dictionary[nuword][k];
+                                    }
+                        }
                     }
+                    #endregion data4
+                    #region data5
+                    var remainingLength = binreader.BaseStream.Length - binreader.BaseStream.Position;
+                    if (remainingLength > 0)
+                        Data5 = binreader.ReadBytes((int)remainingLength); //let the application figure out what to do with them
+                    #endregion
                 }
-                #endregion data4
-                #region data5
-                var remainingLength = binreader.BaseStream.Length - binreader.BaseStream.Position;
-                if (remainingLength > 0)
-                    Data5 = binreader.ReadBytes((int)remainingLength); //let the application figure out what to do with them
-                #endregion
             }
             else // is a .LEV file
             {
@@ -2243,7 +2255,7 @@ class J2LFile : J2File
                     {
                         SecurityString = SecurityStringExtraDataNotForDirectEditing;
                     }
-                    else if (Data5 != null) //plus-only level, so damage the security envelope for JCS
+                    else if (Data5 != null || ContainsVerticallyFlippedTiles) //plus-only level, so damage the security envelope for JCS
                     {
                         SecurityString = SecurityStringMLLE;
                     }
@@ -2573,6 +2585,7 @@ class J2LFile : J2File
                             Array.Resize(ref unknownsection2, 1024);
                             Array.Resize(ref TileTypes, 1024);
                             Array.Resize(ref unknownsection3, 1024);*/
+                            AnimOffset -= 4096 - 1024;
                         }
                         VersionType = nuVersion;
                         return VersionChangeResults.Success;
@@ -2596,6 +2609,7 @@ class J2LFile : J2File
                             Array.Resize(ref TileTypes, 4096);
                             Array.Resize(ref IsEachTileUsed, 4096);
                         }
+                        AnimOffset += 4096 - 1024;
                     }
                     if (nuVersion == Version.AGA) //pretend support!
                     {
