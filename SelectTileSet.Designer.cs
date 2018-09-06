@@ -38,6 +38,8 @@
             this.boxFilename = new System.Windows.Forms.TextBox();
             this.boxImage = new System.Windows.Forms.ComboBox();
             this.boxMask = new System.Windows.Forms.ComboBox();
+            this.box32 = new System.Windows.Forms.ComboBox();
+            this.label5 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // OK
@@ -81,16 +83,17 @@
             // label3
             // 
             this.label3.AutoSize = true;
+            this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label3.Location = new System.Drawing.Point(12, 64);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(36, 13);
+            this.label3.Size = new System.Drawing.Size(55, 12);
             this.label3.TabIndex = 4;
-            this.label3.Text = "Image";
+            this.label3.Text = "8-bit   Image";
             // 
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(12, 91);
+            this.label4.Location = new System.Drawing.Point(12, 116);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(33, 13);
             this.label4.TabIndex = 5;
@@ -118,6 +121,8 @@
             // 
             this.boxImage.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.boxImage.FormattingEnabled = true;
+            this.boxImage.Items.AddRange(new object[] {
+            "(none)"});
             this.boxImage.Location = new System.Drawing.Point(67, 61);
             this.boxImage.Name = "boxImage";
             this.boxImage.Size = new System.Drawing.Size(154, 21);
@@ -130,11 +135,33 @@
             this.boxMask.FormattingEnabled = true;
             this.boxMask.Items.AddRange(new object[] {
             "(auto mask)"});
-            this.boxMask.Location = new System.Drawing.Point(67, 88);
+            this.boxMask.Location = new System.Drawing.Point(67, 113);
             this.boxMask.Name = "boxMask";
             this.boxMask.Size = new System.Drawing.Size(154, 21);
             this.boxMask.Sorted = true;
             this.boxMask.TabIndex = 9;
+            // 
+            // box32
+            // 
+            this.box32.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.box32.FormattingEnabled = true;
+            this.box32.Items.AddRange(new object[] {
+            "(none)"});
+            this.box32.Location = new System.Drawing.Point(67, 86);
+            this.box32.Name = "box32";
+            this.box32.Size = new System.Drawing.Size(154, 21);
+            this.box32.Sorted = true;
+            this.box32.TabIndex = 11;
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label5.Location = new System.Drawing.Point(12, 89);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(56, 12);
+            this.label5.TabIndex = 10;
+            this.label5.Text = "32-bit Image";
             // 
             // SelectTileSet
             // 
@@ -142,7 +169,9 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.Cancel;
-            this.ClientSize = new System.Drawing.Size(314, 118);
+            this.ClientSize = new System.Drawing.Size(314, 146);
+            this.Controls.Add(this.box32);
+            this.Controls.Add(this.label5);
             this.Controls.Add(this.boxMask);
             this.Controls.Add(this.boxImage);
             this.Controls.Add(this.boxFilename);
@@ -178,5 +207,7 @@
         private System.Windows.Forms.TextBox boxFilename;
         private System.Windows.Forms.ComboBox boxImage;
         private System.Windows.Forms.ComboBox boxMask;
+        private System.Windows.Forms.ComboBox box32;
+        private System.Windows.Forms.Label label5;
     }
 }

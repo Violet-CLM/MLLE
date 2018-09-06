@@ -33,6 +33,11 @@ namespace MLLE
             if (!Directory.Exists(tileDirectory))
                 Directory.CreateDirectory(tileDirectory);
             VersionIsPlusCompatible = versionIsPlusCompatible;
+            if (!VersionIsPlusCompatible)
+            {
+                Size = MinimumSize = new Size(MinimumSize.Width - sourceImage32.Width, MinimumSize.Height);
+                sourceImage32.Width = 0;
+            }
             listView1.Columns[listView1.Columns.Count - 1].Width = -2;
             RefreshList();
             ShowDialog();
@@ -46,14 +51,15 @@ namespace MLLE
                 string iniText = Settings.IniReadValue("Tilesets", (iniTilesetIndex++).ToString());
                 if (string.IsNullOrWhiteSpace(iniText)) //run out of subsequently numbered ini lines
                     break;
-                var match = System.Text.RegularExpressions.Regex.Match(iniText, "\\s*\"([^\"]+)\",\\s*\"([^\"]+)\",\\s*\"([^\"]+)\",\\s*\"([^\"]+)\",\\s*(TSF|JJ2|BC|AGA|GorH)\\s*");
+                var match = System.Text.RegularExpressions.Regex.Match(iniText, "\\s*\"([^\"]+)\",\\s*\"([^\"]+)\",\\s*\"([^\"]+)\",\\s*\"([^\"]*)\",(?:\\s*\"([^\"]+)\",)?\\s*(TSF|JJ2|BC|AGA|GorH)\\s*");
                 if (!match.Success) //something went wrong
                     continue; //oh well!
                 ListViewItem newRecord = new ListViewItem(match.Groups[2].Value);
                 newRecord.SubItems.Add(match.Groups[1].Value);
                 newRecord.SubItems.Add(match.Groups[4].Value);
+                newRecord.SubItems.Add(match.Groups[5].Value);
                 newRecord.SubItems.Add(match.Groups[3].Value);
-                newRecord.Tag = match.Groups[5].Value;
+                newRecord.Tag = match.Groups[6].Value;
                 ThinkAboutAdding(newRecord);
             }
         }
@@ -68,7 +74,7 @@ namespace MLLE
                 if (iniTilesetIndex < AllTilesets.Count)
                 {
                     ListViewItem record = AllTilesets[iniTilesetIndex];
-                    Settings.IniWriteValue("Tilesets", keyName, "\"" + record.SubItems[1].Text + "\", \"" + record.Text + "\", \"" + record.SubItems[3].Text + "\", \"" + record.SubItems[2].Text + "\", " + (record.Tag as string));
+                    Settings.IniWriteValue("Tilesets", keyName, "\"" + record.SubItems[1].Text + "\", \"" + record.Text + "\", \"" + record.SubItems[4].Text + "\", \"" + record.SubItems[2].Text + "\", " + (record.SubItems[3].Text.Length > 0 ? ("\"" + record.SubItems[3].Text + "\", ") : "") + (record.Tag as string));
                 }
                 else if (!string.IsNullOrWhiteSpace(Settings.IniReadValue("Tilesets", keyName))) //leftover line number that doesn't need to exist anymore after the list got shorter
                     Settings.IniWriteValue("Tilesets", keyName, null); //delete it
@@ -86,7 +92,7 @@ namespace MLLE
         private void Add_Click(object sender, EventArgs e)
         {
             var newRecord = new ListViewItem();
-            for (int i = 0; i < 3; ++i)
+            for (int i = 0; i < 4; ++i)
                 newRecord.SubItems.Add(new ListViewItem.ListViewSubItem());
             newRecord.Tag = VersionString;
             Select(newRecord);
@@ -106,7 +112,7 @@ namespace MLLE
 
         private void Select(ListViewItem newRecord)
         {
-            if (new SelectTileSet().ShowForm(newRecord, TileDirectory, VersionType != Version.AGA ? ".j2t" : ".til"))
+            if (new SelectTileSet().ShowForm(newRecord, TileDirectory, VersionType != Version.AGA ? ".j2t" : ".til", VersionIsPlusCompatible))
             {
                 ThinkAboutAdding(newRecord);
                 SaveList();
