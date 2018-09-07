@@ -193,10 +193,7 @@ class J2TFile : J2File
             }
             #endregion setup version-specific sizes
             for (byte i = 0; i < 4; i++)
-                if (i == 2 && VersionType == Version.Plus)
-                    continue;
-                else
-                    UncompressedData[i] = new MemoryStream(ZlibStream.UncompressBuffer(binreader.ReadBytes(CompressedDataLength[i])));
+                UncompressedData[i] = new MemoryStream(ZlibStream.UncompressBuffer(binreader.ReadBytes(CompressedDataLength[i])));
             #endregion header
             #region data1
             BinaryReader data1reader = new BinaryReader(UncompressedData[0], encoding);
@@ -833,6 +830,9 @@ class J2TFile : J2File
                     }
                 }
             }
+
+            if (VersionType == Version.Plus)
+                data3writer.Write(false); //non-empty
 
             using (BinaryWriter binwriter = new BinaryWriter(
                 File.Open(FullFilePath, FileMode.Create, FileAccess.Write),
