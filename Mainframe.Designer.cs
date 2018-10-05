@@ -99,6 +99,7 @@
             this.toolStripSeparator18 = new System.Windows.Forms.ToolStripSeparator();
             this.UndoButton = new System.Windows.Forms.ToolStripButton();
             this.RedoButton = new System.Windows.Forms.ToolStripButton();
+            this.ReplaceEventsToggle = new System.Windows.Forms.ToolStripButton();
             this.StatusBar = new System.Windows.Forms.StatusStrip();
             this.FPSCounter = new System.Windows.Forms.ToolStripStatusLabel();
             this.GametickCounter = new System.Windows.Forms.ToolStripStatusLabel();
@@ -169,6 +170,7 @@
             this.toolStripSeparator15 = new System.Windows.Forms.ToolStripSeparator();
             this.imageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.maskToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.automaskToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.editAnimationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.cloneAnimationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteAnimationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -186,7 +188,7 @@
             this.AnimScrollbar = new System.Windows.Forms.HScrollBar();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
-            this.automaskToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator23 = new System.Windows.Forms.ToolStripSeparator();
             this.MainMenu.SuspendLayout();
             this.DrawingTools.SuspendLayout();
             this.StatusBar.SuspendLayout();
@@ -697,6 +699,8 @@
             this.RectangleButton,
             this.RectangleOutlineButton,
             this.toolStripSeparator17,
+            this.ReplaceEventsToggle,
+            this.toolStripSeparator23,
             this.SelectionButton,
             this.toolStripSeparator18,
             this.UndoButton,
@@ -802,6 +806,19 @@
             this.RedoButton.Tag = "Redo (Ctrl+Y)";
             this.RedoButton.Click += new System.EventHandler(this.RedoButton_Click);
             this.RedoButton.MouseEnter += new System.EventHandler(this.DescribableControl_MouseEnter);
+            // 
+            // ReplaceEventsToggle
+            // 
+            this.ReplaceEventsToggle.Checked = true;
+            this.ReplaceEventsToggle.CheckOnClick = true;
+            this.ReplaceEventsToggle.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.ReplaceEventsToggle.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.ReplaceEventsToggle.Image = ((System.Drawing.Image)(resources.GetObject("ReplaceEventsToggle.Image")));
+            this.ReplaceEventsToggle.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.ReplaceEventsToggle.Name = "ReplaceEventsToggle";
+            this.ReplaceEventsToggle.Size = new System.Drawing.Size(22, 20);
+            this.ReplaceEventsToggle.Tag = "Overwrite Events while Drawing";
+            this.ReplaceEventsToggle.MouseEnter += new System.EventHandler(this.DescribableControl_MouseEnter);
             // 
             // StatusBar
             // 
@@ -1375,7 +1392,7 @@
             this.cloneAnimationToolStripMenuItem,
             this.deleteAnimationToolStripMenuItem});
             this.TContextMenu.Name = "TContextMenu";
-            this.TContextMenu.Size = new System.Drawing.Size(167, 280);
+            this.TContextMenu.Size = new System.Drawing.Size(167, 258);
             // 
             // SetEventTS
             // 
@@ -1466,6 +1483,13 @@
             this.maskToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
             this.maskToolStripMenuItem.Text = "Edit Mask...";
             this.maskToolStripMenuItem.Click += new System.EventHandler(this.maskToolStripMenuItem_Click);
+            // 
+            // automaskToolStripMenuItem
+            // 
+            this.automaskToolStripMenuItem.Name = "automaskToolStripMenuItem";
+            this.automaskToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.automaskToolStripMenuItem.Text = "Automask";
+            this.automaskToolStripMenuItem.Click += new System.EventHandler(this.automaskToolStripMenuItem_Click);
             // 
             // editAnimationToolStripMenuItem
             // 
@@ -1642,12 +1666,10 @@
             // 
             this.folderBrowserDialog1.ShowNewFolderButton = false;
             // 
-            // automaskToolStripMenuItem
+            // toolStripSeparator23
             // 
-            this.automaskToolStripMenuItem.Name = "automaskToolStripMenuItem";
-            this.automaskToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
-            this.automaskToolStripMenuItem.Text = "Automask";
-            this.automaskToolStripMenuItem.Click += new System.EventHandler(this.automaskToolStripMenuItem_Click);
+            this.toolStripSeparator23.Name = "toolStripSeparator23";
+            this.toolStripSeparator23.Size = new System.Drawing.Size(22, 6);
             // 
             // Mainframe
             // 
@@ -1861,5 +1883,7 @@
         private System.Windows.Forms.ToolStripMenuItem previewHelpStringColorsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem saveTilesetImageToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem automaskToolStripMenuItem;
+        private System.Windows.Forms.ToolStripButton ReplaceEventsToggle;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator23;
     }
 }

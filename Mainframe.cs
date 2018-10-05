@@ -951,7 +951,7 @@ namespace MLLE
         private void DrawingToolButton_Click(object sender, EventArgs e)
         {
             DeepEditingTool = VisibleEditingTool = (ToolStripButton)sender;
-            for (byte i = 0; i < DrawingTools.Items.Count; i++) if (DrawingTools.Items[i].GetType() == sender.GetType())
+            for (byte i = 0; i < DrawingTools.Items.Count; i++) if (DrawingTools.Items[i].GetType() == sender.GetType() && DrawingTools.Items[i] != ReplaceEventsToggle)
                     ((ToolStripButton)DrawingTools.Items[i]).Checked = false;
             DeepEditingTool.Checked = true;
         }
@@ -2798,7 +2798,7 @@ namespace MLLE
             else if (LastFocusedZone == FocusedZone.Level && CurrentLayer == J2L.SpriteLayer)
             {
                 LayerAndSpecificTiles actionCenter = new LayerAndSpecificTiles(J2L.SpriteLayer);
-                ActOnATile(MouseTileX, MouseTileY, J2L.SpriteLayer.TileMap[MouseTileX, MouseTileY], ActiveEvent, actionCenter, true);
+                ActOnATile(MouseTileX, MouseTileY, J2L.SpriteLayer.TileMap[MouseTileX, MouseTileY], ActiveEvent, actionCenter, true, true);
                 //actionCenter.Specifics.Add(new Point(MouseTileX, MouseTileY), new TileAndEvent(J2L.Layers[3].TileMap[MouseTileX, MouseTileY], (actionCenter.Layer == 3) ? J2L.EventMap[MouseTileX, MouseTileY] : (uint?)null));
                 Undoable.Push(actionCenter);
                 Redoable.Clear();
@@ -3205,8 +3205,8 @@ namespace MLLE
             }
         }
 
-        private void ActOnATile(int x, int y, ushort? tile, uint ev, LayerAndSpecificTiles actionCenter, bool blankTilesOkay) { ActOnATile(x, y, tile, new AGAEvent(ev), actionCenter, blankTilesOkay); }
-        private void ActOnATile(int x, int y, ushort? tile, AGAEvent? ev, LayerAndSpecificTiles actionCenter, bool blankTilesOkay)
+        private void ActOnATile(int x, int y, ushort? tile, uint ev, LayerAndSpecificTiles actionCenter, bool blankTilesOkay, bool definitelyReplaceEvent = false) { ActOnATile(x, y, tile, new AGAEvent(ev), actionCenter, blankTilesOkay, definitelyReplaceEvent); }
+        private void ActOnATile(int x, int y, ushort? tile, AGAEvent? ev, LayerAndSpecificTiles actionCenter, bool blankTilesOkay, bool definitelyReplaceEvent = false)
         {
             Layer layer = actionCenter.Layer;
             if (x >= 0 && y >= 0 && x < layer.TileMap.GetLength(0) && y < layer.TileMap.GetLength(1) && tile != null && (blankTilesOkay || tile > 0))
@@ -3214,7 +3214,7 @@ namespace MLLE
                 if (J2L.VersionType == Version.AGA) actionCenter.Specifics.Add(new Point(x, y), new TileAndEvent(layer.TileMap[x, y], (actionCenter.Layer == J2L.SpriteLayer) ? J2L.AGA_EventMap[x, y] : (AGAEvent?)null));
                 else actionCenter.Specifics.Add(new Point(x, y), new TileAndEvent(layer.TileMap[x, y], (actionCenter.Layer == J2L.SpriteLayer) ? J2L.EventMap[x, y] : (uint?)null));
                 layer.TileMap[x, y] = (ushort)tile;
-                if (actionCenter.Layer == J2L.SpriteLayer)
+                if (actionCenter.Layer == J2L.SpriteLayer && (ReplaceEventsToggle.Checked || definitelyReplaceEvent))
                 {
                     if (J2L.VersionType == Version.AGA) J2L.AGA_EventMap[x, y] = ev ?? new AGAEvent(0);
                     else J2L.EventMap[x, y] = (ev == null) ? 0 : ((AGAEvent)ev).ID;
