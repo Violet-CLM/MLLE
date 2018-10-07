@@ -30,5 +30,37 @@ namespace MLLE
         {
             Close();
         }
+        
+        private void button2_Click(object sender, EventArgs e)
+        {
+            listBox1.Items.Clear();
+
+            var findParameterName = comboBox1.Text.Trim();
+            var parameterLocationsPerEvent = new int[256];
+            var foundValues = new SortedSet<int>();
+
+            if (findParameterName.Length > 0)
+            {
+                for (int eventID = 1; eventID < 256; ++eventID)
+                {
+                    var ev = EventStrings[eventID];
+                    for (int i = 5; i < ev.Length; ++i)
+                        if (String.Equals(ev[i].Split(':')[0].Trim(), findParameterName, StringComparison.OrdinalIgnoreCase)) {
+                            parameterLocationsPerEvent[eventID] = i - 4;
+                            break;
+                        }
+                }
+            }
+
+            foreach (var eventBits in EventMap) {
+                var eventID = eventBits & 0xFF;
+                if (parameterLocationsPerEvent[eventID] != 0)
+                    foundValues.Add(Mainframe.ExtractParameterValues(eventBits, EventStrings[eventID])[parameterLocationsPerEvent[eventID] - 1]);
+            }
+
+            listBox1.Items.AddRange(foundValues.Select(val => val.ToString()).ToArray());
+            if (listBox1.Items.Count == 0)
+                listBox1.Items.Add("(found no matches)");
+        }
     }
 }
