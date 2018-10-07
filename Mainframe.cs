@@ -1369,6 +1369,13 @@ namespace MLLE
             _suspendEvent.Set();
         }
 
+        private void findParameterValuesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _suspendEvent.Reset();
+            new FindParameterValues().ShowForm(ref J2L.EventMap, TexturedJ2L.IniEventListing[J2L.VersionType]);
+            _suspendEvent.Set();
+        }
+
         #region Open
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -3206,6 +3213,7 @@ namespace MLLE
         }
 
         private void ActOnATile(int x, int y, ushort? tile, uint ev, LayerAndSpecificTiles actionCenter, bool blankTilesOkay, bool definitelyReplaceEvent = false) { ActOnATile(x, y, tile, new AGAEvent(ev), actionCenter, blankTilesOkay, definitelyReplaceEvent); }
+
         private void ActOnATile(int x, int y, ushort? tile, AGAEvent? ev, LayerAndSpecificTiles actionCenter, bool blankTilesOkay, bool definitelyReplaceEvent = false)
         {
             Layer layer = actionCenter.Layer;

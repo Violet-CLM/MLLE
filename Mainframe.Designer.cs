@@ -51,6 +51,9 @@
             this.levelPropertiesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.textStringsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.soundEffectsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator24 = new System.Windows.Forms.ToolStripSeparator();
+            this.searchReplaceEventsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.findParameterValuesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator16 = new System.Windows.Forms.ToolStripSeparator();
             this.passwordToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.resetLevelPasswordToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -95,11 +98,12 @@
             this.RectangleButton = new System.Windows.Forms.ToolStripButton();
             this.RectangleOutlineButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator17 = new System.Windows.Forms.ToolStripSeparator();
+            this.ReplaceEventsToggle = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator23 = new System.Windows.Forms.ToolStripSeparator();
             this.SelectionButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator18 = new System.Windows.Forms.ToolStripSeparator();
             this.UndoButton = new System.Windows.Forms.ToolStripButton();
             this.RedoButton = new System.Windows.Forms.ToolStripButton();
-            this.ReplaceEventsToggle = new System.Windows.Forms.ToolStripButton();
             this.StatusBar = new System.Windows.Forms.StatusStrip();
             this.FPSCounter = new System.Windows.Forms.ToolStripStatusLabel();
             this.GametickCounter = new System.Windows.Forms.ToolStripStatusLabel();
@@ -188,7 +192,6 @@
             this.AnimScrollbar = new System.Windows.Forms.HScrollBar();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
-            this.toolStripSeparator23 = new System.Windows.Forms.ToolStripSeparator();
             this.MainMenu.SuspendLayout();
             this.DrawingTools.SuspendLayout();
             this.StatusBar.SuspendLayout();
@@ -332,6 +335,9 @@
             this.levelPropertiesToolStripMenuItem,
             this.textStringsToolStripMenuItem,
             this.soundEffectsToolStripMenuItem,
+            this.toolStripSeparator24,
+            this.searchReplaceEventsToolStripMenuItem,
+            this.findParameterValuesToolStripMenuItem,
             this.toolStripSeparator16,
             this.passwordToolStripMenuItem,
             this.resetLevelPasswordToolStripMenuItem});
@@ -344,7 +350,7 @@
             this.undoToolStripMenuItem.Name = "undoToolStripMenuItem";
             this.undoToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl + Z";
             this.undoToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Z)));
-            this.undoToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
+            this.undoToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
             this.undoToolStripMenuItem.Text = "Undo";
             this.undoToolStripMenuItem.Click += new System.EventHandler(this.undoToolStripMenuItem_Click);
             // 
@@ -353,26 +359,26 @@
             this.redoToolStripMenuItem.Name = "redoToolStripMenuItem";
             this.redoToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl + Y";
             this.redoToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Y)));
-            this.redoToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
+            this.redoToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
             this.redoToolStripMenuItem.Text = "Redo";
             this.redoToolStripMenuItem.Click += new System.EventHandler(this.redoToolStripMenuItem_Click);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(182, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(209, 6);
             // 
             // levelPropertiesToolStripMenuItem
             // 
             this.levelPropertiesToolStripMenuItem.Name = "levelPropertiesToolStripMenuItem";
-            this.levelPropertiesToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
+            this.levelPropertiesToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
             this.levelPropertiesToolStripMenuItem.Text = "Level Properties...";
             this.levelPropertiesToolStripMenuItem.Click += new System.EventHandler(this.levelPropertiesToolStripMenuItem_Click);
             // 
             // textStringsToolStripMenuItem
             // 
             this.textStringsToolStripMenuItem.Name = "textStringsToolStripMenuItem";
-            this.textStringsToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
+            this.textStringsToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
             this.textStringsToolStripMenuItem.Text = "Help Strings...";
             this.textStringsToolStripMenuItem.Click += new System.EventHandler(this.textStringsToolStripMenuItem_Click);
             // 
@@ -380,26 +386,45 @@
             // 
             this.soundEffectsToolStripMenuItem.Enabled = false;
             this.soundEffectsToolStripMenuItem.Name = "soundEffectsToolStripMenuItem";
-            this.soundEffectsToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
+            this.soundEffectsToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
             this.soundEffectsToolStripMenuItem.Text = "Sound Effects...";
             this.soundEffectsToolStripMenuItem.Click += new System.EventHandler(this.soundEffectsToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator24
+            // 
+            this.toolStripSeparator24.Name = "toolStripSeparator24";
+            this.toolStripSeparator24.Size = new System.Drawing.Size(209, 6);
+            // 
+            // searchReplaceEventsToolStripMenuItem
+            // 
+            this.searchReplaceEventsToolStripMenuItem.Enabled = false;
+            this.searchReplaceEventsToolStripMenuItem.Name = "searchReplaceEventsToolStripMenuItem";
+            this.searchReplaceEventsToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
+            this.searchReplaceEventsToolStripMenuItem.Text = "Search && Replace Events...";
+            // 
+            // findParameterValuesToolStripMenuItem
+            // 
+            this.findParameterValuesToolStripMenuItem.Name = "findParameterValuesToolStripMenuItem";
+            this.findParameterValuesToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
+            this.findParameterValuesToolStripMenuItem.Text = "Find Parameter Values...";
+            this.findParameterValuesToolStripMenuItem.Click += new System.EventHandler(this.findParameterValuesToolStripMenuItem_Click);
             // 
             // toolStripSeparator16
             // 
             this.toolStripSeparator16.Name = "toolStripSeparator16";
-            this.toolStripSeparator16.Size = new System.Drawing.Size(182, 6);
+            this.toolStripSeparator16.Size = new System.Drawing.Size(209, 6);
             // 
             // passwordToolStripMenuItem
             // 
             this.passwordToolStripMenuItem.Name = "passwordToolStripMenuItem";
-            this.passwordToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
+            this.passwordToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
             this.passwordToolStripMenuItem.Text = "Set Level Password...";
             this.passwordToolStripMenuItem.Click += new System.EventHandler(this.passwordToolStripMenuItem_Click);
             // 
             // resetLevelPasswordToolStripMenuItem
             // 
             this.resetLevelPasswordToolStripMenuItem.Name = "resetLevelPasswordToolStripMenuItem";
-            this.resetLevelPasswordToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
+            this.resetLevelPasswordToolStripMenuItem.Size = new System.Drawing.Size(212, 22);
             this.resetLevelPasswordToolStripMenuItem.Text = "Reset Level Password";
             this.resetLevelPasswordToolStripMenuItem.Click += new System.EventHandler(this.resetLevelPasswordToolStripMenuItem_Click);
             // 
@@ -767,6 +792,24 @@
             this.toolStripSeparator17.Name = "toolStripSeparator17";
             this.toolStripSeparator17.Size = new System.Drawing.Size(22, 6);
             // 
+            // ReplaceEventsToggle
+            // 
+            this.ReplaceEventsToggle.Checked = true;
+            this.ReplaceEventsToggle.CheckOnClick = true;
+            this.ReplaceEventsToggle.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.ReplaceEventsToggle.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.ReplaceEventsToggle.Image = ((System.Drawing.Image)(resources.GetObject("ReplaceEventsToggle.Image")));
+            this.ReplaceEventsToggle.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.ReplaceEventsToggle.Name = "ReplaceEventsToggle";
+            this.ReplaceEventsToggle.Size = new System.Drawing.Size(22, 20);
+            this.ReplaceEventsToggle.Tag = "Overwrite Events while Drawing";
+            this.ReplaceEventsToggle.MouseEnter += new System.EventHandler(this.DescribableControl_MouseEnter);
+            // 
+            // toolStripSeparator23
+            // 
+            this.toolStripSeparator23.Name = "toolStripSeparator23";
+            this.toolStripSeparator23.Size = new System.Drawing.Size(22, 6);
+            // 
             // SelectionButton
             // 
             this.SelectionButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
@@ -806,19 +849,6 @@
             this.RedoButton.Tag = "Redo (Ctrl+Y)";
             this.RedoButton.Click += new System.EventHandler(this.RedoButton_Click);
             this.RedoButton.MouseEnter += new System.EventHandler(this.DescribableControl_MouseEnter);
-            // 
-            // ReplaceEventsToggle
-            // 
-            this.ReplaceEventsToggle.Checked = true;
-            this.ReplaceEventsToggle.CheckOnClick = true;
-            this.ReplaceEventsToggle.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.ReplaceEventsToggle.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.ReplaceEventsToggle.Image = ((System.Drawing.Image)(resources.GetObject("ReplaceEventsToggle.Image")));
-            this.ReplaceEventsToggle.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.ReplaceEventsToggle.Name = "ReplaceEventsToggle";
-            this.ReplaceEventsToggle.Size = new System.Drawing.Size(22, 20);
-            this.ReplaceEventsToggle.Tag = "Overwrite Events while Drawing";
-            this.ReplaceEventsToggle.MouseEnter += new System.EventHandler(this.DescribableControl_MouseEnter);
             // 
             // StatusBar
             // 
@@ -1666,11 +1696,6 @@
             // 
             this.folderBrowserDialog1.ShowNewFolderButton = false;
             // 
-            // toolStripSeparator23
-            // 
-            this.toolStripSeparator23.Name = "toolStripSeparator23";
-            this.toolStripSeparator23.Size = new System.Drawing.Size(22, 6);
-            // 
             // Mainframe
             // 
             this.AllowDrop = true;
@@ -1885,5 +1910,8 @@
         private System.Windows.Forms.ToolStripMenuItem automaskToolStripMenuItem;
         private System.Windows.Forms.ToolStripButton ReplaceEventsToggle;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator23;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator24;
+        private System.Windows.Forms.ToolStripMenuItem searchReplaceEventsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem findParameterValuesToolStripMenuItem;
     }
 }

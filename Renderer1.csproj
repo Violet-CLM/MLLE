@@ -81,6 +81,12 @@
     <Compile Include="EventForm.Designer.cs">
       <DependentUpon>EventForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="FindParameterValues.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FindParameterValues.Designer.cs">
+      <DependentUpon>FindParameterValues.cs</DependentUpon>
+    </Compile>
     <Compile Include="LayerOrderForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -233,6 +239,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="EventForm.resx">
       <DependentUpon>EventForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FindParameterValues.resx">
+      <DependentUpon>FindParameterValues.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="LayerOrderForm.resx">
       <DependentUpon>LayerOrderForm.cs</DependentUpon>
