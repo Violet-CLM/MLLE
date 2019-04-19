@@ -2892,7 +2892,7 @@ namespace MLLE
         {
             _suspendEvent.Reset();
             DialogResult result = MessageBox.Show("You are about to delete this animated tile. Select \"Yes\" to remove all instances of it from the level (recommended), or \"No\" to shift any later animated tiles downwards to take its place.", "Delete Animation", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Stop);
-            if (result != DialogResult.Cancel) { J2L.DeleteAnimation((byte)(id - J2L.AnimOffset), result == DialogResult.Yes); UneditAnimation(); LevelHasBeenModified = true; }
+            if (result != DialogResult.Cancel) { J2L.DeleteAnimation((ushort)(id - J2L.AnimOffset), result == DialogResult.Yes); UneditAnimation(); LevelHasBeenModified = true; }
             _suspendEvent.Set();
         }
         private void deleteAnimationToolStripMenuItem_Click(object sender, EventArgs e)
@@ -2953,7 +2953,7 @@ namespace MLLE
                 }
                 if (CurrentAnimationID < J2L.MaxTiles) J2L.Animations[CurrentAnimationID - J2L.AnimOffset] = WorkingAnimation;
                 else J2L.InsertAnimation(WorkingAnimation);
-                for (int i = 0; i < J2L.NumberOfAnimations; ++i)
+                for (ushort i = 0; i < J2L.NumberOfAnimations; ++i)
                     J2L.Animations[i].JustBeenEdited(GameTick); //refresh frame lists in case any of those animated tiles made references to other animated tiles
                 LevelHasBeenModified = true;
                 UneditAnimation();

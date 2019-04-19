@@ -1504,8 +1504,8 @@ class J2LFile : J2File
                     //for (ushort i = 0; i < MaxTiles; i++) if (unknownsection3[i] != 0) Console.WriteLine(i.ToString() + ": " + unknownsection3[i].ToString());
                     if (VersionNumber == 256) AGA_unknownsection = data1reader.ReadBytes(32768); //wtf??
                     //for (int i = 0; i < 32768; i++) Console.Write(AGA_unknownsection[i]);
-                    Animations = new AnimatedTile[128];
-                    for (ushort i = 0; i < 128; i++)
+                    Animations = new AnimatedTile[256];
+                    for (ushort i = 0; i < 256; i++)
                     {
                         Animations[i] = new AnimatedTile();
                         if (i < NumberOfAnimations)
@@ -1847,7 +1847,7 @@ class J2LFile : J2File
             AGA_EventMap = new AGAEvent[SpriteLayer.Width, SpriteLayer.Height];
             AGA_unknownsection = new byte[32768]; //yeah, no clue
         }
-        Animations = new AnimatedTile[128]; for (byte i = 0; i < 128; i++) Animations[i] = new AnimatedTile();
+        Animations = new AnimatedTile[256]; for (ushort i = 0; i < 256; i++) Animations[i] = new AnimatedTile();
         EventMap = new uint[256, 64];
         //ParameterMap = new uint[256, 64];
         PlusPropertyList = new MLLE.PlusPropertyList(null);
@@ -1900,7 +1900,7 @@ class J2LFile : J2File
         if (!eraseUndefinedTiles)
         {
             /*first non-Open/New reference to DefaultLayers in this file*/ foreach (Layer CurrentLayer in DefaultLayers) foreach (ushort tile in CurrentLayer.TileMap) if (IsAnUndefinedTile(tile)) return SavingResults.UndefinedTiles;
-            for (byte i = 0; i < NumberOfAnimations; i++) foreach (ushort tile in Animations[i].Sequence) if (IsAnUndefinedTile(tile)) return SavingResults.UndefinedTiles;
+            for (ushort i = 0; i < NumberOfAnimations; i++) foreach (ushort tile in Animations[i].Sequence) if (IsAnUndefinedTile(tile)) return SavingResults.UndefinedTiles;
         }
         if (storeGivenFilename) FilenameOnly = Path.GetFileName(FullFilePath = filename);
         Encoding encoding = FileEncoding;
@@ -2245,7 +2245,7 @@ class J2LFile : J2File
                     for (ushort i = 0; i < MaxTiles; i++) data1writer.Write(TileTypes[i]);
                     for (ushort i = 0; i < MaxTiles; i++) data1writer.Write((byte)0); // yeah, this section doesn't do anything
                     if (VersionType == Version.AGA) data1writer.Write(AGA_unknownsection); // mostly zeroes, but there are some ones, so there IS information stored here... WHAT COULD IT BE?
-                    for (byte i = 0; i < NumberOfAnimations; i++) // JCS: 256 for TSF, else 128. But that's not necessary.
+                    for (ushort i = 0; i < NumberOfAnimations; i++) // JCS: 256 for TSF, else 128. But that's not necessary.
                     {
                         //if (i < NumberOfAnimations)
                         //{
@@ -2416,12 +2416,12 @@ class J2LFile : J2File
         }
     }
 
-    public void ResetAllAnimatedTiles() { for (byte i = 0; i < NumberOfAnimations; i++) Animations[i].Reset(); }
-    public void DeleteAnimation(byte id, bool adjustLaterAnims)
+    public void ResetAllAnimatedTiles() { for (ushort i = 0; i < NumberOfAnimations; i++) Animations[i].Reset(); }
+    public void DeleteAnimation(ushort id, bool adjustLaterAnims)
     {
-        for (byte i = id; i < NumberOfAnimations;)
+        for (ushort i = id; i < NumberOfAnimations;)
         {
-            if (i == 127) Animations[i] = new AnimatedTile();
+            if (i == (VersionType == Version.TSF ? 255 : 127)) Animations[i] = new AnimatedTile();
             else Animations[i] = Animations[++i];
         }
         NumberOfAnimations--;
@@ -2431,7 +2431,7 @@ class J2LFile : J2File
                 for (ushort x = 0; x < CurrentLayer.Width; x++)
                     for (ushort y = 0; y < CurrentLayer.Height; y++)
                         IncreaseAnimationInstanceIfNeeded(CurrentLayer.TileMap, x, y, ref threshhold);
-        for (byte i = 0; i < NumberOfAnimations; i++)
+        for (ushort i = 0; i < NumberOfAnimations; i++)
             for (byte j = 0; j < Animations[i].FrameCount; j++)
                 IncreaseAnimationInstanceIfNeeded(ref Animations[i].Sequence[j], ref threshhold);
         AnimOffset++;
@@ -2453,7 +2453,7 @@ class J2LFile : J2File
     }
     public InsertFrameResults InsertAnimation(AnimatedTile nuAnim, byte location = 255)
     {
-        if (NumberOfAnimations == 128 || NumberOfAnimations + TileCount + 1 == MaxTiles) return InsertFrameResults.Full;
+        if (NumberOfAnimations >= (VersionType == Version.TSF ? 256 : 128) || NumberOfAnimations + TileCount + 1 == MaxTiles) return InsertFrameResults.Full;
         if (location > NumberOfAnimations) location = (byte)NumberOfAnimations;
         for (ushort i = NumberOfAnimations; i > location; ) Animations[i] = Animations[--i];
         Animations[location] = nuAnim;
@@ -2464,7 +2464,7 @@ class J2LFile : J2File
                 for (ushort x = 0; x < CurrentLayer.Width; x++)
                     for (ushort y = 0; y < CurrentLayer.Height; y++)
                         DecreaseAnimationInstanceIfNeeded(CurrentLayer.TileMap, x, y, ref threshhold);
-        for (byte i = 0; i < NumberOfAnimations; i++)
+        for (ushort i = 0; i < NumberOfAnimations; i++)
             for (byte j = 0; j < Animations[i].FrameCount; j++)
                 DecreaseAnimationInstanceIfNeeded(ref Animations[i].Sequence[j], ref threshhold);
         AnimOffset--;
@@ -2484,6 +2484,8 @@ class J2LFile : J2File
 
     public VersionChangeResults ChangeVersion(Version nuVersion)
     {
+        if (VersionType == Version.TSF && NumberOfAnimations > 128)
+            return VersionChangeResults.TooManyAnimatedTiles;
         uint J2TTileCount = (!HasTiles) ? 1 : TileCount;
         if (nuVersion != VersionType) switch (nuVersion)
             {
