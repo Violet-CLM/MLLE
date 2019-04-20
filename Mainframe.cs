@@ -216,7 +216,9 @@ namespace MLLE
                 else
                     baseIni = ini;
             }
-            TexturedJ2L.ProduceEventAndTypeListsFromIni(version, baseIni, ini);
+            TexturedJ2L.ProduceEventStringsFromIni(version, baseIni, ini);
+            TexturedJ2L.ProduceEventIcons(version, TexturedJ2L.IniEventListing[version]);
+            TexturedJ2L.ProduceTypeIcons(version, ini);
             if (TreeStructure[version] == null)
             {
                 List<TreeNode>[] TreeNodeLists = TreeStructure[version] = new List<TreeNode>[2];
