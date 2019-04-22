@@ -350,6 +350,10 @@ class TexturedJ2L : J2LFile
             return result;
         }
     }
+    public static string[] GetDontUseEventListingForEventID(byte eventID)
+    {
+        return new string[] { (eventID == 0) ? "(none)" : "Event " + eventID.ToString(), "-", "", "DON'T", "USE" };
+    }
     public static void ProduceEventStringsFromIni(Version version, IniFile eventIni, IniFile typeIni, bool overwriteOldLists = false)
     {
         if (!overwriteOldLists && IniEventListing[version] != null)
@@ -362,7 +366,7 @@ class TexturedJ2L : J2LFile
                 StringList[i] = (((eventIni != typeIni && typeIni.IniReadValue("Events", i.ToString()).Length > 0) ? typeIni : eventIni).IniReadValue("Events", i.ToString()).Split('|'));
                 for (byte j = 0; j < StringList[i].Length; j++) StringList[i][j] = StringList[i][j].TrimEnd();
             }
-            else StringList[i] = new string[] { (i == 0) ? "(none)" : "Event " + i.ToString(), "-", "", "DON'T", "USE" };
+            else StringList[i] = GetDontUseEventListingForEventID((byte)i);
         }
     }
     public static void ProduceTypeIcons(Version version, IniFile typeIni, bool overwriteOldImage = false)

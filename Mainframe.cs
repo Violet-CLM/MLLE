@@ -301,7 +301,7 @@ namespace MLLE
                         var fileContents = System.IO.File.ReadAllText(scriptFilepath, J2LFile.FileEncoding) + "\n";
                         foreach (System.Text.RegularExpressions.Match match in System.Text.RegularExpressions.Regex.Matches(fileContents, "#include\\s+(['\"])(.+?)\\1", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
                             scriptFilepaths.Add(Path.Combine(Path.GetDirectoryName(J2L.FullFilePath), match.Groups[2].Value)); //come back to this script later in the loop
-                        foreach (System.Text.RegularExpressions.Match match in System.Text.RegularExpressions.Regex.Matches(fileContents, @"//[!/][ \t]*[\\@]Event[ \t]+(\d+)[ \t]*=([^\r\n]+)\r?\n", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+                        foreach (System.Text.RegularExpressions.Match match in System.Text.RegularExpressions.Regex.Matches(fileContents, @"//[!/][ \t]*[\\@]Event[ \t]+(\d+)[ \t]*=([^\r\n]*)\r?\n", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
                         {
                             if (!foundAtLeastOneLevelSpecificEventString)
                             {
@@ -310,7 +310,14 @@ namespace MLLE
                             }
                             int eventID = int.Parse(match.Groups[1].ToString());
                             if (LevelSpecificEventStringList[eventID] == null) //first attempt to set this string wins, because the level's main script should take precedence over any included libraries
-                                LevelSpecificEventStringList[eventID] = match.Groups[2].ToString().Split('|').Select(original => original.Trim()).ToArray();
+                            {
+                                string result = match.Groups[2].ToString();
+                                string[] resultSplitByPipes;
+                                if (result.Length == 0 || (resultSplitByPipes = result.Split('|')).Length < 4)
+                                    LevelSpecificEventStringList[eventID] = TexturedJ2L.GetDontUseEventListingForEventID((byte)eventID);
+                                else
+                                    LevelSpecificEventStringList[eventID] = resultSplitByPipes.Select(original => original.Trim()).ToArray();
+                            }
                         }
                     }
                 }
