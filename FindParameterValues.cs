@@ -60,7 +60,13 @@ namespace MLLE
 
             listBox1.Items.AddRange(foundValues.Select(val => val.ToString()).ToArray());
             if (listBox1.Items.Count == 0)
-                listBox1.Items.Add("(found no matches)");
+                ResultPrintout.Text = "(found no matches)";
+            else
+            {
+                int i;
+                for (i = 0; foundValues.Contains(i); ++i) ;
+                ResultPrintout.Text = "First free value: " + i.ToString();
+            }
         }
     }
 }
