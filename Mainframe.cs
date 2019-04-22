@@ -217,9 +217,13 @@ namespace MLLE
                     baseIni = ini;
             }
             TexturedJ2L.ProduceEventStringsFromIni(version, baseIni, ini);
-            TexturedJ2L.ProduceEventIcons(version, TexturedJ2L.IniEventListing[version]);
             TexturedJ2L.ProduceTypeIcons(version, ini);
-            if (TreeStructure[version] == null)
+
+            bool differentEventListFromPreviousLevelInThisVersion = ProduceLevelSpecificEventStringListIfAppropriate(version);
+            if (!differentEventListFromPreviousLevelInThisVersion)
+                LevelSpecificEventStringList = TexturedJ2L.IniEventListing[version];
+            TexturedJ2L.ProduceEventIcons(version, LevelSpecificEventStringList, differentEventListFromPreviousLevelInThisVersion);
+            if ((TreeStructure[version] == null) || differentEventListFromPreviousLevelInThisVersion)
             {
                 List<TreeNode>[] TreeNodeLists = TreeStructure[version] = new List<TreeNode>[2];
                 List<StringAndIndex> FlatEventList = FlatEventLists[version] = new List<StringAndIndex>();
@@ -245,17 +249,17 @@ namespace MLLE
                         if (CurrentIniLine.Length == 3 || CurrentIniLine[3] == "+") TreeNodeLists[1].First((TreeNode node) => { return node.Text == CurrentIniLine[2].TrimEnd(); }).Nodes.Add(CurrentIniLine[1].TrimEnd(), CurrentIniLine[0].TrimEnd());
                     }
                 }
-                string[][] EventsFromIni = TexturedJ2L.IniEventListing[version];
                 for (ushort i = 1; i < 256; i++)
                 {
-                    if (EventsFromIni[i][2].Trim() != "")
+                    if (LevelSpecificEventStringList[i][2].Trim() != "")
                     {
-                        FlatEventList.Add(new StringAndIndex(EventsFromIni[i][0], i));
-                        TreeNodeLists[0].First((TreeNode node) => { return node.Nodes.ContainsKey(EventsFromIni[i][2].TrimEnd()); }).Nodes.Find(EventsFromIni[i][2].TrimEnd(), false)[0].Nodes.Add(i.ToString(), EventsFromIni[i][0].TrimEnd());
-                        if (EventsFromIni[i][1] == "+") TreeNodeLists[1].First((TreeNode node) => { return node.Nodes.ContainsKey(EventsFromIni[i][2].TrimEnd()); }).Nodes.Find(EventsFromIni[i][2].TrimEnd(), false)[0].Nodes.Add(i.ToString(), EventsFromIni[i][0].TrimEnd());
+                        FlatEventList.Add(new StringAndIndex(LevelSpecificEventStringList[i][0], i));
+                        TreeNodeLists[0].First((TreeNode node) => { return node.Nodes.ContainsKey(LevelSpecificEventStringList[i][2].TrimEnd()); }).Nodes.Find(LevelSpecificEventStringList[i][2].TrimEnd(), false)[0].Nodes.Add(i.ToString(), LevelSpecificEventStringList[i][0].TrimEnd());
+                        if (LevelSpecificEventStringList[i][1] == "+") TreeNodeLists[1].First((TreeNode node) => { return node.Nodes.ContainsKey(LevelSpecificEventStringList[i][2].TrimEnd()); }).Nodes.Find(LevelSpecificEventStringList[i][2].TrimEnd(), false)[0].Nodes.Add(i.ToString(), LevelSpecificEventStringList[i][0].TrimEnd());
                     }
                 }
             }
+
             TiletypeDropdown.DropDownItems.Clear();
             for (byte i = 0; i < 16; i++)
             {
@@ -278,6 +282,53 @@ namespace MLLE
             if (AllTilesetLists[version] == null) PopulateTilesetDropdown(version, ini);
             TilesetSelection.Items.Clear();
             foreach (NameAndFilename foo in AllTilesetLists[version]) TilesetSelection.Items.Add(foo);
+        }
+        string[][] LevelSpecificEventStringList;
+        private bool ProduceLevelSpecificEventStringListIfAppropriate(Version version)
+        {
+            string[][] defaults = TexturedJ2L.IniEventListing[version];
+            if (VersionIsPlusCompatible(version)) //otherwise there won't be any script file/s to worry about at all
+            {
+                var scriptFilepaths = new List<string>();
+                scriptFilepaths.Add(Path.ChangeExtension(J2L.FullFilePath, "j2as"));
+
+                bool foundAtLeastOneLevelSpecificEventString = false;
+                for (int scriptID = 0; scriptID < scriptFilepaths.Count; ++scriptID)
+                {
+                    string scriptFilepath = scriptFilepaths[scriptID];
+                    if (File.Exists(scriptFilepath))
+                    {
+                        var fileContents = System.IO.File.ReadAllText(scriptFilepath, J2LFile.FileEncoding) + "\n";
+                        foreach (System.Text.RegularExpressions.Match match in System.Text.RegularExpressions.Regex.Matches(fileContents, "#include\\s+(['\"])(.+?)\\1", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+                            scriptFilepaths.Add(Path.Combine(Path.GetDirectoryName(J2L.FullFilePath), match.Groups[2].Value)); //come back to this script later in the loop
+                        foreach (System.Text.RegularExpressions.Match match in System.Text.RegularExpressions.Regex.Matches(fileContents, @"//[!/][ \t]*[\\@]Event[ \t]+(\d+)[ \t]*=([^\r\n]+)\r?\n", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+                        {
+                            if (!foundAtLeastOneLevelSpecificEventString)
+                            {
+                                LevelSpecificEventStringList = new string[256][];
+                                foundAtLeastOneLevelSpecificEventString = true;
+                            }
+                            int eventID = int.Parse(match.Groups[1].ToString());
+                            if (LevelSpecificEventStringList[eventID] == null) //first attempt to set this string wins, because the level's main script should take precedence over any included libraries
+                                LevelSpecificEventStringList[eventID] = match.Groups[2].ToString().Split('|').Select(original => original.Trim()).ToArray();
+                        }
+                    }
+                }
+
+                if (foundAtLeastOneLevelSpecificEventString)
+                {
+                    for (int i = 0; i < 256; ++i)
+                        if (LevelSpecificEventStringList[i] == null)
+                            LevelSpecificEventStringList[i] = defaults[i];
+                    return true;
+                }
+                else if (LevelSpecificEventStringList != null && LevelSpecificEventStringList != defaults) //the previous level (in this version) used custom events, but this one does not
+                {
+                    LevelSpecificEventStringList = defaults;
+                    return true; //different from previous level
+                }
+            }
+            return false; //no change
         }
         private void PopulateTilesetDropdown(Version version, IniFile ini)
         {
@@ -1374,7 +1425,7 @@ namespace MLLE
         private void findParameterValuesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _suspendEvent.Reset();
-            new FindParameterValues().ShowForm(ref J2L.EventMap, TexturedJ2L.IniEventListing[J2L.VersionType]);
+            new FindParameterValues().ShowForm(ref J2L.EventMap, LevelSpecificEventStringList);
             _suspendEvent.Set();
         }
 
@@ -1481,8 +1532,7 @@ namespace MLLE
         internal void NewJ2L(Version? version = null)
         {
             SafeToDisplay = false;
-            if (version == null) J2L.NewLevel(J2L.VersionType);
-            else J2L.NewLevel((Version)version);
+            J2L.NewLevel(version ?? J2L.VersionType);
             J2L.FullFilePath = Path.Combine(DefaultDirectories[J2L.VersionType], J2L.FilenameOnly = DefaultLevelFilename);
             SetTitle(J2L.Name);
             CheckCurrentVersion();
@@ -2697,7 +2747,7 @@ namespace MLLE
             MouseEventPrintout.Text = NameEvent(MouseAGAEvent.ID, "");
         }
         public string NameEvent(uint ID, string defaultName) {
-            string[] eventEntryInINI = TexturedJ2L.IniEventListing[J2L.VersionType][ID & 255];
+            string[] eventEntryInINI = LevelSpecificEventStringList[ID & 255];
             string name = eventEntryInINI[0] ?? defaultName;
             if (J2L.VersionType != Version.AGA && eventEntryInINI.Length > 5)
             {
@@ -2716,7 +2766,7 @@ namespace MLLE
             for (byte i = 0; i < output.Length; i++)
             {
                 paramName = iniEntry[i + 5].Split(':')[0];
-                if (i == 0 && paramName.Length > 4 && paramName.Substring(paramName.Length - 5, 5) == "Event") output[i] = paramName + "=" + '"' + TexturedJ2L.IniEventListing[J2L.VersionType][rawEvent << 12 >> 24][0] + '"';
+                if (i == 0 && paramName.Length > 4 && paramName.Substring(paramName.Length - 5, 5) == "Event") output[i] = paramName + "=" + '"' + LevelSpecificEventStringList[rawEvent << 12 >> 24][0] + '"';
                 else output[i] = paramName + "=" + values[i].ToString();
             }
             return output;
@@ -2819,7 +2869,7 @@ namespace MLLE
         private void SelectEventAtMouse()
         {
             _suspendEvent.Reset();
-            EventForm EF = new EventForm(this, TreeStructure[J2L.VersionType][(J2L.LevelMode == 1) ? 1 : 0].ToArray(), J2L.VersionType, (J2L.VersionType == Version.AGA && MouseAGAEvent.Bits == null) ? new AGAEvent(0) : MouseAGAEvent);
+            EventForm EF = new EventForm(this, TreeStructure[J2L.VersionType][(J2L.LevelMode == 1) ? 1 : 0].ToArray(), J2L.VersionType, (J2L.VersionType == Version.AGA && MouseAGAEvent.Bits == null) ? new AGAEvent(0) : MouseAGAEvent, LevelSpecificEventStringList);
             EF.ShowDialog();
             if (SelectReturnAGAEvent != null) { ActiveEvent = (AGAEvent)SelectReturnAGAEvent; PasteEventAtMouse(); }
             EF.ResetTree();
