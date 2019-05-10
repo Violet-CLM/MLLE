@@ -256,11 +256,11 @@ namespace MLLE
         static readonly Weapon[] WeaponDefaults = new Weapon[9] {
             new Weapon("Blaster",           new int[]{1}),
             new Weapon("Bouncers",          new int[]{}),
-            new Weapon("Ice",               new int[]{0}),
+            new Weapon("Ice",               new int[]{}),
             new Weapon("Seekers",           new int[]{}),
             new Weapon("RFs",               new int[]{}),
             new Weapon("Toaster",           new int[]{}),
-            new Weapon("TNT",               new int[]{0,0}),
+            new Weapon("TNT",               new int[]{}),
             new Weapon("Gun8",              new int[]{0}),
             new Weapon("Electro Blaster",   new int[]{})
         };
