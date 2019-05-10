@@ -192,6 +192,7 @@
             this.AnimScrollbar = new System.Windows.Forms.HScrollBar();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
+            this.weaponsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MainMenu.SuspendLayout();
             this.DrawingTools.SuspendLayout();
             this.StatusBar.SuspendLayout();
@@ -541,6 +542,7 @@
             this.layersToolStripMenuItem,
             this.tilesetsToolStripMenuItem,
             this.recolorEventsToolStripMenuItem,
+            this.weaponsToolStripMenuItem,
             this.toolStripSeparator22,
             this.editScriptToolStripMenuItem});
             this.jJ2PropertiesToolStripMenuItem.Name = "jJ2PropertiesToolStripMenuItem";
@@ -1696,6 +1698,13 @@
             // 
             this.folderBrowserDialog1.ShowNewFolderButton = false;
             // 
+            // weaponsToolStripMenuItem
+            // 
+            this.weaponsToolStripMenuItem.Name = "weaponsToolStripMenuItem";
+            this.weaponsToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.weaponsToolStripMenuItem.Text = "Weapons...";
+            this.weaponsToolStripMenuItem.Click += new System.EventHandler(this.weaponsToolStripMenuItem_Click);
+            // 
             // Mainframe
             // 
             this.AllowDrop = true;
@@ -1913,5 +1922,6 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator24;
         private System.Windows.Forms.ToolStripMenuItem searchReplaceEventsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem findParameterValuesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem weaponsToolStripMenuItem;
     }
 }

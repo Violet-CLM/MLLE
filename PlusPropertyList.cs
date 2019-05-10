@@ -5,6 +5,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using Ionic.Zlib;
+using System;
 
 namespace MLLE
 {
@@ -233,6 +234,39 @@ namespace MLLE
         internal byte[][] TileMasks;
 
 
+        internal class Weapon
+        {
+            string Name;
+            int[] Options;
+            internal Weapon(string n, int[] o) { Name = n; Options = o; }
+
+            internal Weapon Clone()
+            {
+                return new Weapon(Name, Options.Clone() as int[]);
+            }
+            public override bool Equals(object other)
+            {
+                if (other == null || GetType() != other.GetType())
+                    return false;
+
+                Weapon otherWeapon = other as Weapon;
+                return Name.Equals(otherWeapon.Name) && Options.SequenceEqual(otherWeapon.Options);
+            }
+        }
+        static readonly Weapon[] WeaponDefaults = new Weapon[9] {
+            new Weapon("Blaster",           new int[]{1}),
+            new Weapon("Bouncers",          new int[]{}),
+            new Weapon("Ice",               new int[]{0}),
+            new Weapon("Seekers",           new int[]{}),
+            new Weapon("RFs",               new int[]{}),
+            new Weapon("Toaster",           new int[]{}),
+            new Weapon("TNT",               new int[]{0,0}),
+            new Weapon("Gun8",              new int[]{0}),
+            new Weapon("Electro Blaster",   new int[]{})
+        };
+        [Browsable(false)]
+        internal Weapon[] Weapons;
+
         const float DefaultWaterLevel = 0x7FFF;
         public PlusPropertyList(PlusPropertyList? other) : this()
         {
@@ -283,6 +317,8 @@ namespace MLLE
                         TileMasks[i] = other.Value.TileMasks[i].Clone() as byte[];
                     }
                 }
+
+                Weapons = other.Value.Weapons.Select(w => w.Clone()).ToArray();
             }
             else
             {
@@ -295,6 +331,7 @@ namespace MLLE
                 WaterGradientStart = Color.Black;
                 WaterGradientStop = Color.Black;
                 Palette = null;
+                Weapons = WeaponDefaults.Select(w => w.Clone()).ToArray();
             }
         }
 
@@ -416,7 +453,8 @@ namespace MLLE
                     Palette != null ||
                     ColorRemappings.FirstOrDefault(it => it != null) != null ||
                     TileImages.FirstOrDefault(it => it != null) != null ||
-                    TileMasks.FirstOrDefault(it => it != null) != null
+                    TileMasks.FirstOrDefault(it => it != null) != null ||
+                    !Weapons.SequenceEqual(WeaponDefaults)
                 )
                     return true;
                 return false;
