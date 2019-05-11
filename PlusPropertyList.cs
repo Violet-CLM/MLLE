@@ -236,8 +236,9 @@ namespace MLLE
 
         internal class Weapon
         {
-            string Name;
-            int[] Options;
+            internal string Name;
+            internal int[] Options;
+            internal Weapon() { }
             internal Weapon(string n, int[] o) { Name = n; Options = o; }
 
             internal Weapon Clone()
