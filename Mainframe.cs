@@ -497,7 +497,7 @@ namespace MLLE
             AllowExtraZooming = (Settings.IniReadValue("Miscellaneous", "ZoomingAbove100") == "1"); zoomingAbove100ToolStripMenuItem.Checked = Zoom200.Enabled = Zoom400.Enabled = AllowExtraZooming;
             PreviewHelpStringColors = (Settings.IniReadValue("Miscellaneous", "PreviewHelpStringColors") != "0"); previewHelpStringColorsToolStripMenuItem.Checked = PreviewHelpStringColors;
 
-            ToolStripMenuItem[] recolorableSpriteSubcategories = { pinballToolStripMenuItem, polesToolStripMenuItem, platformsToolStripMenuItem, sceneryToolStripMenuItem };
+            ToolStripMenuItem[] recolorableSpriteSubcategories = { pinballToolStripMenuItem, platformsToolStripMenuItem, polesToolStripMenuItem, sceneryToolStripMenuItem };
             for (int i = 0; i < RecolorableSpriteNames.Length; ++i)
             {
                 ToolStripMenuItem toolstripitem = new ToolStripMenuItem(RecolorableSpriteNames[i]);
@@ -951,9 +951,9 @@ namespace MLLE
             _suspendEvent.Set();
         }
 
-        private static readonly Bitmap[] RecolorableSpriteResources = { Properties.Resources._500Bumper, Properties.Resources.CarrotBumper, Properties.Resources.CarrotusPole, Properties.Resources.DiamondusPole, Properties.Resources.Flipper, Properties.Resources.JunglePole, Properties.Resources.Leaf, Properties.Resources.PsychPole, Properties.Resources.SmallTree, Properties.Resources.Snow, Properties.Resources.Splash };
-        public static readonly string[] RecolorableSpriteNames = { "500 Bumper", "Carrot Bumper", "Carrotus Pole", "Diamondus Pole", "Flipper", "Jungle Pole", "Leaf", "Psych Pole", "Small Tree", "Snow", "Splash/Rain" };
-        private static readonly int[] RecolorableSpriteCategories = { 0, 0, 2, 2, 0, 2, 3, 2, 2, 3, 3 };
+        private static readonly Bitmap[] RecolorableSpriteResources = { Properties.Resources._500Bumper, Properties.Resources.CarrotBumper, Properties.Resources.CarrotusPole, Properties.Resources.DiamondusPole, Properties.Resources.Flipper, Properties.Resources.JunglePole, Properties.Resources.Leaf, Properties.Resources.PsychPole, Properties.Resources.SmallTree, Properties.Resources.Snow, Properties.Resources.Splash, Properties.Resources.BollPlatform, Properties.Resources.FruitPlatform, Properties.Resources.GrassPlatform, Properties.Resources.PinkPlatform, Properties.Resources.SonicPlatform, Properties.Resources.SpikePlatform, Properties.Resources.SpikeBoll, Properties.Resources.SpikeBoll, Properties.Resources.SwingingVine };
+        public static readonly string[] RecolorableSpriteNames = { "500 Bumper", "Carrot Bumper", "Carrotus", "Diamondus", "Flipper", "Jungle", "Leaf", "Psych", "Small Tree", "Snow", "Splash/Rain", "Boll", "Fruit", "Grass", "Pink", "Sonic", "Spike", "Spike Boll 2D", "Spike Boll 3D", "Swinging Vine" };
+        private static readonly int[] RecolorableSpriteCategories = { 0, 0, 2, 2, 0, 2, 3, 2, 2, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 3 };
         private void RecolorSprite(int spriteID)
         {
             _suspendEvent.Reset();

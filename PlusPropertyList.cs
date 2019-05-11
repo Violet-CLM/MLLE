@@ -254,15 +254,9 @@ namespace MLLE
                     Palette.CopyFrom(other.Value.Palette);
                 }
 
-                for (int i = 0; i < ColorRemappings.Length; ++i)
-                {
-                    if (other.Value.ColorRemappings[i] == null)
-                        ColorRemappings[i] = null;
-                    else
-                    {
+                for (int i = 0; i < other.Value.ColorRemappings.Length; ++i)
+                    if (other.Value.ColorRemappings[i] != null)
                         ColorRemappings[i] = other.Value.ColorRemappings[i].Clone() as byte[];
-                    }
-                }
 
                 for (int i = 0; i < TileImages.Length; ++i)
                 {
@@ -555,7 +549,7 @@ namespace MLLE
                         Palette = new Palette(data5bodyreader, true);
 
                     for (int i = 0; i < Mainframe.RecolorableSpriteNames.Length; ++i)
-                        if (data5bodyreader.ReadBoolean())
+                        if ((i < 11 || data5Version >= 0x105) && data5bodyreader.ReadBoolean()) //the recolorable sprite list was expanded in MLLE-Include-1.5
                         {
                             ColorRemappings[i] = new byte[Palette.PaletteSize];
                             for (uint j = 0; j < Palette.PaletteSize; ++j)

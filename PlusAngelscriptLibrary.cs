@@ -8,10 +8,10 @@ namespace MLLE
 {
     public partial struct PlusPropertyList
     {
-        const uint CurrentMLLEData5Version = 0x104;
+        const uint CurrentMLLEData5Version = 0x105;
         const string MLLEData5MagicString = "MLLE";
-        const string CurrentMLLEData5VersionStringForComparison = "0x104";
-        const string CurrentMLLEData5VersionString = "1.4";
+        const string CurrentMLLEData5VersionStringForComparison = "0x105";
+        const string CurrentMLLEData5VersionString = "1.5";
         const string AngelscriptLibraryFilename = "MLLE-Include-" + CurrentMLLEData5VersionString + ".asc";
 
         const string AngelscriptLibraryCallStockLine = "const bool MLLESetupSuccessful = MLLE::Setup();\r\n";
@@ -133,6 +133,15 @@ namespace MLLE {
         _recolorAnimationIf(data5, ANIM::SMALTREE, 0, 1);
         _recolorAnimationIf(data5, ANIM::SNOW, 0, 8);
         _recolorAnimationIf(data5, ANIM::COMMON, 2, 18);
+        _recolorAnimationIf(data5, ANIM::BOLLPLAT, 0, 2);
+        _recolorAnimationIf(data5, ANIM::FRUITPLAT, 0, 2);
+        _recolorAnimationIf(data5, ANIM::GRASSPLAT, 0, 2);
+        _recolorAnimationIf(data5, ANIM::PINKPLAT, 0, 2);
+        _recolorAnimationIf(data5, ANIM::SONICPLAT, 0, 2);
+        _recolorAnimationIf(data5, ANIM::SPIKEPLAT, 0, 2);
+        _recolorAnimationIf(data5, ANIM::SPIKEBOLL, 0, 2);
+        _recolorAnimationIf(data5, ANIM::SPIKEBOLL3D, 0, 2);
+        _recolorAnimationIf(data5, ANIM::VINE, 1, 1);
 
         data5.pop(pbyte);
         for (uint i = 0; i < pbyte; ++i) {
