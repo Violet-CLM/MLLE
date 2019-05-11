@@ -24,9 +24,12 @@ namespace MLLE
 
         class ExtendedWeapon : PlusPropertyList.Weapon, IComparable<ExtendedWeapon>
         {
+            public Bitmap Image;
             public ExtendedWeapon(string[] s)
             {
                 Name = s[0];
+
+                Image = (string.IsNullOrEmpty(s[1])) ? new Bitmap(1, 1): new Bitmap(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Weapons", s[1]));
 
                 string[] optionSpecs = s[4].Split('|').Select(ss => ss.Trim()).ToArray();
                 Options = new int[optionSpecs.Length];
@@ -69,6 +72,7 @@ namespace MLLE
                 var number = new Label();
                 number.Text = (weaponID + 1).ToString();
                 number.Font = new Font(number.Font.FontFamily, 16);
+                number.Width = 20;
                 panel.Controls.Add(number);
 
                 var dropdown = new ComboBox();
@@ -76,12 +80,30 @@ namespace MLLE
                 dropdown.Top = panel.Height - dropdown.Height - 3;
                 dropdown.Width = panel.Width;
                 dropdown.DropDownStyle = ComboBoxStyle.DropDownList;
-                dropdown.SelectedItem = dropdown.Items[AllAvailableWeapons.FindIndex(w => w.Name == weaponsInProgress[weaponID].Name)];
+                int localWeaponID = weaponID;
+                dropdown.SelectedIndexChanged += (ss, ee) => {
+                    weaponsInProgress[localWeaponID] = AllAvailableWeapons.Find(w => w.Name == (ss as ComboBox).SelectedItem.ToString()).Clone();
+                    UpdatePanel(localWeaponID);
+                };
                 panel.Controls.Add(dropdown);
 
+                var image = new PictureBox();
+                image.Size = new Size(64, 64);
+                image.Left = panel.Width - image.Width - 3;
+                panel.Controls.Add(image);
+
+                UpdatePanel(weaponID);
             }
 
             ShowDialog();
+        }
+
+        void UpdatePanel(int weaponID)
+        {
+            Panel panel = tableLayoutPanel1.Controls[weaponID] as Panel;
+            int index = AllAvailableWeapons.FindIndex(w => w.Name == weaponsInProgress[weaponID].Name);
+            (panel.Controls[1] as ComboBox).SelectedIndex = index;
+            (panel.Controls[2] as PictureBox).Image = AllAvailableWeapons[index].Image;
         }
 
         private void ButtonOK_Click(object sender, EventArgs e)
