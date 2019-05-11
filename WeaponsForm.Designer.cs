@@ -48,7 +48,7 @@
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
             this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(423, 258);
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(534, 242);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
             // ButtonCancel
@@ -56,9 +56,9 @@
             this.ButtonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.ButtonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.ButtonCancel.Location = new System.Drawing.Point(230, 277);
+            this.ButtonCancel.Location = new System.Drawing.Point(279, 261);
             this.ButtonCancel.Name = "ButtonCancel";
-            this.ButtonCancel.Size = new System.Drawing.Size(206, 23);
+            this.ButtonCancel.Size = new System.Drawing.Size(268, 23);
             this.ButtonCancel.TabIndex = 12;
             this.ButtonCancel.Text = "Cancel";
             this.ButtonCancel.UseVisualStyleBackColor = true;
@@ -68,9 +68,9 @@
             // 
             this.ButtonOK.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.ButtonOK.Location = new System.Drawing.Point(12, 277);
+            this.ButtonOK.Location = new System.Drawing.Point(12, 261);
             this.ButtonOK.Name = "ButtonOK";
-            this.ButtonOK.Size = new System.Drawing.Size(212, 23);
+            this.ButtonOK.Size = new System.Drawing.Size(261, 23);
             this.ButtonOK.TabIndex = 11;
             this.ButtonOK.Text = "OK";
             this.ButtonOK.UseVisualStyleBackColor = true;
@@ -82,7 +82,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
-            this.ClientSize = new System.Drawing.Size(448, 312);
+            this.ClientSize = new System.Drawing.Size(559, 296);
             this.Controls.Add(this.ButtonCancel);
             this.Controls.Add(this.ButtonOK);
             this.Controls.Add(this.tableLayoutPanel1);

@@ -83,7 +83,30 @@ namespace MLLE
                 var label = new Label();
                 label.Text = OptionNames[id];
                 label.Top = y;
+                label.AutoSize = true;
                 panel.Controls.Add(label);
+                Control control;
+                switch (OptionTypes[id]) {
+                    case oTypes.Bool: {
+                        control = new CheckBox();
+                        (control as CheckBox).Checked = Options[id] != 0;
+                        control.AutoSize = true;
+                        break; }
+                    case oTypes.Dropdown: {
+                        control = new ComboBox();
+                        (control as ComboBox).DropDownStyle = ComboBoxStyle.DropDownList;
+                        (control as ComboBox).DropDownWidth *= 2;
+                        (control as ComboBox).Items.AddRange(OptionOptions[id]);
+                        (control as ComboBox).SelectedIndex = Options[id];
+                        break; }
+                    default: {
+                        control = new NumericUpDown();
+                        (control as NumericUpDown).Value = Options[id];
+                        break; }
+                }
+                control.Location = new Point(label.Right + 3, y);
+                control.Width = panel.ClientSize.Width - control.Left;
+                panel.Controls.Add(control);
             }
         }
         List<ExtendedWeapon> AllAvailableWeapons = new List<ExtendedWeapon>();
@@ -127,6 +150,7 @@ namespace MLLE
                 dropdown.Items.AddRange(weaponNames);
                 dropdown.Top = panel.Height - dropdown.Height - 3;
                 dropdown.DropDownStyle = ComboBoxStyle.DropDownList;
+                dropdown.DropDownWidth += dropdown.DropDownWidth / 2;
                 int localWeaponID = weaponID;
                 dropdown.SelectedIndexChanged += (ss, ee) => {
                     weaponsInProgress[localWeaponID] = AllAvailableWeapons.Find(w => w.Name == (ss as ComboBox).SelectedItem.ToString()).Clone();
