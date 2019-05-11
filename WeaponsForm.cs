@@ -23,7 +23,7 @@ namespace MLLE
             InitializeComponent();
         }
 
-        class ExtendedWeapon : PlusPropertyList.Weapon, IComparable<ExtendedWeapon>
+        internal class ExtendedWeapon : PlusPropertyList.Weapon, IComparable<ExtendedWeapon>
         {
             public Bitmap Image;
             enum oTypes { Int, Bool, Dropdown };
@@ -113,27 +113,35 @@ namespace MLLE
                 panel.Controls.Add(control);
             }
         }
-        List<ExtendedWeapon> AllAvailableWeapons = new List<ExtendedWeapon>();
+
+        static List<ExtendedWeapon> AllAvailableWeapons = new List<ExtendedWeapon>();
+        internal static List<ExtendedWeapon> GetAllAvailableWeapons()
+        {
+            if (AllAvailableWeapons.Count == 0)
+            {
+                var allIniFiles = new DirectoryInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Weapons")).GetFiles("*.ini", SearchOption.TopDirectoryOnly);
+                foreach (var iniFilename in allIniFiles)
+                {
+                    var iniFile = new IniFile(iniFilename.FullName);
+                    int weaponDefinedInIniID = 0;
+                    while (true)
+                    {
+                        var sectionName = weaponDefinedInIniID++.ToString();
+                        if (string.IsNullOrEmpty(iniFile.IniReadValue(sectionName, "Name"))) //run out of weapons in this ini
+                            break;
+                        AllAvailableWeapons.Add(new ExtendedWeapon(ExtendedWeapon.KeysToReadFromIni.Select(k => iniFile.IniReadValue(sectionName, k).Trim()).ToArray()));
+                    }
+                }
+                AllAvailableWeapons.Sort();
+            }
+            return AllAvailableWeapons;
+        }
 
         internal void ShowForm(ref PlusPropertyList.Weapon[] weaponsSource)
         {
             weaponsInProgress = weaponsSource.Select(w => w.Clone()).ToArray();
 
-            var backupDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Weapons");
-            var allIniFiles = new DirectoryInfo(backupDirectory).GetFiles("*.ini", SearchOption.TopDirectoryOnly);
-            foreach (var iniFilename in allIniFiles)
-            {
-                var iniFile = new IniFile(iniFilename.FullName);
-                int weaponDefinedInIniID = 0;
-                while (true)
-                {
-                    var sectionName = weaponDefinedInIniID++.ToString();
-                    if (string.IsNullOrEmpty(iniFile.IniReadValue(sectionName, "Name"))) //run out of weapons in this ini
-                        break;
-                    AllAvailableWeapons.Add(new ExtendedWeapon(ExtendedWeapon.KeysToReadFromIni.Select(k => iniFile.IniReadValue(sectionName, k).Trim()).ToArray()));
-                }
-            }
-            AllAvailableWeapons.Sort();
+            GetAllAvailableWeapons();
             var weaponNames = AllAvailableWeapons.Select(w => w.Name).ToArray();
 
             for (int weaponID = 0; weaponID < 9; ++weaponID)
