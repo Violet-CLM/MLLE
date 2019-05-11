@@ -192,6 +192,10 @@
             this.AnimScrollbar = new System.Windows.Forms.HScrollBar();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
+            this.pinballToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.platformsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.polesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.sceneryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MainMenu.SuspendLayout();
             this.DrawingTools.SuspendLayout();
             this.StatusBar.SuspendLayout();
@@ -587,6 +591,11 @@
             // 
             // recolorEventsToolStripMenuItem
             // 
+            this.recolorEventsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.pinballToolStripMenuItem,
+            this.platformsToolStripMenuItem,
+            this.polesToolStripMenuItem,
+            this.sceneryToolStripMenuItem});
             this.recolorEventsToolStripMenuItem.Name = "recolorEventsToolStripMenuItem";
             this.recolorEventsToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
             this.recolorEventsToolStripMenuItem.Text = "Recolor Events";
@@ -1696,6 +1705,30 @@
             // 
             this.folderBrowserDialog1.ShowNewFolderButton = false;
             // 
+            // pinballToolStripMenuItem
+            // 
+            this.pinballToolStripMenuItem.Name = "pinballToolStripMenuItem";
+            this.pinballToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.pinballToolStripMenuItem.Text = "Pinball";
+            // 
+            // platformsToolStripMenuItem
+            // 
+            this.platformsToolStripMenuItem.Name = "platformsToolStripMenuItem";
+            this.platformsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.platformsToolStripMenuItem.Text = "Platforms";
+            // 
+            // polesToolStripMenuItem
+            // 
+            this.polesToolStripMenuItem.Name = "polesToolStripMenuItem";
+            this.polesToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.polesToolStripMenuItem.Text = "Poles";
+            // 
+            // sceneryToolStripMenuItem
+            // 
+            this.sceneryToolStripMenuItem.Name = "sceneryToolStripMenuItem";
+            this.sceneryToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.sceneryToolStripMenuItem.Text = "Scenery";
+            // 
             // Mainframe
             // 
             this.AllowDrop = true;
@@ -1913,5 +1946,9 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator24;
         private System.Windows.Forms.ToolStripMenuItem searchReplaceEventsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem findParameterValuesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem pinballToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem platformsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem polesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem sceneryToolStripMenuItem;
     }
 }

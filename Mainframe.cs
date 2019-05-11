@@ -497,12 +497,13 @@ namespace MLLE
             AllowExtraZooming = (Settings.IniReadValue("Miscellaneous", "ZoomingAbove100") == "1"); zoomingAbove100ToolStripMenuItem.Checked = Zoom200.Enabled = Zoom400.Enabled = AllowExtraZooming;
             PreviewHelpStringColors = (Settings.IniReadValue("Miscellaneous", "PreviewHelpStringColors") != "0"); previewHelpStringColorsToolStripMenuItem.Checked = PreviewHelpStringColors;
 
+            ToolStripMenuItem[] recolorableSpriteSubcategories = { pinballToolStripMenuItem, polesToolStripMenuItem, platformsToolStripMenuItem, sceneryToolStripMenuItem };
             for (int i = 0; i < RecolorableSpriteNames.Length; ++i)
             {
                 ToolStripMenuItem toolstripitem = new ToolStripMenuItem(RecolorableSpriteNames[i]);
                 toolstripitem.Tag = i;
                 toolstripitem.Click += recolorableSpriteToolStripMenuItem_Click;
-                recolorEventsToolStripMenuItem.DropDownItems.Add(toolstripitem);
+                recolorableSpriteSubcategories[RecolorableSpriteCategories[i]].DropDownItems.Add(toolstripitem);
             }
 
             LevelDisplay.MouseWheel += LevelDisplay_MouseWheel;
@@ -952,6 +953,7 @@ namespace MLLE
 
         private static readonly Bitmap[] RecolorableSpriteResources = { Properties.Resources._500Bumper, Properties.Resources.CarrotBumper, Properties.Resources.CarrotusPole, Properties.Resources.DiamondusPole, Properties.Resources.Flipper, Properties.Resources.JunglePole, Properties.Resources.Leaf, Properties.Resources.PsychPole, Properties.Resources.SmallTree, Properties.Resources.Snow, Properties.Resources.Splash };
         public static readonly string[] RecolorableSpriteNames = { "500 Bumper", "Carrot Bumper", "Carrotus Pole", "Diamondus Pole", "Flipper", "Jungle Pole", "Leaf", "Psych Pole", "Small Tree", "Snow", "Splash/Rain" };
+        private static readonly int[] RecolorableSpriteCategories = { 0, 0, 2, 2, 0, 2, 3, 2, 2, 3, 3 };
         private void RecolorSprite(int spriteID)
         {
             _suspendEvent.Reset();
