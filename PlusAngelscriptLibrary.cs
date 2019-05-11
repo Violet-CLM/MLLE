@@ -52,7 +52,7 @@ namespace MLLE {
         
         jjSTREAM level(jjLevelFileName);
         if (level.isEmpty()) {
-            jjDebug('MLLE::Setup: Level file cannot be read from that folder for security reasons!');
+            jjDebug('MLLE::Setup: Error reading ""' + jjLevelFileName + '""!');
             return false;
         }
         level.discard(230);
@@ -154,14 +154,19 @@ namespace MLLE {
                 for (uint j = 0; j < 256; ++j)
                     data5.pop(colors[j]);
             }
-            jjTilesFromTileset(tilesetFilename, tileStart, tileCount, colors);
+            if (!jjTilesFromTileset(tilesetFilename, tileStart, tileCount, colors)) {
+                jjDebug('MLLE::Setup: Error reading ""' + tilesetFilename + '""!');
+                return false;
+            }
         }
         if (pbyte != 0) {
             array<uint> layersIDsWithTileMaps;
             for (uint i = 1; i <= 8; ++i)
                 if (jjLayers[i].hasTileMap)
                     layersIDsWithTileMaps.insertLast(i);
-            jjLayersFromLevel(jjLevelFileName, layersIDsWithTileMaps);
+            if (jjLayersFromLevel(jjLevelFileName, layersIDsWithTileMaps).length == 0) {
+                jjDebug('MLLE::Setup: Error reading ""' + jjLevelFileName + '""!');
+            }
         }
 
         array<jjLAYER@> newLayerOrder, nonDefaultLayers;
@@ -171,7 +176,12 @@ namespace MLLE {
             for (uint j = i; j < puint && j < i + 8; ++j) {
                 layerIDsToGrab.insertLast((j & 7) + 1);
             }
-            array<jjLAYER@> extraLayers = jjLayersFromLevel(jjLevelFileName.substr(0, jjLevelFileName.length() - 4) + '-MLLE-Data-' + (i/8) + '.j2l', layerIDsToGrab);
+            const string extraLayersFilename = jjLevelFileName.substr(0, jjLevelFileName.length() - 4) + '-MLLE-Data-' + (i/8) + '.j2l';
+            array<jjLAYER@> extraLayers = jjLayersFromLevel(extraLayersFilename, layerIDsToGrab);
+            if (extraLayers.length == 0) {
+                jjDebug('MLLE::Setup: Error reading ""' + extraLayersFilename + '""!');
+                return false;
+            }
             for (uint j = 0; j < extraLayers.length(); ++j)
                 nonDefaultLayers.insertLast(extraLayers[j]);
         }
