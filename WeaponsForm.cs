@@ -25,19 +25,65 @@ namespace MLLE
         class ExtendedWeapon : PlusPropertyList.Weapon, IComparable<ExtendedWeapon>
         {
             public Bitmap Image;
+            enum oTypes { Int, Bool, Dropdown };
+            string[] OptionNames;
+            oTypes[] OptionTypes;
+            string[][] OptionOptions;
             public ExtendedWeapon(string[] s)
             {
                 Name = s[0];
 
                 Image = (string.IsNullOrEmpty(s[1])) ? new Bitmap(1, 1): new Bitmap(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Weapons", s[1]));
 
-                string[] optionSpecs = s[4].Split('|').Select(ss => ss.Trim()).ToArray();
-                Options = new int[optionSpecs.Length];
+                if (!string.IsNullOrEmpty(s[4]))
+                {
+                    string[] optionsSplitByPipes = s[4].Split('|').Select(ss => ss.Trim()).ToArray();
+                    int numberOfOptions = optionsSplitByPipes.Length; //usually zero
+                    Options = new int[numberOfOptions];
+                    OptionNames = new string[numberOfOptions];
+                    OptionTypes = new oTypes[numberOfOptions];
+                    OptionOptions = new string[numberOfOptions][];
+                    for (int i = 0; i < numberOfOptions; ++i)
+                    {
+                        string[] optionSplitByColons = optionsSplitByPipes[i].Split(':').Select(ss => ss.Trim()).ToArray();
+                        OptionNames[i] = optionSplitByColons[0];
+
+                        string optionType = optionSplitByColons[1];
+                        if (optionType.Equals("bool", StringComparison.OrdinalIgnoreCase))
+                            OptionTypes[i] = oTypes.Bool;
+                        else if (optionType[0] == '{' && optionType[optionType.Length - 1] == '}')
+                        {
+                            OptionTypes[i] = oTypes.Dropdown;
+                            OptionOptions[i] = optionType.Substring(1, optionType.Length - 2).Split(',').Select(ss => ss.Trim()).ToArray();
+                        }
+
+                        if (optionSplitByColons.Length == 3)
+                        {
+                            string optionDefaultValue = optionSplitByColons[2];
+                            if (optionDefaultValue.Equals("True", StringComparison.OrdinalIgnoreCase)) //even if it's not a Bool, I mean really, who cares.
+                                Options[i] = 1;
+                            else if (optionDefaultValue.Equals("False", StringComparison.OrdinalIgnoreCase))
+                                Options[i] = 0;
+                            else if (!int.TryParse(optionDefaultValue, out Options[i]))
+                                Options[i] = 0;
+                        }
+                    }
+                }
+                else
+                    Options = new int[0];
             }
             static internal readonly string[] KeysToReadFromIni = {"Name", "ImageFilename", "Library", "ClassName", "Options"};
             public int CompareTo(ExtendedWeapon other)
             {
                 return Name.CompareTo(other.Name);
+            }
+
+            internal void AddOptionControls(int id, Panel panel, int y)
+            {
+                var label = new Label();
+                label.Text = OptionNames[id];
+                label.Top = y;
+                panel.Controls.Add(label);
             }
         }
         List<ExtendedWeapon> AllAvailableWeapons = new List<ExtendedWeapon>();
@@ -67,6 +113,8 @@ namespace MLLE
             {
                 var panel = new Panel();
                 panel.BorderStyle = BorderStyle.Fixed3D;
+                panel.VerticalScroll.Visible = true;
+                panel.VerticalScroll.Enabled = false;
                 tableLayoutPanel1.Controls.Add(panel);
 
                 var number = new Label();
@@ -78,7 +126,6 @@ namespace MLLE
                 var dropdown = new ComboBox();
                 dropdown.Items.AddRange(weaponNames);
                 dropdown.Top = panel.Height - dropdown.Height - 3;
-                dropdown.Width = panel.Width;
                 dropdown.DropDownStyle = ComboBoxStyle.DropDownList;
                 int localWeaponID = weaponID;
                 dropdown.SelectedIndexChanged += (ss, ee) => {
@@ -88,8 +135,8 @@ namespace MLLE
                 panel.Controls.Add(dropdown);
 
                 var image = new PictureBox();
-                image.Size = new Size(64, 64);
-                image.Left = panel.Width - image.Width - 3;
+                image.Size = new Size(32, 32);
+                image.Left = panel.ClientSize.Width - image.Width - 3;
                 panel.Controls.Add(image);
 
                 UpdatePanel(weaponID);
@@ -103,7 +150,17 @@ namespace MLLE
             Panel panel = tableLayoutPanel1.Controls[weaponID] as Panel;
             int index = AllAvailableWeapons.FindIndex(w => w.Name == weaponsInProgress[weaponID].Name);
             (panel.Controls[1] as ComboBox).SelectedIndex = index;
-            (panel.Controls[2] as PictureBox).Image = AllAvailableWeapons[index].Image;
+            var fullWeapon = AllAvailableWeapons[index];
+            (panel.Controls[2] as PictureBox).Image = fullWeapon.Image;
+            panel.VerticalScroll.Value = 0;
+            while (panel.Controls.Count > 3)
+                panel.Controls.RemoveAt(3);
+            panel.AutoScroll = panel.VerticalScroll.Visible = panel.VerticalScroll.Enabled = fullWeapon.Options.Length > 0;
+            (panel.Controls[1] as ComboBox).Width = panel.ClientSize.Width;
+            for (int i = 0; i < fullWeapon.Options.Length; ++i)
+            {
+                fullWeapon.AddOptionControls(i, panel, panel.Controls[1].Bottom + 3 + i * 15);
+            }
         }
 
         private void ButtonOK_Click(object sender, EventArgs e)
