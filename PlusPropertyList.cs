@@ -261,7 +261,7 @@ namespace MLLE
             new Weapon("Seekers",           new int[]{}),
             new Weapon("RFs",               new int[]{}),
             new Weapon("Toaster",           new int[]{}),
-            new Weapon("TNT",               new int[]{}),
+            new Weapon("TNT",               new int[]{0}),
             new Weapon("Gun8",              new int[]{0}),
             new Weapon("Electro Blaster",   new int[]{})
         };

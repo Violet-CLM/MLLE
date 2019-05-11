@@ -953,7 +953,7 @@ namespace MLLE
         private void weaponsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _suspendEvent.Reset();
-            new WeaponsForm().ShowForm(J2L.PlusPropertyList.Weapons);
+            new WeaponsForm().ShowForm(ref J2L.PlusPropertyList.Weapons);
             _suspendEvent.Set();
         }
 

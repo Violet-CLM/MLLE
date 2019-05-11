@@ -14,8 +14,9 @@ namespace MLLE
 {
     public partial class WeaponsForm : Form
     {
+        bool Result;
+
         PlusPropertyList.Weapon[] weaponsInProgress;
-        PlusPropertyList.Weapon[] weaponsSource;
 
         public WeaponsForm()
         {
@@ -78,7 +79,7 @@ namespace MLLE
                 return Name.CompareTo(other.Name);
             }
 
-            internal void AddOptionControls(int id, Panel panel, int y)
+            internal void AddOptionControls(int id, Panel panel, int y, int[] realOptions)
             {
                 var label = new Label();
                 label.Text = OptionNames[id];
@@ -89,19 +90,22 @@ namespace MLLE
                 switch (OptionTypes[id]) {
                     case oTypes.Bool: {
                         control = new CheckBox();
-                        (control as CheckBox).Checked = Options[id] != 0;
+                        (control as CheckBox).Checked = realOptions[id] != 0;
                         control.AutoSize = true;
+                        (control as CheckBox).CheckedChanged += (s,e) => { realOptions[id] = (s as CheckBox).Checked ? 1 : 0; };
                         break; }
                     case oTypes.Dropdown: {
                         control = new ComboBox();
                         (control as ComboBox).DropDownStyle = ComboBoxStyle.DropDownList;
                         (control as ComboBox).DropDownWidth *= 2;
                         (control as ComboBox).Items.AddRange(OptionOptions[id]);
-                        (control as ComboBox).SelectedIndex = Options[id];
+                        (control as ComboBox).SelectedIndex = realOptions[id];
+                        (control as ComboBox).SelectedIndexChanged += (s,e) => { realOptions[id] = (s as ComboBox).SelectedIndex; };
                         break; }
                     default: {
                         control = new NumericUpDown();
-                        (control as NumericUpDown).Value = Options[id];
+                        (control as NumericUpDown).Value = realOptions[id];
+                        (control as NumericUpDown).ValueChanged += (s,e) => { realOptions[id] = (int)(s as NumericUpDown).Value; };
                         break; }
                 }
                 control.Location = new Point(label.Right + 3, y);
@@ -111,9 +115,9 @@ namespace MLLE
         }
         List<ExtendedWeapon> AllAvailableWeapons = new List<ExtendedWeapon>();
 
-        internal void ShowForm(PlusPropertyList.Weapon[] s)
+        internal void ShowForm(ref PlusPropertyList.Weapon[] weaponsSource)
         {
-            weaponsInProgress = (weaponsSource = s).Select(w => w.Clone()).ToArray();
+            weaponsInProgress = weaponsSource.Select(w => w.Clone()).ToArray();
 
             var backupDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Weapons");
             var allIniFiles = new DirectoryInfo(backupDirectory).GetFiles("*.ini", SearchOption.TopDirectoryOnly);
@@ -151,11 +155,6 @@ namespace MLLE
                 dropdown.Top = panel.Height - dropdown.Height - 3;
                 dropdown.DropDownStyle = ComboBoxStyle.DropDownList;
                 dropdown.DropDownWidth += dropdown.DropDownWidth / 2;
-                int localWeaponID = weaponID;
-                dropdown.SelectedIndexChanged += (ss, ee) => {
-                    weaponsInProgress[localWeaponID] = AllAvailableWeapons.Find(w => w.Name == (ss as ComboBox).SelectedItem.ToString()).Clone();
-                    UpdatePanel(localWeaponID);
-                };
                 panel.Controls.Add(dropdown);
 
                 var image = new PictureBox();
@@ -164,9 +163,17 @@ namespace MLLE
                 panel.Controls.Add(image);
 
                 UpdatePanel(weaponID);
+
+                int localWeaponID = weaponID;
+                dropdown.SelectedIndexChanged += (ss, ee) => {
+                    weaponsInProgress[localWeaponID] = AllAvailableWeapons.Find(w => w.Name == (ss as ComboBox).SelectedItem.ToString()).Clone();
+                    UpdatePanel(localWeaponID);
+                };
             }
 
             ShowDialog();
+            if (Result)
+                weaponsSource = weaponsInProgress;
         }
 
         void UpdatePanel(int weaponID)
@@ -183,18 +190,19 @@ namespace MLLE
             (panel.Controls[1] as ComboBox).Width = panel.ClientSize.Width;
             for (int i = 0; i < fullWeapon.Options.Length; ++i)
             {
-                fullWeapon.AddOptionControls(i, panel, panel.Controls[1].Bottom + 3 + i * 15);
+                fullWeapon.AddOptionControls(i, panel, panel.Controls[1].Bottom + 3 + i * 15, weaponsInProgress[weaponID].Options);
             }
         }
 
         private void ButtonOK_Click(object sender, EventArgs e)
         {
-            weaponsSource = weaponsInProgress.Select(w => w.Clone()).ToArray();
+            Result = true;
             Dispose();
         }
 
         private void ButtonCancel_Click(object sender, EventArgs e)
         {
+            Result = false;
             Dispose();
         }
     }
