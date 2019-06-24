@@ -14,7 +14,7 @@ namespace MLLE
         const string CurrentMLLEData5VersionString = "1.5";
         const string AngelscriptLibraryFilename = "MLLE-Include-" + CurrentMLLEData5VersionString + ".asc";
 
-        const string AngelscriptLibraryCallStockLine = "const bool MLLESetupSuccessful = MLLE::Setup();\r\n";
+        const string AngelscriptLibraryCallStockLine = "const bool MLLESetupSuccessful = MLLE::Setup();";
 
         const string AngelscriptLibrary = 
 @"//This is a standard library created by MLLE to read some JJ2+ properties from a level file whose script includes this library. DO NOT MANUALLY MODIFY THIS FILE.
@@ -283,10 +283,10 @@ namespace MLLE {
         }
     }
 }";
-
+        static readonly string TagForProgrammaticallyAddedLines = " ///@MLLE-Generated\r\n";
         static string GetPragmaRequire(string filename)
         {
-            return "#pragma require \"" + filename + "\"\r\n";
+            return "#pragma require \"" + filename + "\"";
         }
         public static string GetExtraDataLevelFilepath(string filepath, int index)
         {
@@ -312,20 +312,20 @@ namespace MLLE {
             {
                 string pragma = GetPragmaRequire(Path.GetFileName(filepath));
                 if (!fileContents.Contains(pragma))
-                    fileContents = pragma + fileContents;
+                    fileContents = pragma + TagForProgrammaticallyAddedLines + fileContents;
             }
             for (int i = 1; i < Tilesets.Count; ++i)
             {
                 string pragma = GetPragmaRequire(Tilesets[i].FilenameOnly);
                 if (!fileContents.Contains(pragma))
-                    fileContents = pragma + fileContents;
+                    fileContents = pragma + TagForProgrammaticallyAddedLines + fileContents;
             }
             int extraDataLevelID = 0;
             for (extraDataLevelID = 0; extraDataLevelID < numberOfExtraDataLevels; ++extraDataLevelID)
             {
                 string pragma = GetPragmaRequire(Path.GetFileName(GetExtraDataLevelFilepath(filepath, extraDataLevelID)));
                 if (!fileContents.Contains(pragma))
-                    fileContents = pragma + fileContents;
+                    fileContents = pragma + TagForProgrammaticallyAddedLines + fileContents;
             }
             while (true) //remove extra such pragmas/files if the number of layers has decreased since the last time this level was saved
             {
@@ -333,13 +333,14 @@ namespace MLLE {
                 File.Delete(extraFilepath);
                 string pragma = GetPragmaRequire(Path.GetFileName(extraFilepath));
                 if (fileContents.Contains(pragma))
-                    fileContents = fileContents.Replace(pragma, "");
+                    fileContents = new Regex("^[^\\n]*" + pragma + "\\s*?\\r?\\n?", RegexOptions.Multiline).Replace(fileContents, "");
                 else
                     break;
             }
+            fileContents = "#include \"" + AngelscriptLibraryFilename + "\"" + TagForProgrammaticallyAddedLines + fileContents;
             if (!fileContents.Contains("MLLE::Setup()"))
-                fileContents = AngelscriptLibraryCallStockLine + fileContents;
-            System.IO.File.WriteAllText(scriptFilepath, "#include \"" + AngelscriptLibraryFilename + "\"\r\n" + fileContents, encoding);
+                fileContents = AngelscriptLibraryCallStockLine + TagForProgrammaticallyAddedLines + fileContents;
+            System.IO.File.WriteAllText(scriptFilepath, fileContents, encoding);
         }
 
         public static void RemovePriorReferencesToMLLELibrary(string filepath)
@@ -349,8 +350,14 @@ namespace MLLE {
             {
                 var encoding = J2LFile.FileEncoding;
                 string fileContents = System.IO.File.ReadAllText(scriptFilepath, encoding);
-                fileContents = fileContents.Replace(AngelscriptLibraryCallStockLine, ""); //get rid of the simpler old uses of MLLE::Setup(), though not all can be so painlessly removed
-                fileContents = Regex.Replace(fileContents, "\\s*#include\\s+['\"]MLLE-Include-\\d+\\.\\d+\\.asc['\"]\\s*\\r?\\n?", ""); //get rid of existing #include calls to MLLE-Include, especially if they referenced older/newer versions of the file
+                fileContents = new Regex(
+                    "^[^\\n]*(" +
+                        "///@MLLE-Generated" + //get rid of all lines that end in the "///@MLLE-Generated" tag
+                        "|" +
+                        AngelscriptLibraryCallStockLine + //get rid of any simple uses of MLLE::Setup(), though not all can be so painlessly removed
+                        "|" +
+                        "#include\\s+['\"]MLLE-Include-\\d+\\.\\d+\\.asc['\"]" + //get rid of existing #include calls to MLLE-Include, especially if they referenced older/newer versions of the file
+                    ")[^\\n]*\\r?\\n?", RegexOptions.Multiline).Replace(fileContents, "");
                 if (fileContents.Length > 0)
                     System.IO.File.WriteAllText(scriptFilepath, fileContents, encoding);
                 else
