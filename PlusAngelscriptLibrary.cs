@@ -8,13 +8,13 @@ namespace MLLE
 {
     public partial struct PlusPropertyList
     {
-        const uint CurrentMLLEData5Version = 0x104;
+        const uint CurrentMLLEData5Version = 0x105;
         const string MLLEData5MagicString = "MLLE";
-        const string CurrentMLLEData5VersionStringForComparison = "0x104";
-        const string CurrentMLLEData5VersionString = "1.4";
+        const string CurrentMLLEData5VersionStringForComparison = "0x105";
+        const string CurrentMLLEData5VersionString = "1.5";
         const string AngelscriptLibraryFilename = "MLLE-Include-" + CurrentMLLEData5VersionString + ".asc";
 
-        const string AngelscriptLibraryCallStockLine = "const bool MLLESetupSuccessful = MLLE::Setup();\r\n";
+        const string AngelscriptLibraryCallStockLine = "const bool MLLESetupSuccessful = MLLE::Setup();";
 
         const string AngelscriptLibrary = 
 @"//This is a standard library created by MLLE to read some JJ2+ properties from a level file whose script includes this library. DO NOT MANUALLY MODIFY THIS FILE.
@@ -52,7 +52,7 @@ namespace MLLE {
         
         jjSTREAM level(jjLevelFileName);
         if (level.isEmpty()) {
-            jjDebug('MLLE::Setup: Level file cannot be read from that folder for security reasons!');
+            jjDebug('MLLE::Setup: Error reading ""' + jjLevelFileName + '""!');
             return false;
         }
         level.discard(230);
@@ -133,6 +133,15 @@ namespace MLLE {
         _recolorAnimationIf(data5, ANIM::SMALTREE, 0, 1);
         _recolorAnimationIf(data5, ANIM::SNOW, 0, 8);
         _recolorAnimationIf(data5, ANIM::COMMON, 2, 18);
+        _recolorAnimationIf(data5, ANIM::BOLLPLAT, 0, 2);
+        _recolorAnimationIf(data5, ANIM::FRUITPLAT, 0, 2);
+        _recolorAnimationIf(data5, ANIM::GRASSPLAT, 0, 2);
+        _recolorAnimationIf(data5, ANIM::PINKPLAT, 0, 2);
+        _recolorAnimationIf(data5, ANIM::SONICPLAT, 0, 2);
+        _recolorAnimationIf(data5, ANIM::SPIKEPLAT, 0, 2);
+        _recolorAnimationIf(data5, ANIM::SPIKEBOLL, 0, 2);
+        _recolorAnimationIf(data5, ANIM::SPIKEBOLL3D, 0, 2);
+        _recolorAnimationIf(data5, ANIM::VINE, 1, 1);
 
         data5.pop(pbyte);
         for (uint i = 0; i < pbyte; ++i) {
@@ -145,14 +154,19 @@ namespace MLLE {
                 for (uint j = 0; j < 256; ++j)
                     data5.pop(colors[j]);
             }
-            jjTilesFromTileset(tilesetFilename, tileStart, tileCount, colors);
+            if (!jjTilesFromTileset(tilesetFilename, tileStart, tileCount, colors)) {
+                jjDebug('MLLE::Setup: Error reading ""' + tilesetFilename + '""!');
+                return false;
+            }
         }
         if (pbyte != 0) {
             array<uint> layersIDsWithTileMaps;
             for (uint i = 1; i <= 8; ++i)
                 if (jjLayers[i].hasTileMap)
                     layersIDsWithTileMaps.insertLast(i);
-            jjLayersFromLevel(jjLevelFileName, layersIDsWithTileMaps);
+            if (jjLayersFromLevel(jjLevelFileName, layersIDsWithTileMaps).length == 0) {
+                jjDebug('MLLE::Setup: Error reading ""' + jjLevelFileName + '""!');
+            }
         }
 
         array<jjLAYER@> newLayerOrder, nonDefaultLayers;
@@ -162,7 +176,12 @@ namespace MLLE {
             for (uint j = i; j < puint && j < i + 8; ++j) {
                 layerIDsToGrab.insertLast((j & 7) + 1);
             }
-            array<jjLAYER@> extraLayers = jjLayersFromLevel(jjLevelFileName.substr(0, jjLevelFileName.length() - 4) + '-MLLE-Data-' + (i/8) + '.j2l', layerIDsToGrab);
+            const string extraLayersFilename = jjLevelFileName.substr(0, jjLevelFileName.length() - 4) + '-MLLE-Data-' + (i/8) + '.j2l';
+            array<jjLAYER@> extraLayers = jjLayersFromLevel(extraLayersFilename, layerIDsToGrab);
+            if (extraLayers.length == 0) {
+                jjDebug('MLLE::Setup: Error reading ""' + extraLayersFilename + '""!');
+                return false;
+            }
             for (uint j = 0; j < extraLayers.length(); ++j)
                 nonDefaultLayers.insertLast(extraLayers[j]);
         }
@@ -264,10 +283,10 @@ namespace MLLE {
         }
     }
 }";
-
+        static readonly string TagForProgrammaticallyAddedLines = " ///@MLLE-Generated\r\n";
         static string GetPragmaRequire(string filename)
         {
-            return "#pragma require \"" + filename + "\"\r\n";
+            return "#pragma require \"" + filename + "\"";
         }
         public static string GetExtraDataLevelFilepath(string filepath, int index)
         {
@@ -293,20 +312,20 @@ namespace MLLE {
             {
                 string pragma = GetPragmaRequire(Path.GetFileName(filepath));
                 if (!fileContents.Contains(pragma))
-                    fileContents = pragma + fileContents;
+                    fileContents = pragma + TagForProgrammaticallyAddedLines + fileContents;
             }
             for (int i = 1; i < Tilesets.Count; ++i)
             {
                 string pragma = GetPragmaRequire(Tilesets[i].FilenameOnly);
                 if (!fileContents.Contains(pragma))
-                    fileContents = pragma + fileContents;
+                    fileContents = pragma + TagForProgrammaticallyAddedLines + fileContents;
             }
             int extraDataLevelID = 0;
             for (extraDataLevelID = 0; extraDataLevelID < numberOfExtraDataLevels; ++extraDataLevelID)
             {
                 string pragma = GetPragmaRequire(Path.GetFileName(GetExtraDataLevelFilepath(filepath, extraDataLevelID)));
                 if (!fileContents.Contains(pragma))
-                    fileContents = pragma + fileContents;
+                    fileContents = pragma + TagForProgrammaticallyAddedLines + fileContents;
             }
             while (true) //remove extra such pragmas/files if the number of layers has decreased since the last time this level was saved
             {
@@ -314,13 +333,14 @@ namespace MLLE {
                 File.Delete(extraFilepath);
                 string pragma = GetPragmaRequire(Path.GetFileName(extraFilepath));
                 if (fileContents.Contains(pragma))
-                    fileContents = fileContents.Replace(pragma, "");
+                    fileContents = new Regex("^[^\\n]*" + pragma + "\\s*?\\r?\\n?", RegexOptions.Multiline).Replace(fileContents, "");
                 else
                     break;
             }
+            fileContents = "#include \"" + AngelscriptLibraryFilename + "\"" + TagForProgrammaticallyAddedLines + fileContents;
             if (!fileContents.Contains("MLLE::Setup()"))
-                fileContents = AngelscriptLibraryCallStockLine + fileContents;
-            System.IO.File.WriteAllText(scriptFilepath, "#include \"" + AngelscriptLibraryFilename + "\"\r\n" + fileContents, encoding);
+                fileContents = AngelscriptLibraryCallStockLine + TagForProgrammaticallyAddedLines + fileContents;
+            System.IO.File.WriteAllText(scriptFilepath, fileContents, encoding);
         }
 
         public static void RemovePriorReferencesToMLLELibrary(string filepath)
@@ -330,8 +350,14 @@ namespace MLLE {
             {
                 var encoding = J2LFile.FileEncoding;
                 string fileContents = System.IO.File.ReadAllText(scriptFilepath, encoding);
-                fileContents = fileContents.Replace(AngelscriptLibraryCallStockLine, ""); //get rid of the simpler old uses of MLLE::Setup(), though not all can be so painlessly removed
-                fileContents = Regex.Replace(fileContents, "\\s*#include\\s+['\"]MLLE-Include-\\d+\\.\\d+\\.asc['\"]\\s*\\r?\\n?", ""); //get rid of existing #include calls to MLLE-Include, especially if they referenced older/newer versions of the file
+                fileContents = new Regex(
+                    "^[^\\n]*(" +
+                        "///@MLLE-Generated" + //get rid of all lines that end in the "///@MLLE-Generated" tag
+                        "|" +
+                        AngelscriptLibraryCallStockLine + //get rid of any simple uses of MLLE::Setup(), though not all can be so painlessly removed
+                        "|" +
+                        "#include\\s+['\"]MLLE-Include-\\d+\\.\\d+\\.asc['\"]" + //get rid of existing #include calls to MLLE-Include, especially if they referenced older/newer versions of the file
+                    ")[^\\n]*\\r?\\n?", RegexOptions.Multiline).Replace(fileContents, "");
                 if (fileContents.Length > 0)
                     System.IO.File.WriteAllText(scriptFilepath, fileContents, encoding);
                 else

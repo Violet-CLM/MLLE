@@ -118,6 +118,9 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="BollPlatform" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\BollPlatform.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="CarrotBumper" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\CarrotBumper.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -129,6 +132,12 @@
   </data>
   <data name="Flipper" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\Flipper.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="FruitPlatform" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\FruitPlatform.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GrassPlatform" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\GrassPlatform.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="JazzAbout" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\JazzAbout.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -142,6 +151,9 @@
   <data name="MLLE01" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Icons\MLLE01.ico;System.Drawing.Icon, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="PinkPlatform" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\PinkPlatform.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="PsychPole" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\PsychPole.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -151,8 +163,20 @@
   <data name="Snow" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\Snow.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="SonicPlatform" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\SonicPlatform.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SpikeBoll" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\SpikeBoll.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SpikePlatform" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\SpikePlatform.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="Splash" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\Splash.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SwingingVine" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\SwingingVine.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="_500Bumper" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\500Bumper.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
