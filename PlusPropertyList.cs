@@ -255,15 +255,15 @@ namespace MLLE
             }
         }
         static readonly Weapon[] WeaponDefaults = new Weapon[9] {
-            new Weapon("Blaster",           new int[]{1}),
-            new Weapon("Bouncers",          new int[]{}),
-            new Weapon("Ice",               new int[]{}),
-            new Weapon("Seekers",           new int[]{}),
-            new Weapon("RFs",               new int[]{}),
-            new Weapon("Toaster",           new int[]{}),
-            new Weapon("TNT",               new int[]{0}),
-            new Weapon("Gun8",              new int[]{0}),
-            new Weapon("Electro Blaster",   new int[]{})
+            new Weapon("Blaster",           new int[]{-1,1,0, 3, 3}),
+            new Weapon("Bouncers",          new int[]{-1,0,1, 3, 3}),
+            new Weapon("Ice",               new int[]{-1,0,1, 3, 3}),
+            new Weapon("Seekers",           new int[]{-1,0,1,10,10}),
+            new Weapon("RFs",               new int[]{-1,0,1,10,10}),
+            new Weapon("Toaster",           new int[]{-1,0,1, 3, 3}),
+            new Weapon("TNT",               new int[]{-1,0,0,10,10,  0}),
+            new Weapon("Gun8",              new int[]{-1,0,0,10,10,  0}),
+            new Weapon("Electro Blaster",   new int[]{-1,0,0,10,10})
         };
         [Browsable(false)]
         internal Weapon[] Weapons;

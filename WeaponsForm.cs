@@ -25,6 +25,7 @@ namespace MLLE
 
         internal class ExtendedWeapon : PlusPropertyList.Weapon, IComparable<ExtendedWeapon>
         {
+            string LibraryFilename, Initialization;
             public Bitmap Image;
             enum oTypes { Int, Bool, Dropdown };
             string[] OptionNames;
@@ -34,21 +35,28 @@ namespace MLLE
             {
                 Name = s[0];
 
-                Image = (string.IsNullOrEmpty(s[1])) ? new Bitmap(1, 1): new Bitmap(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Weapons", s[1]));
+                Image = (string.IsNullOrEmpty(s[1])) ? new Bitmap(1, 1) : new Bitmap(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Weapons", s[1]));
 
+                LibraryFilename = s[2];
+                Initialization = s[3];
+                
+                string options = "Maximum|Birds:{Don't fire this weapon,Fire normal bullets,Fire even powered-up bullets}|Appears in gun crates:bool|Gems lost (normal)|Gems lost (powerup)";
                 if (!string.IsNullOrEmpty(s[4]))
+                    options += "|" + s[4];
+                
+                string[] optionsSplitByPipes = options.Split('|').Select(ss => ss.Trim()).ToArray();
+                int numberOfOptions = optionsSplitByPipes.Length; //usually zero
+                Options = new int[numberOfOptions];
+                OptionNames = new string[numberOfOptions];
+                OptionTypes = new oTypes[numberOfOptions];
+                OptionOptions = new string[numberOfOptions][];
+                for (int i = 0; i < numberOfOptions; ++i)
                 {
-                    string[] optionsSplitByPipes = s[4].Split('|').Select(ss => ss.Trim()).ToArray();
-                    int numberOfOptions = optionsSplitByPipes.Length; //usually zero
-                    Options = new int[numberOfOptions];
-                    OptionNames = new string[numberOfOptions];
-                    OptionTypes = new oTypes[numberOfOptions];
-                    OptionOptions = new string[numberOfOptions][];
-                    for (int i = 0; i < numberOfOptions; ++i)
-                    {
-                        string[] optionSplitByColons = optionsSplitByPipes[i].Split(':').Select(ss => ss.Trim()).ToArray();
-                        OptionNames[i] = optionSplitByColons[0];
+                    string[] optionSplitByColons = optionsSplitByPipes[i].Split(':').Select(ss => ss.Trim()).ToArray();
+                    OptionNames[i] = optionSplitByColons[0];
 
+                    if (optionSplitByColons.Length > 1)
+                    {
                         string optionType = optionSplitByColons[1];
                         if (optionType.Equals("bool", StringComparison.OrdinalIgnoreCase))
                             OptionTypes[i] = oTypes.Bool;
@@ -70,10 +78,8 @@ namespace MLLE
                         }
                     }
                 }
-                else
-                    Options = new int[0];
             }
-            static internal readonly string[] KeysToReadFromIni = {"Name", "ImageFilename", "Library", "ClassName", "Options"};
+            static internal readonly string[] KeysToReadFromIni = {"Name", "ImageFilename", "LibraryFilename", "Initialization", "Options"};
             public int CompareTo(ExtendedWeapon other)
             {
                 return Name.CompareTo(other.Name);
@@ -83,13 +89,14 @@ namespace MLLE
             {
                 var label = new Label();
                 label.Text = OptionNames[id];
-                label.Top = y;
+                label.Top = y + 2;
                 label.AutoSize = true;
                 panel.Controls.Add(label);
                 Control control;
                 switch (OptionTypes[id]) {
                     case oTypes.Bool: {
                         control = new CheckBox();
+                        y += 3;
                         (control as CheckBox).Checked = realOptions[id] != 0;
                         control.AutoSize = true;
                         (control as CheckBox).CheckedChanged += (s,e) => { realOptions[id] = (s as CheckBox).Checked ? 1 : 0; };
@@ -104,6 +111,8 @@ namespace MLLE
                         break; }
                     default: {
                         control = new NumericUpDown();
+                        (control as NumericUpDown).Minimum = int.MinValue;
+                        (control as NumericUpDown).Maximum = int.MaxValue;
                         (control as NumericUpDown).Value = realOptions[id];
                         (control as NumericUpDown).ValueChanged += (s,e) => { realOptions[id] = (int)(s as NumericUpDown).Value; };
                         break; }
@@ -159,6 +168,7 @@ namespace MLLE
                 panel.Controls.Add(number);
 
                 var dropdown = new ComboBox();
+                dropdown.Font = new Font(dropdown.Font, FontStyle.Bold);
                 dropdown.Items.AddRange(weaponNames);
                 dropdown.Top = panel.Height - dropdown.Height - 3;
                 dropdown.DropDownStyle = ComboBoxStyle.DropDownList;
@@ -174,7 +184,11 @@ namespace MLLE
 
                 int localWeaponID = weaponID;
                 dropdown.SelectedIndexChanged += (ss, ee) => {
-                    weaponsInProgress[localWeaponID] = AllAvailableWeapons.Find(w => w.Name == (ss as ComboBox).SelectedItem.ToString()).Clone();
+                    PlusPropertyList.Weapon weapon = weaponsInProgress[localWeaponID];
+                    var commonParameters = weapon.Options.Clone() as int[];
+                    weapon = weaponsInProgress[localWeaponID] = AllAvailableWeapons.Find(w => w.Name == (ss as ComboBox).SelectedItem.ToString()).Clone();
+                    for (int i = 0; i < 5; ++i)
+                        weapon.Options[i] = commonParameters[i]; //retain the first five
                     UpdatePanel(localWeaponID);
                 };
             }
@@ -198,7 +212,7 @@ namespace MLLE
             (panel.Controls[1] as ComboBox).Width = panel.ClientSize.Width;
             for (int i = 0; i < fullWeapon.Options.Length; ++i)
             {
-                fullWeapon.AddOptionControls(i, panel, panel.Controls[1].Bottom + 3 + i * 15, weaponsInProgress[weaponID].Options);
+                fullWeapon.AddOptionControls(i, panel, panel.Controls[1].Bottom + 3 + i * 22, weaponsInProgress[weaponID].Options);
             }
         }
 
