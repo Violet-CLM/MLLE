@@ -25,11 +25,11 @@ namespace MLLE
 
         internal class ExtendedWeapon : PlusPropertyList.Weapon, IComparable<ExtendedWeapon>
         {
-            string LibraryFilename, Initialization;
+            internal string LibraryFilename, Initialization;
             public Bitmap Image;
-            enum oTypes { Int, Bool, Dropdown };
+            internal enum oTypes { Int, Bool, Dropdown };
             string[] OptionNames;
-            oTypes[] OptionTypes;
+            internal oTypes[] OptionTypes;
             string[][] OptionOptions;
             public ExtendedWeapon(string[] s)
             {

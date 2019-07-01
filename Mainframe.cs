@@ -1740,8 +1740,10 @@ namespace MLLE
             J2L.JCSVerticalFocus = (ushort)LDScrollV.Value;
 
             byte[] Data5 = null;
+            string[][] CustomWeapons = null;
             if (EnableableBools[J2L.VersionType][EnableableTitles.BoolDevelopingForPlus] && J2L.LevelNeedsData5)
-                J2L.PlusPropertyList.CreateData5Section(ref Data5, J2L.Tilesets, J2L.AllLayers);
+                if (!J2L.PlusPropertyList.CreateData5Section(out Data5, out CustomWeapons, J2L.Tilesets, J2L.AllLayers))
+                    return SavingResults.Error;
 
             SavingResults result = J2L.Save(filename, eraseUndefinedTiles, allowDifferentTilesetVersion, storeGivenFilename, Data5);
             if (result == SavingResults.Success)
@@ -1754,7 +1756,7 @@ namespace MLLE
 
                 PlusPropertyList.RemovePriorReferencesToMLLELibrary(filename);
                 if (Data5 != null)
-                    J2L.PlusPropertyList.SaveLibrary(filename, J2L.Tilesets, (J2L.AllLayers.Count(l => !l.isDefault) + 7) / 8);
+                    J2L.PlusPropertyList.SaveLibrary(filename, J2L.Tilesets, (J2L.AllLayers.Count(l => !l.isDefault) + 7) / 8, CustomWeapons);
 
                 MakeBackup(filename);
             }

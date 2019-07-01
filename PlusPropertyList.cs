@@ -455,9 +455,12 @@ namespace MLLE
                 return false;
             }
         }
-        internal void CreateData5Section(ref byte[] Data5, List<J2TFile> Tilesets, List<Layer> Layers)
+        internal bool CreateData5Section(out byte[] Data5, out string[][] CustomWeapons, List<J2TFile> Tilesets, List<Layer> Layers)
         {
+            Data5 = null;
+            CustomWeapons = new string[9][];
             var data5header = new MemoryStream();
+
             using (MemoryStream data5body = new MemoryStream())
             using (BinaryWriter data5writer = new BinaryWriter(data5header, J2LFile.FileEncoding))
             using (BinaryWriter data5bodywriter = new BinaryWriter(data5body, J2LFile.FileEncoding))
@@ -539,12 +542,57 @@ namespace MLLE
                         }
                 }
 
+                for (int weaponID = 0; weaponID < Weapons.Length; ++weaponID)
+                {
+                    Weapon weapon = Weapons[weaponID];
+                    Weapon defaultWeapon = WeaponDefaults[weaponID];
+                    bool isGun8InSlot8 = weaponID == 7 && weapon.Name == "Gun8"; //hardcoded laxer standards... parameter need not match
+                    bool isCustom = !isGun8InSlot8 && !weapon.Equals(defaultWeapon);
+                    data5bodywriter.Write(isCustom);
+                    int[] options = weapon.Options;
+                    data5bodywriter.Write(options[0]);
+                    data5bodywriter.Write((byte)options[1]);
+                    data5bodywriter.Write(options[2] != 0);
+                    data5bodywriter.Write((byte)options[3]);
+                    data5bodywriter.Write((byte)options[4]);
+                    if (isGun8InSlot8)
+                        data5bodywriter.Write((byte)options[5]);
+                    else if (isCustom)
+                    {
+                        data5bodywriter.Write(weapon.Name);
+                        var extendedWeapon = WeaponsForm.GetAllAvailableWeapons().Find(w => w.Name == weapon.Name);
+                        if (extendedWeapon == null)
+                        {
+                            MessageBox.Show(String.Format("Sorry, the MLLE \"Weapons\" folder did not include any .ini file defining a weapon with the name \"{0}.\"", weapon.Name), "Weapon not found", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return false;
+                        }
+                        CustomWeapons[weaponID] = new string[] { extendedWeapon.LibraryFilename, extendedWeapon.Initialization };
+                        data5bodywriter.Write(extendedWeapon.OptionTypes.Skip(5).Select(o => o == WeaponsForm.ExtendedWeapon.oTypes.Int ? sizeof(int) : sizeof(byte)).Sum());
+                        for (int optionID = 5; optionID < options.Length; ++optionID)
+                        {
+                            switch (extendedWeapon.OptionTypes[optionID]) {
+                                case WeaponsForm.ExtendedWeapon.oTypes.Bool:
+                                    data5bodywriter.Write(options[optionID] != 0);
+                                    break;
+                                case WeaponsForm.ExtendedWeapon.oTypes.Dropdown:
+                                    data5bodywriter.Write((byte)options[optionID]);
+                                    break;
+                                case WeaponsForm.ExtendedWeapon.oTypes.Int:
+                                default:
+                                    data5bodywriter.Write(options[optionID]);
+                                    break;
+                            }
+                        }
+                    }
+                }
+
                 var data5bodycompressed = ZlibStream.CompressBuffer(data5body.ToArray());
                 data5writer.Write((uint)data5bodycompressed.Length);
                 data5writer.Write((uint)data5body.Length);
                 data5writer.Write(data5bodycompressed);
             }
             Data5 = data5header.ToArray();
+            return true;
         }
         internal bool LevelIsReadable(byte[] Data5, List<J2TFile> Tilesets, List<Layer> Layers, string Filepath)
         {
