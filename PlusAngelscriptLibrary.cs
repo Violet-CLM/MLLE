@@ -416,8 +416,62 @@ shared interface MLLEWeaponApply { bool Apply(uint, se::WeaponHook@ = null, jjST
                 fileContents = "const bool MLLESetupSuccessful = " + desiredSetupCall + TagForProgrammaticallyAddedLines + fileContents;
             else if (match.Value != desiredSetupCall)
                 fileContents = setupPattern.Replace(fileContents, desiredSetupCall);
+
+            if (weaponLibrary)
+            {
+                foreach (string[] spec in WeaponHookSpecs)
+                {
+                    if (!new Regex(@"MLLE\s*::\s*WeaponHook\s*\.\s*" + spec[2] + @"\s*\([^;]*\)\s*").Match(fileContents).Success) //weaponhook call not being made
+                    {
+                        string weaponhookMethodCall = "\r\n\t" + (spec[0] == "void" ? "" : "return ") + "MLLE::WeaponHook." + spec[2] + "(";
+                        for (int paramStringID = 3; paramStringID < spec.Length; paramStringID += 2)
+                        {
+                            weaponhookMethodCall += "$" + ((paramStringID + 1) / 2).ToString();
+                            if (paramStringID + 2 < spec.Length)
+                                weaponhookMethodCall += ", ";
+                        }
+                        weaponhookMethodCall += ");"; //e.g. "WeaponHook::processMain();"
+
+                        string functionPattern = "(" + spec[0] + @"\s+" + spec[1] + @"\s*\(\s*";
+                        for (int paramStringID = 3; paramStringID < spec.Length; paramStringID += 2)
+                        {
+                            functionPattern += spec[paramStringID].Replace(" ", @"\s*") + @"\s*(\S+)\s*";
+                            if (paramStringID + 2 < spec.Length)
+                                functionPattern += @",\s*";
+                        }
+                        functionPattern += @"\)[^{]*{)"; //e.g. a pattern to match "void onMain() {"
+                        Regex regex = new Regex(functionPattern);
+                        match = regex.Match(fileContents);
+                        if (match.Success) //hook function already exists
+                        {
+                            fileContents = regex.Replace(fileContents, "$1" + weaponhookMethodCall);
+                        }
+                        else
+                        { //add everything from scratch
+                            string functionToAdd = "\r\n" + spec[0] + " " + spec[1] + "(";
+                            for (int paramStringID = 3; paramStringID < spec.Length; paramStringID += 2)
+                            {
+                                functionToAdd += spec[paramStringID].Replace(" ", "") + " " + spec[paramStringID + 1];
+                                weaponhookMethodCall = weaponhookMethodCall.Replace("$" + ((paramStringID + 1) / 2).ToString(), spec[paramStringID + 1]);
+                                if (paramStringID + 2 < spec.Length)
+                                    functionToAdd += ", ";
+                            }
+                            functionToAdd += ") {" + weaponhookMethodCall + "\r\n}\r\n";
+
+                            fileContents += functionToAdd;
+                        }
+                    }
+                }
+            }
             System.IO.File.WriteAllText(scriptFilepath, fileContents, encoding);
         }
+        static readonly string[][] WeaponHookSpecs = {
+            new string[]{"void", "onMain", "processMain"},
+            new string[]{"void", "onPlayer", "processPlayer", "jjPLAYER @", "player"},
+            new string[]{"void", "onPlayerInput", "processPlayerInput", "jjPLAYER @", "player"},
+            new string[]{"bool", "onDrawAmmo", "drawAmmo", "jjPLAYER @", "player", "jjCANVAS @", "canvas"},
+            new string[]{"void", "onReceive", "processPacket", "jjSTREAM & in", "packet", "int", "fromClientID" }
+        };
 
         public static void RemovePriorReferencesToMLLELibrary(string filepath)
         {
