@@ -725,6 +725,43 @@ namespace MLLE
                                     images[tileID] = data5bodyreader.ReadBytes(32 * 32);
                                 }
                             }
+
+                            if (data5Version >= 0x105) //weapons were added in MLLE-Include-1.5(w)
+                            {
+                                for (int weaponID = 0; weaponID < 9; ++weaponID)
+                                {
+                                    bool customWeapon = data5bodyreader.ReadBoolean();
+                                    Weapon weapon = Weapons[weaponID];
+                                    weapon.Options[0] = data5bodyreader.ReadInt32(); //maximum
+                                    for (int optionID = 1; optionID <= 4; ++optionID)
+                                        weapon.Options[optionID] = data5bodyreader.ReadByte(); //birds and crates and gems
+                                    if (customWeapon)
+                                    {
+                                        string name = data5bodyreader.ReadString();
+                                        var extendedWeapon = WeaponsForm.GetAllAvailableWeapons().Find(w => w.Name == name);
+                                        if (extendedWeapon == null)
+                                        {
+                                            MessageBox.Show(String.Format("Sorry, the MLLE \"Weapons\" folder did not include any .ini file defining a weapon with the name \"{0}.\"", name), "Weapon not found", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                            return false;
+                                        }
+                                        
+                                        Weapons[weaponID].Name = name;
+                                        Array.Resize(ref Weapons[weaponID].Options, extendedWeapon.Options.Length);
+                                        data5bodyreader.ReadInt32(); //length of jjSTREAM
+                                        for (int optionID = 5; optionID < weapon.Options.Length; ++optionID)
+                                            switch (extendedWeapon.OptionTypes[optionID]) {
+                                                case WeaponsForm.ExtendedWeapon.oTypes.Bool:
+                                                case WeaponsForm.ExtendedWeapon.oTypes.Dropdown:
+                                                    weapon.Options[optionID] = data5bodyreader.ReadByte();
+                                                    break;
+                                                case WeaponsForm.ExtendedWeapon.oTypes.Int:
+                                                    weapon.Options[optionID] = data5bodyreader.ReadInt32();
+                                                    break;
+                                            }
+                                    } else if (weaponID == 7)
+                                        weapon.Options[5] = data5bodyreader.ReadByte(); //Gun8 style
+                                }
+                            }
                         }
                     }
                 }
