@@ -220,6 +220,18 @@ namespace MLLE
         public Color WaterGradientStop { get; set; }
 
 
+        
+        [DescriptionAttribute("Which event (if >32) will be used as a +15 Ammo Crate for weapon #7."),
+        CategoryAttribute("Missing Objects")]
+        public byte Gun7Crate { get; set; }
+        [DescriptionAttribute("Which event (if >32) will be used as a +15 Ammo Crate for weapon #8."),
+        CategoryAttribute("Missing Objects")]
+        public byte Gun8Crate { get; set; }
+        [DescriptionAttribute("Which event (if >32) will be used as a +15 Ammo Crate for weapon #9."),
+        CategoryAttribute("Missing Objects")]
+        public byte Gun9Crate { get; set; }
+
+
         [Browsable(false)]
         internal Palette Palette;
 
@@ -325,6 +337,7 @@ namespace MLLE
                 WaterLevel = DefaultWaterLevel;
                 WaterGradientStart = Color.Black;
                 WaterGradientStop = Color.Black;
+                Gun7Crate = Gun7Crate = Gun9Crate = 0;
                 Palette = null;
                 Weapons = WeaponDefaults.Select(w => w.Clone()).ToArray();
             }
@@ -445,6 +458,7 @@ namespace MLLE
                     WaterLevel != DefaultWaterLevel ||
                     WaterGradientStart.ToArgb() != comparableBlack ||
                     WaterGradientStop.ToArgb() != comparableBlack ||
+                    Gun7Crate != 0 || Gun8Crate != 0 || Gun9Crate != 0 ||
                     Palette != null ||
                     ColorRemappings.FirstOrDefault(it => it != null) != null ||
                     TileImages.FirstOrDefault(it => it != null) != null ||
@@ -555,6 +569,12 @@ namespace MLLE
                     data5bodywriter.Write(options[2] != 0);
                     data5bodywriter.Write((byte)options[3]);
                     data5bodywriter.Write((byte)options[4]);
+                    if (weaponID == 6)
+                        data5bodywriter.Write(Gun7Crate);
+                    else if (weaponID == 7)
+                        data5bodywriter.Write(Gun8Crate);
+                    else if (weaponID == 8)
+                        data5bodywriter.Write(Gun9Crate);
                     if (isGun8InSlot8)
                         data5bodywriter.Write((byte)options[5]);
                     else if (isCustom)
@@ -735,6 +755,12 @@ namespace MLLE
                                     weapon.Options[0] = data5bodyreader.ReadInt32(); //maximum
                                     for (int optionID = 1; optionID <= 4; ++optionID)
                                         weapon.Options[optionID] = data5bodyreader.ReadByte(); //birds and crates and gems
+                                    if (weaponID == 6)
+                                        Gun7Crate = data5bodyreader.ReadByte();
+                                    else if (weaponID == 7)
+                                        Gun8Crate = data5bodyreader.ReadByte();
+                                    else if (weaponID == 8)
+                                        Gun9Crate = data5bodyreader.ReadByte();
                                     if (customWeapon)
                                     {
                                         string name = data5bodyreader.ReadString();

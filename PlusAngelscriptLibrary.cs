@@ -234,6 +234,25 @@ namespace MLLE {{
             data5.pop(weapon.comesFromGunCrates);
             data5.pop(pbyte); weapon.gemsLost = pbyte;
             data5.pop(pbyte); weapon.gemsLostPowerup = pbyte;
+            uint8 ammoCrateEventID = 0;
+            if (i >= 7) {{
+                data5.pop(ammoCrateEventID);
+                if (ammoCrateEventID > 32) {{
+                    jjOBJ@ preset = jjObjectPresets[ammoCrateEventID];
+                    preset.behavior = function(obj) {{ if (obj.state == STATE::DEACTIVATE) obj.eventID = obj.counterEnd; obj.behave(BEHAVIOR::AMMO15); }};
+                    preset.playerHandling = HANDLING::SPECIAL;
+                    preset.scriptedCollisions = false;
+                    preset.direction = 1;
+                    preset.energy = 1;
+                    preset.curFrame = jjAnimations[preset.curAnim = (i == 7) ? (jjAnimSets[ANIM::PICKUPS] + 59) : (jjAnimSets[ANIM::PLUS_COMMON] + i - 8)] + (preset.frameID = 0);
+                    preset.killAnim = jjAnimSets[ANIM::AMMO] + 71;
+                    preset.eventID = OBJECT::ICEAMMO15;
+                    preset.counterEnd = ammoCrateEventID;
+                    preset.var[2] = 31 + i;
+                    preset.var[3] = i - 1;
+                    preset.points = 300;
+                }}
+            }}
             {3}if (i == 8) {{
                 data5.pop(pbyte);
                 if (pbyte == 0)
@@ -310,7 +329,7 @@ namespace MLLE {{
                 _read7BitEncodedStringFromStream(data5);
                 jjSTREAM param;
                 data5.pop(param);
-                w[i-1].Apply(i, WeaponHook, param);
+                w[i-1].Apply(i, WeaponHook, param, ammoCrateEventID);
             } else ";
         const string AngelscriptLibraryWeaponsPortion4 = @"
 
