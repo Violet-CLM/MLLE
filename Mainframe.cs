@@ -1740,7 +1740,7 @@ namespace MLLE
             J2L.JCSVerticalFocus = (ushort)LDScrollV.Value;
 
             byte[] Data5 = null;
-            string[][] CustomWeapons = null;
+            WeaponsForm.ExtendedWeapon[] CustomWeapons = null;
             if (EnableableBools[J2L.VersionType][EnableableTitles.BoolDevelopingForPlus] && J2L.LevelNeedsData5)
                 if (!J2L.PlusPropertyList.CreateData5Section(out Data5, out CustomWeapons, J2L.Tilesets, J2L.AllLayers))
                     return SavingResults.Error;

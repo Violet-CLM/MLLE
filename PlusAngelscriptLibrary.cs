@@ -316,7 +316,7 @@ namespace MLLE {{
 
 #include 'SEweapon.asc'
 #pragma require 'SEweapon.asc'
-shared interface MLLEWeaponApply { bool Apply(uint, se::WeaponHook@ = null, jjSTREAM@ = null); }";
+shared interface MLLEWeaponApply { bool Apply(uint, se::WeaponHook@ = null, jjSTREAM@ = null, uint8 = 0); }";
 
         static readonly string TagForProgrammaticallyAddedLines = " ///@MLLE-Generated\r\n";
         static string GetPragmaInclude(string filename)
@@ -332,14 +332,14 @@ shared interface MLLEWeaponApply { bool Apply(uint, se::WeaponHook@ = null, jjST
             return Path.Combine(Path.GetDirectoryName(filepath), Path.GetFileNameWithoutExtension(filepath) + "-MLLE-Data-" + (index + 1) + ".j2l");
         }
 
-        internal void SaveLibrary(string filepath, List<J2TFile> Tilesets, int numberOfExtraDataLevels, string[][] customWeapons)
+        internal void SaveLibrary(string filepath, List<J2TFile> Tilesets, int numberOfExtraDataLevels, WeaponsForm.ExtendedWeapon[] customWeapons)
         {
             var encoding = J2LFile.FileEncoding;
             List<string> RequiredFilenames = new List<string>();
             bool weaponLibrary = false;
-            foreach (string[] ss in customWeapons)
-                if (ss != null) {
-                    RequiredFilenames.Add(ss[0]);
+            foreach (var cw in customWeapons)
+                if (cw != null) {
+                    RequiredFilenames.Add(cw.LibraryFilename);
                     weaponLibrary = true;
                 }
 
@@ -400,9 +400,9 @@ shared interface MLLEWeaponApply { bool Apply(uint, se::WeaponHook@ = null, jjST
                 desiredSetupCall += "array<MLLEWeaponApply@> = {";
                 for (int i = 0; i < 9; ++i)
                 {
-                    string[] ss = customWeapons[i];
-                    if (ss != null)
-                        desiredSetupCall += ss[1];
+                    WeaponsForm.ExtendedWeapon cw = customWeapons[i];
+                    if (cw != null)
+                        desiredSetupCall += cw.Initialization;
                     else
                         desiredSetupCall += "null";
                     if (i < 8)

@@ -256,9 +256,9 @@ namespace MLLE
         }
         static readonly Weapon[] WeaponDefaults = new Weapon[9] {
             new Weapon("Blaster",           new int[]{-1,1,0, 3, 3}),
-            new Weapon("Bouncers",          new int[]{-1,0,1, 3, 3}),
-            new Weapon("Ice",               new int[]{-1,0,1, 3, 3}),
-            new Weapon("Seekers",           new int[]{-1,0,1,10,10}),
+            new Weapon("Bouncer",           new int[]{-1,0,1, 3, 3,  0,1}),
+            new Weapon("Ice",               new int[]{-1,0,1, 3, 3,  1}),
+            new Weapon("Seeker",            new int[]{-1,0,1,10,10}),
             new Weapon("RFs",               new int[]{-1,0,1,10,10}),
             new Weapon("Toaster",           new int[]{-1,0,1, 3, 3}),
             new Weapon("TNT",               new int[]{-1,0,0,10,10,  0}),
@@ -455,10 +455,10 @@ namespace MLLE
                 return false;
             }
         }
-        internal bool CreateData5Section(out byte[] Data5, out string[][] CustomWeapons, List<J2TFile> Tilesets, List<Layer> Layers)
+        internal bool CreateData5Section(out byte[] Data5, out WeaponsForm.ExtendedWeapon[] CustomWeapons, List<J2TFile> Tilesets, List<Layer> Layers)
         {
             Data5 = null;
-            CustomWeapons = new string[9][];
+            CustomWeapons = new WeaponsForm.ExtendedWeapon[9];
             var data5header = new MemoryStream();
 
             using (MemoryStream data5body = new MemoryStream())
@@ -566,7 +566,7 @@ namespace MLLE
                             MessageBox.Show(String.Format("Sorry, the MLLE \"Weapons\" folder did not include any .ini file defining a weapon with the name \"{0}.\"", weapon.Name), "Weapon not found", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             return false;
                         }
-                        CustomWeapons[weaponID] = new string[] { extendedWeapon.LibraryFilename, extendedWeapon.Initialization };
+                        CustomWeapons[weaponID] = extendedWeapon;
                         data5bodywriter.Write(extendedWeapon.OptionTypes.Skip(5).Select(o => o == WeaponsForm.ExtendedWeapon.oTypes.Int ? sizeof(int) : sizeof(byte)).Sum());
                         for (int optionID = 5; optionID < options.Length; ++optionID)
                         {
