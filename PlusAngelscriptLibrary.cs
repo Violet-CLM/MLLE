@@ -3,6 +3,7 @@ using System.IO;
 using Ionic.Zlib;
 using Ionic.Crc;
 using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace MLLE
 {
@@ -436,11 +437,27 @@ shared interface MLLEWeaponApply { bool Apply(uint, se::WeaponHook@ = null, jjST
             else if (match.Value != desiredSetupCall)
                 fileContents = setupPattern.Replace(fileContents, desiredSetupCall);
 
-            if (weaponLibrary)
+            bool[] hooksNeeded = WeaponHookSpecs.Select(ss => weaponLibrary && customWeapons.Any(cw => cw != null && new Regex("\\b" + ss[1] + "\\b", RegexOptions.IgnoreCase).Match(cw.Hooks).Success)).ToArray();
+            hooksNeeded[3] = weaponLibrary; //onDrawAmmo is used by ALL custom weapons
+            
+            for (int specID = 0; specID < WeaponHookSpecs.Length; ++specID)
             {
-                foreach (string[] spec in WeaponHookSpecs)
+                string[] spec = WeaponHookSpecs[specID];
+
+                Regex weaponHookCallFindRegex = new Regex(@"(return\s+)?MLLE\s*::\s*WeaponHook\s*\.\s*" + spec[2] + @"\s*\([^;]*\)(\s*;)?");
+
+                string functionPattern = "(" + spec[0] + @"\s+" + spec[1] + @"\s*\(\s*";
+                for (int paramStringID = 3; paramStringID < spec.Length; paramStringID += 2)
                 {
-                    if (!new Regex(@"MLLE\s*::\s*WeaponHook\s*\.\s*" + spec[2] + @"\s*\([^;]*\)\s*").Match(fileContents).Success) //weaponhook call not being made
+                    functionPattern += spec[paramStringID].Replace(" ", @"\s*") + @"\s*(\S+)\s*";
+                    if (paramStringID + 2 < spec.Length)
+                        functionPattern += @",\s*";
+                }
+                functionPattern += @"\)[^{]*{)"; //e.g. a pattern to match "void onMain() {"
+
+                if (hooksNeeded[specID])
+                {
+                    if (!weaponHookCallFindRegex.Match(fileContents).Success) //weaponhook call not being made
                     {
                         string weaponhookMethodCall = "\r\n\t" + (spec[0] == "void" ? "" : "return ") + "MLLE::WeaponHook." + spec[2] + "(";
                         for (int paramStringID = 3; paramStringID < spec.Length; paramStringID += 2)
@@ -451,19 +468,11 @@ shared interface MLLEWeaponApply { bool Apply(uint, se::WeaponHook@ = null, jjST
                         }
                         weaponhookMethodCall += ");"; //e.g. "WeaponHook::processMain();"
 
-                        string functionPattern = "(" + spec[0] + @"\s+" + spec[1] + @"\s*\(\s*";
-                        for (int paramStringID = 3; paramStringID < spec.Length; paramStringID += 2)
-                        {
-                            functionPattern += spec[paramStringID].Replace(" ", @"\s*") + @"\s*(\S+)\s*";
-                            if (paramStringID + 2 < spec.Length)
-                                functionPattern += @",\s*";
-                        }
-                        functionPattern += @"\)[^{]*{)"; //e.g. a pattern to match "void onMain() {"
-                        Regex regex = new Regex(functionPattern);
-                        match = regex.Match(fileContents);
+                        Regex functionRegex = new Regex(functionPattern);
+                        match = functionRegex.Match(fileContents);
                         if (match.Success) //hook function already exists
                         {
-                            fileContents = regex.Replace(fileContents, "$1" + weaponhookMethodCall);
+                            fileContents = functionRegex.Replace(fileContents, "$1" + weaponhookMethodCall);
                         }
                         else
                         { //add everything from scratch
@@ -480,6 +489,10 @@ shared interface MLLEWeaponApply { bool Apply(uint, se::WeaponHook@ = null, jjST
                             fileContents += functionToAdd;
                         }
                     }
+                }
+                else //hook NOT needed
+                {
+                    fileContents = new Regex(functionPattern + @"[\s;]*}\r?\n?").Replace(weaponHookCallFindRegex.Replace(fileContents, ""), ""); //remove the method call, then remove the hook function it was in if that hook is now totally empty
                 }
             }
             System.IO.File.WriteAllText(scriptFilepath, fileContents, encoding);

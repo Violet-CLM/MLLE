@@ -25,7 +25,7 @@ namespace MLLE
 
         internal class ExtendedWeapon : PlusPropertyList.Weapon, IComparable<ExtendedWeapon>
         {
-            internal string LibraryFilename, Initialization;
+            internal string LibraryFilename, Initialization, Hooks;
             public Bitmap Image;
             internal enum oTypes { Int, Bool, Dropdown };
             string[] OptionNames;
@@ -39,6 +39,7 @@ namespace MLLE
 
                 LibraryFilename = s[2];
                 Initialization = s[3];
+                Hooks = s[5];
                 
                 string options = "Maximum|Birds:{Don't fire this weapon,Fire normal bullets,Fire even powered-up bullets}|Appears in gun crates:bool|Gems lost (normal)|Gems lost (powerup)";
                 if (!string.IsNullOrEmpty(s[4]))
@@ -79,7 +80,7 @@ namespace MLLE
                     }
                 }
             }
-            static internal readonly string[] KeysToReadFromIni = {"Name", "ImageFilename", "LibraryFilename", "Initialization", "Options"};
+            static internal readonly string[] KeysToReadFromIni = {"Name", "ImageFilename", "LibraryFilename", "Initialization", "Options", "Hooks"};
             public int CompareTo(ExtendedWeapon other)
             {
                 return Name.CompareTo(other.Name);
