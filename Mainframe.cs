@@ -292,6 +292,9 @@ namespace MLLE
                 var scriptFilepaths = new List<string>();
                 scriptFilepaths.Add(Path.ChangeExtension(J2L.FullFilePath, "j2as"));
 
+                var allIncludedLibraries = new HashSet<string>(StringComparer.OrdinalIgnoreCase); //avoid repeats, especially if a library tries to include itself recursively
+                allIncludedLibraries.Add(Path.GetFileName(scriptFilepaths[0])); //just to be safe
+
                 bool foundAtLeastOneLevelSpecificEventString = false;
                 for (int scriptID = 0; scriptID < scriptFilepaths.Count; ++scriptID)
                 {
@@ -300,7 +303,8 @@ namespace MLLE
                     {
                         var fileContents = System.IO.File.ReadAllText(scriptFilepath, J2LFile.FileEncoding) + "\n";
                         foreach (System.Text.RegularExpressions.Match match in System.Text.RegularExpressions.Regex.Matches(fileContents, "#include\\s+(['\"])(.+?)\\1", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
-                            scriptFilepaths.Add(Path.Combine(Path.GetDirectoryName(J2L.FullFilePath), match.Groups[2].Value)); //come back to this script later in the loop
+                            if (allIncludedLibraries.Add(match.Groups[2].Value)) //haven't seen this filename before
+                                scriptFilepaths.Add(Path.Combine(Path.GetDirectoryName(J2L.FullFilePath), match.Groups[2].Value)); //come back to this script later in the loop
                         foreach (System.Text.RegularExpressions.Match match in System.Text.RegularExpressions.Regex.Matches(fileContents, @"//[!/][ \t]*[\\@]Event[ \t]+(\d+)[ \t]*=([^\r\n]*)\r?\n", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
                         {
                             if (!foundAtLeastOneLevelSpecificEventString)
