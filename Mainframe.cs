@@ -2056,7 +2056,7 @@ namespace MLLE
                         #region draw animated tiles
                         var count = Math.Min(J2L.NumberOfAnimations, (TilesetScrollbar.Height - AnimatedTilesDrawHeight + 31) / 32 * 10);
                         int x = (int)(J2L.TileCount % 10) * 32, y = AnimatedTilesDrawHeight;
-                        for (byte i = 0; i < count; i++)
+                        for (int i = 0; i < count; i++)
                         {
                             DrawTile(ref x, ref y, (ushort)(J2L.AnimOffset + i), 32, true);
                             if (x == 288) { x = 0; y += 32; }

@@ -2421,7 +2421,7 @@ class J2LFile : J2File
     {
         for (ushort i = id; i < NumberOfAnimations;)
         {
-            if (i == (VersionType == Version.TSF ? 255 : 127)) Animations[i] = new AnimatedTile();
+            if (i == (VersionType == Version.TSF ? 255 : 127)) Animations[i++] = new AnimatedTile();
             else Animations[i] = Animations[++i];
         }
         NumberOfAnimations--;
