@@ -248,6 +248,8 @@ namespace MLLE
 
         internal class Weapon
         {
+            public const int NumberOfCommonOptions = 6;
+
             internal string Name;
             internal int[] Options;
             internal Weapon() { }
@@ -267,15 +269,15 @@ namespace MLLE
             }
         }
         static readonly Weapon[] WeaponDefaults = new Weapon[9] {
-            new Weapon("Blaster",           new int[]{-1,1,0, 3, 3}),
-            new Weapon("Bouncer",           new int[]{-1,0,1, 3, 3,  0,1}),
-            new Weapon("Ice",               new int[]{-1,0,1, 3, 3,  1}),
-            new Weapon("Seeker",            new int[]{-1,0,1,10,10}),
-            new Weapon("RFs",               new int[]{-1,0,1,10,10}),
-            new Weapon("Toaster",           new int[]{-1,0,1, 3, 3}),
-            new Weapon("TNT",               new int[]{-1,0,0,10,10,  0}),
-            new Weapon("Gun8",              new int[]{-1,0,0,10,10,  0}),
-            new Weapon("Electro Blaster",   new int[]{-1,0,0,10,10})
+            new Weapon("Blaster",           new int[]{-1,1,0, 3, 3, 3}),
+            new Weapon("Bouncer",           new int[]{-1,0,1, 3, 3, 0,  0,1}),
+            new Weapon("Ice",               new int[]{-1,0,1, 3, 3, 0,  1}),
+            new Weapon("Seeker",            new int[]{-1,0,1,10,10, 0}),
+            new Weapon("RFs",               new int[]{-1,0,1,10,10, 0}),
+            new Weapon("Toaster",           new int[]{-1,0,1, 3, 3, 0}),
+            new Weapon("TNT",               new int[]{-1,0,0,10,10, 0,  0}),
+            new Weapon("Gun8",              new int[]{-1,0,0,10,10, 0,  0}),
+            new Weapon("Electro Blaster",   new int[]{-1,0,0,10,10, 0})
         };
         [Browsable(false)]
         internal Weapon[] Weapons;
@@ -561,7 +563,7 @@ namespace MLLE
                     Weapon weapon = Weapons[weaponID];
                     Weapon defaultWeapon = WeaponDefaults[weaponID];
                     bool isGun8InSlot8 = weaponID == 7 && weapon.Name == "Gun8"; //hardcoded laxer standards... parameter need not match
-                    bool isCustom = !isGun8InSlot8 && !weapon.Equals(defaultWeapon);
+                    bool isCustom = !isGun8InSlot8 && !(weapon.Name.Equals(defaultWeapon.Name) && weapon.Options.Skip(Weapon.NumberOfCommonOptions).SequenceEqual(defaultWeapon.Options.Skip(Weapon.NumberOfCommonOptions)));
                     data5bodywriter.Write(isCustom);
                     int[] options = weapon.Options;
                     data5bodywriter.Write(options[0]);
@@ -569,6 +571,7 @@ namespace MLLE
                     data5bodywriter.Write(options[2] != 0);
                     data5bodywriter.Write((byte)options[3]);
                     data5bodywriter.Write((byte)options[4]);
+                    data5bodywriter.Write((byte)options[5]);
                     if (weaponID == 6)
                         data5bodywriter.Write(Gun7Crate);
                     else if (weaponID == 7)
@@ -576,7 +579,7 @@ namespace MLLE
                     else if (weaponID == 8)
                         data5bodywriter.Write(Gun9Crate);
                     if (isGun8InSlot8)
-                        data5bodywriter.Write((byte)options[5]);
+                        data5bodywriter.Write((byte)options[Weapon.NumberOfCommonOptions]);
                     else if (isCustom)
                     {
                         data5bodywriter.Write(weapon.Name);
@@ -587,8 +590,8 @@ namespace MLLE
                             return false;
                         }
                         CustomWeapons[weaponID] = extendedWeapon;
-                        data5bodywriter.Write(extendedWeapon.OptionTypes.Skip(5).Select(o => o == WeaponsForm.ExtendedWeapon.oTypes.Int ? sizeof(int) : sizeof(byte)).Sum());
-                        for (int optionID = 5; optionID < options.Length; ++optionID)
+                        data5bodywriter.Write(extendedWeapon.OptionTypes.Skip(Weapon.NumberOfCommonOptions).Select(o => o == WeaponsForm.ExtendedWeapon.oTypes.Int ? sizeof(int) : sizeof(byte)).Sum());
+                        for (int optionID = Weapon.NumberOfCommonOptions; optionID < options.Length; ++optionID)
                         {
                             switch (extendedWeapon.OptionTypes[optionID]) {
                                 case WeaponsForm.ExtendedWeapon.oTypes.Bool:
@@ -753,8 +756,8 @@ namespace MLLE
                                     bool customWeapon = data5bodyreader.ReadBoolean();
                                     Weapon weapon = Weapons[weaponID];
                                     weapon.Options[0] = data5bodyreader.ReadInt32(); //maximum
-                                    for (int optionID = 1; optionID <= 4; ++optionID)
-                                        weapon.Options[optionID] = data5bodyreader.ReadByte(); //birds and crates and gems
+                                    for (int optionID = 1; optionID < Weapon.NumberOfCommonOptions; ++optionID)
+                                        weapon.Options[optionID] = data5bodyreader.ReadByte(); //birds and crates and gems and replenishment
                                     if (weaponID == 6)
                                         Gun7Crate = data5bodyreader.ReadByte();
                                     else if (weaponID == 7)
@@ -774,7 +777,7 @@ namespace MLLE
                                         Weapons[weaponID].Name = name;
                                         Array.Resize(ref Weapons[weaponID].Options, extendedWeapon.Options.Length);
                                         data5bodyreader.ReadInt32(); //length of jjSTREAM
-                                        for (int optionID = 5; optionID < weapon.Options.Length; ++optionID)
+                                        for (int optionID = Weapon.NumberOfCommonOptions; optionID < weapon.Options.Length; ++optionID)
                                             switch (extendedWeapon.OptionTypes[optionID]) {
                                                 case WeaponsForm.ExtendedWeapon.oTypes.Bool:
                                                 case WeaponsForm.ExtendedWeapon.oTypes.Dropdown:
@@ -785,7 +788,7 @@ namespace MLLE
                                                     break;
                                             }
                                     } else if (weaponID == 7)
-                                        weapon.Options[5] = data5bodyreader.ReadByte(); //Gun8 style
+                                        weapon.Options[Weapon.NumberOfCommonOptions] = data5bodyreader.ReadByte(); //Gun8 style
                                 }
                             }
                         }

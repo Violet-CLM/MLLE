@@ -41,12 +41,12 @@ namespace MLLE
                 Initialization = s[3];
                 Hooks = s[5];
                 
-                string options = "Maximum|Birds:{Don't fire this weapon,Fire normal bullets,Fire even powered-up bullets}|Appears in gun crates:bool|Gems lost (normal)|Gems lost (powerup)";
+                string options = "Maximum|Birds:{Don't fire this weapon,Fire normal bullets,Fire even powered-up bullets}|Appears in gun crates:bool|Gems lost (normal)|Gems lost (powerup)|Availability:{Collect ammo,Infinite once found,Start at maximum,Always infinite}";
                 if (!string.IsNullOrEmpty(s[4]))
                     options += "|" + s[4];
                 
                 string[] optionsSplitByPipes = options.Split('|').Select(ss => ss.Trim()).ToArray();
-                int numberOfOptions = optionsSplitByPipes.Length; //usually zero
+                int numberOfOptions = optionsSplitByPipes.Length; //usually six
                 Options = new int[numberOfOptions];
                 OptionNames = new string[numberOfOptions];
                 OptionTypes = new oTypes[numberOfOptions];
@@ -188,8 +188,8 @@ namespace MLLE
                     PlusPropertyList.Weapon weapon = weaponsInProgress[localWeaponID];
                     var commonParameters = weapon.Options.Clone() as int[];
                     weapon = weaponsInProgress[localWeaponID] = AllAvailableWeapons.Find(w => w.Name == (ss as ComboBox).SelectedItem.ToString()).Clone();
-                    for (int i = 0; i < 5; ++i)
-                        weapon.Options[i] = commonParameters[i]; //retain the first five
+                    for (int i = 0; i < PlusPropertyList.Weapon.NumberOfCommonOptions; ++i)
+                        weapon.Options[i] = commonParameters[i]; //retain the first six
                     UpdatePanel(localWeaponID);
                 };
             }

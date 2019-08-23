@@ -230,11 +230,12 @@ namespace MLLE {{
         for (uint i = 1; i <= 9; ++i) {{
             jjWEAPON@ weapon = jjWeapons[i];
             data5.pop(pbool);
-            data5.pop(weapon.maximum);
+            data5.pop(pint); weapon.maximum = pint;
             data5.pop(pbyte); weapon.comesFromBirds = pbyte != 0; weapon.comesFromBirdsPowerup = pbyte == 2;
-            data5.pop(weapon.comesFromGunCrates);
+            data5.pop(pbyte); weapon.comesFromGunCrates = pbyte != 0;
             data5.pop(pbyte); weapon.gemsLost = pbyte;
             data5.pop(pbyte); weapon.gemsLostPowerup = pbyte;
+            data5.pop(pbyte); weapon.infinite = pbyte & 1 == 1; weapon.replenishes = pbyte & 2 == 2;
             uint8 ammoCrateEventID = 0;
             if (i >= 7) {{
                 data5.pop(ammoCrateEventID);
