@@ -56,6 +56,8 @@ namespace MLLE
             image.Palette = palette;
 
             pictureBox1.Image = image;
+
+            pictureBox2.Image = Properties.Resources.SmartTilesPermutations;
             
         }
         
