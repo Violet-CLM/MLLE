@@ -3131,7 +3131,19 @@ namespace MLLE
                 recentLevelsToolStripMenuItem.DropDownItems.Add(toolStripItem);
             }
         }
-        
+
+        private void defineSmartTilesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _suspendEvent.Reset();
+            new SmartTilesForm().ShowForm(J2L.Tilesets[0]);
+            _suspendEvent.Set();
+
+        }
+        private void toolsToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
+        {
+            defineSmartTilesToolStripMenuItem.Enabled = J2L.HasTiles;
+        }
+
         private bool ActOnATile(int x, int y, ushort? tile, uint ev, LayerAndSpecificTiles actionCenter, bool blankTilesOkay) { return ActOnATile(x, y, tile, new AGAEvent(ev), actionCenter, blankTilesOkay); }
         private bool ActOnATile(int x, int y, ushort? tile, AGAEvent? ev, LayerAndSpecificTiles actionCenter, bool blankTilesOkay, bool DirectAction = true)
         {
