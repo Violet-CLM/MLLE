@@ -184,6 +184,7 @@
             this.AnimScrollbar = new System.Windows.Forms.HScrollBar();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
+            this.addNewToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.MainMenu.SuspendLayout();
             this.DrawingTools.SuspendLayout();
             this.StatusBar.SuspendLayout();
@@ -476,10 +477,12 @@
             // 
             // defineSmartTilesToolStripMenuItem
             // 
+            this.defineSmartTilesToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.addNewToolStripMenuItem1});
             this.defineSmartTilesToolStripMenuItem.Name = "defineSmartTilesToolStripMenuItem";
             this.defineSmartTilesToolStripMenuItem.Size = new System.Drawing.Size(179, 22);
-            this.defineSmartTilesToolStripMenuItem.Text = "Define Smart Tiles...";
-            this.defineSmartTilesToolStripMenuItem.Click += new System.EventHandler(this.defineSmartTilesToolStripMenuItem_Click);
+            this.defineSmartTilesToolStripMenuItem.Text = "Define Smart Tiles";
+            this.defineSmartTilesToolStripMenuItem.DropDownOpening += new System.EventHandler(this.defineSmartTilesToolStripMenuItem_DropDownOpening);
             // 
             // toolStripSeparator23
             // 
@@ -557,7 +560,7 @@
             // addNewToolStripMenuItem
             // 
             this.addNewToolStripMenuItem.Name = "addNewToolStripMenuItem";
-            this.addNewToolStripMenuItem.Size = new System.Drawing.Size(132, 22);
+            this.addNewToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.addNewToolStripMenuItem.Text = "Add New...";
             this.addNewToolStripMenuItem.Click += new System.EventHandler(this.addNewToolStripMenuItem_Click);
             // 
@@ -1619,6 +1622,13 @@
             // 
             this.folderBrowserDialog1.ShowNewFolderButton = false;
             // 
+            // addNewToolStripMenuItem1
+            // 
+            this.addNewToolStripMenuItem1.Name = "addNewToolStripMenuItem1";
+            this.addNewToolStripMenuItem1.Size = new System.Drawing.Size(152, 22);
+            this.addNewToolStripMenuItem1.Text = "Add New...";
+            this.addNewToolStripMenuItem1.Click += new System.EventHandler(this.defineSmartTilesToolStripMenuItem_Click);
+            // 
             // Mainframe
             // 
             this.AllowDrop = true;
@@ -1828,5 +1838,6 @@
         private System.Windows.Forms.ToolStripMenuItem OverSmartTiles;
         private System.Windows.Forms.ToolStripMenuItem defineSmartTilesToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator23;
+        private System.Windows.Forms.ToolStripMenuItem addNewToolStripMenuItem1;
     }
 }

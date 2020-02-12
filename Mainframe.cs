@@ -3137,12 +3137,25 @@ namespace MLLE
             _suspendEvent.Reset();
             new SmartTilesForm().ShowForm(J2L.Tilesets[0]);
             _suspendEvent.Set();
-
+        }
+        private void defineSmartTilesToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
+        {
+            defineSmartTilesToolStripMenuItem.DropDownItems.Clear();
+            foreach (var smartTile in SmartTiles)
+            {
+                var toolStripItem = new ToolStripMenuItem(smartTile.ToString());
+                toolStripItem.Click += (s, ee) => {
+                    //todo
+                };
+                defineSmartTilesToolStripMenuItem.DropDownItems.Add(toolStripItem);
+            }
+            defineSmartTilesToolStripMenuItem.DropDownItems.Add(addNewToolStripMenuItem1);
         }
         private void toolsToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
         {
             defineSmartTilesToolStripMenuItem.Enabled = J2L.HasTiles;
         }
+
 
         private bool ActOnATile(int x, int y, ushort? tile, uint ev, LayerAndSpecificTiles actionCenter, bool blankTilesOkay) { return ActOnATile(x, y, tile, new AGAEvent(ev), actionCenter, blankTilesOkay); }
         private bool ActOnATile(int x, int y, ushort? tile, AGAEvent? ev, LayerAndSpecificTiles actionCenter, bool blankTilesOkay, bool DirectAction = true)
