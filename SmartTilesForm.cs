@@ -15,6 +15,7 @@ namespace MLLE
     {
         J2TFile Tileset;
         bool Result = false;
+        ushort[][] TileAssignments; //very temporary, this should be a class
         public SmartTilesForm()
         {
             InitializeComponent();
@@ -23,15 +24,44 @@ namespace MLLE
         {
             Tileset = tileset;
             CreateImageFromTileset();
+
+            //todo
+            TileAssignments = new ushort[100][];
+            for (var i = 0; i < TileAssignments.Length; ++i)
+                TileAssignments[i] = new ushort[0];
+            TileAssignments[1] = new ushort[3] { 1, 2, 3 };
+
+            new System.Threading.Timer(RedrawTiles, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(0.5));
             ShowDialog();
             return Result;
+        }
+
+        int elapsed = 0;
+        static Rectangle RectangleFromTileID(int tileID) {
+            return new Rectangle((tileID % 10) * 32, (tileID / 10) * 32, 32, 32);
+        }
+        private void RedrawTiles(object state)
+        {
+            var image = smartPicture.Image;
+
+            using (Graphics graphics = Graphics.FromImage(image))
+                for (int i = 0; i < TileAssignments.Length; ++i) {
+                    ushort[] assignment = TileAssignments[i];
+                    if (assignment.Length > 0)
+                    {
+                        graphics.DrawImage(tilesetPicture.Image, RectangleFromTileID(i), RectangleFromTileID(assignment[elapsed % assignment.Length]), GraphicsUnit.Pixel);
+                    }
+                }
+            smartPicture.Image = image;
+
+            ++elapsed;
         }
 
         private void CreateImageFromTileset()
         {
             //there are enough windows that show tileset images you'd think I should turn some/all of this into a method somewhere
-            pictureBox1.Height = (int)(Tileset.TotalNumberOfTiles + 9) / 10 * 32;
-            var image = new Bitmap(pictureBox1.Width, pictureBox1.Height, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
+            tilesetPicture.Height = (int)(Tileset.TotalNumberOfTiles + 9) / 10 * 32;
+            var image = new Bitmap(tilesetPicture.Width, tilesetPicture.Height, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
             var data = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), ImageLockMode.WriteOnly, PixelFormat.Format8bppIndexed);
             byte[] bytes = new byte[data.Height * data.Stride];
             //Marshal.Copy(data.Scan0, bytes, 0, bytes.Length);
@@ -55,10 +85,9 @@ namespace MLLE
                 entries[i] = Palette.Convert(Tileset.Palette.Colors[i]);
             image.Palette = palette;
 
-            pictureBox1.Image = image;
+            tilesetPicture.Image = image;
 
-            pictureBox2.Image = Properties.Resources.SmartTilesPermutations;
-            
+            smartPicture.Image = Properties.Resources.SmartTilesPermutations;
         }
         
         private void OKButton_Click(object sender, EventArgs e)
@@ -74,30 +103,35 @@ namespace MLLE
         
         int GetMouseTileIDFromTileset(MouseEventArgs e)
         {
-            var pictureOrigin = pictureBox1.AutoScrollOffset;
+            var pictureOrigin = tilesetPicture.AutoScrollOffset;
             return ((e.X - pictureOrigin.X) / 32 + (e.Y - pictureOrigin.Y) / 32 * 10);
         }
         Point GetPointFromTileID(int tileID, int xAdjust)
         {
             return new Point(
-                pictureBox1.Left + (tileID % 10) * 32,
-                pictureBox1.Top + (tileID / 10) * 32
+                tilesetPicture.Left + (tileID % 10) * 32,
+                tilesetPicture.Top + (tileID / 10) * 32
             );
         }
 
 
-        private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
+        private void tilesetPicture_MouseMove(object sender, MouseEventArgs e)
         {
             Text = "Define Smart Tiles \u2013 " + GetMouseTileIDFromTileset(e);
         }
 
-        private void pictureBox1_MouseLeave(object sender, EventArgs e)
+        private void tilesetPicture_MouseLeave(object sender, EventArgs e)
         {
             Text = "Define Smart Tiles";
         }
 
-        private void pictureBox1_MouseClick(object sender, MouseEventArgs e)
+        private void tilesetPicture_MouseClick(object sender, MouseEventArgs e)
         {
+        }
+
+        private void smartPicture_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

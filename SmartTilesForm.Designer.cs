@@ -29,36 +29,36 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.tilesetPicture = new System.Windows.Forms.PictureBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.ButtonCancel = new System.Windows.Forms.Button();
             this.OKButton = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
-            this.pictureBox2 = new System.Windows.Forms.PictureBox();
+            this.smartPicture = new System.Windows.Forms.PictureBox();
             this.panel2 = new System.Windows.Forms.Panel();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tilesetPicture)).BeginInit();
             this.panel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.smartPicture)).BeginInit();
             this.panel2.SuspendLayout();
             this.SuspendLayout();
             // 
-            // pictureBox1
+            // tilesetPicture
             // 
-            this.pictureBox1.Location = new System.Drawing.Point(0, 0);
-            this.pictureBox1.Margin = new System.Windows.Forms.Padding(0);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(320, 50);
-            this.pictureBox1.TabIndex = 0;
-            this.pictureBox1.TabStop = false;
-            this.toolTip1.SetToolTip(this.pictureBox1, "Left or right click to set this as the first or last imported tile.");
-            this.pictureBox1.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseClick);
-            this.pictureBox1.MouseLeave += new System.EventHandler(this.pictureBox1_MouseLeave);
-            this.pictureBox1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseMove);
+            this.tilesetPicture.Location = new System.Drawing.Point(0, 0);
+            this.tilesetPicture.Margin = new System.Windows.Forms.Padding(0);
+            this.tilesetPicture.Name = "tilesetPicture";
+            this.tilesetPicture.Size = new System.Drawing.Size(320, 50);
+            this.tilesetPicture.TabIndex = 0;
+            this.tilesetPicture.TabStop = false;
+            this.toolTip1.SetToolTip(this.tilesetPicture, "Left or right click to set this as the first or last imported tile.");
+            this.tilesetPicture.MouseClick += new System.Windows.Forms.MouseEventHandler(this.tilesetPicture_MouseClick);
+            this.tilesetPicture.MouseLeave += new System.EventHandler(this.tilesetPicture_MouseLeave);
+            this.tilesetPicture.MouseMove += new System.Windows.Forms.MouseEventHandler(this.tilesetPicture_MouseMove);
             // 
             // panel1
             // 
             this.panel1.AutoScroll = true;
-            this.panel1.Controls.Add(this.pictureBox1);
+            this.panel1.Controls.Add(this.tilesetPicture);
             this.panel1.Location = new System.Drawing.Point(12, 12);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(344, 320);
@@ -87,19 +87,20 @@
             this.OKButton.UseVisualStyleBackColor = true;
             this.OKButton.Click += new System.EventHandler(this.OKButton_Click);
             // 
-            // pictureBox2
+            // smartPicture
             // 
-            this.pictureBox2.Location = new System.Drawing.Point(0, 0);
-            this.pictureBox2.Margin = new System.Windows.Forms.Padding(0);
-            this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.Size = new System.Drawing.Size(320, 320);
-            this.pictureBox2.TabIndex = 0;
-            this.pictureBox2.TabStop = false;
-            this.toolTip1.SetToolTip(this.pictureBox2, "Left or right click to set this as the first or last imported tile.");
+            this.smartPicture.Location = new System.Drawing.Point(0, 0);
+            this.smartPicture.Margin = new System.Windows.Forms.Padding(0);
+            this.smartPicture.Name = "smartPicture";
+            this.smartPicture.Size = new System.Drawing.Size(320, 320);
+            this.smartPicture.TabIndex = 0;
+            this.smartPicture.TabStop = false;
+            this.toolTip1.SetToolTip(this.smartPicture, "Left or right click to set this as the first or last imported tile.");
+            this.smartPicture.Click += new System.EventHandler(this.smartPicture_Click);
             // 
             // panel2
             // 
-            this.panel2.Controls.Add(this.pictureBox2);
+            this.panel2.Controls.Add(this.smartPicture);
             this.panel2.Location = new System.Drawing.Point(374, 12);
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(320, 320);
@@ -122,9 +123,9 @@
             this.Name = "SmartTilesForm";
             this.ShowInTaskbar = false;
             this.Text = "Define Smart Tiles";
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.tilesetPicture)).EndInit();
             this.panel1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.smartPicture)).EndInit();
             this.panel2.ResumeLayout(false);
             this.ResumeLayout(false);
 
@@ -132,12 +133,12 @@
 
         #endregion
 
-        private System.Windows.Forms.PictureBox pictureBox1;
+        private System.Windows.Forms.PictureBox tilesetPicture;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Button ButtonCancel;
         private System.Windows.Forms.Button OKButton;
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.Panel panel2;
-        private System.Windows.Forms.PictureBox pictureBox2;
+        private System.Windows.Forms.PictureBox smartPicture;
     }
 }
