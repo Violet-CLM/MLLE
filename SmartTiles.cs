@@ -9,9 +9,25 @@ namespace MLLE
 {
     class SmartTile
     {
-        internal ushort TileID;
-        internal ushort[] NonLocalTargets;
-        class Rule
+        internal List<ushort>[] TileAssignments = new List<ushort>[100];
+        internal ushort PreviewTileID;
+        internal string Name = "Smart Tile";
+        internal HashSet<ushort> AllPossibleTiles = new HashSet<ushort>();
+
+        internal SmartTile()
+        {
+            for (var i = 0; i < TileAssignments.Length; ++i)
+                TileAssignments[i] = new List<ushort>();
+        }
+        internal SmartTile(SmartTile other)
+        {
+            for (var i = 0; i < TileAssignments.Length; ++i)
+                TileAssignments[i] = new List<ushort>(other.TileAssignments[i]);
+            PreviewTileID = other.PreviewTileID;
+            Name = other.Name;
+            AllPossibleTiles.UnionWith(other.AllPossibleTiles);
+        }
+        /*class Rule
         {
             ushort[] TileIDs;
             internal class Condition
@@ -103,7 +119,7 @@ namespace MLLE
                                 workingConditions.Clear();
                                 break;
                             case 2:
-                                if (!ushort.TryParse(words[0], out workingSmartTile.TileID))
+                                if (!ushort.TryParse(words[0], out workingSmartTile.PreviewTileID))
                                     Debug.WriteLine("Invalid line " + line);
                                 else
                                     workingSmartTile.NonLocalTargets = CreateTileIDList(words.Skip(1), tileGroups);
@@ -119,30 +135,33 @@ namespace MLLE
                 result.Add(workingSmartTile);
             smartTiles = result.ToArray();
             return true;
-        }
+        }*/
         public bool Apply(ref ushort result, ArrayMap<ushort> localTiles, bool directAction)
         {
-            if (directAction || NonLocalTargets.Contains(result)) //otherwise this is outside the scope of this smart tile and should be left alone
-                foreach (Rule rule in Rules)
-                {
-                    if (rule.Applies(localTiles, ref result)) //in which case, result's value will change
-                        return true;
-                }
+            if (directAction || AllPossibleTiles.Contains(result)) //otherwise this is outside the scope of this smart tile and should be left alone
+            {
+              /* foreach (Rule rule in Rules)
+               {
+                   if (rule.Applies(localTiles, ref result)) //in which case, result's value will change
+                       return true;
+               }*/
+            }
             return false;
         }
     }
     partial class Mainframe
     {
-        SmartTile[] SmartTiles = new SmartTile[0];
+        List<SmartTile> SmartTiles = new List<SmartTile>();
         private bool CheckForSmartTileFile()
         {
-            SmartTiles = new SmartTile[0];
+            SmartTiles.Clear();
             if (!J2L.HasTiles)
                 return false;
-            string filepath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MLLESet - " + Path.GetFileNameWithoutExtension(J2L.MainTilesetFilename) + ".txt");
-            if (File.Exists(filepath))
-                return SmartTile.DefineSmartTiles(filepath, out SmartTiles);
-            return false;
+            string filepath = Path.ChangeExtension(J2L.Tilesets[0].FullFilePath, ".MLLESet");
+            if (!File.Exists(filepath)) //check in JJ2 folder
+                if (!File.Exists(filepath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Path.GetFileName(filepath)))) //check in MLLE folder
+                    return false;
+            return false;// SmartTile.DefineSmartTiles(filepath, out SmartTiles);
         }
     }
 }

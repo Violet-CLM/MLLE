@@ -660,20 +660,20 @@ namespace MLLE
                             if (LastFocusedZone != FocusedZone.Level)
                             {
                                 ev = (uint?)tileID;
-                                tileID = SmartTiles[ev.Value].TileID;
+                                tileID = SmartTiles[(int)ev.Value].PreviewTileID;
                             }
                             else
                             {
                                 int i = 0;
                                 while (true)
                                 {
-                                    if (SmartTiles[i].NonLocalTargets.Contains(tileID))
+                                    if (SmartTiles[i].AllPossibleTiles.Contains(tileID))
                                     {
                                         ev = (uint?)i;
-                                        tileID = SmartTiles[i].TileID;
+                                        tileID = SmartTiles[i].PreviewTileID;
                                         break;
                                     }
-                                    else if (++i == SmartTiles.Length)
+                                    else if (++i == SmartTiles.Count)
                                         return true;
                                 }
                             }
@@ -686,7 +686,7 @@ namespace MLLE
                         DeselectAll();
                         return true;
                     }
-                case Keys.Back: if (CurrentTilesetOverlay != TilesetOverlay.SmartTiles || SmartTiles[0].TileID == 0) { ShowBlankTileInStamp = true; SetStampDimensions(1, 1); CurrentStamp[0][0] = new TileAndEvent(0, 0); DeselectAll(); } return true;
+                case Keys.Back: if (CurrentTilesetOverlay != TilesetOverlay.SmartTiles || SmartTiles[0].PreviewTileID == 0) { ShowBlankTileInStamp = true; SetStampDimensions(1, 1); CurrentStamp[0][0] = new TileAndEvent(0, 0); DeselectAll(); } return true;
 
                 case (Keys.Control | Keys.B):
                     {
@@ -1994,9 +1994,9 @@ namespace MLLE
                     {
                         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
                         int x = 0, y = 0;
-                        for (int i = 0; i < SmartTiles.Length; i++)
+                        for (int i = 0; i < SmartTiles.Count; i++)
                         {
-                            DrawTile(ref x, ref y, SmartTiles[i].TileID, 32, true);
+                            DrawTile(ref x, ref y, SmartTiles[i].PreviewTileID, 32, true);
                             if (x == 288) { x = 0; y += 32; }
                             else { x += 32; }
                         }
@@ -3062,10 +3062,10 @@ namespace MLLE
         {
             if (LastFocusedZone == FocusedZone.Tileset && CurrentTilesetOverlay == TilesetOverlay.SmartTiles)
             {
-                if (MouseTile < SmartTiles.Length)
+                if (MouseTile < SmartTiles.Count)
                 {
                     SetStampDimensions(1, 1);
-                    CurrentStamp[0][0] = new TileAndEvent(SmartTiles[MouseTile].TileID, (uint?)MouseTile);
+                    CurrentStamp[0][0] = new TileAndEvent(SmartTiles[MouseTile].PreviewTileID, (uint?)MouseTile);
                     ShowBlankTileInStamp = true;
                 }
             }
@@ -3135,17 +3135,24 @@ namespace MLLE
         private void defineSmartTilesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _suspendEvent.Reset();
-            new SmartTilesForm().ShowForm(J2L.Tilesets[0]);
+            SmartTile workingSmartTile = new SmartTile();
+            if (new SmartTilesForm().ShowForm(workingSmartTile, J2L.Tilesets[0]))
+            {
+                SmartTiles.Add(workingSmartTile);
+            }
             _suspendEvent.Set();
         }
         private void defineSmartTilesToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
         {
             defineSmartTilesToolStripMenuItem.DropDownItems.Clear();
-            foreach (var smartTile in SmartTiles)
-            {
+            for (var i = 0; i < SmartTiles.Count; ++i) {
+                var localI = i; //for closure in the lambda
+                var smartTile = SmartTiles[localI];
                 var toolStripItem = new ToolStripMenuItem(smartTile.ToString());
                 toolStripItem.Click += (s, ee) => {
-                    //todo
+                    var workingSmartTile = new SmartTile(smartTile);
+                    if (new SmartTilesForm().ShowForm(workingSmartTile, J2L.Tilesets[0]))
+                        SmartTiles[localI] = workingSmartTile;
                 };
                 defineSmartTilesToolStripMenuItem.DropDownItems.Add(toolStripItem);
             }
@@ -3189,10 +3196,13 @@ namespace MLLE
                     }
 
                     ushort appliedTile = layer.TileMap[x, y];
-                    bool success = SmartTiles[ev.Value.ID].Apply(ref appliedTile, localTiles, DirectAction);
-                    layer.TileMap[x, y] = appliedTile;
-                    if (layer == J2L.SpriteLayer)
-                        J2L.EventMap[x, y] = 0;
+                    bool success = SmartTiles[(int)ev.Value.ID].Apply(ref appliedTile, localTiles, DirectAction);
+                    if (success)
+                    {
+                        layer.TileMap[x, y] = appliedTile;
+                        if (layer == J2L.SpriteLayer)
+                            J2L.EventMap[x, y] = 0;
+                    }
 
                     if (DirectAction)
                     {
@@ -3201,7 +3211,7 @@ namespace MLLE
                                 for (int yy = y - 1; yy <= y + 1; ++yy)
                                     if (xx != x || yy != y) //not the center
                                         if (yy >= 0 && yy < layerHeight)
-                                            for (int i = 0; i < SmartTiles.Length; ++i)
+                                            for (int i = 0; i < SmartTiles.Count; ++i)
                                                 if (ActOnATile(xx, yy, 0, new AGAEvent((uint)i), actionCenter, true, false))
                                                     break;
                         ActOnATile(x, y, 0, ev, actionCenter, true, false); //finally, do this center tile again to reflect changes in the surroundings
