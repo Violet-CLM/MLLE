@@ -36,6 +36,7 @@
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.smartPicture = new System.Windows.Forms.PictureBox();
             this.panel2 = new System.Windows.Forms.Panel();
+            this.HighlightPanel = new System.Windows.Forms.Panel();
             ((System.ComponentModel.ISupportInitialize)(this.tilesetPicture)).BeginInit();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.smartPicture)).BeginInit();
@@ -96,15 +97,28 @@
             this.smartPicture.TabIndex = 0;
             this.smartPicture.TabStop = false;
             this.toolTip1.SetToolTip(this.smartPicture, "Left or right click to set this as the first or last imported tile.");
-            this.smartPicture.Click += new System.EventHandler(this.smartPicture_Click);
+            this.smartPicture.MouseClick += new System.Windows.Forms.MouseEventHandler(this.smartPicture_MouseClick);
             // 
             // panel2
             // 
+            this.panel2.Controls.Add(this.HighlightPanel);
             this.panel2.Controls.Add(this.smartPicture);
             this.panel2.Location = new System.Drawing.Point(374, 12);
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(320, 320);
             this.panel2.TabIndex = 2;
+            // 
+            // HighlightPanel
+            // 
+            this.HighlightPanel.BackColor = System.Drawing.Color.White;
+            this.HighlightPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.HighlightPanel.CausesValidation = false;
+            this.HighlightPanel.Enabled = false;
+            this.HighlightPanel.Location = new System.Drawing.Point(80, 103);
+            this.HighlightPanel.Name = "HighlightPanel";
+            this.HighlightPanel.Size = new System.Drawing.Size(10, 10);
+            this.HighlightPanel.TabIndex = 6;
+            this.HighlightPanel.Visible = false;
             // 
             // SmartTilesForm
             // 
@@ -140,5 +154,6 @@
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.PictureBox smartPicture;
+        private System.Windows.Forms.Panel HighlightPanel;
     }
 }

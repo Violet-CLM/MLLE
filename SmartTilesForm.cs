@@ -15,7 +15,7 @@ namespace MLLE
     {
         J2TFile Tileset;
         bool Result = false;
-        ushort[][] TileAssignments; //very temporary, this should be a class
+        List<ushort>[] TileAssignments; //very temporary, this should be a class
         public SmartTilesForm()
         {
             InitializeComponent();
@@ -26,13 +26,12 @@ namespace MLLE
             CreateImageFromTileset();
 
             //todo
-            TileAssignments = new ushort[100][];
+            TileAssignments = new List<ushort>[100];
             for (var i = 0; i < TileAssignments.Length; ++i)
-                TileAssignments[i] = new ushort[0];
-            TileAssignments[1] = new ushort[3] { 1, 2, 3 };
+                TileAssignments[i] = new List<ushort>();
 
-            new System.Threading.Timer(RedrawTiles, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(0.5));
-            ShowDialog();
+            using (new System.Threading.Timer(RedrawTiles, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(0.5)))
+                ShowDialog();
             return Result;
         }
 
@@ -43,13 +42,12 @@ namespace MLLE
         private void RedrawTiles(object state)
         {
             var image = smartPicture.Image;
-
             using (Graphics graphics = Graphics.FromImage(image))
                 for (int i = 0; i < TileAssignments.Length; ++i) {
-                    ushort[] assignment = TileAssignments[i];
-                    if (assignment.Length > 0)
+                    var assignment = TileAssignments[i];
+                    if (assignment.Count > 0)
                     {
-                        graphics.DrawImage(tilesetPicture.Image, RectangleFromTileID(i), RectangleFromTileID(assignment[elapsed % assignment.Length]), GraphicsUnit.Pixel);
+                        graphics.DrawImage(tilesetPicture.Image, RectangleFromTileID(i), RectangleFromTileID(assignment[elapsed % assignment.Count]), GraphicsUnit.Pixel);
                     }
                 }
             smartPicture.Image = image;
@@ -127,11 +125,38 @@ namespace MLLE
 
         private void tilesetPicture_MouseClick(object sender, MouseEventArgs e)
         {
+            if (CurrentSmartTileID >= 0 && CurrentSmartTileID < TileAssignments.Length)
+            {
+                ushort newTileID = (ushort)GetMouseTileIDFromTileset(e);
+                if (e.Button == MouseButtons.Left)
+                    TileAssignments[CurrentSmartTileID].Add(newTileID);
+                else if (e.Button == MouseButtons.Right)
+                {
+                    if (!TileAssignments[CurrentSmartTileID].Remove(newTileID))
+                        return;
+                }
+                else
+                    return;
+                elapsed = TileAssignments[CurrentSmartTileID].Count - 1;
+                RedrawTiles(null);
+            }
         }
 
-        private void smartPicture_Click(object sender, EventArgs e)
+        int CurrentSmartTileID = -1;
+        private void smartPicture_MouseClick(object sender, MouseEventArgs e)
         {
-
+            HighlightPanel.Visible = true;
+            HighlightPanel.Location = new Point((e.X & ~31) + 11, (e.Y & ~31) + 11); //11 is half of (32-10), and the highlight is 10x10
+            CurrentSmartTileID = e.X / 32 + e.Y / 32 * 10;
+            if (e.Button == MouseButtons.Right)
+            {
+                TileAssignments[CurrentSmartTileID].Clear();
+                var image = smartPicture.Image;
+                var rectangle = RectangleFromTileID(CurrentSmartTileID);
+                using (Graphics graphics = Graphics.FromImage(image))
+                    graphics.DrawImage(Properties.Resources.SmartTilesPermutations, rectangle, rectangle, GraphicsUnit.Pixel);
+                smartPicture.Image = image;
+            }
         }
     }
 }
