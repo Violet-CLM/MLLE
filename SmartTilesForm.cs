@@ -38,16 +38,20 @@ namespace MLLE
         }
         private void RedrawTiles(object state)
         {
-            var image = smartPicture.Image;
-            using (Graphics graphics = Graphics.FromImage(image))
-                for (int i = 0; i < WorkingSmartTile.TileAssignments.Length; ++i) {
-                    var assignment = WorkingSmartTile.TileAssignments[i];
-                    if (assignment.Count > 0)
+            lock (smartPicture)
+            {
+                var image = smartPicture.Image;
+                using (Graphics graphics = Graphics.FromImage(image))
+                    for (int i = 0; i < WorkingSmartTile.TileAssignments.Length; ++i)
                     {
-                        graphics.DrawImage(tilesetPicture.Image, RectangleFromTileID(i), RectangleFromTileID(assignment[elapsed % assignment.Count]), GraphicsUnit.Pixel);
+                        var assignment = WorkingSmartTile.TileAssignments[i];
+                        if (assignment.Count > 0)
+                            lock (tilesetPicture) {
+                                graphics.DrawImage(tilesetPicture.Image, RectangleFromTileID(i), RectangleFromTileID(assignment[elapsed % assignment.Count]), GraphicsUnit.Pixel);
+                            }
                     }
-                }
-            smartPicture.Image = image;
+                smartPicture.Image = image;
+            }
 
             ++elapsed;
         }
@@ -184,20 +188,26 @@ namespace MLLE
                 framesPicture.Height = frames.Count * 32;
                 if (frames.Count > 0)
                 {
-                    framesPicture.Image = new Bitmap(32, framesPicture.Height);
-                    var image = framesPicture.Image;
-                    using (Graphics graphics = Graphics.FromImage(image))
-                        for (int i = 0; i < frames.Count; ++i)
-                            graphics.DrawImage(tilesetPicture.Image, new Rectangle(0, i * 32, 32, 32), RectangleFromTileID(frames[i]), GraphicsUnit.Pixel);
-                    framesPicture.Image = image;
+                    lock (tilesetPicture)
+                    {
+                        framesPicture.Image = new Bitmap(32, framesPicture.Height);
+                        var image = framesPicture.Image;
+                        using (Graphics graphics = Graphics.FromImage(image))
+                            for (int i = 0; i < frames.Count; ++i)
+                                graphics.DrawImage(tilesetPicture.Image, new Rectangle(0, i * 32, 32, 32), RectangleFromTileID(frames[i]), GraphicsUnit.Pixel);
+                        framesPicture.Image = image;
+                    }
                 }
                 else
                 {
-                    var image = smartPicture.Image;
-                    var rectangle = RectangleFromTileID(CurrentSmartTileID);
-                    using (Graphics graphics = Graphics.FromImage(image))
-                        graphics.DrawImage(Properties.Resources.SmartTilesPermutations, rectangle, rectangle, GraphicsUnit.Pixel);
-                    smartPicture.Image = image;
+                    lock (smartPicture)
+                    {
+                        var image = smartPicture.Image;
+                        var rectangle = RectangleFromTileID(CurrentSmartTileID);
+                        using (Graphics graphics = Graphics.FromImage(image))
+                            graphics.DrawImage(Properties.Resources.SmartTilesPermutations, rectangle, rectangle, GraphicsUnit.Pixel);
+                        smartPicture.Image = image;
+                    }
                 }
             }
             else framesPicture.Height = 0;
