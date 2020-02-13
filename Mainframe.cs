@@ -3149,7 +3149,7 @@ namespace MLLE
             for (var i = 0; i < SmartTiles.Count; ++i) {
                 var localI = i; //for closure in the lambda
                 var smartTile = SmartTiles[localI];
-                var toolStripItem = new ToolStripMenuItem(smartTile.ToString());
+                var toolStripItem = new ToolStripMenuItem(smartTile.Name);
                 toolStripItem.Click += (s, ee) => {
                     var workingSmartTile = new SmartTile(smartTile);
                     if (new SmartTilesForm().ShowForm(workingSmartTile, J2L.Tilesets[0]))

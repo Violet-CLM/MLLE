@@ -32,7 +32,19 @@ namespace MLLE
             AllPossibleTiles.Clear();
             foreach (var assignment in TileAssignments)
                 AllPossibleTiles.UnionWith(assignment);
-            PreviewTileID = 1; //todo
+
+            List<ushort> previewTileSource = TileAssignments[1];
+            if (previewTileSource.Count == 0)
+            {
+                previewTileSource = TileAssignments[11];
+                if (previewTileSource.Count == 0)
+                {
+                    previewTileSource = TileAssignments[14];
+                    if (previewTileSource.Count == 0)
+                        previewTileSource = TileAssignments[47];
+                }
+            }
+            PreviewTileID = previewTileSource[Rand.Next(previewTileSource.Count)];
         }
         /*class Rule
         {
@@ -259,7 +271,7 @@ namespace MLLE
         Random Rand = new Random();
         public bool Apply(ref ushort result, ArrayMap<ushort> localTiles, bool directAction)
         {
-            if (directAction || AllPossibleTiles.Contains(result)) //otherwise this is outside the scope of this smart tile and should be left alone
+            if (directAction || (!TileAssignments[35/*"extra"*/].Contains(result) && AllPossibleTiles.Contains(result))) //otherwise this is outside the scope of this smart tile and should be left alone
             {
                 ArrayMap<bool?> LocalTilesAreRelated = new ArrayMap<bool?>(5,5);
                 Func<int, int, bool> getRelatedness = (x, y) =>

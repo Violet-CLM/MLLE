@@ -24,6 +24,7 @@ namespace MLLE
         {
             Tileset = tileset;
             WorkingSmartTile = workingSmartTile;
+            textBox1.Text = WorkingSmartTile.Name;
             CreateImageFromTileset();
 
             using (new System.Threading.Timer(RedrawTiles, null, TimeSpan.FromSeconds(0), TimeSpan.FromSeconds(0.5)))
@@ -87,7 +88,19 @@ namespace MLLE
         
         private void OKButton_Click(object sender, EventArgs e)
         {
-            Result = true;
+            if (
+                WorkingSmartTile.TileAssignments[11].Count > 0 ||
+                WorkingSmartTile.TileAssignments[14].Count > 0 ||
+                WorkingSmartTile.TileAssignments[47].Count > 0
+            )
+            {
+                Result = true;
+                WorkingSmartTile.Name = textBox1.Text;
+            } else {
+                if (MessageBox.Show("To define a Smart Tile you must pick at least one tile for at least one of the following default permutation IDs: 11, 14, or 47.", "Insufficient Definition", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error) == DialogResult.Retry)
+                    return;
+                //else fall through:
+            }
             Dispose();
         }
 
@@ -114,7 +127,10 @@ namespace MLLE
         {
             Text = "Define Smart Tiles \u2013 " + GetMouseTileIDFromTileset(e);
         }
-
+        private void smartPicture_MouseMove(object sender, MouseEventArgs e)
+        {
+            Text = "Define Smart Tiles \u2013 " + (e.X / 32 + e.Y / 32 * 10);
+        }
         private void tilesetPicture_MouseLeave(object sender, EventArgs e)
         {
             Text = "Define Smart Tiles";

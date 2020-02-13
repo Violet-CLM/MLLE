@@ -39,6 +39,9 @@
             this.HighlightPanel = new System.Windows.Forms.Panel();
             this.panel3 = new System.Windows.Forms.Panel();
             this.framesPicture = new System.Windows.Forms.PictureBox();
+            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.tilesetPicture)).BeginInit();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.smartPicture)).BeginInit();
@@ -102,6 +105,8 @@
             this.smartPicture.TabStop = false;
             this.toolTip1.SetToolTip(this.smartPicture, "Left or right click to set this as the first or last imported tile.");
             this.smartPicture.MouseClick += new System.Windows.Forms.MouseEventHandler(this.smartPicture_MouseClick);
+            this.smartPicture.MouseLeave += new System.EventHandler(this.tilesetPicture_MouseLeave);
+            this.smartPicture.MouseMove += new System.Windows.Forms.MouseEventHandler(this.smartPicture_MouseMove);
             // 
             // panel2
             // 
@@ -144,13 +149,41 @@
             this.toolTip1.SetToolTip(this.framesPicture, "Preview frames");
             this.framesPicture.MouseClick += new System.Windows.Forms.MouseEventHandler(this.framesPicture_MouseClick);
             // 
+            // textBox1
+            // 
+            this.textBox1.Location = new System.Drawing.Point(508, 338);
+            this.textBox1.Name = "textBox1";
+            this.textBox1.Size = new System.Drawing.Size(254, 20);
+            this.textBox1.TabIndex = 6;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(464, 341);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(38, 13);
+            this.label1.TabIndex = 7;
+            this.label1.Text = "Name:";
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(12, 341);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(37, 13);
+            this.label2.TabIndex = 8;
+            this.label2.Text = "Rules:";
+            // 
             // SmartTilesForm
             // 
             this.AcceptButton = this.OKButton;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
-            this.ClientSize = new System.Drawing.Size(793, 339);
+            this.ClientSize = new System.Drawing.Size(793, 364);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.textBox1);
             this.Controls.Add(this.panel3);
             this.Controls.Add(this.panel2);
             this.Controls.Add(this.ButtonCancel);
@@ -169,6 +202,7 @@
             this.panel3.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.framesPicture)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -184,5 +218,8 @@
         private System.Windows.Forms.Panel HighlightPanel;
         private System.Windows.Forms.Panel panel3;
         private System.Windows.Forms.PictureBox framesPicture;
+        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label label2;
     }
 }
