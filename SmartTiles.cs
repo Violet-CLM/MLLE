@@ -460,7 +460,7 @@ namespace MLLE
     partial class Mainframe
     {
         List<SmartTile> SmartTiles = new List<SmartTile>();
-        private bool CheckForSmartTileFile()
+        private bool LoadSmartTiles()
         {
             SmartTiles.Clear();
             if (!J2L.HasTiles)
@@ -469,7 +469,44 @@ namespace MLLE
             if (!File.Exists(filepath)) //check in JJ2 folder
                 if (!File.Exists(filepath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Path.GetFileName(filepath)))) //check in MLLE folder
                     return false;
-            return false;// SmartTile.DefineSmartTiles(filepath, out SmartTiles);
+
+            bool success = true;
+            using (BinaryReader reader = new BinaryReader(File.Open(filepath, FileMode.Open), J2File.FileEncoding))
+            {
+                if (reader.ReadUInt16() > 0) {
+                    System.Windows.Forms.MessageBox.Show("The file \"" + filepath + "\" was not saved in a format that this version of MLLE understands. Please make sure you have the latest MLLE release.", "Incompatible File Version", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+                    success = false;
+                } else {
+                    for (int numberOfSmartTiles = reader.ReadByte(); numberOfSmartTiles > 0; --numberOfSmartTiles)
+                    {
+                        SmartTile newSmartTile = new SmartTile();
+                        newSmartTile.Name = reader.ReadString();
+                        foreach (List<ushort> assignment in newSmartTile.TileAssignments)
+                            for (int numberOfTileIDs = reader.ReadByte(); numberOfTileIDs > 0; --numberOfTileIDs)
+                                assignment.Add(reader.ReadUInt16());
+                        newSmartTile.UpdateAllPossibleTiles();
+                        SmartTiles.Add(newSmartTile);
+                    }
+                }
+            }
+            return success;
+        }
+        private void SaveSmartTiles()
+        {
+            using (BinaryWriter writer = new BinaryWriter(File.Open(Path.ChangeExtension(J2L.Tilesets[0].FullFilePath, ".MLLESet"), FileMode.Create), J2File.FileEncoding)) {
+                writer.Write((ushort)0); //version
+                writer.Write((byte)SmartTiles.Count);
+                foreach (SmartTile smartTile in SmartTiles)
+                {
+                    writer.Write(smartTile.Name);
+                    foreach (List<ushort> assignment in smartTile.TileAssignments) //constant length (100), don't need to preface this with anything
+                    {
+                        writer.Write((byte)assignment.Count);
+                        foreach (ushort tileID in assignment)
+                            writer.Write(tileID);
+                    }
+                }
+            }
         }
     }
 }

@@ -1248,7 +1248,7 @@ namespace MLLE
                 _suspendEvent.Set();
             }
             else RedrawTilesetHowManyTimes = 2;
-            CheckForSmartTileFile();
+            LoadSmartTiles();
             SafeToDisplay = true;
             ResizeDisplay();
         }
@@ -1417,7 +1417,7 @@ namespace MLLE
                 MakeProposedScrollbarValueWork(LDScrollH, J2L.JCSHorizontalFocus);
                 MakeProposedScrollbarValueWork(LDScrollV, J2L.JCSVerticalFocus);
                 IdentifyTileset();
-                CheckForSmartTileFile();
+                LoadSmartTiles();
                 if (playMusicToolStripMenuItem.Checked) PlayMusic();
                 GameTick = 0; GameTime = 0; sw.Restart();
             }
@@ -3140,6 +3140,7 @@ namespace MLLE
             {
                 SmartTiles.Add(workingSmartTile);
                 workingSmartTile.UpdateAllPossibleTiles();
+                SaveSmartTiles();
             }
             _suspendEvent.Set();
         }
@@ -3156,6 +3157,7 @@ namespace MLLE
                     {
                         SmartTiles[localI] = workingSmartTile;
                         workingSmartTile.UpdateAllPossibleTiles();
+                        SaveSmartTiles();
                     }
                 };
                 defineSmartTilesToolStripMenuItem.DropDownItems.Add(toolStripItem);
