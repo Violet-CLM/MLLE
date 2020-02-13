@@ -3139,6 +3139,7 @@ namespace MLLE
             if (new SmartTilesForm().ShowForm(workingSmartTile, J2L.Tilesets[0]))
             {
                 SmartTiles.Add(workingSmartTile);
+                workingSmartTile.UpdateAllPossibleTiles();
             }
             _suspendEvent.Set();
         }
@@ -3152,7 +3153,10 @@ namespace MLLE
                 toolStripItem.Click += (s, ee) => {
                     var workingSmartTile = new SmartTile(smartTile);
                     if (new SmartTilesForm().ShowForm(workingSmartTile, J2L.Tilesets[0]))
+                    {
                         SmartTiles[localI] = workingSmartTile;
+                        workingSmartTile.UpdateAllPossibleTiles();
+                    }
                 };
                 defineSmartTilesToolStripMenuItem.DropDownItems.Add(toolStripItem);
             }

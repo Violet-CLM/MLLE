@@ -27,6 +27,13 @@ namespace MLLE
             Name = other.Name;
             AllPossibleTiles.UnionWith(other.AllPossibleTiles);
         }
+        internal void UpdateAllPossibleTiles()
+        {
+            AllPossibleTiles.Clear();
+            foreach (var assignment in TileAssignments)
+                AllPossibleTiles.UnionWith(assignment);
+            PreviewTileID = 1; //todo
+        }
         /*class Rule
         {
             ushort[] TileIDs;
@@ -140,11 +147,84 @@ namespace MLLE
         {
             if (directAction || AllPossibleTiles.Contains(result)) //otherwise this is outside the scope of this smart tile and should be left alone
             {
-              /* foreach (Rule rule in Rules)
-               {
-                   if (rule.Applies(localTiles, ref result)) //in which case, result's value will change
-                       return true;
-               }*/
+                ArrayMap<bool?> LocalTilesAreRelated = new ArrayMap<bool?>(5,5);
+                Func<int, int, bool> getRelatedness = (x, y) =>
+                {
+                    x += 2;
+                    y += 2;
+                    return LocalTilesAreRelated[x, y] ?? (LocalTilesAreRelated[x, y] = AllPossibleTiles.Contains(localTiles[x, y])).Value;
+                };
+
+                int assignmentID = 47;
+                switch (
+                    (getRelatedness( 0, -1) ? 1 : 0) |
+                    (getRelatedness( 0,  1) ? 2 : 0) |
+                    (getRelatedness(-1,  0) ? 4 : 0) |
+                    (getRelatedness( 1,  0) ? 8 : 0)
+                ) {
+                    case 0:
+                        assignmentID = 47;
+                        break;
+                    case 1: //U
+                        assignmentID = 77;
+                        break;
+                    case 2: //D
+                        assignmentID = 57;
+                        break;
+                    case 3: //UD
+                        assignmentID = 67;
+                        break;
+                    case 4: //L
+                        assignmentID = 32;
+                        break;
+                    case 5: //LU
+                        assignmentID = 25; //todo
+                        break;
+                    case 6: //LD
+                        assignmentID = 5; //todo
+                        break;
+                    case 7: //LUD
+                        assignmentID = 15; //todo
+                        break;
+                    case 8: //R
+                        assignmentID = 30;
+                        break;
+                    case 9: //RU
+                        assignmentID = 23; //todo
+                        break;
+                    case 10: //RD
+                        assignmentID = 3; //todo
+                        break;
+                    case 11: //RUD
+                        assignmentID = 13; //todo
+                        break;
+                    case 12: //LR
+                        assignmentID = 31;
+                        break;
+                    case 13: //LRU
+                        assignmentID = 24; //todo
+                        break;
+                    case 14: //LRD
+                        assignmentID = 4; //todo
+                        break;
+                    case 15: //LRUD
+                        assignmentID = 14; //todo
+                        break;
+                }
+
+                var assignment = TileAssignments[assignmentID];
+                if (assignment.Count == 0)
+                    assignment = TileAssignments[47]; //todo
+                if (assignment.Count == 1) //simpler case
+                {
+                    result = assignment[0];
+                    return true;
+                }
+                if (assignment.Count > 1)
+                {
+                    result = assignment[new Random().Next() % assignment.Count];
+                    return true;
+                }
             }
             return false;
         }
