@@ -75,13 +75,14 @@ namespace MLLE
 
             var palette = image.Palette;
             var entries = palette.Entries;
-            for (uint i = 0; i < Palette.PaletteSize; ++i)
+            entries[0] = TexturedJ2L.TranspColor;
+            for (uint i = 1; i < Palette.PaletteSize; ++i)
                 entries[i] = Palette.Convert(Tileset.Palette.Colors[i]);
             image.Palette = palette;
 
             tilesetPicture.Image = image;
-
             smartPicture.Image = Properties.Resources.SmartTilesPermutations;
+            framesPicture.Image = new Bitmap(32, 32);
         }
         
         private void OKButton_Click(object sender, EventArgs e)
@@ -136,6 +137,7 @@ namespace MLLE
                     return;
                 elapsed = assignment.Count - 1;
                 RedrawTiles(null);
+                UpdateFramesPreview();
             }
         }
 
@@ -145,14 +147,52 @@ namespace MLLE
             HighlightPanel.Visible = true;
             HighlightPanel.Location = new Point((e.X & ~31) + 11, (e.Y & ~31) + 11); //11 is half of (32-10), and the highlight is 10x10
             CurrentSmartTileID = e.X / 32 + e.Y / 32 * 10;
+
             if (e.Button == MouseButtons.Right)
             {
                 WorkingSmartTile.TileAssignments[CurrentSmartTileID].Clear();
-                var image = smartPicture.Image;
-                var rectangle = RectangleFromTileID(CurrentSmartTileID);
-                using (Graphics graphics = Graphics.FromImage(image))
-                    graphics.DrawImage(Properties.Resources.SmartTilesPermutations, rectangle, rectangle, GraphicsUnit.Pixel);
-                smartPicture.Image = image;
+            }
+
+            UpdateFramesPreview();
+        }
+
+        void UpdateFramesPreview()
+        {
+            if (CurrentSmartTileID >= 0 && CurrentSmartTileID < WorkingSmartTile.TileAssignments.Length)
+            {
+                var frames = WorkingSmartTile.TileAssignments[CurrentSmartTileID];
+                framesPicture.Height = frames.Count * 32;
+                if (frames.Count > 0)
+                {
+                    framesPicture.Image = new Bitmap(32, framesPicture.Height);
+                    var image = framesPicture.Image;
+                    using (Graphics graphics = Graphics.FromImage(image))
+                        for (int i = 0; i < frames.Count; ++i)
+                            graphics.DrawImage(tilesetPicture.Image, new Rectangle(0, i * 32, 32, 32), RectangleFromTileID(frames[i]), GraphicsUnit.Pixel);
+                    framesPicture.Image = image;
+                }
+                else
+                {
+                    var image = smartPicture.Image;
+                    var rectangle = RectangleFromTileID(CurrentSmartTileID);
+                    using (Graphics graphics = Graphics.FromImage(image))
+                        graphics.DrawImage(Properties.Resources.SmartTilesPermutations, rectangle, rectangle, GraphicsUnit.Pixel);
+                    smartPicture.Image = image;
+                }
+            }
+            else framesPicture.Height = 0;
+        }
+
+        private void framesPicture_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Right)
+            {
+                var y = e.Y - framesPicture.AutoScrollOffset.Y;
+                if (y < framesPicture.Height) //just to be safe
+                {
+                    WorkingSmartTile.TileAssignments[CurrentSmartTileID].RemoveAt(y / 32);
+                    UpdateFramesPreview();
+                }
             }
         }
     }
