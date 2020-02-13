@@ -144,16 +144,20 @@ namespace MLLE
         int CurrentSmartTileID = -1;
         private void smartPicture_MouseClick(object sender, MouseEventArgs e)
         {
-            HighlightPanel.Visible = true;
-            HighlightPanel.Location = new Point((e.X & ~31) + 11, (e.Y & ~31) + 11); //11 is half of (32-10), and the highlight is 10x10
-            CurrentSmartTileID = e.X / 32 + e.Y / 32 * 10;
-
-            if (e.Button == MouseButtons.Right)
+            int newSmartTileID = e.X / 32 + e.Y / 32 * 10;
+            if (SmartTile.AlternativeAssignments[newSmartTileID] != null) //not an empty space in the image
             {
-                WorkingSmartTile.TileAssignments[CurrentSmartTileID].Clear();
-            }
+                HighlightPanel.Visible = true;
+                HighlightPanel.Location = new Point((e.X & ~31) + 11, (e.Y & ~31) + 11); //11 is half of (32-10), and the highlight is 10x10
+                CurrentSmartTileID = newSmartTileID;
 
-            UpdateFramesPreview();
+                if (e.Button == MouseButtons.Right)
+                {
+                    WorkingSmartTile.TileAssignments[CurrentSmartTileID].Clear();
+                }
+
+                UpdateFramesPreview();
+            }
         }
 
         void UpdateFramesPreview()

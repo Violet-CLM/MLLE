@@ -143,6 +143,120 @@ namespace MLLE
             smartTiles = result.ToArray();
             return true;
         }*/
+
+        static readonly internal ushort[][] AlternativeAssignments = new ushort[100][]{
+            new ushort[] {1, 3, 10},
+            new ushort[] {4, 11},
+            new ushort[] {1, 5, 12},
+            new ushort[] {0, 14},
+            new ushort[] {1, 14},
+            new ushort[] {2, 14},
+            new ushort[] {43, 11},
+            new ushort[] {42, 11},
+            new ushort[] {1},
+            new ushort[] {1},
+
+            new ushort[] {13, 11},
+            new ushort[] {14, 47},
+            new ushort[] {15, 11},
+            new ushort[] {10, 14},
+            new ushort[] {47, 11},
+            new ushort[] {12, 14},
+            new ushort[] {51, 11},
+            new ushort[] {50, 11},
+            new ushort[] {21},
+            new ushort[] {21},
+
+            new ushort[] {21, 23, 10},
+            new ushort[] {24, 11},
+            new ushort[] {21, 25, 12},
+            new ushort[] {20, 14},
+            new ushort[] {21, 14},
+            new ushort[] {22, 14},
+            new ushort[] {10},
+            new ushort[] {12},
+            new ushort[] {9, 36, 11},
+            new ushort[] {8, 37, 11},
+
+            new ushort[] {31, 0, 10, 47},
+            new ushort[] {1, 11},
+            new ushort[] {31, 2, 12, 47},
+            null,
+            null,
+            new ushort[] {47}, //"extra"
+            new ushort[] {10},
+            new ushort[] {12},
+            new ushort[] {19, 26, 11},
+            new ushort[] {18, 27, 11},
+
+            new ushort[] {0},
+            new ushort[] {2},
+            new ushort[] {7},
+            new ushort[] {6},
+            new ushort[] {0},
+            new ushort[] {17},
+            new ushort[] {37},
+            new ushort[] {1, 11, 14},
+            new ushort[] {17},
+            new ushort[] {16},
+
+            new ushort[] {17},
+            new ushort[] {16},
+            new ushort[] {20},
+            new ushort[] {22},
+            new ushort[] {20},
+            new ushort[] {7},
+            new ushort[] {27},
+            new ushort[] {67, 0, 1, 47},
+            new ushort[] {11},
+            new ushort[] {11},
+
+            new ushort[] {19},
+            new ushort[] {18},
+            new ushort[] {9},
+            new ushort[] {8},
+            new ushort[] {16},
+            new ushort[] {2},
+            new ushort[] {36},
+            new ushort[] {10, 47},
+            new ushort[] {17},
+            new ushort[] {16},
+
+            null,
+            null,
+            null,
+            null,
+            new ushort[] {6},
+            new ushort[] {22},
+            new ushort[] {26},
+            new ushort[] {67, 20, 21, 47},
+            null,
+            null,
+            
+            new ushort[] {57},
+            new ushort[] {57},
+            new ushort[] {10},
+            new ushort[] {12},
+            new ushort[] {3},
+            new ushort[] {5},
+            new ushort[] {3},
+            new ushort[] {25},
+            null,
+            null,
+            
+            new ushort[] {37},
+            new ushort[] {36},
+            new ushort[] {20},
+            new ushort[] {22},
+            new ushort[] {25},
+            new ushort[] {23},
+            new ushort[] {23},
+            new ushort[] {5},
+            null,
+            null
+        };
+
+        Random Rand = new Random();
         public bool Apply(ref ushort result, ArrayMap<ushort> localTiles, bool directAction)
         {
             if (directAction || AllPossibleTiles.Contains(result)) //otherwise this is outside the scope of this smart tile and should be left alone
@@ -162,7 +276,7 @@ namespace MLLE
                     (getRelatedness(-1,  0) ? 4 : 0) |
                     (getRelatedness( 1,  0) ? 8 : 0)
                 ) {
-                    case 0:
+                    case 0: //no neighbors at all
                         assignmentID = 47;
                         break;
                     case 1: //U
@@ -178,43 +292,145 @@ namespace MLLE
                         assignmentID = 32;
                         break;
                     case 5: //LU
-                        assignmentID = 25; //todo
+                        assignmentID = getRelatedness(-1,-1) ? 22 : 25;
                         break;
                     case 6: //LD
-                        assignmentID = 5; //todo
+                        assignmentID = getRelatedness(-1, 1) ? 2 : 5;
                         break;
                     case 7: //LUD
-                        assignmentID = 15; //todo
+                        if (getRelatedness(-1, -1)) {
+                            if (getRelatedness(-1, 1))
+                                assignmentID = 12;
+                            else
+                                assignmentID = 27;
+                        } else {
+                            if (getRelatedness(-1, 1))
+                                assignmentID = 37;
+                            else
+                                assignmentID = 15;
+                        }
                         break;
                     case 8: //R
                         assignmentID = 30;
                         break;
                     case 9: //RU
-                        assignmentID = 23; //todo
+                        assignmentID = getRelatedness(1, -1) ? 20 : 23;
                         break;
                     case 10: //RD
-                        assignmentID = 3; //todo
+                        assignmentID = getRelatedness(1, 1) ? 0 : 3;
                         break;
                     case 11: //RUD
-                        assignmentID = 13; //todo
+                        if (getRelatedness(1, -1)) {
+                            if (getRelatedness(-1, 1))
+                                assignmentID = 10;
+                            else
+                                assignmentID = 26;
+                        } else {
+                            if (getRelatedness(1, 1))
+                                assignmentID = 36;
+                            else
+                                assignmentID = 13;
+                        }
                         break;
                     case 12: //LR
                         assignmentID = 31;
                         break;
                     case 13: //LRU
-                        assignmentID = 24; //todo
+                        if (getRelatedness(-1, 1)) {
+                            if (getRelatedness(1, 1))
+                                assignmentID = 21;
+                            else
+                                assignmentID = 18;
+                        } else {
+                            if (getRelatedness(1, 1))
+                                assignmentID = 19;
+                            else
+                                assignmentID = 24;
+                        }
                         break;
                     case 14: //LRD
-                        assignmentID = 4; //todo
+                        if (getRelatedness(-1, 1)) {
+                            if (getRelatedness(1, 1))
+                                assignmentID = 1;
+                            else
+                                assignmentID = 8;
+                        } else {
+                            if (getRelatedness(1, 1))
+                                assignmentID = 9;
+                            else
+                                assignmentID = 4;
+                        }
                         break;
                     case 15: //LRUD
-                        assignmentID = 14; //todo
+                        switch (
+                            (getRelatedness(-1, -1) ? 1 : 0) |
+                            (getRelatedness( 1, -1) ? 2 : 0) |
+                            (getRelatedness( 1,  1) ? 4 : 0) |
+                            (getRelatedness(-1,  1) ? 8 : 0)
+                        ) {
+                            case 0: //no corners at all, full pipe plus
+                                assignmentID = 14;
+                                break;
+                            case 1:
+                                assignmentID = 39;
+                                break;
+                            case 2:
+                                assignmentID = 38;
+                                break;
+                            case 3:
+                                assignmentID = 58;
+                                break;
+                            case 4:
+                                assignmentID = 28;
+                                break;
+                            case 5:
+                                assignmentID = 69;
+                                break;
+                            case 6:
+                                assignmentID = 48;
+                                break;
+                            case 7:
+                                assignmentID = 7;
+                                break;
+                            case 8:
+                                assignmentID = 29;
+                                break;
+                            case 9:
+                                assignmentID = 49;
+                                break;
+                            case 10:
+                                assignmentID = 68;
+                                break;
+                            case 11:
+                                assignmentID = 6;
+                                break;
+                            case 12:
+                                assignmentID = 59;
+                                break;
+                            case 13:
+                                assignmentID = 16;
+                                break;
+                            case 14:
+                                assignmentID = 17;
+                                break;
+                            case 15: //totally surrounded, normal wall tile
+                                assignmentID = 11;
+                                break;
+                        }
                         break;
                 }
 
+                while (TileAssignments[assignmentID].Count == 0)
+                {
+                    ushort[] alternatives = AlternativeAssignments[assignmentID];
+                    int alternativeID = 0;
+                    for (; alternativeID < alternatives.Length - 1; ++alternativeID)
+                        if (TileAssignments[alternatives[alternativeID]].Count != 0)
+                            break;
+                    assignmentID = alternatives[alternativeID];
+                }
+
                 var assignment = TileAssignments[assignmentID];
-                if (assignment.Count == 0)
-                    assignment = TileAssignments[47]; //todo
                 if (assignment.Count == 1) //simpler case
                 {
                     result = assignment[0];
@@ -222,7 +438,7 @@ namespace MLLE
                 }
                 if (assignment.Count > 1)
                 {
-                    result = assignment[new Random().Next() % assignment.Count];
+                    result = assignment[Rand.Next(assignment.Count)];
                     return true;
                 }
             }
