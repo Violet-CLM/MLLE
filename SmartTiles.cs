@@ -186,7 +186,12 @@ namespace MLLE
                         assignmentID = 77;
                         break;
                     case 2: //D
-                        assignmentID = 57;
+                        if (getRelatedness(-1, 1) && !getRelatedness(-1, 1))
+                            assignmentID = 80;
+                        else if (getRelatedness(-1, 1))
+                            assignmentID = 81;
+                        else
+                            assignmentID = 57;
                         break;
                     case 3: //UD
                         assignmentID = 67;
@@ -195,74 +200,66 @@ namespace MLLE
                         assignmentID = 32;
                         break;
                     case 5: //LU
-                        assignmentID = getRelatedness(-1,-1) ? 22 : 25;
+                        if (getRelatedness(1, -1))
+                            assignmentID = getRelatedness(-1,-1) ? 53 : 94;
+                        else if (getRelatedness(-1, 1))
+                            assignmentID = getRelatedness(-1,-1) ? 75 : 87;
+                        else
+                            assignmentID = getRelatedness(-1,-1) ? 22 : 25;
                         break;
                     case 6: //LD
-                        assignmentID = getRelatedness(-1, 1) ? 2 : 5;
+                        if (getRelatedness(1, 1))
+                            assignmentID = getRelatedness(-1, 1) ? 41 : 85;
+                        else if (getRelatedness(-1, -1))
+                            assignmentID = getRelatedness(-1, 1) ? 65 : 97;
+                        else
+                            assignmentID = getRelatedness(-1, 1) ? 2 : 5;
                         break;
                     case 7: //LUD
-                        if (getRelatedness(-1, -1)) {
-                            if (getRelatedness(-1, 1))
-                                assignmentID = 12;
-                            else
-                                assignmentID = 27;
-                        } else {
-                            if (getRelatedness(-1, 1))
-                                assignmentID = 37;
-                            else
-                                assignmentID = 15;
-                        }
+                        if (getRelatedness(-1, -1))
+                            assignmentID = getRelatedness(-1, 1) ? 12 : 27;
+                        else
+                            assignmentID = getRelatedness(-1, 1) ? (getRelatedness(1, -1) || getRelatedness(0, -2) ? 37 : 90) : 15;
                         break;
                     case 8: //R
                         assignmentID = 30;
                         break;
                     case 9: //RU
-                        assignmentID = getRelatedness(1, -1) ? 20 : 23;
+                        if (getRelatedness(-1, -1))
+                            assignmentID = getRelatedness(1, -1) ? 52 : 95;
+                        else if (getRelatedness(1, 1))
+                            assignmentID = getRelatedness(1, -1) ? 54 : 96;
+                        else
+                            assignmentID = getRelatedness(1, -1) ? 20 : 23;
                         break;
                     case 10: //RD
-                        assignmentID = getRelatedness(1, 1) ? 0 : 3;
+                        if (getRelatedness(-1, 1))
+                            assignmentID = getRelatedness(1, 1) ? 40 : 84;
+                        else if (getRelatedness(1, -1))
+                            assignmentID = getRelatedness(1, 1) ? 44 : 86;
+                        else
+                            assignmentID = getRelatedness(1, 1) ? 0 : 3;
                         break;
                     case 11: //RUD
-                        if (getRelatedness(1, -1)) {
-                            if (getRelatedness(1, 1))
-                                assignmentID = 10;
-                            else
-                                assignmentID = 26;
-                        } else {
-                            if (getRelatedness(1, 1))
-                                assignmentID = 36;
-                            else
-                                assignmentID = 13;
-                        }
+                        if (getRelatedness(1, -1))
+                            assignmentID = getRelatedness(1, 1) ? 10 : 26;
+                        else
+                            assignmentID = getRelatedness(1, 1) ? (getRelatedness(-1, -1) || getRelatedness(0, -2) ? 36 : 91) : 13;
                         break;
                     case 12: //LR
                         assignmentID = 31;
                         break;
                     case 13: //LRU
-                        if (getRelatedness(-1, -1)) {
-                            if (getRelatedness(1, -1))
-                                assignmentID = 21;
-                            else
-                                assignmentID = 18;
-                        } else {
-                            if (getRelatedness(1, -1))
-                                assignmentID = 19;
-                            else
-                                assignmentID = 24;
-                        }
+                        if (getRelatedness(-1, -1))
+                            assignmentID = getRelatedness(1, -1) ? 21 : 18;
+                        else
+                            assignmentID = getRelatedness(1, -1) ? 19 : 24;
                         break;
                     case 14: //LRD
-                        if (getRelatedness(-1, 1)) {
-                            if (getRelatedness(1, 1))
-                                assignmentID = 1;
-                            else
-                                assignmentID = 8;
-                        } else {
-                            if (getRelatedness(1, 1))
-                                assignmentID = 9;
-                            else
-                                assignmentID = 4;
-                        }
+                        if (getRelatedness(-1, 1))
+                            assignmentID = getRelatedness(1, 1) ? 1 : 8;
+                        else
+                            assignmentID = getRelatedness(1, 1) ? 9 : 4;
                         break;
                     case 15: //LRUD
                         switch (
@@ -293,7 +290,12 @@ namespace MLLE
                                 assignmentID = 48;
                                 break;
                             case 7:
-                                assignmentID = 7;
+                                if (!getRelatedness(0, 2))
+                                    assignmentID = 42;
+                                else if (!getRelatedness(-2, 0))
+                                    assignmentID = 55;
+                                else
+                                    assignmentID = 7;
                                 break;
                             case 8:
                                 assignmentID = 29;
@@ -305,16 +307,31 @@ namespace MLLE
                                 assignmentID = 68;
                                 break;
                             case 11:
-                                assignmentID = 6;
+                                if (!getRelatedness(0, 2))
+                                    assignmentID = 43;
+                                else if (!getRelatedness(2, 0))
+                                    assignmentID = 74;
+                                else
+                                    assignmentID = 6;
                                 break;
                             case 12:
                                 assignmentID = 59;
                                 break;
                             case 13:
-                                assignmentID = 16;
+                                if (!getRelatedness(0, -2))
+                                    assignmentID = 51;
+                                else if (!getRelatedness(2, 0))
+                                    assignmentID = 64;
+                                else
+                                    assignmentID = 16;
                                 break;
                             case 14:
-                                assignmentID = 17;
+                                if (!getRelatedness(0, -2))
+                                    assignmentID = 50;
+                                else if (!getRelatedness(-2, 0))
+                                    assignmentID = 45;
+                                else
+                                    assignmentID = 17;
                                 break;
                             case 15: //totally surrounded, normal wall tile
                                 assignmentID = 11;
