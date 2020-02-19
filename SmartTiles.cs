@@ -12,7 +12,20 @@ namespace MLLE
         internal List<ushort>[] TileAssignments = new List<ushort>[100];
         internal ushort PreviewTileID;
         internal string Name = "Smart Tile";
-        internal HashSet<ushort> AllPossibleTiles = new HashSet<ushort>();
+        private class ushortComparer : IEqualityComparer<ushort>
+        {
+            public bool Equals(ushort x, ushort y)
+            {
+                return (x & 0xFFF) == (y & 0xFFF);
+            }
+
+            public int GetHashCode(ushort obj)
+            {
+                return EqualityComparer<ushort>.Default.GetHashCode(obj);
+            }
+        }
+        static readonly ushortComparer UShortComparer = new ushortComparer();
+        internal HashSet<ushort> AllPossibleTiles = new HashSet<ushort>(UShortComparer);
 
         internal SmartTile()
         {
@@ -162,14 +175,14 @@ namespace MLLE
         Random Rand = new Random();
         public bool Apply(ref ushort result, ArrayMap<ushort> localTiles, bool directAction)
         {
-            if (directAction || (!TileAssignments[35/*"extra"*/].Contains(result) && AllPossibleTiles.Contains(result))) //otherwise this is outside the scope of this smart tile and should be left alone
+            if (directAction || (!TileAssignments[35/*"extra"*/].Contains(result) && AllPossibleTiles.Contains(result, AllPossibleTiles.Comparer))) //otherwise this is outside the scope of this smart tile and should be left alone
             {
                 ArrayMap<bool?> LocalTilesAreRelated = new ArrayMap<bool?>(5,5);
                 Func<int, int, bool> getRelatedness = (x, y) =>
                 {
                     x += 2;
                     y += 2;
-                    return LocalTilesAreRelated[x, y] ?? (LocalTilesAreRelated[x, y] = AllPossibleTiles.Contains(localTiles[x, y])).Value;
+                    return LocalTilesAreRelated[x, y] ?? (LocalTilesAreRelated[x, y] = AllPossibleTiles.Contains(localTiles[x, y], AllPossibleTiles.Comparer)).Value;
                 };
 
                 int assignmentID = 47;
@@ -186,9 +199,9 @@ namespace MLLE
                         assignmentID = 77;
                         break;
                     case 2: //D
-                        if (getRelatedness(-1, 1) && !getRelatedness(-1, 1))
+                        if (getRelatedness(-1, 1) && !getRelatedness(1, 1))
                             assignmentID = 80;
-                        else if (getRelatedness(-1, 1))
+                        else if (getRelatedness(1, 1))
                             assignmentID = 81;
                         else
                             assignmentID = 57;
