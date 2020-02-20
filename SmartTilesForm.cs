@@ -16,6 +16,7 @@ namespace MLLE
         J2TFile Tileset;
         bool Result = false;
         SmartTile WorkingSmartTile;
+        ushort AndValue;
         public SmartTilesForm()
         {
             InitializeComponent();
@@ -24,6 +25,7 @@ namespace MLLE
         {
             Tileset = tileset;
             WorkingSmartTile = workingSmartTile;
+            AndValue = ((SmartTile.ushortComparer)WorkingSmartTile.AllPossibleTiles.Comparer).AndValue;
             textBox1.Text = WorkingSmartTile.Name;
             CreateImageFromTileset();
 
@@ -152,14 +154,14 @@ namespace MLLE
                 if (e.Button == MouseButtons.Left)
                 {
                     if ((GetKeyState((int)Keys.F) & 0x8000) != 0)
-                        newTileID |= 0x1000; //regardless of level version
+                        newTileID |= (ushort)(AndValue + 1);
                     if ((GetKeyState((int)Keys.I) & 0x8000) != 0)
                         newTileID |= 0x2000;
                     assignment.Add(newTileID);
                 }
                 else if (e.Button == MouseButtons.Right)
                 {
-                    if (assignment.RemoveAll(potentialTileIDToRemove => (potentialTileIDToRemove & 0xFFF) == (newTileID & 0xFFF)) == 0)
+                    if (assignment.RemoveAll(potentialTileIDToRemove => (potentialTileIDToRemove & AndValue) == (newTileID & AndValue)) == 0)
                         return;
                 }
                 else
@@ -193,7 +195,10 @@ namespace MLLE
         static readonly Rectangle RectangleAtOrigin = new Rectangle(0, 0, 32, 32);
         void DrawTilesetTileAt(Graphics graphics, Point dest, int tileID)
         {
-            switch ((tileID >> 12) & 3) {
+            int flipFlags = (tileID >> 12) & 3;
+            if (AndValue == (1024 - 1) && ((tileID & 1024) == 1024))
+                flipFlags |= 1;
+            switch (flipFlags) {
                 case 0:
                     graphics.TranslateTransform(dest.X, dest.Y);
                     break;
@@ -210,7 +215,7 @@ namespace MLLE
                     graphics.ScaleTransform(-1, -1);
                     break;
             }
-            graphics.DrawImage(tilesetPicture.Image, RectangleAtOrigin, new Rectangle(PointFromTileID(tileID & 0xFFF), TileSize), GraphicsUnit.Pixel);
+            graphics.DrawImage(tilesetPicture.Image, RectangleAtOrigin, new Rectangle(PointFromTileID(tileID & AndValue), TileSize), GraphicsUnit.Pixel);
             graphics.ResetTransform();
         }
 

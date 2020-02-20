@@ -1283,6 +1283,7 @@ namespace MLLE
                     case VersionChangeResults.Success:
                         CheckCurrentVersion();
                         ProcessIni(nuversion);
+                        LoadSmartTiles();
                         if (nuversion == Version.AGA || aldversion == Version.AGA)
                         {
                             Undoable.Clear();

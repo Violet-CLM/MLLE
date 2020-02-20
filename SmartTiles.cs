@@ -12,11 +12,13 @@ namespace MLLE
         internal List<ushort>[] TileAssignments = new List<ushort>[100];
         internal ushort PreviewTileID;
         internal string Name = "Smart Tile";
-        private class ushortComparer : IEqualityComparer<ushort>
+        internal class ushortComparer : IEqualityComparer<ushort>
         {
+            public ushort AndValue;
+            public ushortComparer(ushort andValue) { AndValue = andValue; }
             public bool Equals(ushort x, ushort y)
             {
-                return (x & 0xFFF) == (y & 0xFFF);
+                return (x & AndValue) == (y & AndValue);
             }
 
             public int GetHashCode(ushort obj)
@@ -24,8 +26,7 @@ namespace MLLE
                 return EqualityComparer<ushort>.Default.GetHashCode(obj);
             }
         }
-        static readonly ushortComparer UShortComparer = new ushortComparer();
-        internal HashSet<ushort> AllPossibleTiles = new HashSet<ushort>(UShortComparer);
+        internal HashSet<ushort> AllPossibleTiles;
 
         internal SmartTile()
         {
@@ -38,7 +39,22 @@ namespace MLLE
                 TileAssignments[i] = new List<ushort>(other.TileAssignments[i]);
             PreviewTileID = other.PreviewTileID;
             Name = other.Name;
+            AllPossibleTiles = new HashSet<ushort>(other.AllPossibleTiles.Comparer);
             AllPossibleTiles.UnionWith(other.AllPossibleTiles);
+        }
+        internal SmartTile(bool maxTiles4096, ushort fileVersion, BinaryReader reader) : this()
+        {
+            Name = reader.ReadString();
+            foreach (List<ushort> assignment in TileAssignments)
+                for (int numberOfTileIDs = reader.ReadByte(); numberOfTileIDs > 0; --numberOfTileIDs)
+                {
+                    ushort tileID = reader.ReadUInt16();
+                    if (!maxTiles4096 && (tileID & 0x1000) != 0) //hflip
+                        tileID ^= 0x1400;
+                    assignment.Add(tileID);
+                }
+            AllPossibleTiles = new HashSet<ushort>(new ushortComparer((ushort)((maxTiles4096 ? 4096 : 1024) - 1)));
+            UpdateAllPossibleTiles();
         }
         internal void UpdateAllPossibleTiles()
         {
@@ -365,15 +381,12 @@ namespace MLLE
 
                 var assignment = TileAssignments[assignmentID];
                 if (assignment.Count == 1) //simpler case
-                {
                     result = assignment[0];
-                    return true;
-                }
-                if (assignment.Count > 1)
-                {
+                else if (assignment.Count > 1)
                     result = assignment[Rand.Next(assignment.Count)];
-                    return true;
-                }
+                else
+                    return false;
+                return true;
             }
             return false;
         }
@@ -394,20 +407,13 @@ namespace MLLE
             bool success = true;
             using (BinaryReader reader = new BinaryReader(File.Open(filepath, FileMode.Open), J2File.FileEncoding))
             {
-                if (reader.ReadUInt16() > 0) {
+                ushort version = reader.ReadUInt16();
+                if (version > 0) {
                     System.Windows.Forms.MessageBox.Show("The file \"" + filepath + "\" was not saved in a format that this version of MLLE understands. Please make sure you have the latest MLLE release.", "Incompatible File Version", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
                     success = false;
                 } else {
                     for (int numberOfSmartTiles = reader.ReadByte(); numberOfSmartTiles > 0; --numberOfSmartTiles)
-                    {
-                        SmartTile newSmartTile = new SmartTile();
-                        newSmartTile.Name = reader.ReadString();
-                        foreach (List<ushort> assignment in newSmartTile.TileAssignments)
-                            for (int numberOfTileIDs = reader.ReadByte(); numberOfTileIDs > 0; --numberOfTileIDs)
-                                assignment.Add(reader.ReadUInt16());
-                        newSmartTile.UpdateAllPossibleTiles();
-                        SmartTiles.Add(newSmartTile);
-                    }
+                        SmartTiles.Add(new SmartTile(J2L.MaxTiles == 4096, version, reader));
                 }
             }
             return success;
