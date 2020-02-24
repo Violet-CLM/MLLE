@@ -187,6 +187,45 @@ namespace MLLE
             null,
             null
         };
+        static readonly internal int[,] AssignmentPairings = new int[37,2]{
+            {0,2},
+            {3,5},
+            {6,7},
+            {8,9},
+            {10,12},
+            {13,15},
+            {16,17},
+            {18,19},
+            {20,22},
+            {23,25},
+            {26,27},
+            {28,29},
+            {30,32},
+            {36,37},
+            {38,39},
+            {40,41},
+            {42,43},
+            {44,65},
+            {45,64},
+            {46,66},
+            {47,49},
+            {50,51},
+            {52,53},
+            {54,75},
+            {55,74},
+            {56,76},
+            {60,61},
+            {62,63},
+            {68,69},
+            {80,81},
+            {82,83},
+            {84,85},
+            {86,97},
+            {87,96},
+            {90,91},
+            {92,93},
+            {94,95}
+        };
 
         Random Rand = new Random();
         public bool Apply(ref ushort result, ArrayMap<ushort> localTiles, bool directAction)
@@ -390,6 +429,24 @@ namespace MLLE
             }
             return false;
         }
+
+        internal bool SmartFlipTile(ref ushort tileID)
+        {
+            for (int i = 0; i < 37; ++i)
+                for (int j = 0; j < 2; ++j)
+                    if (TileAssignments[AssignmentPairings[i, j]].Contains(tileID))
+                    {
+                        List<ushort> flippedAssignment = TileAssignments[AssignmentPairings[i, j ^ 1]];
+                        if (flippedAssignment.Count > 0)
+                        {
+                            tileID = flippedAssignment[Rand.Next(flippedAssignment.Count)];
+                            return true;
+                        }
+                    }
+            if (AllPossibleTiles.Contains(tileID)) //in a symmetrical assignment
+                return true; //but don't alter
+            return false;
+        }
     }
     partial class Mainframe
     {
@@ -434,6 +491,13 @@ namespace MLLE
                     }
                 }
             }
+        }
+        private void SmartFlipTile(ref ushort tileID)
+        {
+            foreach (SmartTile smartTile in SmartTiles)
+                if (smartTile.SmartFlipTile(ref tileID))
+                    return;
+            tileID ^= (ushort)J2L.MaxTiles; //if it can't be found
         }
     }
 }

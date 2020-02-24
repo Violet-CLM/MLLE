@@ -609,6 +609,7 @@ namespace MLLE
                         return true;
                     }
                 case Keys.F:
+                case (Keys.Control | Keys.F):
                     {
                         if (LastFocusedZone == FocusedZone.AnimationEditing) WorkingAnimation.Sequence[SelectedAnimationFrame] ^= (ushort)J2L.MaxTiles;
                         else if (CurrentStamp.Length > 0)
@@ -619,7 +620,12 @@ namespace MLLE
                                 TileAndEvent[] column = NuStamp[x] = CurrentStamp[NuStamp.Length - x - 1];
                                 for (ushort y = 0; y < column.Length; y++)
                                     if (column[y].Tile != 0)
-                                        column[y].Tile ^= (ushort)J2L.MaxTiles;
+                                    {
+                                        if (keyData == Keys.F)
+                                            column[y].Tile ^= (ushort)J2L.MaxTiles;
+                                        else //Ctrl+F
+                                            SmartFlipTile(ref column[y].Tile);
+                                    }
                             }
                             CurrentStamp = NuStamp;
                         }
