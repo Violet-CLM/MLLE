@@ -624,7 +624,7 @@ namespace MLLE
                                         if (keyData == Keys.F)
                                             column[y].Tile ^= (ushort)J2L.MaxTiles;
                                         else //Ctrl+F
-                                            SmartFlipTile(ref column[y].Tile);
+                                            SmartFlipTile(ref column[y].Tile, false);
                                     }
                             }
                             CurrentStamp = NuStamp;
@@ -632,6 +632,7 @@ namespace MLLE
                         return true;
                     }
                 case Keys.I:
+                case (Keys.Control | Keys.I):
                     {
                         if (VersionIsPlusCompatible(J2L.VersionType))
                         {
@@ -645,7 +646,12 @@ namespace MLLE
                                     TileAndEvent[] column = NuStamp[x] = new TileAndEvent[height];
                                     for (ushort y = 0; y < height; y++)
                                         if ((column[y].Tile = CurrentStamp[x][height - y - 1].Tile) != 0)
-                                            column[y].Tile ^= (ushort)0x2000;
+                                        {
+                                            if (keyData == Keys.I)
+                                                column[y].Tile ^= (ushort)0x2000;
+                                            else //Ctrl+I
+                                                SmartFlipTile(ref column[y].Tile, true);
+                                        }
                                 }
                                 CurrentStamp = NuStamp;
                             }
