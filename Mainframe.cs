@@ -443,6 +443,10 @@ namespace MLLE
                     case ".til":
                         ChangeTileset(commands[1]);
                         break;
+                    case ".mlleset":
+                        ChangeTileset(Path.ChangeExtension(commands[1], ".j2t"));
+                        TilesetOverlaySelection.SelectedIndex = 4;
+                        break;
                     default:
                         break;
                 }
