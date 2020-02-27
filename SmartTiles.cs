@@ -10,6 +10,7 @@ namespace MLLE
     class SmartTile
     {
         internal List<ushort>[] TileAssignments = new List<ushort>[100];
+        internal List<int> Friends = new List<int>();
         internal ushort PreviewTileID;
         internal string Name = "Smart Tile";
         internal class ushortComparer : IEqualityComparer<ushort>
@@ -39,6 +40,7 @@ namespace MLLE
                 TileAssignments[i] = new List<ushort>(other.TileAssignments[i]);
             PreviewTileID = other.PreviewTileID;
             Name = other.Name;
+            Friends = new List<int>(other.Friends);
             AllPossibleTiles = new HashSet<ushort>(other.AllPossibleTiles.Comparer);
             AllPossibleTiles.UnionWith(other.AllPossibleTiles);
         }

@@ -11,6 +11,7 @@ using System.Windows.Forms;
 
 namespace MLLE
 {
+    //uses https://www.codeproject.com/Articles/31105/A-ComboBox-with-a-CheckedListBox-as-a-Dropdown
     public partial class SmartTilesForm : Form
     {
         J2TFile Tileset;
@@ -21,10 +22,22 @@ namespace MLLE
         {
             InitializeComponent();
         }
-        internal bool ShowForm(SmartTile workingSmartTile, J2TFile tileset)
+        internal bool ShowForm(SmartTile workingSmartTile, J2TFile tileset, List<SmartTile> smartTiles, int workingSmartTileIndex = -1)
         {
             Tileset = tileset;
             WorkingSmartTile = workingSmartTile;
+            for (int otherSmartTileID = 0; otherSmartTileID < smartTiles.Count; ++otherSmartTileID) {
+                checkedComboBox1.Items.Add(
+                    smartTiles[otherSmartTileID].Name,
+                    otherSmartTileID == workingSmartTileIndex ?
+                        CheckState.Indeterminate :
+                        workingSmartTile.Friends.Contains(otherSmartTileID) ?
+                            CheckState.Checked :
+                            CheckState.Unchecked
+                );
+            }
+            checkedComboBox1.SetItemCheckState(0, checkedComboBox1.GetItemCheckState(0)); //fixes issue of control not updating text preview in response to Items.Add
+            checkedComboBox1.ItemCheck += (s, e) => { if (e.CurrentValue == CheckState.Indeterminate) e.NewValue = CheckState.Indeterminate; }; //don't let the indeterminate item (this smarttile itself) be altered
             AndValue = ((SmartTile.ushortComparer)WorkingSmartTile.AllPossibleTiles.Comparer).AndValue;
             textBox1.Text = WorkingSmartTile.Name;
             CreateImageFromTileset();
@@ -103,6 +116,10 @@ namespace MLLE
             {
                 Result = true;
                 WorkingSmartTile.Name = textBox1.Text;
+                WorkingSmartTile.Friends.Clear();
+                for (int i = 0; i < checkedComboBox1.Items.Count; ++i)
+                    if (checkedComboBox1.GetItemCheckState(i) == CheckState.Checked) //indeterminate doesn't count
+                        WorkingSmartTile.Friends.Add(i);
             } else {
                 if (MessageBox.Show("To define a Smart Tile you must pick at least one tile for at least one of the following default permutation IDs: 11, 14, or 47.", "Insufficient Definition", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error) == DialogResult.Retry)
                     return;

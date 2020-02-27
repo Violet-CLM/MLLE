@@ -35,19 +35,21 @@
             this.OKButton = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.smartPicture = new System.Windows.Forms.PictureBox();
+            this.framesPicture = new System.Windows.Forms.PictureBox();
             this.panel2 = new System.Windows.Forms.Panel();
             this.HighlightPanel = new System.Windows.Forms.Panel();
             this.panel3 = new System.Windows.Forms.Panel();
-            this.framesPicture = new System.Windows.Forms.PictureBox();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
+            this.checkedComboBox1 = new CheckComboBoxTest.CheckedComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.tilesetPicture)).BeginInit();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.smartPicture)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.framesPicture)).BeginInit();
             this.panel2.SuspendLayout();
             this.panel3.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.framesPicture)).BeginInit();
             this.SuspendLayout();
             // 
             // tilesetPicture
@@ -108,6 +110,17 @@
             this.smartPicture.MouseLeave += new System.EventHandler(this.tilesetPicture_MouseLeave);
             this.smartPicture.MouseMove += new System.Windows.Forms.MouseEventHandler(this.smartPicture_MouseMove);
             // 
+            // framesPicture
+            // 
+            this.framesPicture.Location = new System.Drawing.Point(0, 0);
+            this.framesPicture.Margin = new System.Windows.Forms.Padding(0);
+            this.framesPicture.Name = "framesPicture";
+            this.framesPicture.Size = new System.Drawing.Size(32, 32);
+            this.framesPicture.TabIndex = 0;
+            this.framesPicture.TabStop = false;
+            this.toolTip1.SetToolTip(this.framesPicture, "Preview frames");
+            this.framesPicture.MouseClick += new System.Windows.Forms.MouseEventHandler(this.framesPicture_MouseClick);
+            // 
             // panel2
             // 
             this.panel2.Controls.Add(this.HighlightPanel);
@@ -138,17 +151,6 @@
             this.panel3.Size = new System.Drawing.Size(56, 256);
             this.panel3.TabIndex = 2;
             // 
-            // framesPicture
-            // 
-            this.framesPicture.Location = new System.Drawing.Point(0, 0);
-            this.framesPicture.Margin = new System.Windows.Forms.Padding(0);
-            this.framesPicture.Name = "framesPicture";
-            this.framesPicture.Size = new System.Drawing.Size(32, 32);
-            this.framesPicture.TabIndex = 0;
-            this.framesPicture.TabStop = false;
-            this.toolTip1.SetToolTip(this.framesPicture, "Preview frames");
-            this.framesPicture.MouseClick += new System.Windows.Forms.MouseEventHandler(this.framesPicture_MouseClick);
-            // 
             // textBox1
             // 
             this.textBox1.Location = new System.Drawing.Point(508, 338);
@@ -174,6 +176,28 @@
             this.label2.TabIndex = 8;
             this.label2.Text = "Rules:";
             // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(233, 341);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(44, 13);
+            this.label3.TabIndex = 10;
+            this.label3.Text = "Friends:";
+            // 
+            // checkedComboBox1
+            // 
+            this.checkedComboBox1.CheckOnClick = true;
+            this.checkedComboBox1.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawFixed;
+            this.checkedComboBox1.DropDownHeight = 1;
+            this.checkedComboBox1.FormattingEnabled = true;
+            this.checkedComboBox1.IntegralHeight = false;
+            this.checkedComboBox1.Location = new System.Drawing.Point(283, 337);
+            this.checkedComboBox1.Name = "checkedComboBox1";
+            this.checkedComboBox1.Size = new System.Drawing.Size(121, 21);
+            this.checkedComboBox1.TabIndex = 9;
+            this.checkedComboBox1.ValueSeparator = ", ";
+            // 
             // SmartTilesForm
             // 
             this.AcceptButton = this.OKButton;
@@ -181,6 +205,8 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
             this.ClientSize = new System.Drawing.Size(793, 364);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.checkedComboBox1);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.textBox1);
@@ -198,9 +224,9 @@
             ((System.ComponentModel.ISupportInitialize)(this.tilesetPicture)).EndInit();
             this.panel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.smartPicture)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.framesPicture)).EndInit();
             this.panel2.ResumeLayout(false);
             this.panel3.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.framesPicture)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -221,5 +247,7 @@
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
+        private CheckComboBoxTest.CheckedComboBox checkedComboBox1;
+        private System.Windows.Forms.Label label3;
     }
 }

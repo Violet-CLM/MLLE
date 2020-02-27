@@ -67,6 +67,9 @@
     </Compile>
     <Compile Include="AGAfiles.cs" />
     <Compile Include="ArrayMap.cs" />
+    <Compile Include="CheckedComboBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="DirectorySetupForm.cs">
       <SubType>Form</SubType>
     </Compile>
