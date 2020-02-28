@@ -683,7 +683,7 @@ namespace MLLE
                                 int i = 0;
                                 while (true)
                                 {
-                                    if (SmartTiles[i].AllPossibleTiles.Contains(tileID))
+                                    if (SmartTiles[i].TilesICanPlace.Contains(tileID))
                                     {
                                         ev = (uint?)i;
                                         tileID = SmartTiles[i].PreviewTileID;
@@ -3156,7 +3156,7 @@ namespace MLLE
             if (new SmartTilesForm().ShowForm(workingSmartTile, J2L.Tilesets[0], SmartTiles))
             {
                 SmartTiles.Add(workingSmartTile);
-                workingSmartTile.UpdateAllPossibleTiles();
+                workingSmartTile.UpdateAllPossibleTiles(SmartTiles);
                 SaveSmartTiles();
             }
             _suspendEvent.Set();
@@ -3173,7 +3173,7 @@ namespace MLLE
                     if (new SmartTilesForm().ShowForm(workingSmartTile, J2L.Tilesets[0], SmartTiles, localI))
                     {
                         SmartTiles[localI] = workingSmartTile;
-                        workingSmartTile.UpdateAllPossibleTiles();
+                        workingSmartTile.UpdateAllPossibleTiles(SmartTiles);
                         SaveSmartTiles();
                     }
                 };

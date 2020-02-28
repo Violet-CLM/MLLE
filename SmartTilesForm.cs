@@ -38,7 +38,7 @@ namespace MLLE
             }
             checkedComboBox1.SetItemCheckState(0, checkedComboBox1.GetItemCheckState(0)); //fixes issue of control not updating text preview in response to Items.Add
             checkedComboBox1.ItemCheck += (s, e) => { if (e.CurrentValue == CheckState.Indeterminate) e.NewValue = CheckState.Indeterminate; }; //don't let the indeterminate item (this smarttile itself) be altered
-            AndValue = ((SmartTile.ushortComparer)WorkingSmartTile.AllPossibleTiles.Comparer).AndValue;
+            AndValue = ((SmartTile.ushortComparer)WorkingSmartTile.TilesICanPlace.Comparer).AndValue;
             textBox1.Text = WorkingSmartTile.Name;
             CreateImageFromTileset();
 

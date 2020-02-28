@@ -10,6 +10,7 @@ namespace MLLE
     class SmartTile
     {
         internal List<ushort>[] TileAssignments = new List<ushort>[100];
+        internal List<ushort> Extras { get { return TileAssignments[35]; } }
         internal List<int> Friends = new List<int>();
         internal ushort PreviewTileID;
         internal string Name = "Smart Tile";
@@ -26,8 +27,11 @@ namespace MLLE
             {
                 return EqualityComparer<ushort>.Default.GetHashCode(obj);
             }
+
+            public static ushortComparer compare123 = new ushortComparer(1024 - 1);
+            public static ushortComparer compare124 = new ushortComparer(4096 - 1);
         }
-        internal HashSet<ushort> AllPossibleTiles;
+        internal HashSet<ushort> TilesICanPlace, TilesIGoNextTo;
 
         internal SmartTile()
         {
@@ -41,8 +45,10 @@ namespace MLLE
             PreviewTileID = other.PreviewTileID;
             Name = other.Name;
             Friends = new List<int>(other.Friends);
-            AllPossibleTiles = new HashSet<ushort>(other.AllPossibleTiles.Comparer);
-            AllPossibleTiles.UnionWith(other.AllPossibleTiles);
+            TilesICanPlace = new HashSet<ushort>(other.TilesICanPlace.Comparer);
+            TilesICanPlace.UnionWith(other.TilesICanPlace);
+            TilesIGoNextTo = new HashSet<ushort>(other.TilesIGoNextTo.Comparer);
+            TilesIGoNextTo.UnionWith(other.TilesIGoNextTo);
         }
         internal SmartTile(bool maxTiles4096, ushort fileVersion, BinaryReader reader) : this()
         {
@@ -55,14 +61,32 @@ namespace MLLE
                         tileID ^= 0x1400;
                     assignment.Add(tileID);
                 }
-            AllPossibleTiles = new HashSet<ushort>(new ushortComparer((ushort)((maxTiles4096 ? 4096 : 1024) - 1)));
-            UpdateAllPossibleTiles();
+            if (fileVersion >= 1)
+            {
+                for (int friendCount = reader.ReadByte(); friendCount > 0; --friendCount)
+                    Friends.Add(reader.ReadByte());
+            }
+            ushortComparer comparer = maxTiles4096 ? ushortComparer.compare124 : ushortComparer.compare123;
+            TilesICanPlace = new HashSet<ushort>(comparer);
+            TilesIGoNextTo = new HashSet<ushort>(comparer);
         }
-        internal void UpdateAllPossibleTiles()
+        internal void UpdateAllPossibleTiles(List<SmartTile> smartTiles)
         {
-            AllPossibleTiles.Clear();
+            TilesICanPlace.Clear();
             foreach (var assignment in TileAssignments)
-                AllPossibleTiles.UnionWith(assignment);
+                if (assignment != Extras)
+                    TilesICanPlace.UnionWith(assignment);
+
+            TilesIGoNextTo.Clear();
+            TilesIGoNextTo.UnionWith(TilesICanPlace);
+            TilesIGoNextTo.UnionWith(Extras);
+            
+            foreach (int friendID in Friends)
+            {
+                SmartTile smartTile = smartTiles[friendID];
+                TilesIGoNextTo.UnionWith(smartTile.TilesICanPlace);
+                TilesIGoNextTo.UnionWith(smartTile.Extras);
+            }
 
             List<ushort> previewTileSource = TileAssignments[1];
             if (previewTileSource.Count == 0)
@@ -266,14 +290,14 @@ namespace MLLE
         Random Rand = new Random();
         public bool Apply(ref ushort result, ArrayMap<ushort> localTiles, bool directAction)
         {
-            if (directAction || (!TileAssignments[35/*"extra"*/].Contains(result) && AllPossibleTiles.Contains(result, AllPossibleTiles.Comparer))) //otherwise this is outside the scope of this smart tile and should be left alone
+            if (directAction || (TilesICanPlace.Contains(result))) //otherwise this is outside the scope of this smart tile and should be left alone
             {
                 ArrayMap<bool?> LocalTilesAreRelated = new ArrayMap<bool?>(5,5);
                 Func<int, int, bool> getRelatedness = (x, y) =>
                 {
                     x += 2;
                     y += 2;
-                    return LocalTilesAreRelated[x, y] ?? (LocalTilesAreRelated[x, y] = AllPossibleTiles.Contains(localTiles[x, y], AllPossibleTiles.Comparer)).Value;
+                    return LocalTilesAreRelated[x, y] ?? (LocalTilesAreRelated[x, y] = TilesIGoNextTo.Contains(localTiles[x, y])).Value;
                 };
 
                 int assignmentID = 47;
@@ -481,7 +505,7 @@ namespace MLLE
                             return true;
                         }
                     }
-            if (AllPossibleTiles.Contains(tileID)) //in a symmetrical assignment
+            if (TilesICanPlace.Contains(tileID)) //in a symmetrical assignment
                 return true; //but don't alter
             return false;
         }
@@ -503,12 +527,14 @@ namespace MLLE
             using (BinaryReader reader = new BinaryReader(File.Open(filepath, FileMode.Open), J2File.FileEncoding))
             {
                 ushort version = reader.ReadUInt16();
-                if (version > 0) {
+                if (version > 1) {
                     System.Windows.Forms.MessageBox.Show("The file \"" + filepath + "\" was not saved in a format that this version of MLLE understands. Please make sure you have the latest MLLE release.", "Incompatible File Version", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
                     success = false;
                 } else {
                     for (int numberOfSmartTiles = reader.ReadByte(); numberOfSmartTiles > 0; --numberOfSmartTiles)
                         SmartTiles.Add(new SmartTile(J2L.MaxTiles == 4096, version, reader));
+                    foreach (SmartTile smartTile in SmartTiles)
+                        smartTile.UpdateAllPossibleTiles(SmartTiles);
                 }
             }
             return success;
@@ -516,7 +542,7 @@ namespace MLLE
         private void SaveSmartTiles()
         {
             using (BinaryWriter writer = new BinaryWriter(File.Open(Path.ChangeExtension(J2L.Tilesets[0].FullFilePath, ".MLLESet"), FileMode.Create), J2File.FileEncoding)) {
-                writer.Write((ushort)0); //version
+                writer.Write((ushort)1); //version
                 writer.Write((byte)SmartTiles.Count);
                 foreach (SmartTile smartTile in SmartTiles)
                 {
@@ -527,6 +553,9 @@ namespace MLLE
                         foreach (ushort tileID in assignment)
                             writer.Write(tileID);
                     }
+                    writer.Write((byte)smartTile.Friends.Count);
+                    foreach (int friendID in smartTile.Friends)
+                        writer.Write((byte)friendID);
                 }
             }
         }
