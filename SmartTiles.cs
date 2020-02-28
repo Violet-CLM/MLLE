@@ -9,8 +9,7 @@ namespace MLLE
 {
     class SmartTile
     {
-        internal List<ushort>[] TileAssignments = new List<ushort>[100];
-        internal List<ushort> Extras { get { return TileAssignments[35]; } }
+        internal List<ushort> Extras { get { return Assignments[35].Tiles; } }
         internal List<int> Friends = new List<int>();
         internal ushort PreviewTileID;
         internal string Name = "Smart Tile";
@@ -32,16 +31,46 @@ namespace MLLE
             public static ushortComparer compare124 = new ushortComparer(4096 - 1);
         }
         internal HashSet<ushort> TilesICanPlace, TilesIGoNextTo;
-
-        internal SmartTile()
+        internal class Rule
         {
-            for (var i = 0; i < TileAssignments.Length; ++i)
-                TileAssignments[i] = new List<ushort>();
+            internal int X, Y;
+            internal bool Not;
+            internal int OtherSmartTileID;
+            internal List<ushort> SpecificTiles = new List<ushort>();
+            internal List<ushort> Result = new List<ushort>();
+            internal Rule(Rule other)
+            {
+                X = other.X;
+                Y = other.Y;
+                Not = other.Not;
+                SpecificTiles.AddRange(other.SpecificTiles);
+                Result.AddRange(other.Result);
+            }
         }
+        internal class Assignment
+        {
+            internal List<ushort> Tiles = new List<ushort>();
+            internal List<Rule> Rules = new List<Rule>();
+            internal Assignment() { }
+            internal Assignment(Assignment other)
+            {
+                Tiles = new List<ushort>(other.Tiles);
+                Rules = other.Rules.Select(rule => new Rule(rule)).ToList();
+            }
+            public bool Empty { get { return Tiles.Count == 0; } }
+            internal void UnionWith(HashSet<ushort> hashSet)
+            {
+                hashSet.UnionWith(Tiles);
+                foreach (Rule rule in Rules)
+                    hashSet.UnionWith(rule.Result);
+            }
+        }
+        internal Assignment[] Assignments = new Assignment[100];
+
+        internal SmartTile() { }
         internal SmartTile(SmartTile other)
         {
-            for (var i = 0; i < TileAssignments.Length; ++i)
-                TileAssignments[i] = new List<ushort>(other.TileAssignments[i]);
+            Assignments = other.Assignments.Select(ass => new Assignment(ass)).ToArray();
             PreviewTileID = other.PreviewTileID;
             Name = other.Name;
             Friends = new List<int>(other.Friends);
@@ -50,17 +79,23 @@ namespace MLLE
             TilesIGoNextTo = new HashSet<ushort>(other.TilesIGoNextTo.Comparer);
             TilesIGoNextTo.UnionWith(other.TilesIGoNextTo);
         }
-        internal SmartTile(bool maxTiles4096, ushort fileVersion, BinaryReader reader) : this()
+        internal SmartTile(bool maxTiles4096, ushort fileVersion, BinaryReader reader)
         {
             Name = reader.ReadString();
-            foreach (List<ushort> assignment in TileAssignments)
+            for (int i = 0; i < Assignments.Length; ++i) {
+                Assignment assignment = Assignments[i] = new Assignment();
                 for (int numberOfTileIDs = reader.ReadByte(); numberOfTileIDs > 0; --numberOfTileIDs)
                 {
                     ushort tileID = reader.ReadUInt16();
                     if (!maxTiles4096 && (tileID & 0x1000) != 0) //hflip
                         tileID ^= 0x1400;
-                    assignment.Add(tileID);
+                    assignment.Tiles.Add(tileID);
                 }
+                if (fileVersion >= 2)
+                {
+                    //todo read rules
+                }
+            }
             if (fileVersion >= 1)
             {
                 for (int friendCount = reader.ReadByte(); friendCount > 0; --friendCount)
@@ -73,9 +108,9 @@ namespace MLLE
         internal void UpdateAllPossibleTiles(List<SmartTile> smartTiles)
         {
             TilesICanPlace.Clear();
-            foreach (var assignment in TileAssignments)
-                if (assignment != Extras)
-                    TilesICanPlace.UnionWith(assignment);
+            foreach (var assignment in Assignments)
+                if (assignment.Tiles != Extras)
+                    assignment.UnionWith(TilesICanPlace);
 
             TilesIGoNextTo.Clear();
             TilesIGoNextTo.UnionWith(TilesICanPlace);
@@ -88,18 +123,18 @@ namespace MLLE
                 TilesIGoNextTo.UnionWith(smartTile.Extras);
             }
 
-            List<ushort> previewTileSource = TileAssignments[1];
-            if (previewTileSource.Count == 0)
+            Assignment previewTileSource = Assignments[1];
+            if (previewTileSource.Empty)
             {
-                previewTileSource = TileAssignments[11];
-                if (previewTileSource.Count == 0)
+                previewTileSource = Assignments[11];
+                if (previewTileSource.Empty)
                 {
-                    previewTileSource = TileAssignments[14];
-                    if (previewTileSource.Count == 0)
-                        previewTileSource = TileAssignments[47];
+                    previewTileSource = Assignments[14];
+                    if (previewTileSource.Empty)
+                        previewTileSource = Assignments[47];
                 }
             }
-            PreviewTileID = previewTileSource[Rand.Next(previewTileSource.Count)];
+            PreviewTileID = previewTileSource.Tiles[Rand.Next(previewTileSource.Tiles.Count)];
         }
 
         static readonly internal ushort[][] AlternativeAssignments = new ushort[100][]{
@@ -468,21 +503,21 @@ namespace MLLE
                         break;
                 }
 
-                while (TileAssignments[assignmentID].Count == 0)
+                while (Assignments[assignmentID].Tiles.Count == 0)
                 {
                     ushort[] alternatives = AlternativeAssignments[assignmentID];
                     int alternativeID = 0;
                     for (; alternativeID < alternatives.Length - 1; ++alternativeID)
-                        if (TileAssignments[alternatives[alternativeID]].Count != 0)
+                        if (!Assignments[alternatives[alternativeID]].Empty)
                             break;
                     assignmentID = alternatives[alternativeID];
                 }
 
-                var assignment = TileAssignments[assignmentID];
-                if (assignment.Count == 1) //simpler case
-                    result = assignment[0];
-                else if (assignment.Count > 1)
-                    result = assignment[Rand.Next(assignment.Count)];
+                var tiles = Assignments[assignmentID].Tiles;
+                if (tiles.Count == 1) //simpler case
+                    result = tiles[0];
+                else if (tiles.Count > 1)
+                    result = tiles[Rand.Next(tiles.Count)];
                 else
                     return false;
                 return true;
@@ -496,9 +531,9 @@ namespace MLLE
             int numberOfPairings = pairings.GetLength(0);
             for (int i = 0; i < numberOfPairings; ++i)
                 for (int j = 0; j < 2; ++j)
-                    if (TileAssignments[pairings[i, j]].Contains(tileID))
+                    if (Assignments[pairings[i, j]].Tiles.Contains(tileID))
                     {
-                        List<ushort> flippedAssignment = TileAssignments[pairings[i, j ^ 1]];
+                        List<ushort> flippedAssignment = Assignments[pairings[i, j ^ 1]].Tiles;
                         if (flippedAssignment.Count > 0)
                         {
                             tileID = flippedAssignment[Rand.Next(flippedAssignment.Count)];
@@ -547,11 +582,14 @@ namespace MLLE
                 foreach (SmartTile smartTile in SmartTiles)
                 {
                     writer.Write(smartTile.Name);
-                    foreach (List<ushort> assignment in smartTile.TileAssignments) //constant length (100), don't need to preface this with anything
+                    foreach (SmartTile.Assignment assignment in smartTile.Assignments) //constant length (100), don't need to preface this with anything
                     {
-                        writer.Write((byte)assignment.Count);
-                        foreach (ushort tileID in assignment)
+                        var tiles = assignment.Tiles;
+                        writer.Write(tiles.Count);
+                        foreach (ushort tileID in tiles)
                             writer.Write(tileID);
+                        //todo rules
+                        var rules = assignment.Rules;
                     }
                     writer.Write((byte)smartTile.Friends.Count);
                     foreach (int friendID in smartTile.Friends)

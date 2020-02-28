@@ -41,7 +41,7 @@ namespace MLLE
             AndValue = ((SmartTile.ushortComparer)WorkingSmartTile.TilesICanPlace.Comparer).AndValue;
             textBox1.Text = WorkingSmartTile.Name;
             CreateImageFromTileset();
-
+            
             using (new System.Threading.Timer(RedrawTiles, null, TimeSpan.FromSeconds(0), TimeSpan.FromSeconds(0.5)))
                 ShowDialog();
             return Result;
@@ -57,13 +57,13 @@ namespace MLLE
             {
                 var image = smartPicture.Image;
                 using (Graphics graphics = Graphics.FromImage(image))
-                    for (int i = 0; i < WorkingSmartTile.TileAssignments.Length; ++i)
+                    for (int i = 0; i < WorkingSmartTile.Assignments.Length; ++i)
                     {
-                        var assignment = WorkingSmartTile.TileAssignments[i];
-                        if (assignment.Count > 0)
+                        var tiles = WorkingSmartTile.Assignments[i].Tiles;
+                        if (tiles.Count > 0)
                             lock (tilesetPicture)
                             {
-                                DrawTilesetTileAt(graphics, PointFromTileID(i), assignment[elapsed % assignment.Count]);
+                                DrawTilesetTileAt(graphics, PointFromTileID(i), tiles[elapsed % tiles.Count]);
                             }
                     }
                 smartPicture.Image = image;
@@ -109,9 +109,9 @@ namespace MLLE
         private void OKButton_Click(object sender, EventArgs e)
         {
             if (
-                WorkingSmartTile.TileAssignments[11].Count > 0 ||
-                WorkingSmartTile.TileAssignments[14].Count > 0 ||
-                WorkingSmartTile.TileAssignments[47].Count > 0
+                !WorkingSmartTile.Assignments[11].Empty ||
+                !WorkingSmartTile.Assignments[14].Empty ||
+                !WorkingSmartTile.Assignments[47].Empty
             )
             {
                 Result = true;
@@ -164,26 +164,26 @@ namespace MLLE
         private static extern short GetKeyState(int keyCode);
         private void tilesetPicture_MouseClick(object sender, MouseEventArgs e)
         {
-            if (CurrentSmartTileID >= 0 && CurrentSmartTileID < WorkingSmartTile.TileAssignments.Length)
+            if (CurrentSmartTileID >= 0 && CurrentSmartTileID < WorkingSmartTile.Assignments.Length)
             {
                 ushort newTileID = (ushort)GetMouseTileIDFromTileset(e);
-                var assignment = WorkingSmartTile.TileAssignments[CurrentSmartTileID];
+                var tiles = WorkingSmartTile.Assignments[CurrentSmartTileID].Tiles;
                 if (e.Button == MouseButtons.Left)
                 {
                     if ((GetKeyState((int)Keys.F) & 0x8000) != 0)
                         newTileID |= (ushort)(AndValue + 1);
                     if ((GetKeyState((int)Keys.I) & 0x8000) != 0)
                         newTileID |= 0x2000;
-                    assignment.Add(newTileID);
+                    tiles.Add(newTileID);
                 }
                 else if (e.Button == MouseButtons.Right)
                 {
-                    if (assignment.RemoveAll(potentialTileIDToRemove => (potentialTileIDToRemove & AndValue) == (newTileID & AndValue)) == 0)
+                    if (tiles.RemoveAll(potentialTileIDToRemove => (potentialTileIDToRemove & AndValue) == (newTileID & AndValue)) == 0)
                         return;
                 }
                 else
                     return;
-                elapsed = assignment.Count - 1;
+                elapsed = tiles.Count - 1;
                 RedrawTiles(null);
                 UpdateFramesPreview();
             }
@@ -201,7 +201,7 @@ namespace MLLE
 
                 if (e.Button == MouseButtons.Right)
                 {
-                    WorkingSmartTile.TileAssignments[CurrentSmartTileID].Clear();
+                    WorkingSmartTile.Assignments[CurrentSmartTileID].Tiles.Clear();
                 }
 
                 UpdateFramesPreview();
@@ -238,9 +238,9 @@ namespace MLLE
 
         void UpdateFramesPreview()
         {
-            if (CurrentSmartTileID >= 0 && CurrentSmartTileID < WorkingSmartTile.TileAssignments.Length)
+            if (CurrentSmartTileID >= 0 && CurrentSmartTileID < WorkingSmartTile.Assignments.Length)
             {
-                var frames = WorkingSmartTile.TileAssignments[CurrentSmartTileID];
+                var frames = WorkingSmartTile.Assignments[CurrentSmartTileID].Tiles;
                 framesPicture.Height = frames.Count * 32;
                 if (frames.Count > 0)
                 {
@@ -276,7 +276,7 @@ namespace MLLE
                 var y = e.Y - framesPicture.AutoScrollOffset.Y;
                 if (y < framesPicture.Height) //just to be safe
                 {
-                    WorkingSmartTile.TileAssignments[CurrentSmartTileID].RemoveAt(y / 32);
+                    WorkingSmartTile.Assignments[CurrentSmartTileID].Tiles.RemoveAt(y / 32);
                     UpdateFramesPreview();
                 }
             }
