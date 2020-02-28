@@ -35,9 +35,10 @@ namespace MLLE
         {
             internal int X, Y;
             internal bool Not;
-            internal int OtherSmartTileID;
+            internal int OtherSmartTileID = -1;
             internal List<ushort> SpecificTiles = new List<ushort>();
             internal List<ushort> Result = new List<ushort>();
+            internal Rule() { }
             internal Rule(Rule other)
             {
                 X = other.X;

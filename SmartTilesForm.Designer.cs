@@ -44,16 +44,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.panel4 = new System.Windows.Forms.Panel();
-            this.DeleteRuleButton = new System.Windows.Forms.Button();
-            this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
-            this.numericUpDown2 = new System.Windows.Forms.NumericUpDown();
-            this.checkBox1 = new System.Windows.Forms.CheckBox();
-            this.label5 = new System.Windows.Forms.Label();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
-            this.maskedTextBox1 = new System.Windows.Forms.MaskedTextBox();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.button1 = new System.Windows.Forms.Button();
-            this.comboBox2 = new System.Windows.Forms.ComboBox();
+            this.AddRuleButton = new System.Windows.Forms.Button();
             this.checkedComboBox1 = new CheckComboBoxTest.CheckedComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.tilesetPicture)).BeginInit();
             this.panel1.SuspendLayout();
@@ -62,9 +53,6 @@
             this.panel2.SuspendLayout();
             this.panel3.SuspendLayout();
             this.panel4.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // tilesetPicture
@@ -204,131 +192,21 @@
             // 
             this.panel4.AutoScroll = true;
             this.panel4.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.panel4.Controls.Add(this.comboBox2);
-            this.panel4.Controls.Add(this.DeleteRuleButton);
-            this.panel4.Controls.Add(this.button1);
-            this.panel4.Controls.Add(this.pictureBox1);
-            this.panel4.Controls.Add(this.maskedTextBox1);
-            this.panel4.Controls.Add(this.comboBox1);
-            this.panel4.Controls.Add(this.label5);
-            this.panel4.Controls.Add(this.checkBox1);
-            this.panel4.Controls.Add(this.numericUpDown2);
-            this.panel4.Controls.Add(this.numericUpDown1);
+            this.panel4.Controls.Add(this.AddRuleButton);
             this.panel4.Location = new System.Drawing.Point(15, 358);
             this.panel4.Name = "panel4";
-            this.panel4.Size = new System.Drawing.Size(766, 110);
+            this.panel4.Size = new System.Drawing.Size(766, 122);
             this.panel4.TabIndex = 11;
             // 
-            // DeleteRuleButton
+            // AddRuleButton
             // 
-            this.DeleteRuleButton.Location = new System.Drawing.Point(3, 41);
-            this.DeleteRuleButton.Name = "DeleteRuleButton";
-            this.DeleteRuleButton.Size = new System.Drawing.Size(32, 32);
-            this.DeleteRuleButton.TabIndex = 12;
-            this.DeleteRuleButton.Text = "+";
-            this.DeleteRuleButton.UseVisualStyleBackColor = true;
-            // 
-            // numericUpDown1
-            // 
-            this.numericUpDown1.Location = new System.Drawing.Point(32, 15);
-            this.numericUpDown1.Maximum = new decimal(new int[] {
-            2,
-            0,
-            0,
-            0});
-            this.numericUpDown1.Minimum = new decimal(new int[] {
-            2,
-            0,
-            0,
-            -2147483648});
-            this.numericUpDown1.Name = "numericUpDown1";
-            this.numericUpDown1.Size = new System.Drawing.Size(42, 20);
-            this.numericUpDown1.TabIndex = 0;
-            this.toolTip1.SetToolTip(this.numericUpDown1, "X offset");
-            // 
-            // numericUpDown2
-            // 
-            this.numericUpDown2.Location = new System.Drawing.Point(81, 16);
-            this.numericUpDown2.Maximum = new decimal(new int[] {
-            2,
-            0,
-            0,
-            0});
-            this.numericUpDown2.Minimum = new decimal(new int[] {
-            2,
-            0,
-            0,
-            -2147483648});
-            this.numericUpDown2.Name = "numericUpDown2";
-            this.numericUpDown2.Size = new System.Drawing.Size(42, 20);
-            this.numericUpDown2.TabIndex = 1;
-            this.toolTip1.SetToolTip(this.numericUpDown2, "X offset");
-            // 
-            // checkBox1
-            // 
-            this.checkBox1.AutoSize = true;
-            this.checkBox1.Location = new System.Drawing.Point(143, 18);
-            this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(52, 17);
-            this.checkBox1.TabIndex = 2;
-            this.checkBox1.Text = "not in";
-            this.checkBox1.UseVisualStyleBackColor = true;
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(14, 19);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(12, 13);
-            this.label5.TabIndex = 4;
-            this.label5.Text = "if";
-            // 
-            // comboBox1
-            // 
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Items.AddRange(new object[] {
-            "Walls",
-            "Caves",
-            "specific tiles"});
-            this.comboBox1.Location = new System.Drawing.Point(201, 16);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(94, 21);
-            this.comboBox1.TabIndex = 5;
-            // 
-            // maskedTextBox1
-            // 
-            this.maskedTextBox1.Location = new System.Drawing.Point(311, 17);
-            this.maskedTextBox1.Name = "maskedTextBox1";
-            this.maskedTextBox1.Size = new System.Drawing.Size(136, 20);
-            this.maskedTextBox1.TabIndex = 6;
-            // 
-            // pictureBox1
-            // 
-            this.pictureBox1.Location = new System.Drawing.Point(490, 12);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(224, 32);
-            this.pictureBox1.TabIndex = 7;
-            this.pictureBox1.TabStop = false;
-            // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(724, 12);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(32, 32);
-            this.button1.TabIndex = 8;
-            this.button1.Text = "X";
-            this.button1.UseVisualStyleBackColor = true;
-            // 
-            // comboBox2
-            // 
-            this.comboBox2.FormattingEnabled = true;
-            this.comboBox2.Items.AddRange(new object[] {
-            "then",
-            "and"});
-            this.comboBox2.Location = new System.Drawing.Point(454, 16);
-            this.comboBox2.Name = "comboBox2";
-            this.comboBox2.Size = new System.Drawing.Size(30, 21);
-            this.comboBox2.TabIndex = 13;
+            this.AddRuleButton.Location = new System.Drawing.Point(3, 41);
+            this.AddRuleButton.Name = "AddRuleButton";
+            this.AddRuleButton.Size = new System.Drawing.Size(32, 32);
+            this.AddRuleButton.TabIndex = 12;
+            this.AddRuleButton.Text = "+";
+            this.AddRuleButton.UseVisualStyleBackColor = true;
+            this.AddRuleButton.Click += new System.EventHandler(this.AddRuleButton_Click);
             // 
             // checkedComboBox1
             // 
@@ -349,7 +227,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
-            this.ClientSize = new System.Drawing.Size(793, 480);
+            this.ClientSize = new System.Drawing.Size(793, 491);
             this.Controls.Add(this.panel4);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.checkedComboBox1);
@@ -375,10 +253,6 @@
             this.panel2.ResumeLayout(false);
             this.panel3.ResumeLayout(false);
             this.panel4.ResumeLayout(false);
-            this.panel4.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -402,15 +276,6 @@
         private CheckComboBoxTest.CheckedComboBox checkedComboBox1;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Panel panel4;
-        private System.Windows.Forms.Button DeleteRuleButton;
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.PictureBox pictureBox1;
-        private System.Windows.Forms.MaskedTextBox maskedTextBox1;
-        private System.Windows.Forms.ComboBox comboBox1;
-        private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.CheckBox checkBox1;
-        private System.Windows.Forms.NumericUpDown numericUpDown2;
-        private System.Windows.Forms.NumericUpDown numericUpDown1;
-        private System.Windows.Forms.ComboBox comboBox2;
+        private System.Windows.Forms.Button AddRuleButton;
     }
 }

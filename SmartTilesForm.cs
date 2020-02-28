@@ -17,6 +17,7 @@ namespace MLLE
         J2TFile Tileset;
         bool Result = false;
         SmartTile WorkingSmartTile;
+        List<string> AllSmartTileNames;
         ushort AndValue;
         public SmartTilesForm()
         {
@@ -26,9 +27,10 @@ namespace MLLE
         {
             Tileset = tileset;
             WorkingSmartTile = workingSmartTile;
+            AllSmartTileNames = smartTiles.Select(smartTile => smartTile.Name).ToList();
             for (int otherSmartTileID = 0; otherSmartTileID < smartTiles.Count; ++otherSmartTileID) {
                 checkedComboBox1.Items.Add(
-                    smartTiles[otherSmartTileID].Name,
+                    otherSmartTileID != workingSmartTileIndex ? AllSmartTileNames[otherSmartTileID] : "[this]",
                     otherSmartTileID == workingSmartTileIndex ?
                         CheckState.Indeterminate :
                         workingSmartTile.Friends.Contains(otherSmartTileID) ?
@@ -41,7 +43,8 @@ namespace MLLE
             AndValue = ((SmartTile.ushortComparer)WorkingSmartTile.TilesICanPlace.Comparer).AndValue;
             textBox1.Text = WorkingSmartTile.Name;
             CreateImageFromTileset();
-            
+
+            AddRuleButton.Top = -50;
             using (new System.Threading.Timer(RedrawTiles, null, TimeSpan.FromSeconds(0), TimeSpan.FromSeconds(0.5)))
                 ShowDialog();
             return Result;
@@ -190,6 +193,7 @@ namespace MLLE
         }
 
         int CurrentSmartTileID = -1;
+        int CurrentRuleID = -1;
         private void smartPicture_MouseClick(object sender, MouseEventArgs e)
         {
             int newSmartTileID = e.X / 32 + e.Y / 32 * 10;
@@ -204,6 +208,7 @@ namespace MLLE
                     WorkingSmartTile.Assignments[CurrentSmartTileID].Tiles.Clear();
                 }
 
+                UpdateRules();
                 UpdateFramesPreview();
             }
         }
@@ -280,6 +285,113 @@ namespace MLLE
                     UpdateFramesPreview();
                 }
             }
+        }
+
+        void UpdateRules()
+        {
+            Type isPanel = panel4.GetType();
+            foreach (Control control in panel4.Controls)
+                if (control.GetType() == isPanel)
+                    panel4.Controls.Remove(control);
+            AddRuleButton.Top = 0;
+            foreach (SmartTile.Rule rule in WorkingSmartTile.Assignments[CurrentSmartTileID].Rules)
+            {
+                AddRule(rule);
+            }
+        }
+
+        private void AddRuleButton_Click(object sender, EventArgs e)
+        {
+            var newRule = new SmartTile.Rule();
+            WorkingSmartTile.Assignments[CurrentSmartTileID].Rules.Add(newRule);
+            AddRule(newRule);
+        }
+
+        static readonly System.Text.RegularExpressions.Regex SpecificTilesValidationPattern = new System.Text.RegularExpressions.Regex(@"(?:\s*\d+\s*,?)+");
+        void AddRule(SmartTile.Rule rule)
+        {
+            Panel panel = new Panel();
+            panel.Tag = rule;
+            panel.Size = new Size(panel4.ClientSize.Width, 40);
+            panel.Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top;
+            panel.Top = AddRuleButton.Top;
+
+            Label ifLabel = new Label();
+            ifLabel.Text = "if";
+            ifLabel.Location = new Point(14, 12);
+
+            for (int i = 0; i < 2; ++i) {
+                bool isX = i == 0;
+                NumericUpDown num = new NumericUpDown();
+                num.Minimum = -2;
+                num.Maximum = 2;
+                //num.Controls[0].Visible = false;
+                num.Location = new Point(32 + i * 50, 10);
+                num.Size = new Size(42, 20);
+                num.Value = isX ? rule.X : rule.Y;
+                num.ValueChanged += (s, e) => { if (isX) rule.X = (int)num.Value; else rule.Y = (int)num.Value; };
+                panel.Controls.Add(num);
+            }
+
+            CheckBox notIn = new CheckBox();
+            notIn.Text = "not in";
+            notIn.Location = new Point(140, 12);
+            notIn.AutoSize = true;
+            notIn.Checked = rule.Not;
+            notIn.CheckedChanged += (s, e) => { rule.Not = (s as CheckBox).Checked; };
+
+            TextBox specificTileCriteria = new TextBox();
+            specificTileCriteria.Location = new Point(315, 10);
+            specificTileCriteria.Text = string.Join(",", rule.SpecificTiles.Select(number => number.ToString()));
+            specificTileCriteria.Visible = rule.OtherSmartTileID < 0;
+            specificTileCriteria.Validating += (s, e) => {
+                bool valid = SpecificTilesValidationPattern.Match(specificTileCriteria.Text).Success;
+                specificTileCriteria.BackColor = valid ? Color.White : Color.Pink;
+                if (valid)
+                    rule.SpecificTiles = specificTileCriteria.Text.Split(',').Select(numbers => ushort.Parse(numbers.Trim())).ToList();
+            };
+
+            ComboBox criteriaSource = new ComboBox();
+            criteriaSource.Items.AddRange(AllSmartTileNames.ToArray());
+            criteriaSource.Items.Add("specific tiles:");
+            criteriaSource.Location = new Point(200, 10);
+            criteriaSource.Width = 105;
+            criteriaSource.DropDownStyle = ComboBoxStyle.DropDownList;
+            criteriaSource.SelectedIndex = rule.OtherSmartTileID >= 0 ? rule.OtherSmartTileID : criteriaSource.Items.Count - 1;
+            criteriaSource.SelectedIndexChanged += (s, e) => {
+                int newIndex = criteriaSource.SelectedIndex;
+                if (newIndex == criteriaSource.Items.Count - 1)
+                {
+                    rule.OtherSmartTileID = -1;
+                    specificTileCriteria.Show();
+                } else {
+                    rule.OtherSmartTileID = newIndex;
+                    specificTileCriteria.Hide();
+                }
+            };
+
+            Label andOrThen = new Label();
+            andOrThen.Text = "and...";
+            andOrThen.Location = new Point(435, 12);
+
+            PictureBox results = new PictureBox();
+            results.Location = new Point(440, 4);
+            results.Size = new Size(224, 32);
+
+            Button deleteRuleButton = new Button();
+            deleteRuleButton.Text = "X";
+            deleteRuleButton.Location = new Point(700, 4);
+            deleteRuleButton.Size = new Size(32, 32);
+            deleteRuleButton.Click += (s, e) => {
+                WorkingSmartTile.Assignments[CurrentSmartTileID].Rules.Remove(panel.Tag as SmartTile.Rule);
+                panel4.Controls.Remove(panel);
+                foreach (Control control in panel4.Controls)
+                    control.Top -= 40;
+            };
+
+            panel.Controls.AddRange(new Control[]{ ifLabel, notIn, criteriaSource, specificTileCriteria, andOrThen, results, deleteRuleButton });
+            panel4.Controls.Add(panel);
+            AddRuleButton.Top += 40;
         }
     }
 }
