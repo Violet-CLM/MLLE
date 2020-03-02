@@ -48,6 +48,18 @@ namespace MLLE
                 SpecificTiles.AddRange(other.SpecificTiles);
                 Result.AddRange(other.Result);
             }
+
+            internal bool Applies(ArrayMap<ushort> tileMap, System.Drawing.Point location, List<SmartTile> otherSmartTiles)
+            {
+                int x = location.X + X;
+                if (x < 0 || x >= tileMap.GetLength(0))
+                    return false;
+                int y = location.Y + Y;
+                if (y < 0 || y >= tileMap.GetLength(1))
+                    return false;
+                ushort tileID = tileMap[x, y];
+                return Not ^ (OtherSmartTileID == -1) ? SpecificTiles.Contains(tileID) : otherSmartTiles[OtherSmartTileID].TilesICanPlace.Contains(tileID);
+            }
         }
         internal class Assignment
         {
@@ -325,206 +337,230 @@ namespace MLLE
         };
 
         Random Rand = new Random();
-        public bool Apply(ref ushort result, ArrayMap<ushort> localTiles, bool directAction)
+        public bool Apply(ArrayMap<ushort> tileMap, System.Drawing.Point location, List<SmartTile> otherSmartTiles)
         {
-            if (directAction || (TilesICanPlace.Contains(result))) //otherwise this is outside the scope of this smart tile and should be left alone
+            ArrayMap<ushort> localTiles = new ArrayMap<ushort>(5, 5);
+            for (int xx = 0; xx < 5; ++xx)
             {
-                ArrayMap<bool?> LocalTilesAreRelated = new ArrayMap<bool?>(5,5);
-                Func<int, int, bool> getRelatedness = (x, y) =>
+                int xTile = Math.Max(0, Math.Min(tileMap.GetLength(0) - 1, location.X + xx - 2));
+                for (int yy = 0; yy < 5; ++yy)
                 {
-                    x += 2;
-                    y += 2;
-                    return LocalTilesAreRelated[x, y] ?? (LocalTilesAreRelated[x, y] = TilesIGoNextTo.Contains(localTiles[x, y])).Value;
-                };
-
-                int assignmentID = 47;
-                switch (
-                    (getRelatedness( 0, -1) ? 1 : 0) |
-                    (getRelatedness( 0,  1) ? 2 : 0) |
-                    (getRelatedness(-1,  0) ? 4 : 0) |
-                    (getRelatedness( 1,  0) ? 8 : 0)
-                ) {
-                    case 0: //no neighbors at all
-                        assignmentID = 47;
-                        break;
-                    case 1: //U
-                        assignmentID = 77;
-                        break;
-                    case 2: //D
-                        if (getRelatedness(-1, 1) && !getRelatedness(1, 1))
-                            assignmentID = 80;
-                        else if (getRelatedness(1, 1))
-                            assignmentID = 81;
-                        else
-                            assignmentID = 57;
-                        break;
-                    case 3: //UD
-                        assignmentID = 67;
-                        break;
-                    case 4: //L
-                        assignmentID = 32;
-                        break;
-                    case 5: //LU
-                        if (getRelatedness(1, -1))
-                            assignmentID = getRelatedness(-1,-1) ? 53 : 94;
-                        else if (getRelatedness(-1, 1))
-                            assignmentID = getRelatedness(-1,-1) ? 75 : 87;
-                        else
-                            assignmentID = getRelatedness(-1,-1) ? 22 : 25;
-                        break;
-                    case 6: //LD
-                        if (getRelatedness(1, 1))
-                            assignmentID = getRelatedness(-1, 1) ? 41 : 85;
-                        else if (getRelatedness(-1, -1))
-                            assignmentID = getRelatedness(-1, 1) ? 65 : 97;
-                        else
-                            assignmentID = getRelatedness(-1, 1) ? 2 : 5;
-                        break;
-                    case 7: //LUD
-                        if (getRelatedness(-1, -1))
-                            assignmentID = getRelatedness(-1, 1) ? 12 : 27;
-                        else
-                            assignmentID = getRelatedness(-1, 1) ? (getRelatedness(1, -1) || getRelatedness(0, -2) ? 37 : 90) : 15;
-                        break;
-                    case 8: //R
-                        assignmentID = 30;
-                        break;
-                    case 9: //RU
-                        if (getRelatedness(-1, -1))
-                            assignmentID = getRelatedness(1, -1) ? 52 : 95;
-                        else if (getRelatedness(1, 1))
-                            assignmentID = getRelatedness(1, -1) ? 54 : 96;
-                        else
-                            assignmentID = getRelatedness(1, -1) ? 20 : 23;
-                        break;
-                    case 10: //RD
-                        if (getRelatedness(-1, 1))
-                            assignmentID = getRelatedness(1, 1) ? 40 : 84;
-                        else if (getRelatedness(1, -1))
-                            assignmentID = getRelatedness(1, 1) ? 44 : 86;
-                        else
-                            assignmentID = getRelatedness(1, 1) ? 0 : 3;
-                        break;
-                    case 11: //RUD
-                        if (getRelatedness(1, -1))
-                            assignmentID = getRelatedness(1, 1) ? 10 : 26;
-                        else
-                            assignmentID = getRelatedness(1, 1) ? (getRelatedness(-1, -1) || getRelatedness(0, -2) ? 36 : 91) : 13;
-                        break;
-                    case 12: //LR
-                        assignmentID = 31;
-                        break;
-                    case 13: //LRU
-                        if (getRelatedness(-1, -1))
-                            assignmentID = getRelatedness(1, -1) ? 21 : 18;
-                        else
-                            assignmentID = getRelatedness(1, -1) ? 19 : 24;
-                        break;
-                    case 14: //LRD
-                        if (getRelatedness(-1, 1))
-                            assignmentID = getRelatedness(1, 1) ? 1 : 8;
-                        else
-                            assignmentID = getRelatedness(1, 1) ? 9 : 4;
-                        break;
-                    case 15: //LRUD
-                        switch (
-                            (getRelatedness(-1, -1) ? 1 : 0) |
-                            (getRelatedness( 1, -1) ? 2 : 0) |
-                            (getRelatedness( 1,  1) ? 4 : 0) |
-                            (getRelatedness(-1,  1) ? 8 : 0)
-                        ) {
-                            case 0: //no corners at all, full pipe plus
-                                assignmentID = 14;
-                                break;
-                            case 1:
-                                assignmentID = 39;
-                                break;
-                            case 2:
-                                assignmentID = 38;
-                                break;
-                            case 3:
-                                assignmentID = 58;
-                                break;
-                            case 4:
-                                assignmentID = 28;
-                                break;
-                            case 5:
-                                assignmentID = 69;
-                                break;
-                            case 6:
-                                assignmentID = 48;
-                                break;
-                            case 7:
-                                if (!getRelatedness(0, 2))
-                                    assignmentID = 42;
-                                else if (!getRelatedness(-2, 0))
-                                    assignmentID = 55;
-                                else
-                                    assignmentID = 7;
-                                break;
-                            case 8:
-                                assignmentID = 29;
-                                break;
-                            case 9:
-                                assignmentID = 49;
-                                break;
-                            case 10:
-                                assignmentID = 68;
-                                break;
-                            case 11:
-                                if (!getRelatedness(0, 2))
-                                    assignmentID = 43;
-                                else if (!getRelatedness(2, 0))
-                                    assignmentID = 74;
-                                else
-                                    assignmentID = 6;
-                                break;
-                            case 12:
-                                assignmentID = 59;
-                                break;
-                            case 13:
-                                if (!getRelatedness(0, -2))
-                                    assignmentID = 51;
-                                else if (!getRelatedness(2, 0))
-                                    assignmentID = 64;
-                                else
-                                    assignmentID = 16;
-                                break;
-                            case 14:
-                                if (!getRelatedness(0, -2))
-                                    assignmentID = 50;
-                                else if (!getRelatedness(-2, 0))
-                                    assignmentID = 45;
-                                else
-                                    assignmentID = 17;
-                                break;
-                            case 15: //totally surrounded, normal wall tile
-                                assignmentID = 11;
-                                break;
-                        }
-                        break;
+                    int yTile = Math.Max(0, Math.Min(tileMap.GetLength(1) - 1, location.Y + yy - 2));
+                    localTiles[xx, yy] = tileMap[xTile, yTile];
                 }
-
-                while (Assignments[assignmentID].Tiles.Count == 0)
-                {
-                    ushort[] alternatives = AlternativeAssignments[assignmentID];
-                    int alternativeID = 0;
-                    for (; alternativeID < alternatives.Length - 1; ++alternativeID)
-                        if (!Assignments[alternatives[alternativeID]].Empty)
-                            break;
-                    assignmentID = alternatives[alternativeID];
-                }
-
-                var tiles = Assignments[assignmentID].Tiles;
-                if (tiles.Count == 1) //simpler case
-                    result = tiles[0];
-                else if (tiles.Count > 1)
-                    result = tiles[Rand.Next(tiles.Count)];
-                else
-                    return false;
-                return true;
             }
-            return false;
+            ArrayMap<bool?> LocalTilesAreRelated = new ArrayMap<bool?>(5,5);
+            Func<int, int, bool> getRelatedness = (x, y) =>
+            {
+                x += 2;
+                y += 2;
+                return LocalTilesAreRelated[x, y] ?? (LocalTilesAreRelated[x, y] = TilesIGoNextTo.Contains(localTiles[x, y])).Value;
+            };
+
+            int assignmentID = 47;
+            switch (
+                (getRelatedness( 0, -1) ? 1 : 0) |
+                (getRelatedness( 0,  1) ? 2 : 0) |
+                (getRelatedness(-1,  0) ? 4 : 0) |
+                (getRelatedness( 1,  0) ? 8 : 0)
+            ) {
+                case 0: //no neighbors at all
+                    assignmentID = 47;
+                    break;
+                case 1: //U
+                    assignmentID = 77;
+                    break;
+                case 2: //D
+                    if (getRelatedness(-1, 1) && !getRelatedness(1, 1))
+                        assignmentID = 80;
+                    else if (getRelatedness(1, 1))
+                        assignmentID = 81;
+                    else
+                        assignmentID = 57;
+                    break;
+                case 3: //UD
+                    assignmentID = 67;
+                    break;
+                case 4: //L
+                    assignmentID = 32;
+                    break;
+                case 5: //LU
+                    if (getRelatedness(1, -1))
+                        assignmentID = getRelatedness(-1,-1) ? 53 : 94;
+                    else if (getRelatedness(-1, 1))
+                        assignmentID = getRelatedness(-1,-1) ? 75 : 87;
+                    else
+                        assignmentID = getRelatedness(-1,-1) ? 22 : 25;
+                    break;
+                case 6: //LD
+                    if (getRelatedness(1, 1))
+                        assignmentID = getRelatedness(-1, 1) ? 41 : 85;
+                    else if (getRelatedness(-1, -1))
+                        assignmentID = getRelatedness(-1, 1) ? 65 : 97;
+                    else
+                        assignmentID = getRelatedness(-1, 1) ? 2 : 5;
+                    break;
+                case 7: //LUD
+                    if (getRelatedness(-1, -1))
+                        assignmentID = getRelatedness(-1, 1) ? 12 : 27;
+                    else
+                        assignmentID = getRelatedness(-1, 1) ? (getRelatedness(1, -1) || getRelatedness(0, -2) ? 37 : 90) : 15;
+                    break;
+                case 8: //R
+                    assignmentID = 30;
+                    break;
+                case 9: //RU
+                    if (getRelatedness(-1, -1))
+                        assignmentID = getRelatedness(1, -1) ? 52 : 95;
+                    else if (getRelatedness(1, 1))
+                        assignmentID = getRelatedness(1, -1) ? 54 : 96;
+                    else
+                        assignmentID = getRelatedness(1, -1) ? 20 : 23;
+                    break;
+                case 10: //RD
+                    if (getRelatedness(-1, 1))
+                        assignmentID = getRelatedness(1, 1) ? 40 : 84;
+                    else if (getRelatedness(1, -1))
+                        assignmentID = getRelatedness(1, 1) ? 44 : 86;
+                    else
+                        assignmentID = getRelatedness(1, 1) ? 0 : 3;
+                    break;
+                case 11: //RUD
+                    if (getRelatedness(1, -1))
+                        assignmentID = getRelatedness(1, 1) ? 10 : 26;
+                    else
+                        assignmentID = getRelatedness(1, 1) ? (getRelatedness(-1, -1) || getRelatedness(0, -2) ? 36 : 91) : 13;
+                    break;
+                case 12: //LR
+                    assignmentID = 31;
+                    break;
+                case 13: //LRU
+                    if (getRelatedness(-1, -1))
+                        assignmentID = getRelatedness(1, -1) ? 21 : 18;
+                    else
+                        assignmentID = getRelatedness(1, -1) ? 19 : 24;
+                    break;
+                case 14: //LRD
+                    if (getRelatedness(-1, 1))
+                        assignmentID = getRelatedness(1, 1) ? 1 : 8;
+                    else
+                        assignmentID = getRelatedness(1, 1) ? 9 : 4;
+                    break;
+                case 15: //LRUD
+                    switch (
+                        (getRelatedness(-1, -1) ? 1 : 0) |
+                        (getRelatedness( 1, -1) ? 2 : 0) |
+                        (getRelatedness( 1,  1) ? 4 : 0) |
+                        (getRelatedness(-1,  1) ? 8 : 0)
+                    ) {
+                        case 0: //no corners at all, full pipe plus
+                            assignmentID = 14;
+                            break;
+                        case 1:
+                            assignmentID = 39;
+                            break;
+                        case 2:
+                            assignmentID = 38;
+                            break;
+                        case 3:
+                            assignmentID = 58;
+                            break;
+                        case 4:
+                            assignmentID = 28;
+                            break;
+                        case 5:
+                            assignmentID = 69;
+                            break;
+                        case 6:
+                            assignmentID = 48;
+                            break;
+                        case 7:
+                            if (!getRelatedness(0, 2))
+                                assignmentID = 42;
+                            else if (!getRelatedness(-2, 0))
+                                assignmentID = 55;
+                            else
+                                assignmentID = 7;
+                            break;
+                        case 8:
+                            assignmentID = 29;
+                            break;
+                        case 9:
+                            assignmentID = 49;
+                            break;
+                        case 10:
+                            assignmentID = 68;
+                            break;
+                        case 11:
+                            if (!getRelatedness(0, 2))
+                                assignmentID = 43;
+                            else if (!getRelatedness(2, 0))
+                                assignmentID = 74;
+                            else
+                                assignmentID = 6;
+                            break;
+                        case 12:
+                            assignmentID = 59;
+                            break;
+                        case 13:
+                            if (!getRelatedness(0, -2))
+                                assignmentID = 51;
+                            else if (!getRelatedness(2, 0))
+                                assignmentID = 64;
+                            else
+                                assignmentID = 16;
+                            break;
+                        case 14:
+                            if (!getRelatedness(0, -2))
+                                assignmentID = 50;
+                            else if (!getRelatedness(-2, 0))
+                                assignmentID = 45;
+                            else
+                                assignmentID = 17;
+                            break;
+                        case 15: //totally surrounded, normal wall tile
+                            assignmentID = 11;
+                            break;
+                    }
+                    break;
+            }
+
+            while (Assignments[assignmentID].Tiles.Count == 0)
+            {
+                ushort[] alternatives = AlternativeAssignments[assignmentID];
+                int alternativeID = 0;
+                for (; alternativeID < alternatives.Length - 1; ++alternativeID)
+                    if (!Assignments[alternatives[alternativeID]].Empty)
+                        break;
+                assignmentID = alternatives[alternativeID];
+            }
+
+            bool lastRuleApplied = true;
+            foreach (Rule rule in Assignments[assignmentID].Rules)
+            {
+                List<ushort> frames = rule.Result;
+                bool applies = lastRuleApplied && rule.Applies(tileMap, location, otherSmartTiles);
+                if (frames.Count == 0) //and
+                {
+                    lastRuleApplied = applies;
+                }
+                else //then
+                {
+                    if (applies)
+                    {
+                        tileMap[location.X, location.Y] = frames[frames.Count == 1 ? 0 : Rand.Next(frames.Count)];
+                        return true;
+                    }
+                    lastRuleApplied = true;
+                }
+            }
+
+            var tiles = Assignments[assignmentID].Tiles;
+            if (tiles.Count >= 1)
+                tileMap[location.X, location.Y] = tiles[tiles.Count == 1 ? 0 : Rand.Next(tiles.Count)];
+            else
+                return false;
+            return true;
         }
 
         internal bool SmartFlipTile(ref ushort tileID, bool vertical)

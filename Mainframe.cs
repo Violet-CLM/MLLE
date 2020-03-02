@@ -3207,22 +3207,10 @@ namespace MLLE
                 }
                 else
                 {
-                    ArrayMap<ushort> localTiles = new ArrayMap<ushort>(5, 5);
-                    for (int xx = 0; xx < 5; ++xx)
-                    {
-                        int xTile = Math.Max(0, Math.Min(layer.TileMap.GetLength(0) - 1, x + xx - 2));
-                        for (int yy = 0; yy < 5; ++yy)
-                        {
-                            int yTile = Math.Max(0, Math.Min(layer.TileMap.GetLength(1) - 1, y + yy - 2));
-                            localTiles[xx, yy] = layer.TileMap[xTile, yTile];
-                        }
-                    }
-
-                    ushort appliedTile = layer.TileMap[x, y];
-                    bool success = SmartTiles[(int)ev.Value.ID].Apply(ref appliedTile, localTiles, DirectAction);
+                    var smartTile = SmartTiles[(int)ev.Value.ID];
+                    bool success = (DirectAction || smartTile.TilesICanPlace.Contains(layer.TileMap[x,y])) && smartTile.Apply(layer.TileMap, new Point(x,y), SmartTiles);
                     if (success)
                     {
-                        layer.TileMap[x, y] = appliedTile;
                         if (layer == J2L.SpriteLayer)
                             J2L.EventMap[x, y] = 0;
                     }
