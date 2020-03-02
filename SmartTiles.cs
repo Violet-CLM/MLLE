@@ -44,6 +44,7 @@ namespace MLLE
                 X = other.X;
                 Y = other.Y;
                 Not = other.Not;
+                OtherSmartTileID = other.OtherSmartTileID;
                 SpecificTiles.AddRange(other.SpecificTiles);
                 Result.AddRange(other.Result);
             }
@@ -586,7 +587,7 @@ namespace MLLE
                     foreach (SmartTile.Assignment assignment in smartTile.Assignments) //constant length (100), don't need to preface this with anything
                     {
                         var tiles = assignment.Tiles;
-                        writer.Write(tiles.Count);
+                        writer.Write((byte)tiles.Count);
                         foreach (ushort tileID in tiles)
                             writer.Write(tileID);
                         //todo rules

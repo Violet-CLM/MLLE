@@ -177,7 +177,20 @@ namespace MLLE
                         newTileID |= (ushort)(AndValue + 1);
                     if ((GetKeyState((int)Keys.I) & 0x8000) != 0)
                         newTileID |= 0x2000;
-                    tiles.Add(newTileID);
+                    if (CurrentRuleID < 0)
+                        tiles.Add(newTileID);
+                    else
+                    {
+                        Panel rulePanel = (panel4.Controls[CurrentRuleID + 1] as Panel);
+                        (rulePanel.Controls[6] as Label).Text = "then:";
+                        SmartTile.Rule rule = WorkingSmartTile.Assignments[CurrentSmartTileID].Rules[CurrentRuleID];
+                        if (rule.Result.Count < 7)
+                        {
+                            rule.Result.Add(newTileID);
+                            UpdateRuleResultImages(CurrentRuleID);
+                        }
+                        return;
+                    }
                 }
                 else if (e.Button == MouseButtons.Right)
                 {
@@ -251,8 +264,7 @@ namespace MLLE
                 {
                     lock (tilesetPicture)
                     {
-                        framesPicture.Image = new Bitmap(32, framesPicture.Height);
-                        var image = framesPicture.Image;
+                        var image = new Bitmap(32, framesPicture.Height);
                         using (Graphics graphics = Graphics.FromImage(image))
                             for (int i = 0; i < frames.Count; ++i)
                                 DrawTilesetTileAt(graphics, new Point(0, i * 32), frames[i]);
@@ -293,15 +305,18 @@ namespace MLLE
             foreach (Control control in panel4.Controls)
                 if (control.GetType() == isPanel)
                     panel4.Controls.Remove(control);
+            CurrentRuleID = -1;
             AddRuleButton.Top = 0;
             foreach (SmartTile.Rule rule in WorkingSmartTile.Assignments[CurrentSmartTileID].Rules)
             {
                 AddRule(rule);
+                UpdateRuleResultImages(panel4.Controls.Count - 2);
             }
         }
 
         private void AddRuleButton_Click(object sender, EventArgs e)
         {
+            DeselectAllRules();
             var newRule = new SmartTile.Rule();
             WorkingSmartTile.Assignments[CurrentSmartTileID].Rules.Add(newRule);
             AddRule(newRule);
@@ -338,13 +353,13 @@ namespace MLLE
             notIn.Location = new Point(140, 12);
             notIn.AutoSize = true;
             notIn.Checked = rule.Not;
-            notIn.CheckedChanged += (s, e) => { rule.Not = (s as CheckBox).Checked; };
+            notIn.CheckedChanged += (s, e) => { rule.Not = notIn.Checked; };
 
             TextBox specificTileCriteria = new TextBox();
             specificTileCriteria.Location = new Point(315, 10);
             specificTileCriteria.Text = string.Join(",", rule.SpecificTiles.Select(number => number.ToString()));
             specificTileCriteria.Visible = rule.OtherSmartTileID < 0;
-            specificTileCriteria.Validating += (s, e) => {
+            specificTileCriteria.LostFocus += (s, e) => {
                 bool valid = SpecificTilesValidationPattern.Match(specificTileCriteria.Text).Success;
                 specificTileCriteria.BackColor = valid ? Color.White : Color.Pink;
                 if (valid)
@@ -373,9 +388,10 @@ namespace MLLE
             Label andOrThen = new Label();
             andOrThen.Text = "and...";
             andOrThen.Location = new Point(435, 12);
+            andOrThen.AutoSize = true;
 
             PictureBox results = new PictureBox();
-            results.Location = new Point(440, 4);
+            results.Location = new Point(470, 4);
             results.Size = new Size(224, 32);
 
             Button deleteRuleButton = new Button();
@@ -387,11 +403,53 @@ namespace MLLE
                 panel4.Controls.Remove(panel);
                 foreach (Control control in panel4.Controls)
                     control.Top -= 40;
+                DeselectAllRules();
             };
 
             panel.Controls.AddRange(new Control[]{ ifLabel, notIn, criteriaSource, specificTileCriteria, andOrThen, results, deleteRuleButton });
+            foreach (Control control in panel.Controls)
+            {
+                control.MouseClick += (s, e) => {
+                    DeselectAllRules();
+                    (s as Control).Parent.BackColor = Color.White;
+                    CurrentRuleID = WorkingSmartTile.Assignments[CurrentSmartTileID].Rules.FindIndex(m => m == panel.Tag as SmartTile.Rule);
+                    if (s is PictureBox && e.Button == MouseButtons.Right)
+                    {
+                        var X = e.X / 32;
+                        if (X < rule.Result.Count)
+                        {
+                            rule.Result.RemoveAt(X);
+                            UpdateRuleResultImages(CurrentRuleID);
+                            if (rule.Result.Count == 0)
+                                andOrThen.Text = "and...";
+                        }
+                    }
+                };
+            }
             panel4.Controls.Add(panel);
             AddRuleButton.Top += 40;
+        }
+
+        void DeselectAllRules()
+        {
+            foreach (Control possibleRulePanel in panel4.Controls)
+                possibleRulePanel.BackColor = System.Drawing.SystemColors.Control;
+            CurrentRuleID = 1;
+        }
+
+        void UpdateRuleResultImages(int ruleID)
+        {
+            PictureBox picture = (panel4.Controls[ruleID + 1] as Panel).Controls[7] as PictureBox;
+            lock (tilesetPicture)
+            {
+                var image = new Bitmap(224, 32);
+                var frames = WorkingSmartTile.Assignments[CurrentSmartTileID].Rules[ruleID].Result;
+                if (frames.Count > 0)
+                    using (Graphics graphics = Graphics.FromImage(image))
+                        for (int i = 0; i < frames.Count; ++i)
+                            DrawTilesetTileAt(graphics, new Point(i * 32, 0), frames[i]);
+                picture.Image = image;
+            }
         }
     }
 }
