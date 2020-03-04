@@ -57,20 +57,18 @@ namespace MLLE
         private void RedrawTiles(object state)
         {
             lock (smartPicture)
-            {
-                var image = smartPicture.Image;
-                using (Graphics graphics = Graphics.FromImage(image))
-                    for (int i = 0; i < WorkingSmartTile.Assignments.Length; ++i)
-                    {
-                        var tiles = WorkingSmartTile.Assignments[i].Tiles;
-                        if (tiles.Count > 0)
-                            lock (tilesetPicture)
-                            {
+                lock (tilesetPicture)
+                {
+                    var image = smartPicture.Image;
+                    using (Graphics graphics = Graphics.FromImage(image))
+                        for (int i = 0; i < WorkingSmartTile.Assignments.Length; ++i)
+                        {
+                            var tiles = WorkingSmartTile.Assignments[i].Tiles;
+                            if (tiles.Count > 0)
                                 DrawTilesetTileAt(graphics, PointFromTileID(i), tiles[elapsed % tiles.Count]);
-                            }
-                    }
-                smartPicture.Image = image;
-            }
+                        }
+                    smartPicture.Image = image;
+                }
 
             ++elapsed;
         }

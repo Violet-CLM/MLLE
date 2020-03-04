@@ -107,7 +107,20 @@ namespace MLLE
                 }
                 if (fileVersion >= 2)
                 {
-                    //todo read rules
+                    for (int numberOfRules = reader.ReadByte(); numberOfRules > 0; --numberOfRules)
+                    {
+                        Rule newRule = new Rule();
+                        newRule.X = reader.ReadSByte();
+                        newRule.Y = reader.ReadSByte();
+                        newRule.Not = reader.ReadBoolean();
+                        newRule.OtherSmartTileID = reader.ReadSByte();
+                        if (newRule.OtherSmartTileID == -1)
+                            for (int numberOfSpecificTiles = reader.ReadByte(); numberOfSpecificTiles > 0; --numberOfSpecificTiles)
+                                newRule.SpecificTiles.Add(reader.ReadUInt16());
+                        for (int numberOfResults = reader.ReadByte(); numberOfResults > 0; --numberOfResults)
+                            newRule.Result.Add(reader.ReadUInt16());
+                        assignment.Rules.Add(newRule);
+                    }
                 }
             }
             if (fileVersion >= 1)
@@ -600,7 +613,7 @@ namespace MLLE
             using (BinaryReader reader = new BinaryReader(File.Open(filepath, FileMode.Open), J2File.FileEncoding))
             {
                 ushort version = reader.ReadUInt16();
-                if (version > 1) {
+                if (version > 2) {
                     System.Windows.Forms.MessageBox.Show("The file \"" + filepath + "\" was not saved in a format that this version of MLLE understands. Please make sure you have the latest MLLE release.", "Incompatible File Version", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
                     success = false;
                 } else {
@@ -615,7 +628,7 @@ namespace MLLE
         private void SaveSmartTiles()
         {
             using (BinaryWriter writer = new BinaryWriter(File.Open(Path.ChangeExtension(J2L.Tilesets[0].FullFilePath, ".MLLESet"), FileMode.Create), J2File.FileEncoding)) {
-                writer.Write((ushort)1); //version
+                writer.Write((ushort)2); //version
                 writer.Write((byte)SmartTiles.Count);
                 foreach (SmartTile smartTile in SmartTiles)
                 {
@@ -626,8 +639,24 @@ namespace MLLE
                         writer.Write((byte)tiles.Count);
                         foreach (ushort tileID in tiles)
                             writer.Write(tileID);
-                        //todo rules
                         var rules = assignment.Rules;
+                        writer.Write((byte)rules.Count);
+                        foreach (SmartTile.Rule rule in rules)
+                        {
+                            writer.Write((sbyte)rule.X);
+                            writer.Write((sbyte)rule.Y);
+                            writer.Write(rule.Not);
+                            writer.Write((sbyte)rule.OtherSmartTileID);
+                            if (rule.OtherSmartTileID == -1)
+                            {
+                                writer.Write((byte)rule.SpecificTiles.Count);
+                                foreach (ushort tileID in rule.SpecificTiles)
+                                    writer.Write(tileID);
+                            }
+                            writer.Write((byte)rule.Result.Count);
+                            foreach (ushort tileID in rule.Result)
+                                writer.Write(tileID);
+                        }
                     }
                     writer.Write((byte)smartTile.Friends.Count);
                     foreach (int friendID in smartTile.Friends)
