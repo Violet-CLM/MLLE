@@ -216,6 +216,7 @@ namespace MLLE
 
                 if (e.Button == MouseButtons.Right)
                 {
+                    WorkingSmartTile.Assignments[CurrentSmartTileID].Rules.Clear();
                     WorkingSmartTile.Assignments[CurrentSmartTileID].Tiles.Clear();
                 }
 
@@ -299,10 +300,10 @@ namespace MLLE
 
         void UpdateRules()
         {
-            Type isPanel = panel4.GetType();
-            foreach (Control control in panel4.Controls)
-                if (control.GetType() == isPanel)
-                    panel4.Controls.Remove(control);
+            panel4.AutoScrollPosition = new Point(0, 0);
+            for (int i = panel4.Controls.Count - 1; i >= 0; --i)
+                if (panel4.Controls[i] is Panel)
+                    panel4.Controls.RemoveAt(i);
             CurrentRuleID = -1;
             AddRuleButton.Top = 0;
             foreach (SmartTile.Rule rule in WorkingSmartTile.Assignments[CurrentSmartTileID].Rules)

@@ -3152,7 +3152,7 @@ namespace MLLE
         private void defineSmartTilesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _suspendEvent.Reset();
-            SmartTile workingSmartTile = new SmartTile();
+            SmartTile workingSmartTile = new SmartTile(J2L.MaxTiles == 4096);
             if (new SmartTilesForm().ShowForm(workingSmartTile, J2L.Tilesets[0], SmartTiles))
             {
                 SmartTiles.Add(workingSmartTile);

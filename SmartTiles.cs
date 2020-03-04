@@ -58,7 +58,7 @@ namespace MLLE
                 if (y < 0 || y >= tileMap.GetLength(1))
                     return false;
                 ushort tileID = tileMap[x, y];
-                return Not ^ (OtherSmartTileID == -1) ? SpecificTiles.Contains(tileID) : otherSmartTiles[OtherSmartTileID].TilesICanPlace.Contains(tileID);
+                return Not ^ ((OtherSmartTileID == -1) ? SpecificTiles.Contains(tileID) : otherSmartTiles[OtherSmartTileID].TilesICanPlace.Contains(tileID));
             }
         }
         internal class Assignment
@@ -93,11 +93,19 @@ namespace MLLE
             TilesIGoNextTo = new HashSet<ushort>(other.TilesIGoNextTo.Comparer);
             TilesIGoNextTo.UnionWith(other.TilesIGoNextTo);
         }
-        internal SmartTile(bool maxTiles4096, ushort fileVersion, BinaryReader reader)
+        internal SmartTile(bool maxTiles4096)
+        {
+            for (int i = 0; i < Assignments.Length; ++i)
+                Assignments[i] = new Assignment();
+            ushortComparer comparer = maxTiles4096 ? ushortComparer.compare124 : ushortComparer.compare123;
+            TilesICanPlace = new HashSet<ushort>(comparer);
+            TilesIGoNextTo = new HashSet<ushort>(comparer);
+        }
+        internal SmartTile(bool maxTiles4096, ushort fileVersion, BinaryReader reader) : this(maxTiles4096)
         {
             Name = reader.ReadString();
             for (int i = 0; i < Assignments.Length; ++i) {
-                Assignment assignment = Assignments[i] = new Assignment();
+                Assignment assignment = Assignments[i];
                 for (int numberOfTileIDs = reader.ReadByte(); numberOfTileIDs > 0; --numberOfTileIDs)
                 {
                     ushort tileID = reader.ReadUInt16();
@@ -128,9 +136,6 @@ namespace MLLE
                 for (int friendCount = reader.ReadByte(); friendCount > 0; --friendCount)
                     Friends.Add(reader.ReadByte());
             }
-            ushortComparer comparer = maxTiles4096 ? ushortComparer.compare124 : ushortComparer.compare123;
-            TilesICanPlace = new HashSet<ushort>(comparer);
-            TilesIGoNextTo = new HashSet<ushort>(comparer);
         }
         internal void UpdateAllPossibleTiles(List<SmartTile> smartTiles)
         {
