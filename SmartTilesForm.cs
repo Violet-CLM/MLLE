@@ -181,7 +181,7 @@ namespace MLLE
                     {
                         Panel rulePanel = (panel4.Controls[CurrentRuleID + 1] as Panel);
                         SmartTile.Rule rule = WorkingSmartTile.Assignments[CurrentSmartTileID].Rules[CurrentRuleID];
-                        if (rule.Result.Count < 7)
+                        if (rule.Result.Count < 8)
                         {
                             rule.Result.Add(newTileID);
                             UpdateRuleResultImages(CurrentRuleID);
@@ -332,29 +332,27 @@ namespace MLLE
             Label ifLabel = new Label();
             ifLabel.Text = "if";
             ifLabel.Location = new Point(14, 12);
+            ifLabel.AutoSize = true;
 
-            for (int i = 0; i < 2; ++i) {
-                bool isX = i == 0;
-                NumericUpDown num = new NumericUpDown();
-                num.Minimum = -2;
-                num.Maximum = 2;
-                //num.Controls[0].Visible = false;
-                num.Location = new Point(32 + i * 50, 10);
-                num.Size = new Size(42, 20);
-                num.Value = isX ? rule.X : rule.Y;
-                num.ValueChanged += (s, e) => { if (isX) rule.X = (int)num.Value; else rule.Y = (int)num.Value; };
-                panel.Controls.Add(num);
-            }
+            PictureBox grid = new PictureBox();
+            grid.Size = new Size(40, 40);
+            grid.Location = new Point(32, 0);
+            grid.MouseClick += (s, e) =>
+            {
+                rule.X = e.X / 8 - 2;
+                rule.Y = e.Y / 8 - 2;
+                UpdateRuleGrid(grid);
+            };
 
             CheckBox notIn = new CheckBox();
             notIn.Text = "not in";
-            notIn.Location = new Point(140, 12);
+            notIn.Location = new Point(90, 12);
             notIn.AutoSize = true;
             notIn.Checked = rule.Not;
             notIn.CheckedChanged += (s, e) => { rule.Not = notIn.Checked; };
 
             TextBox specificTileCriteria = new TextBox();
-            specificTileCriteria.Location = new Point(315, 10);
+            specificTileCriteria.Location = new Point(265, 10);
             specificTileCriteria.Text = string.Join(",", rule.SpecificTiles.Select(number => number.ToString()));
             specificTileCriteria.Visible = rule.OtherSmartTileID < 0;
             specificTileCriteria.LostFocus += (s, e) => {
@@ -367,7 +365,7 @@ namespace MLLE
             ComboBox criteriaSource = new ComboBox();
             criteriaSource.Items.AddRange(AllSmartTileNames.ToArray());
             criteriaSource.Items.Add("specific tiles:");
-            criteriaSource.Location = new Point(200, 10);
+            criteriaSource.Location = new Point(150, 10);
             criteriaSource.Width = 105;
             criteriaSource.DropDownStyle = ComboBoxStyle.DropDownList;
             criteriaSource.SelectedIndex = rule.OtherSmartTileID >= 0 ? rule.OtherSmartTileID : criteriaSource.Items.Count - 1;
@@ -384,16 +382,16 @@ namespace MLLE
             };
 
             Label andOrThen = new Label();
-            andOrThen.Location = new Point(435, 12);
+            andOrThen.Location = new Point(385, 12);
             andOrThen.AutoSize = true;
 
             PictureBox results = new PictureBox();
-            results.Location = new Point(470, 4);
-            results.Size = new Size(224, 32);
+            results.Location = new Point(420, 4);
+            results.Size = new Size(256, 32);
 
             Button deleteRuleButton = new Button();
             deleteRuleButton.Text = "X";
-            deleteRuleButton.Location = new Point(700, 4);
+            deleteRuleButton.Location = new Point(684, 4);
             deleteRuleButton.Size = new Size(32, 32);
             deleteRuleButton.Click += (s, e) => {
                 WorkingSmartTile.Assignments[CurrentSmartTileID].Rules.Remove(panel.Tag as SmartTile.Rule);
@@ -403,7 +401,7 @@ namespace MLLE
                 DeselectAllRules();
             };
 
-            panel.Controls.AddRange(new Control[]{ ifLabel, notIn, criteriaSource, specificTileCriteria, andOrThen, results, deleteRuleButton });
+            panel.Controls.AddRange(new Control[]{ ifLabel, grid, notIn, criteriaSource, specificTileCriteria, andOrThen, results, deleteRuleButton });
             foreach (Control control in panel.Controls)
             {
                 control.MouseClick += (s, e) => {
@@ -421,6 +419,7 @@ namespace MLLE
                     }
                 };
             }
+            UpdateRuleGrid(grid);
             panel4.Controls.Add(panel);
             AddRuleButton.Top += 40;
         }
@@ -436,15 +435,25 @@ namespace MLLE
         {
             var frames = WorkingSmartTile.Assignments[CurrentSmartTileID].Rules[ruleID].Result;
             Panel rulePanel = (panel4.Controls[ruleID + 1] as Panel);
-            PictureBox picture = rulePanel.Controls[7] as PictureBox;
-            var image = new Bitmap(224, 32);
+            PictureBox picture = rulePanel.Controls[6] as PictureBox;
+            var image = new Bitmap(256, 32);
             if (frames.Count > 0)
                 lock (tilesetPicture)
                     using (Graphics graphics = Graphics.FromImage(image))
                         for (int i = 0; i < frames.Count; ++i)
                             DrawTilesetTileAt(graphics, new Point(i * 32, 0), frames[i]);
             picture.Image = image;
-            (rulePanel.Controls[6] as Label).Text = (frames.Count == 0) ? "and..." : "then:";
+            (rulePanel.Controls[5] as Label).Text = (frames.Count == 0) ? "and..." : "then:";
+        }
+
+        static readonly Brush GridBrush = new SolidBrush(Color.Red);
+        void UpdateRuleGrid(PictureBox grid)
+        {
+            Image newGrid = Properties.Resources.RuleGrid;
+            SmartTile.Rule rule = grid.Parent.Tag as SmartTile.Rule;
+            using (Graphics g = Graphics.FromImage(newGrid))
+                g.FillRectangle(GridBrush, 16 + rule.X * 8, 16 + rule.Y * 8, 8, 8);
+            grid.Image = newGrid;
         }
     }
 }
