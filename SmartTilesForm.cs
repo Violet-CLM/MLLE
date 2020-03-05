@@ -180,7 +180,6 @@ namespace MLLE
                     else
                     {
                         Panel rulePanel = (panel4.Controls[CurrentRuleID + 1] as Panel);
-                        (rulePanel.Controls[6] as Label).Text = "then:";
                         SmartTile.Rule rule = WorkingSmartTile.Assignments[CurrentSmartTileID].Rules[CurrentRuleID];
                         if (rule.Result.Count < 7)
                         {
@@ -385,7 +384,6 @@ namespace MLLE
             };
 
             Label andOrThen = new Label();
-            andOrThen.Text = "and...";
             andOrThen.Location = new Point(435, 12);
             andOrThen.AutoSize = true;
 
@@ -419,8 +417,6 @@ namespace MLLE
                         {
                             rule.Result.RemoveAt(X);
                             UpdateRuleResultImages(CurrentRuleID);
-                            if (rule.Result.Count == 0)
-                                andOrThen.Text = "and...";
                         }
                     }
                 };
@@ -438,17 +434,17 @@ namespace MLLE
 
         void UpdateRuleResultImages(int ruleID)
         {
-            PictureBox picture = (panel4.Controls[ruleID + 1] as Panel).Controls[7] as PictureBox;
-            lock (tilesetPicture)
-            {
-                var image = new Bitmap(224, 32);
-                var frames = WorkingSmartTile.Assignments[CurrentSmartTileID].Rules[ruleID].Result;
-                if (frames.Count > 0)
+            var frames = WorkingSmartTile.Assignments[CurrentSmartTileID].Rules[ruleID].Result;
+            Panel rulePanel = (panel4.Controls[ruleID + 1] as Panel);
+            PictureBox picture = rulePanel.Controls[7] as PictureBox;
+            var image = new Bitmap(224, 32);
+            if (frames.Count > 0)
+                lock (tilesetPicture)
                     using (Graphics graphics = Graphics.FromImage(image))
                         for (int i = 0; i < frames.Count; ++i)
                             DrawTilesetTileAt(graphics, new Point(i * 32, 0), frames[i]);
-                picture.Image = image;
-            }
+            picture.Image = image;
+            (rulePanel.Controls[6] as Label).Text = (frames.Count == 0) ? "and..." : "then:";
         }
     }
 }
