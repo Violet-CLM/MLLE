@@ -27,24 +27,34 @@ namespace MLLE
         {
             Tileset = tileset;
             WorkingSmartTile = workingSmartTile;
-            AllSmartTileNames = smartTiles.Select(smartTile => smartTile.Name).ToList();
-            for (int otherSmartTileID = 0; otherSmartTileID < smartTiles.Count; ++otherSmartTileID) {
-                checkedComboBox1.Items.Add(
-                    otherSmartTileID != workingSmartTileIndex ? AllSmartTileNames[otherSmartTileID] : "[this]",
-                    otherSmartTileID == workingSmartTileIndex ?
-                        CheckState.Indeterminate :
-                        workingSmartTile.Friends.Contains(otherSmartTileID) ?
-                            CheckState.Checked :
-                            CheckState.Unchecked
-                );
+            if (smartTiles.Count >= 1)
+                AllSmartTileNames = smartTiles.Select(smartTile => smartTile.Name).ToList();
+            else
+                AllSmartTileNames = new List<string>();
+            if (workingSmartTileIndex == -1)
+                AllSmartTileNames.Add("[this]");
+            if (smartTiles.Count > 1)
+            {
+                for (int otherSmartTileID = 0; otherSmartTileID < smartTiles.Count; ++otherSmartTileID)
+                {
+                    checkedComboBox1.Items.Add(
+                        otherSmartTileID != workingSmartTileIndex ? AllSmartTileNames[otherSmartTileID] : "[this]",
+                        otherSmartTileID == workingSmartTileIndex ?
+                            CheckState.Indeterminate :
+                            workingSmartTile.Friends.Contains(otherSmartTileID) ?
+                                CheckState.Checked :
+                                CheckState.Unchecked
+                    );
+                }
+                checkedComboBox1.SetItemCheckState(0, checkedComboBox1.GetItemCheckState(0)); //fixes issue of control not updating text preview in response to Items.Add
+                checkedComboBox1.ItemCheck += (s, e) => { if (e.CurrentValue == CheckState.Indeterminate) e.NewValue = CheckState.Indeterminate; }; //don't let the indeterminate item (this smarttile itself) be altered
             }
-            checkedComboBox1.SetItemCheckState(0, checkedComboBox1.GetItemCheckState(0)); //fixes issue of control not updating text preview in response to Items.Add
-            checkedComboBox1.ItemCheck += (s, e) => { if (e.CurrentValue == CheckState.Indeterminate) e.NewValue = CheckState.Indeterminate; }; //don't let the indeterminate item (this smarttile itself) be altered
+            else
+                checkedComboBox1.Hide();
             AndValue = ((SmartTile.ushortComparer)WorkingSmartTile.TilesICanPlace.Comparer).AndValue;
             textBox1.Text = WorkingSmartTile.Name;
             CreateImageFromTileset();
-
-            AddRuleButton.Top = -50;
+            
             using (new System.Threading.Timer(RedrawTiles, null, TimeSpan.FromSeconds(0), TimeSpan.FromSeconds(0.5)))
                 ShowDialog();
             return Result;
@@ -179,7 +189,7 @@ namespace MLLE
                         tiles.Add(newTileID);
                     else
                     {
-                        Panel rulePanel = (panel4.Controls[CurrentRuleID + 1] as Panel);
+                        Panel rulePanel = (panel4.Controls[panel4.Controls.Count - 1 - CurrentRuleID] as Panel);
                         SmartTile.Rule rule = WorkingSmartTile.Assignments[CurrentSmartTileID].Rules[CurrentRuleID];
                         if (rule.Result.Count < 8)
                         {
@@ -304,7 +314,6 @@ namespace MLLE
                 if (panel4.Controls[i] is Panel)
                     panel4.Controls.RemoveAt(i);
             CurrentRuleID = -1;
-            AddRuleButton.Top = 0;
             foreach (SmartTile.Rule rule in WorkingSmartTile.Assignments[CurrentSmartTileID].Rules)
             {
                 AddRule(rule);
@@ -326,8 +335,7 @@ namespace MLLE
             Panel panel = new Panel();
             panel.Tag = rule;
             panel.Size = new Size(panel4.ClientSize.Width, 40);
-            panel.Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top;
-            panel.Top = AddRuleButton.Top;
+            panel.Dock = DockStyle.Top;
 
             Label ifLabel = new Label();
             ifLabel.Text = "if";
@@ -396,18 +404,42 @@ namespace MLLE
             deleteRuleButton.Click += (s, e) => {
                 WorkingSmartTile.Assignments[CurrentSmartTileID].Rules.Remove(panel.Tag as SmartTile.Rule);
                 panel4.Controls.Remove(panel);
-                foreach (Control control in panel4.Controls)
-                    control.Top -= 40;
                 DeselectAllRules();
             };
 
             panel.Controls.AddRange(new Control[]{ ifLabel, grid, notIn, criteriaSource, specificTileCriteria, andOrThen, results, deleteRuleButton });
+
+            for (int vDelta = -1; vDelta <= 1; vDelta += 2)
+            {
+                Button adjustOrderButton = new Button();
+                adjustOrderButton.Text = (vDelta == -1) ? "^" : "v";
+                adjustOrderButton.Location = new Point(716, 12 + vDelta * 8);
+                adjustOrderButton.Size = new Size(16, 16);
+                int localVDelta = vDelta;
+                adjustOrderButton.Click += (s, e) => {
+                    var rules = WorkingSmartTile.Assignments[CurrentSmartTileID].Rules;
+                    var index = rules.FindIndex(r => r == rule);
+                    if (localVDelta == -1) {
+                        if (index == 0)
+                            return;
+                    } else {
+                        if (index == rules.Count - 1)
+                            return;
+                    }
+                    SmartTile.Rule otherRule = rules[index + localVDelta];
+                    rules[index + localVDelta] = rule;
+                    rules[index] = otherRule;
+                    panel4.Controls.SetChildIndex(panel, panel4.Controls.GetChildIndex(panel) - localVDelta);
+                };
+                panel.Controls.Add(adjustOrderButton);
+            }
+
             foreach (Control control in panel.Controls)
             {
                 control.MouseClick += (s, e) => {
                     DeselectAllRules();
                     (s as Control).Parent.BackColor = Color.White;
-                    CurrentRuleID = WorkingSmartTile.Assignments[CurrentSmartTileID].Rules.FindIndex(m => m == panel.Tag as SmartTile.Rule);
+                    CurrentRuleID = WorkingSmartTile.Assignments[CurrentSmartTileID].Rules.FindIndex(r => r == rule);
                     if (s is PictureBox && e.Button == MouseButtons.Right)
                     {
                         var X = e.X / 32;
@@ -421,20 +453,20 @@ namespace MLLE
             }
             UpdateRuleGrid(grid);
             panel4.Controls.Add(panel);
-            AddRuleButton.Top += 40;
+            panel4.Controls.SetChildIndex(panel, 1);
         }
 
         void DeselectAllRules()
         {
             foreach (Control possibleRulePanel in panel4.Controls)
                 possibleRulePanel.BackColor = System.Drawing.SystemColors.Control;
-            CurrentRuleID = 1;
+            CurrentRuleID = -1;
         }
 
         void UpdateRuleResultImages(int ruleID)
         {
             var frames = WorkingSmartTile.Assignments[CurrentSmartTileID].Rules[ruleID].Result;
-            Panel rulePanel = (panel4.Controls[ruleID + 1] as Panel);
+            Panel rulePanel = (panel4.Controls[panel4.Controls.Count - 1 - ruleID] as Panel);
             PictureBox picture = rulePanel.Controls[6] as PictureBox;
             var image = new Bitmap(256, 32);
             if (frames.Count > 0)

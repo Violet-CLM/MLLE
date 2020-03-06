@@ -200,9 +200,10 @@
             // 
             // AddRuleButton
             // 
-            this.AddRuleButton.Location = new System.Drawing.Point(3, 41);
+            this.AddRuleButton.Dock = System.Windows.Forms.DockStyle.Top;
+            this.AddRuleButton.Location = new System.Drawing.Point(0, 0);
             this.AddRuleButton.Name = "AddRuleButton";
-            this.AddRuleButton.Size = new System.Drawing.Size(32, 32);
+            this.AddRuleButton.Size = new System.Drawing.Size(762, 32);
             this.AddRuleButton.TabIndex = 12;
             this.AddRuleButton.Text = "+";
             this.AddRuleButton.UseVisualStyleBackColor = true;

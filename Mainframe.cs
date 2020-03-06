@@ -799,7 +799,7 @@ namespace MLLE
 
         private void imageToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (MouseTile > 0 && MouseTile < J2L.TileCount)
+            if (MouseTile > 0 && MouseTile < J2L.TileCount && CurrentTilesetOverlay != TilesetOverlay.SmartTiles)
             {
                 _suspendEvent.Reset();
                 J2TFile J2T;
