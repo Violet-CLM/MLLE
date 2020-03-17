@@ -255,9 +255,9 @@ namespace MLLE
             new ushort[] {22},
             new ushort[] {26},
             new ushort[] {67, 20, 21, 47},
-            null,
-            null,
-            
+            new ushort[] {68},
+            new ushort[] {69},
+
             new ushort[] {57},
             new ushort[] {57},
             new ushort[] {10},
@@ -280,7 +280,7 @@ namespace MLLE
             null,
             null
         };
-        static readonly internal int[,] AssignmentPairings = new int[37,2]{
+        static readonly internal int[,] AssignmentPairings = new int[38,2]{
             {0,2},
             {3,5},
             {6,7},
@@ -301,7 +301,7 @@ namespace MLLE
             {44,65},
             {45,64},
             {46,66},
-            {47,49},
+            {48,49},
             {50,51},
             {52,53},
             {54,75},
@@ -310,6 +310,7 @@ namespace MLLE
             {60,61},
             {62,63},
             {68,69},
+            {78,79},
             {80,81},
             {82,83},
             {84,85},
@@ -389,12 +390,14 @@ namespace MLLE
                     assignmentID = 77;
                     break;
                 case 2: //D
-                    if (getRelatedness(-1, 1) && !getRelatedness(1, 1))
-                        assignmentID = 80;
-                    else if (getRelatedness(1, 1))
-                        assignmentID = 81;
-                    else
-                        assignmentID = 57;
+                    if (getRelatedness(0, 2))
+                    {
+                        if (getRelatedness(-1, 1) && !getRelatedness(1, 1) && getRelatedness(-1, 2))
+                        { assignmentID = 80; break; }
+                        else if (getRelatedness(1, 1) && !getRelatedness(-1, 1) && getRelatedness(1, 2))
+                        { assignmentID = 81; break; }
+                    }
+                    assignmentID = 57;
                     break;
                 case 3: //UD
                     assignmentID = 67;
@@ -403,66 +406,246 @@ namespace MLLE
                     assignmentID = 32;
                     break;
                 case 5: //LU
-                    if (getRelatedness(1, -1))
-                        assignmentID = getRelatedness(-1,-1) ? 53 : 94;
-                    else if (getRelatedness(-1, 1))
-                        assignmentID = getRelatedness(-1,-1) ? 75 : 87;
-                    else
-                        assignmentID = getRelatedness(-1,-1) ? 22 : 25;
+                    if (!getRelatedness(-1, -1)) //thin
+                    {
+                        if (getRelatedness(1, -1) && !getRelatedness(0, -2)) //horizontal tube slope
+                            assignmentID = 94;
+                        else if (getRelatedness(-1, 1) && !getRelatedness(-2, 0)) //vertical tube slope
+                            assignmentID = 87;
+                        else
+                            assignmentID = 25;
+                    }
+                    else //thick
+                    {
+                        if (Assignments[53].Tiles.Count != 0 && getRelatedness(1, -1)) //ceiling slope
+                        {
+                            if (getRelatedness(0, -2))
+                            {
+                                if (getRelatedness(-1, -2) && getRelatedness(1, -2) && Assignments[43].Tiles.Count != 0)
+                                {
+                                    assignmentID = 53;
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                if (Assignments[63].Tiles.Count != 0)
+                                {
+                                    assignmentID = 53;
+                                    break;
+                                }
+                            }
+                        }
+                        if (Assignments[75].Tiles.Count != 0 && getRelatedness(-1, 1)) //wall slope
+                        {
+                            if (getRelatedness(-2, 0))
+                            {
+                                if (getRelatedness(-2, -1) && Assignments[74].Tiles.Count != 0)
+                                {
+                                    assignmentID = 75;
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                if (Assignments[76].Tiles.Count != 0)
+                                {
+                                    assignmentID = 75;
+                                    break;
+                                }
+                            }
+                        }
+                        assignmentID = (!getRelatedness(1, -1) && !getRelatedness(0, -2) && getRelatedness(-1, -2) ? 93 : 22);
+                    }
                     break;
                 case 6: //LD
-                    if (getRelatedness(1, 1))
-                        assignmentID = getRelatedness(-1, 1) ? 41 : 85;
-                    else if (getRelatedness(-1, -1))
-                        assignmentID = getRelatedness(-1, 1) ? 65 : 97;
-                    else
-                        assignmentID = getRelatedness(-1, 1) ? 2 : 5;
+                    if (!getRelatedness(-1, 1)) //thin
+                    {
+                        if (getRelatedness(1, 1) && !getRelatedness(0, 2)) //horizontal tube slope
+                            assignmentID = 85;
+                        else if (getRelatedness(-1, -1) && !getRelatedness(-2, 0)) //vertical tube slope
+                            assignmentID = 97;
+                        else
+                            assignmentID = 5;
+                    }
+                    else //thick
+                    {
+                        if (Assignments[41].Tiles.Count != 0) //floor slope
+                        {
+                            if (getRelatedness(1, 1)) //normal slope
+                            {
+                                if (Assignments[getRelatedness(0, 2) ? (getRelatedness(1, 2) ? (getRelatedness(-1, 2) ? 51 : 79) : 99) : 61].Tiles.Count != 0) //99 is a cheat, it will be false, there's no such tile
+                                {
+                                    assignmentID = 41;
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                if (getRelatedness(-1, -1) && !getRelatedness(-1, -2) && Assignments[getRelatedness(0, 2) ? 83 : 93].Tiles.Count != 0) //downward slope at the end of the platform
+                                {
+                                    assignmentID = 41;
+                                    break;
+                                }
+                            }
+                        }
+                        if (Assignments[65].Tiles.Count != 0 && getRelatedness(-1, -1)) //wall slope
+                        {
+                            if (getRelatedness(-2, 0))
+                            {
+                                if (getRelatedness(-2, 1) && Assignments[64].Tiles.Count != 0)
+                                {
+                                    assignmentID = 65;
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                if (Assignments[66].Tiles.Count != 0)
+                                {
+                                    assignmentID = 65;
+                                    break;
+                                }
+                            }
+                        }
+                        assignmentID = 2;
+                    }
                     break;
                 case 7: //LUD
                     if (getRelatedness(-1, -1))
-                        assignmentID = getRelatedness(-1, 1) ? 12 : 27;
+                        assignmentID = getRelatedness(-1, 1) ? (!getRelatedness(1, -1) && !getRelatedness(0, -2) && getRelatedness(-1, -2) ? 83 : 12) : (getRelatedness(-2, 0) ? 27 : 56);
                     else
-                        assignmentID = getRelatedness(-1, 1) ? (getRelatedness(1, -1) || getRelatedness(0, -2) ? 37 : 90) : 15;
+                        assignmentID = getRelatedness(-1, 1) ? (getRelatedness(1, -1) || getRelatedness(0, -2) ? (getRelatedness(-2, 0) ? 37 : 46) : 90) : 15;
                     break;
                 case 8: //R
                     assignmentID = 30;
                     break;
                 case 9: //RU
-                    if (getRelatedness(-1, -1))
-                        assignmentID = getRelatedness(1, -1) ? 52 : 95;
-                    else if (getRelatedness(1, 1))
-                        assignmentID = getRelatedness(1, -1) ? 54 : 96;
-                    else
-                        assignmentID = getRelatedness(1, -1) ? 20 : 23;
+                    if (!getRelatedness(1, -1)) //thin
+                    {
+                        if (getRelatedness(-1, -1) && !getRelatedness(0, -2)) //horizontal tube slope
+                            assignmentID = 95;
+                        else if (getRelatedness(1, 1) && !getRelatedness(2, 0)) //vertical tube slope
+                            assignmentID = 96;
+                        else
+                            assignmentID = 23;
+                    }
+                    else //thick
+                    {
+                        if (Assignments[52].Tiles.Count != 0 && getRelatedness(-1, -1)) //ceiling slope
+                        {
+                            if (getRelatedness(0, -2))
+                            {
+                                if (getRelatedness(1, -2) && getRelatedness(-1, -2) && Assignments[42].Tiles.Count != 0)
+                                {
+                                    assignmentID = 52;
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                if (Assignments[62].Tiles.Count != 0)
+                                {
+                                    assignmentID = 52;
+                                    break;
+                                }
+                            }
+                        }
+                        if (Assignments[54].Tiles.Count != 0 && getRelatedness(1, 1)) //wall slope
+                        {
+                            if (getRelatedness(2, 0))
+                            {
+                                if (getRelatedness(2, -1) && Assignments[55].Tiles.Count != 0)
+                                {
+                                    assignmentID = 54;
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                if (Assignments[56].Tiles.Count != 0)
+                                {
+                                    assignmentID = 54;
+                                    break;
+                                }
+                            }
+                        }
+                        assignmentID = !getRelatedness(-1, -1) && !getRelatedness(0, -2) && getRelatedness(1, -2) ? 92 : 20;
+                    }
                     break;
                 case 10: //RD
-                    if (getRelatedness(-1, 1))
-                        assignmentID = getRelatedness(1, 1) ? 40 : 84;
-                    else if (getRelatedness(1, -1))
-                        assignmentID = getRelatedness(1, 1) ? 44 : 86;
-                    else
-                        assignmentID = getRelatedness(1, 1) ? 0 : 3;
+                    if (!getRelatedness(1, 1)) //thin
+                    {
+                        if (getRelatedness(-1, 1) && !getRelatedness(0, 2)) //horizontal tube slope
+                            assignmentID = 84;
+                        else if (getRelatedness(1, -1) && !getRelatedness(2, 0)) //vertical tube slope
+                            assignmentID = 86;
+                        else
+                            assignmentID = 3;
+                    }
+                    else //thick
+                    {
+                        if (Assignments[40].Tiles.Count != 0) //floor slope
+                        {
+                            if (getRelatedness(-1, 1)) //normal slope
+                            {
+                                if (Assignments[getRelatedness(0, 2) ? (getRelatedness(-1, 2) ? (getRelatedness(1, 2) ? 50 : 78) : 99) : 60].Tiles.Count != 0)
+                                {
+                                    assignmentID = 40;
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                if (getRelatedness(1, -1) && !getRelatedness(1, -2) && Assignments[getRelatedness(0, 2) ? 82 : 92].Tiles.Count != 0) //downward slope at the end of the platform
+                                {
+                                    assignmentID = 40;
+                                    break;
+                                }
+                            }
+                        }
+                        if (Assignments[44].Tiles.Count != 0 && getRelatedness(1, -1)) //wall slope
+                        {
+                            if (getRelatedness(2, 0))
+                            {
+                                if (getRelatedness(2, 1) && Assignments[45].Tiles.Count != 0)
+                                {
+                                    assignmentID = 44;
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                if (Assignments[46].Tiles.Count != 0)
+                                {
+                                    assignmentID = 44;
+                                    break;
+                                }
+                            }
+                        }
+                        assignmentID = 0;
+                    }
                     break;
                 case 11: //RUD
                     if (getRelatedness(1, -1))
-                        assignmentID = getRelatedness(1, 1) ? 10 : 26;
+                        assignmentID = getRelatedness(1, 1) ? (!getRelatedness(-1, -1) && !getRelatedness(0, -2) && getRelatedness(1, -2) ? 82 : 10) : (getRelatedness(2, 0) ? 26 : 76);
                     else
-                        assignmentID = getRelatedness(1, 1) ? (getRelatedness(-1, -1) || getRelatedness(0, -2) ? 36 : 91) : 13;
+                        assignmentID = getRelatedness(1, 1) ? (getRelatedness(-1, -1) || getRelatedness(0, -2) ? (getRelatedness(2, 0) ? 36 : 66) : 91) : 13;
                     break;
                 case 12: //LR
                     assignmentID = 31;
                     break;
                 case 13: //LRU
                     if (getRelatedness(-1, -1))
-                        assignmentID = getRelatedness(1, -1) ? 21 : 18;
+                        assignmentID = getRelatedness(1, -1) ? 21 : (getRelatedness(0, -2) ? 18 : 61);
                     else
-                        assignmentID = getRelatedness(1, -1) ? 19 : 24;
+                        assignmentID = getRelatedness(1, -1) ? (getRelatedness(0, -2) ? 19 : 60) : 24;
                     break;
                 case 14: //LRD
                     if (getRelatedness(-1, 1))
-                        assignmentID = getRelatedness(1, 1) ? 1 : 8;
+                        assignmentID = getRelatedness(1, 1) ? 1 : (getRelatedness(0, 2) ? 8 : 63);
                     else
-                        assignmentID = getRelatedness(1, 1) ? 9 : 4;
+                        assignmentID = getRelatedness(1, 1) ? (getRelatedness(0, 2) ? 9 : 62) : 4;
                     break;
                 case 15: //LRUD
                     switch (
@@ -487,7 +670,7 @@ namespace MLLE
                             assignmentID = 28;
                             break;
                         case 5:
-                            assignmentID = 69;
+                            assignmentID = (getRelatedness(-1, -1) && !getRelatedness(0,-2)) ? 79 : 69;
                             break;
                         case 6:
                             assignmentID = 48;
@@ -507,7 +690,7 @@ namespace MLLE
                             assignmentID = 49;
                             break;
                         case 10:
-                            assignmentID = 68;
+                            assignmentID = (getRelatedness(1, -1) && !getRelatedness(0, -2)) ? 78 : 68;
                             break;
                         case 11:
                             if (!getRelatedness(0, 2))

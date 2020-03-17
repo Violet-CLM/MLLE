@@ -392,6 +392,7 @@ namespace MLLE
             Label andOrThen = new Label();
             andOrThen.Location = new Point(385, 12);
             andOrThen.AutoSize = true;
+            andOrThen.Text = "and...";
 
             PictureBox results = new PictureBox();
             results.Location = new Point(420, 4);
