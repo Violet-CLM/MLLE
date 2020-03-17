@@ -7,6 +7,16 @@ using Extra.Collections;
 
 namespace MLLE
 {
+    public static class InputExtensions //https://stackoverflow.com/questions/3176602/how-to-force-a-number-to-be-in-a-range-in-c
+    {
+        public static int LimitToRange(
+            this int value, int inclusiveMinimum, int inclusiveMaximum)
+        {
+            if (value < inclusiveMinimum) { return inclusiveMinimum; }
+            if (value > inclusiveMaximum) { return inclusiveMaximum; }
+            return value;
+        }
+    }
     class SmartTile
     {
         internal List<ushort> Extras { get { return Assignments[35].Tiles; } }
@@ -51,14 +61,11 @@ namespace MLLE
 
             internal bool Applies(ArrayMap<ushort> tileMap, System.Drawing.Point location, List<SmartTile> otherSmartTiles)
             {
-                int x = location.X + X;
-                if (x < 0 || x >= tileMap.GetLength(0))
-                    return false;
-                int y = location.Y + Y;
-                if (y < 0 || y >= tileMap.GetLength(1))
-                    return false;
-                ushort tileID = tileMap[x, y];
-                return Not ^ ((OtherSmartTileID == -1) ? SpecificTiles.Contains(tileID) : otherSmartTiles[OtherSmartTileID].TilesICanPlace.Contains(tileID));
+                ushort tileID = tileMap[
+                    (location.X + X).LimitToRange(0, tileMap.GetLength(0) - 1),
+                    (location.Y + Y).LimitToRange(0, tileMap.GetLength(1) - 1)
+                ];
+                return Not ^ ((OtherSmartTileID == -1) ? SpecificTiles.Contains(tileID) : (otherSmartTiles[OtherSmartTileID].TilesICanPlace.Contains(tileID) || otherSmartTiles[OtherSmartTileID].Extras.Contains(tileID)));
             }
         }
         internal class Assignment
