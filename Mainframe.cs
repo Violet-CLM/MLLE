@@ -1221,6 +1221,7 @@ namespace MLLE
         {
             if (J2L.TexturesHaveBeenGenerated)
                 J2L.Generate_Textures(includeMasks: true);
+            LoadSmartTiles(true);
             ResizeDisplay();
             RedrawTilesetHowManyTimes += 1;
         }
@@ -1264,7 +1265,7 @@ namespace MLLE
                 _suspendEvent.Set();
             }
             else RedrawTilesetHowManyTimes = 2;
-            LoadSmartTiles(false);
+            LoadSmartTiles(true);
             SafeToDisplay = true;
             ResizeDisplay();
         }
@@ -3159,7 +3160,7 @@ namespace MLLE
                 smartTilesOfFirstTileset.Add(workingSmartTile);
                 workingSmartTile.UpdateAllPossibleTiles(smartTilesOfFirstTileset);
                 J2L.Tilesets[0].SaveSmartTiles();
-                RefreshSmartTilesList();
+                LoadSmartTiles(true);
             }
             _suspendEvent.Set();
         }
@@ -3178,7 +3179,7 @@ namespace MLLE
                         smartTilesOfFirstTileset[localI] = workingSmartTile;
                         workingSmartTile.UpdateAllPossibleTiles(smartTilesOfFirstTileset);
                         J2L.Tilesets[0].SaveSmartTiles();
-                        RefreshSmartTilesList();
+                        LoadSmartTiles(false);
                     }
                 };
                 defineSmartTilesToolStripMenuItem.DropDownItems.Add(toolStripItem);

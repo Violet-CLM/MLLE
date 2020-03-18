@@ -111,18 +111,24 @@ namespace MLLE
             TilesIGoNextTo = new HashSet<ushort>(comparer);
             Tileset = tileset;
         }
-        internal SmartTile(bool maxTiles4096, J2TFile tileset, ushort fileVersion, BinaryReader reader) : this(maxTiles4096, tileset)
+        internal SmartTile(bool maxTiles4096, J2TFile tileset, ushort fileVersion, BinaryReader reader, uint tileOffset) : this(maxTiles4096, tileset)
         {
             Name = reader.ReadString();
+            Action<List<ushort>> conditionallyAddTileIDToList = (list) =>
+            {
+                ushort tileID = reader.ReadUInt16();
+                int offsetTileID = (int)((tileID & 0xFFF) - tileset.FirstTile);
+                if (offsetTileID >= 0 && offsetTileID < tileset.TileCount)
+                {
+                    if (!maxTiles4096 && (tileID & 0x1000) != 0) //hflip
+                        tileID ^= 0x1400;
+                    list.Add((ushort)(tileID + tileOffset));
+                }
+            };
             for (int i = 0; i < Assignments.Length; ++i) {
                 Assignment assignment = Assignments[i];
                 for (int numberOfTileIDs = reader.ReadByte(); numberOfTileIDs > 0; --numberOfTileIDs)
-                {
-                    ushort tileID = reader.ReadUInt16();
-                    if (!maxTiles4096 && (tileID & 0x1000) != 0) //hflip
-                        tileID ^= 0x1400;
-                    assignment.Tiles.Add(tileID);
-                }
+                    conditionallyAddTileIDToList(assignment.Tiles);
                 if (fileVersion >= 2)
                 {
                     for (int numberOfRules = reader.ReadByte(); numberOfRules > 0; --numberOfRules)
@@ -133,10 +139,12 @@ namespace MLLE
                         newRule.Not = reader.ReadBoolean();
                         newRule.OtherSmartTileID = reader.ReadSByte();
                         if (newRule.OtherSmartTileID == -1)
+                        {
                             for (int numberOfSpecificTiles = reader.ReadByte(); numberOfSpecificTiles > 0; --numberOfSpecificTiles)
-                                newRule.SpecificTiles.Add(reader.ReadUInt16());
+                                conditionallyAddTileIDToList(newRule.SpecificTiles);
+                        }
                         for (int numberOfResults = reader.ReadByte(); numberOfResults > 0; --numberOfResults)
-                            newRule.Result.Add(reader.ReadUInt16());
+                            conditionallyAddTileIDToList(newRule.Result);
                         assignment.Rules.Add(newRule);
                     }
                 }
@@ -164,7 +172,7 @@ namespace MLLE
                 TilesIGoNextTo.UnionWith(smartTile.TilesICanPlace);
                 TilesIGoNextTo.UnionWith(smartTile.Extras);
             }
-
+            
             Assignment previewTileSource = Assignments[1];
             if (previewTileSource.Empty)
             {
@@ -173,7 +181,11 @@ namespace MLLE
                 {
                     previewTileSource = Assignments[14];
                     if (previewTileSource.Empty)
+                    {
                         previewTileSource = Assignments[47];
+                        if (previewTileSource.Empty) //should only happen if this is a non-primary tileset with only a subset of its tiles included
+                            previewTileSource.Tiles.Add(0);
+                    }
                 }
             }
             PreviewTileID = previewTileSource.Tiles[Rand.Next(previewTileSource.Tiles.Count)];
@@ -815,13 +827,14 @@ namespace MLLE
             {
                 bool maxTiles4096 = J2L.MaxTiles == 4096;
                 int max = all ? J2L.Tilesets.Count : 1;
+                uint previousTileCount = 0;
                 for (int i = 0; i < max; ++i)
-                    J2L.Tilesets[i].LoadSmartTiles(maxTiles4096);
+                {
+                    J2L.Tilesets[i].LoadSmartTiles(maxTiles4096, previousTileCount);
+                    previousTileCount += J2L.Tilesets[i].TileCount;
+                }
             }
-            RefreshSmartTilesList();
-        }
-        private void RefreshSmartTilesList()
-        {
+
             SmartTiles.Clear();
             SmartTile zero = new SmartTile(J2L.MaxTiles == 4096, null);
             zero.Assignments[11].Tiles.Add(0);
@@ -837,7 +850,7 @@ namespace MLLE
 partial class J2TFile
 {
     internal List<MLLE.SmartTile> SmartTiles = new List<MLLE.SmartTile>();
-    internal bool LoadSmartTiles(bool maxTiles4096)
+    internal bool LoadSmartTiles(bool maxTiles4096, uint tileOffset)
     {
         SmartTiles.Clear();
         string filepath = Path.ChangeExtension(FullFilePath, ".MLLESet");
@@ -854,7 +867,7 @@ partial class J2TFile
                 success = false;
             } else {
                 for (int numberOfSmartTiles = reader.ReadByte(); numberOfSmartTiles > 0; --numberOfSmartTiles)
-                    SmartTiles.Add(new MLLE.SmartTile(maxTiles4096, this, version, reader));
+                    SmartTiles.Add(new MLLE.SmartTile(maxTiles4096, this, version, reader, tileOffset));
                 foreach (MLLE.SmartTile smartTile in SmartTiles)
                     smartTile.UpdateAllPossibleTiles(SmartTiles);
             }
