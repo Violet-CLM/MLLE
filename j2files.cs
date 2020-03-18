@@ -52,7 +52,7 @@ abstract class J2File //The fields shared by .j2l and .j2t files. No methods/int
         {Version.GorH, "Jazz 2 OEM v1.00g/h"} };
 }
 
-class J2TFile : J2File
+partial class J2TFile : J2File
 {
     internal uint Signature;
     public Palette Palette;

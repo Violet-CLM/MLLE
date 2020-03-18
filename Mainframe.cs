@@ -1264,7 +1264,7 @@ namespace MLLE
                 _suspendEvent.Set();
             }
             else RedrawTilesetHowManyTimes = 2;
-            LoadSmartTiles();
+            LoadSmartTiles(false);
             SafeToDisplay = true;
             ResizeDisplay();
         }
@@ -1299,7 +1299,7 @@ namespace MLLE
                     case VersionChangeResults.Success:
                         CheckCurrentVersion();
                         ProcessIni(nuversion);
-                        LoadSmartTiles();
+                        LoadSmartTiles(true);
                         if (nuversion == Version.AGA || aldversion == Version.AGA)
                         {
                             Undoable.Clear();
@@ -1434,7 +1434,7 @@ namespace MLLE
                 MakeProposedScrollbarValueWork(LDScrollH, J2L.JCSHorizontalFocus);
                 MakeProposedScrollbarValueWork(LDScrollV, J2L.JCSVerticalFocus);
                 IdentifyTileset();
-                LoadSmartTiles();
+                LoadSmartTiles(true);
                 if (playMusicToolStripMenuItem.Checked) PlayMusic();
                 GameTick = 0; GameTime = 0; sw.Restart();
             }
@@ -3152,29 +3152,33 @@ namespace MLLE
         private void defineSmartTilesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _suspendEvent.Reset();
-            SmartTile workingSmartTile = new SmartTile(J2L.MaxTiles == 4096);
-            if (new SmartTilesForm().ShowForm(workingSmartTile, J2L.Tilesets[0], SmartTiles))
+            SmartTile workingSmartTile = new SmartTile(J2L.MaxTiles == 4096, J2L.Tilesets[0]);
+            var smartTilesOfFirstTileset = J2L.Tilesets[0].SmartTiles;
+            if (new SmartTilesForm().ShowForm(workingSmartTile, J2L.Tilesets[0]))
             {
-                SmartTiles.Add(workingSmartTile);
-                workingSmartTile.UpdateAllPossibleTiles(SmartTiles);
-                SaveSmartTiles();
+                smartTilesOfFirstTileset.Add(workingSmartTile);
+                workingSmartTile.UpdateAllPossibleTiles(smartTilesOfFirstTileset);
+                J2L.Tilesets[0].SaveSmartTiles();
+                RefreshSmartTilesList();
             }
             _suspendEvent.Set();
         }
         private void defineSmartTilesToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
         {
             defineSmartTilesToolStripMenuItem.DropDownItems.Clear();
-            for (var i = 0; i < SmartTiles.Count; ++i) {
+            var smartTilesOfFirstTileset = J2L.Tilesets[0].SmartTiles;
+            for (var i = 0; i < smartTilesOfFirstTileset.Count; ++i) {
                 var localI = i; //for closure in the lambda
-                var smartTile = SmartTiles[localI];
+                var smartTile = smartTilesOfFirstTileset[localI];
                 var toolStripItem = new ToolStripMenuItem(smartTile.Name);
                 toolStripItem.Click += (s, ee) => {
                     var workingSmartTile = new SmartTile(smartTile);
-                    if (new SmartTilesForm().ShowForm(workingSmartTile, J2L.Tilesets[0], SmartTiles, localI))
+                    if (new SmartTilesForm().ShowForm(workingSmartTile, J2L.Tilesets[0], localI))
                     {
-                        SmartTiles[localI] = workingSmartTile;
-                        workingSmartTile.UpdateAllPossibleTiles(SmartTiles);
-                        SaveSmartTiles();
+                        smartTilesOfFirstTileset[localI] = workingSmartTile;
+                        workingSmartTile.UpdateAllPossibleTiles(smartTilesOfFirstTileset);
+                        J2L.Tilesets[0].SaveSmartTiles();
+                        RefreshSmartTilesList();
                     }
                 };
                 defineSmartTilesToolStripMenuItem.DropDownItems.Add(toolStripItem);
@@ -3208,7 +3212,7 @@ namespace MLLE
                 else
                 {
                     var smartTile = SmartTiles[(int)ev.Value.ID];
-                    bool success = (DirectAction || smartTile.TilesICanPlace.Contains(layer.TileMap[x,y])) && smartTile.Apply(layer.TileMap, new Point(x,y), SmartTiles);
+                    bool success = (DirectAction || smartTile.TilesICanPlace.Contains(layer.TileMap[x,y])) && smartTile.Apply(layer.TileMap, new Point(x,y));
                     if (success)
                     {
                         if (layer == J2L.SpriteLayer)

@@ -23,10 +23,11 @@ namespace MLLE
         {
             InitializeComponent();
         }
-        internal bool ShowForm(SmartTile workingSmartTile, J2TFile tileset, List<SmartTile> smartTiles, int workingSmartTileIndex = -1)
+        internal bool ShowForm(SmartTile workingSmartTile, J2TFile tileset, int workingSmartTileIndex = -1)
         {
             Tileset = tileset;
             WorkingSmartTile = workingSmartTile;
+            List<SmartTile> smartTiles = tileset.SmartTiles;
             if (smartTiles.Count >= 1)
                 AllSmartTileNames = smartTiles.Select(smartTile => smartTile.Name).ToList();
             else

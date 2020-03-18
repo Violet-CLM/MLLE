@@ -23,6 +23,7 @@ namespace MLLE
         internal List<int> Friends = new List<int>();
         internal ushort PreviewTileID;
         internal string Name = "Smart Tile";
+        private J2TFile Tileset;
         internal class ushortComparer : IEqualityComparer<ushort>
         {
             public ushort AndValue;
@@ -99,16 +100,18 @@ namespace MLLE
             TilesICanPlace.UnionWith(other.TilesICanPlace);
             TilesIGoNextTo = new HashSet<ushort>(other.TilesIGoNextTo.Comparer);
             TilesIGoNextTo.UnionWith(other.TilesIGoNextTo);
+            Tileset = other.Tileset;
         }
-        internal SmartTile(bool maxTiles4096)
+        internal SmartTile(bool maxTiles4096, J2TFile tileset)
         {
             for (int i = 0; i < Assignments.Length; ++i)
                 Assignments[i] = new Assignment();
             ushortComparer comparer = maxTiles4096 ? ushortComparer.compare124 : ushortComparer.compare123;
             TilesICanPlace = new HashSet<ushort>(comparer);
             TilesIGoNextTo = new HashSet<ushort>(comparer);
+            Tileset = tileset;
         }
-        internal SmartTile(bool maxTiles4096, ushort fileVersion, BinaryReader reader) : this(maxTiles4096)
+        internal SmartTile(bool maxTiles4096, J2TFile tileset, ushort fileVersion, BinaryReader reader) : this(maxTiles4096, tileset)
         {
             Name = reader.ReadString();
             for (int i = 0; i < Assignments.Length; ++i) {
@@ -154,7 +157,7 @@ namespace MLLE
             TilesIGoNextTo.Clear();
             TilesIGoNextTo.UnionWith(TilesICanPlace);
             TilesIGoNextTo.UnionWith(Extras);
-            
+
             foreach (int friendID in Friends)
             {
                 SmartTile smartTile = smartTiles[friendID];
@@ -275,7 +278,7 @@ namespace MLLE
             new ushort[] {25},
             null,
             null,
-            
+
             new ushort[] {37},
             new ushort[] {36},
             new ushort[] {20},
@@ -363,7 +366,7 @@ namespace MLLE
         };
 
         Random Rand = new Random();
-        public bool Apply(ArrayMap<ushort> tileMap, System.Drawing.Point location, List<SmartTile> otherSmartTiles)
+        public bool Apply(ArrayMap<ushort> tileMap, System.Drawing.Point location)
         {
             ArrayMap<ushort> localTiles = new ArrayMap<ushort>(5, 5);
             for (int xx = 0; xx < 5; ++xx)
@@ -747,7 +750,7 @@ namespace MLLE
             foreach (Rule rule in Assignments[assignmentID].Rules)
             {
                 List<ushort> frames = rule.Result;
-                bool applies = lastRuleApplied && rule.Applies(tileMap, location, otherSmartTiles);
+                bool applies = lastRuleApplied && rule.Applies(tileMap, location, Tileset.SmartTiles);
                 if (frames.Count == 0) //and
                 {
                     lastRuleApplied = applies;
@@ -794,74 +797,9 @@ namespace MLLE
     partial class Mainframe
     {
         List<SmartTile> SmartTiles = new List<SmartTile>();
-        private bool LoadSmartTiles()
-        {
-            SmartTiles.Clear();
-            if (!J2L.HasTiles)
-                return false;
-            string filepath = Path.ChangeExtension(J2L.Tilesets[0].FullFilePath, ".MLLESet");
-            if (!File.Exists(filepath)) //check in JJ2 folder
-                if (!File.Exists(filepath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Path.GetFileName(filepath)))) //check in MLLE folder
-                    return false;
-
-            bool success = true;
-            using (BinaryReader reader = new BinaryReader(File.Open(filepath, FileMode.Open), J2File.FileEncoding))
-            {
-                ushort version = reader.ReadUInt16();
-                if (version > 2) {
-                    System.Windows.Forms.MessageBox.Show("The file \"" + filepath + "\" was not saved in a format that this version of MLLE understands. Please make sure you have the latest MLLE release.", "Incompatible File Version", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
-                    success = false;
-                } else {
-                    for (int numberOfSmartTiles = reader.ReadByte(); numberOfSmartTiles > 0; --numberOfSmartTiles)
-                        SmartTiles.Add(new SmartTile(J2L.MaxTiles == 4096, version, reader));
-                    foreach (SmartTile smartTile in SmartTiles)
-                        smartTile.UpdateAllPossibleTiles(SmartTiles);
-                }
-            }
-            return success;
-        }
-        private void SaveSmartTiles()
-        {
-            using (BinaryWriter writer = new BinaryWriter(File.Open(Path.ChangeExtension(J2L.Tilesets[0].FullFilePath, ".MLLESet"), FileMode.Create), J2File.FileEncoding)) {
-                writer.Write((ushort)2); //version
-                writer.Write((byte)SmartTiles.Count);
-                foreach (SmartTile smartTile in SmartTiles)
-                {
-                    writer.Write(smartTile.Name);
-                    foreach (SmartTile.Assignment assignment in smartTile.Assignments) //constant length (100), don't need to preface this with anything
-                    {
-                        var tiles = assignment.Tiles;
-                        writer.Write((byte)tiles.Count);
-                        foreach (ushort tileID in tiles)
-                            writer.Write(tileID);
-                        var rules = assignment.Rules;
-                        writer.Write((byte)rules.Count);
-                        foreach (SmartTile.Rule rule in rules)
-                        {
-                            writer.Write((sbyte)rule.X);
-                            writer.Write((sbyte)rule.Y);
-                            writer.Write(rule.Not);
-                            writer.Write((sbyte)rule.OtherSmartTileID);
-                            if (rule.OtherSmartTileID == -1)
-                            {
-                                writer.Write((byte)rule.SpecificTiles.Count);
-                                foreach (ushort tileID in rule.SpecificTiles)
-                                    writer.Write(tileID);
-                            }
-                            writer.Write((byte)rule.Result.Count);
-                            foreach (ushort tileID in rule.Result)
-                                writer.Write(tileID);
-                        }
-                    }
-                    writer.Write((byte)smartTile.Friends.Count);
-                    foreach (int friendID in smartTile.Friends)
-                        writer.Write((byte)friendID);
-                }
-            }
-        }
         private void SmartFlipTile(ref ushort tileID, bool vertical)
         {
-            foreach (SmartTile smartTile in SmartTiles)
+            foreach (MLLE.SmartTile smartTile in SmartTiles)
                 if (smartTile.SmartFlipTile(ref tileID, vertical))
                     return;
             //if it can't be found
@@ -869,6 +807,97 @@ namespace MLLE
                 tileID ^= (ushort)J2L.MaxTiles;
             else
                 tileID ^= 0x2000;
+        }
+
+        private void LoadSmartTiles(bool all)
+        {
+            if (J2L.HasTiles)
+            {
+                bool maxTiles4096 = J2L.MaxTiles == 4096;
+                int max = all ? J2L.Tilesets.Count : 1;
+                for (int i = 0; i < max; ++i)
+                    J2L.Tilesets[i].LoadSmartTiles(maxTiles4096);
+            }
+            RefreshSmartTilesList();
+        }
+        private void RefreshSmartTilesList()
+        {
+            SmartTiles.Clear();
+            SmartTile zero = new SmartTile(J2L.MaxTiles == 4096, null);
+            zero.Assignments[11].Tiles.Add(0);
+            zero.TilesICanPlace.Add(0);
+            zero.PreviewTileID = 0;
+            SmartTiles.Add(zero);
+            foreach (J2TFile tileset in J2L.Tilesets)
+                SmartTiles.AddRange(tileset.SmartTiles);
+        }
+    }
+}
+
+partial class J2TFile
+{
+    internal List<MLLE.SmartTile> SmartTiles = new List<MLLE.SmartTile>();
+    internal bool LoadSmartTiles(bool maxTiles4096)
+    {
+        SmartTiles.Clear();
+        string filepath = Path.ChangeExtension(FullFilePath, ".MLLESet");
+        if (!File.Exists(filepath)) //check in JJ2 folder
+            if (!File.Exists(filepath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Path.GetFileName(filepath)))) //check in MLLE folder
+                return false;
+
+        bool success = true;
+        using (BinaryReader reader = new BinaryReader(File.Open(filepath, FileMode.Open), J2File.FileEncoding))
+        {
+            ushort version = reader.ReadUInt16();
+            if (version > 2) {
+                System.Windows.Forms.MessageBox.Show("The file \"" + filepath + "\" was not saved in a format that this version of MLLE understands. Please make sure you have the latest MLLE release.", "Incompatible File Version", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
+                success = false;
+            } else {
+                for (int numberOfSmartTiles = reader.ReadByte(); numberOfSmartTiles > 0; --numberOfSmartTiles)
+                    SmartTiles.Add(new MLLE.SmartTile(maxTiles4096, this, version, reader));
+                foreach (MLLE.SmartTile smartTile in SmartTiles)
+                    smartTile.UpdateAllPossibleTiles(SmartTiles);
+            }
+        }
+        return success;
+    }
+    internal void SaveSmartTiles()
+    {
+        using (BinaryWriter writer = new BinaryWriter(File.Open(Path.ChangeExtension(FullFilePath, ".MLLESet"), FileMode.Create), J2File.FileEncoding)) {
+            writer.Write((ushort)2); //version
+            writer.Write((byte)SmartTiles.Count);
+            foreach (MLLE.SmartTile smartTile in SmartTiles)
+            {
+                writer.Write(smartTile.Name);
+                foreach (MLLE.SmartTile.Assignment assignment in smartTile.Assignments) //constant length (100), don't need to preface this with anything
+                {
+                    var tiles = assignment.Tiles;
+                    writer.Write((byte)tiles.Count);
+                    foreach (ushort tileID in tiles)
+                        writer.Write(tileID);
+                    var rules = assignment.Rules;
+                    writer.Write((byte)rules.Count);
+                    foreach (MLLE.SmartTile.Rule rule in rules)
+                    {
+                        writer.Write((sbyte)rule.X);
+                        writer.Write((sbyte)rule.Y);
+                        writer.Write(rule.Not);
+                        writer.Write((sbyte)rule.OtherSmartTileID);
+                        if (rule.OtherSmartTileID == -1)
+                        {
+                            writer.Write((byte)rule.SpecificTiles.Count);
+                            foreach (ushort tileID in rule.SpecificTiles)
+                                writer.Write(tileID);
+                        }
+                        writer.Write((byte)rule.Result.Count);
+                        foreach (ushort tileID in rule.Result)
+                            writer.Write(tileID);
+                    }
+                }
+                writer.Write((byte)smartTile.Friends.Count);
+                foreach (int friendID in smartTile.Friends)
+                    writer.Write((byte)friendID);
+            }
         }
     }
 }
