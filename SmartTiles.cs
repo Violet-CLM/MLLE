@@ -143,9 +143,16 @@ namespace MLLE
                             for (int numberOfSpecificTiles = reader.ReadByte(); numberOfSpecificTiles > 0; --numberOfSpecificTiles)
                                 conditionallyAddTileIDToList(newRule.SpecificTiles);
                         }
-                        for (int numberOfResults = reader.ReadByte(); numberOfResults > 0; --numberOfResults)
+                        int intendedNumberOfResults = reader.ReadByte();
+                        for (int numberOfResults = intendedNumberOfResults; numberOfResults > 0; --numberOfResults)
                             conditionallyAddTileIDToList(newRule.Result);
-                        assignment.Rules.Add(newRule);
+                        var rules = assignment.Rules;
+                        if (intendedNumberOfResults != 0 && newRule.Result.Count == 0) { //none of the tiles can be found in this subset
+                            Rule condition;
+                            while (rules.Count != 0 && (condition = rules.Last()).Result.Count == 0) //remove all "and" rules leading up to this one, to avoid confusing any other logic.
+                                rules.Remove(condition);
+                        } else
+                            rules.Add(newRule);
                     }
                 }
             }
