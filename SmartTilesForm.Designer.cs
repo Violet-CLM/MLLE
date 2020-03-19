@@ -45,8 +45,8 @@
             this.label3 = new System.Windows.Forms.Label();
             this.panel4 = new System.Windows.Forms.Panel();
             this.AddRuleButton = new System.Windows.Forms.Button();
-            this.checkedComboBox1 = new CheckComboBoxTest.CheckedComboBox();
             this.button1 = new System.Windows.Forms.Button();
+            this.checkedComboBox1 = new CheckComboBoxTest.CheckedComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.tilesetPicture)).BeginInit();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.smartPicture)).BeginInit();
@@ -210,6 +210,17 @@
             this.AddRuleButton.UseVisualStyleBackColor = true;
             this.AddRuleButton.Click += new System.EventHandler(this.AddRuleButton_Click);
             // 
+            // button1
+            // 
+            this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.button1.Location = new System.Drawing.Point(706, 68);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(75, 23);
+            this.button1.TabIndex = 12;
+            this.button1.Text = "Delete";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
             // checkedComboBox1
             // 
             this.checkedComboBox1.CheckOnClick = true;
@@ -222,18 +233,6 @@
             this.checkedComboBox1.Size = new System.Drawing.Size(121, 21);
             this.checkedComboBox1.TabIndex = 9;
             this.checkedComboBox1.ValueSeparator = ", ";
-            // 
-            // button1
-            // 
-            this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button1.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.button1.Location = new System.Drawing.Point(706, 68);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 12;
-            this.button1.Text = "Delete";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // SmartTilesForm
             // 
