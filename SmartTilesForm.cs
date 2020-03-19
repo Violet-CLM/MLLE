@@ -15,7 +15,7 @@ namespace MLLE
     public partial class SmartTilesForm : Form
     {
         J2TFile Tileset;
-        bool Result = false;
+        DialogResult Result = DialogResult.Cancel;
         SmartTile WorkingSmartTile;
         List<string> AllSmartTileNames;
         ushort AndValue;
@@ -23,7 +23,7 @@ namespace MLLE
         {
             InitializeComponent();
         }
-        internal bool ShowForm(SmartTile workingSmartTile, J2TFile tileset, int workingSmartTileIndex = -1)
+        internal DialogResult ShowForm(SmartTile workingSmartTile, J2TFile tileset, int workingSmartTileIndex = -1)
         {
             Tileset = tileset;
             WorkingSmartTile = workingSmartTile;
@@ -33,7 +33,10 @@ namespace MLLE
             else
                 AllSmartTileNames = new List<string>();
             if (workingSmartTileIndex == -1)
+            {
                 AllSmartTileNames.Add("[this]");
+                button1.Hide();
+            }
             if (smartTiles.Count > 1)
             {
                 for (int otherSmartTileID = 0; otherSmartTileID < smartTiles.Count; ++otherSmartTileID)
@@ -126,7 +129,7 @@ namespace MLLE
                 !WorkingSmartTile.Assignments[47].Empty
             )
             {
-                Result = true;
+                Result = DialogResult.OK;
                 WorkingSmartTile.Name = textBox1.Text;
                 WorkingSmartTile.Friends.Clear();
                 for (int i = 0; i < checkedComboBox1.Items.Count; ++i)
@@ -488,6 +491,15 @@ namespace MLLE
             using (Graphics g = Graphics.FromImage(newGrid))
                 g.FillRectangle(GridBrush, 16 + rule.X * 8, 16 + rule.Y * 8, 8, 8);
             grid.Image = newGrid;
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (MessageBox.Show("Really delete this Smart Tile? This action cannot be undone.", "Delete?", MessageBoxButtons.YesNo, MessageBoxIcon.Hand) == DialogResult.Yes)
+            {
+                Result = DialogResult.Abort;
+                Dispose();
+            }
         }
     }
 }

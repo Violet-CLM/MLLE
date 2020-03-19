@@ -3155,10 +3155,11 @@ namespace MLLE
             _suspendEvent.Reset();
             SmartTile workingSmartTile = new SmartTile(J2L.MaxTiles == 4096, J2L.Tilesets[0]);
             var smartTilesOfFirstTileset = J2L.Tilesets[0].SmartTiles;
-            if (new SmartTilesForm().ShowForm(workingSmartTile, J2L.Tilesets[0]))
+            if (new SmartTilesForm().ShowForm(workingSmartTile, J2L.Tilesets[0]) == DialogResult.OK)
             {
                 smartTilesOfFirstTileset.Add(workingSmartTile);
                 workingSmartTile.UpdateAllPossibleTiles(smartTilesOfFirstTileset);
+                RedrawTilesetHowManyTimes += 2;
                 J2L.Tilesets[0].SaveSmartTiles();
                 LoadSmartTiles(true);
             }
@@ -3173,14 +3174,25 @@ namespace MLLE
                 var smartTile = smartTilesOfFirstTileset[localI];
                 var toolStripItem = new ToolStripMenuItem(smartTile.Name);
                 toolStripItem.Click += (s, ee) => {
+                    _suspendEvent.Reset();
                     var workingSmartTile = new SmartTile(smartTile);
-                    if (new SmartTilesForm().ShowForm(workingSmartTile, J2L.Tilesets[0], localI))
+                    DialogResult formResult = new SmartTilesForm().ShowForm(workingSmartTile, J2L.Tilesets[0], localI);
+                    _suspendEvent.Set();
+                    if (formResult == DialogResult.OK)
                     {
                         smartTilesOfFirstTileset[localI] = workingSmartTile;
                         workingSmartTile.UpdateAllPossibleTiles(smartTilesOfFirstTileset);
-                        J2L.Tilesets[0].SaveSmartTiles();
-                        LoadSmartTiles(false);
                     }
+                    else if (formResult == DialogResult.Abort)
+                    {
+                        smartTilesOfFirstTileset.Remove(smartTile);
+                        SetStampDimensions(0, 0); //just to be safe
+                    }
+                    else
+                        return;
+                    J2L.Tilesets[0].SaveSmartTiles();
+                    RedrawTilesetHowManyTimes += 2;
+                    LoadSmartTiles(false);
                 };
                 defineSmartTilesToolStripMenuItem.DropDownItems.Add(toolStripItem);
             }
