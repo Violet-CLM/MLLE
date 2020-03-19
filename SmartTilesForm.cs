@@ -330,7 +330,7 @@ namespace MLLE
             AddRule(newRule);
         }
 
-        static readonly System.Text.RegularExpressions.Regex SpecificTilesValidationPattern = new System.Text.RegularExpressions.Regex(@"(?:\s*\d+\s*,?)+");
+        static readonly System.Text.RegularExpressions.Regex SpecificTilesValidationPattern = new System.Text.RegularExpressions.Regex(@"^(?:\s*\d{1,4}\s*)(?:,\s*\d{1,4})*\s*$");
         void AddRule(SmartTile.Rule rule)
         {
             Panel panel = new Panel();
