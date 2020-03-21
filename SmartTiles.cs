@@ -162,7 +162,16 @@ namespace MLLE
                     Friends.Add(reader.ReadByte());
             }
         }
-        internal void UpdateAllPossibleTiles(List<SmartTile> smartTiles)
+        internal void UpdateTilesIGoNextTo(List<SmartTile> smartTiles)
+        {
+            foreach (int friendID in Friends)
+            {
+                SmartTile smartTile = smartTiles[friendID];
+                TilesIGoNextTo.UnionWith(smartTile.TilesICanPlace);
+                TilesIGoNextTo.UnionWith(smartTile.Extras);
+            }
+        }
+        internal void UpdateAllPossibleTiles(List<SmartTile> smartTiles, bool updateFriends = true)
         {
             TilesICanPlace.Clear();
             foreach (var assignment in Assignments)
@@ -173,12 +182,8 @@ namespace MLLE
             TilesIGoNextTo.UnionWith(TilesICanPlace);
             TilesIGoNextTo.UnionWith(Extras);
 
-            foreach (int friendID in Friends)
-            {
-                SmartTile smartTile = smartTiles[friendID];
-                TilesIGoNextTo.UnionWith(smartTile.TilesICanPlace);
-                TilesIGoNextTo.UnionWith(smartTile.Extras);
-            }
+            if (updateFriends)
+                UpdateTilesIGoNextTo(smartTiles);
             
             Assignment previewTileSource = Assignments[1];
             if (previewTileSource.Empty)
@@ -876,7 +881,9 @@ partial class J2TFile
                 for (int numberOfSmartTiles = reader.ReadByte(); numberOfSmartTiles > 0; --numberOfSmartTiles)
                     SmartTiles.Add(new MLLE.SmartTile(maxTiles4096, this, version, reader, tileOffset));
                 foreach (MLLE.SmartTile smartTile in SmartTiles)
-                    smartTile.UpdateAllPossibleTiles(SmartTiles);
+                    smartTile.UpdateAllPossibleTiles(SmartTiles, false);
+                foreach (MLLE.SmartTile smartTile in SmartTiles)
+                    smartTile.UpdateTilesIGoNextTo(SmartTiles);
             }
         }
         return success;
