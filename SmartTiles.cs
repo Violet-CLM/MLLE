@@ -162,7 +162,7 @@ namespace MLLE
                     Friends.Add(reader.ReadByte());
             }
         }
-        internal void UpdateTilesIGoNextTo(List<SmartTile> smartTiles)
+        internal void UpdateTilesIGonextTo(List<SmartTile> smartTiles)
         {
             foreach (int friendID in Friends)
             {
@@ -183,7 +183,7 @@ namespace MLLE
             TilesIGoNextTo.UnionWith(Extras);
 
             if (updateFriends)
-                UpdateTilesIGoNextTo(smartTiles);
+                UpdateTilesIGonextTo(smartTiles);
             
             Assignment previewTileSource = Assignments[1];
             if (previewTileSource.Empty)
@@ -883,7 +883,7 @@ partial class J2TFile
                 foreach (MLLE.SmartTile smartTile in SmartTiles)
                     smartTile.UpdateAllPossibleTiles(SmartTiles, false);
                 foreach (MLLE.SmartTile smartTile in SmartTiles)
-                    smartTile.UpdateTilesIGoNextTo(SmartTiles);
+                    smartTile.UpdateTilesIGonextTo(SmartTiles);
             }
         }
         return success;
@@ -895,13 +895,22 @@ partial class J2TFile
             writer.Write((byte)SmartTiles.Count);
             foreach (MLLE.SmartTile smartTile in SmartTiles)
             {
+                bool convertTo4096 = (smartTile.TilesICanPlace.Comparer as MLLE.SmartTile.ushortComparer).AndValue == 0x400 - 1;
+                Action<List<ushort>> writeList = (tileIDs) =>
+                {
+                    writer.Write((byte)tileIDs.Count);
+                    foreach (ushort tileID in tileIDs)
+                    {
+                        if (convertTo4096 && (tileID & 0x400) != 0)
+                            writer.Write((ushort)(tileID ^ 0x1400));
+                        else
+                            writer.Write(tileID);
+                    }
+                }; 
                 writer.Write(smartTile.Name);
                 foreach (MLLE.SmartTile.Assignment assignment in smartTile.Assignments) //constant length (100), don't need to preface this with anything
                 {
-                    var tiles = assignment.Tiles;
-                    writer.Write((byte)tiles.Count);
-                    foreach (ushort tileID in tiles)
-                        writer.Write(tileID);
+                    writeList(assignment.Tiles);
                     var rules = assignment.Rules;
                     writer.Write((byte)rules.Count);
                     foreach (MLLE.SmartTile.Rule rule in rules)
@@ -911,14 +920,8 @@ partial class J2TFile
                         writer.Write(rule.Not);
                         writer.Write((sbyte)rule.OtherSmartTileID);
                         if (rule.OtherSmartTileID == -1)
-                        {
-                            writer.Write((byte)rule.SpecificTiles.Count);
-                            foreach (ushort tileID in rule.SpecificTiles)
-                                writer.Write(tileID);
-                        }
-                        writer.Write((byte)rule.Result.Count);
-                        foreach (ushort tileID in rule.Result)
-                            writer.Write(tileID);
+                            writeList(rule.SpecificTiles);
+                        writeList(rule.Result);
                     }
                 }
                 writer.Write((byte)smartTile.Friends.Count);
