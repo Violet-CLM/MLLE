@@ -71,7 +71,7 @@ namespace MLLE
         private void RedrawTiles(object state)
         {
             lock (smartPicture)
-                lock (tilesetPicture)
+                lock (ThreadSafeTilesetImage)
                 {
                     var image = smartPicture.Image;
                     using (Graphics graphics = Graphics.FromImage(image))
@@ -87,6 +87,7 @@ namespace MLLE
             ++elapsed;
         }
 
+        Image ThreadSafeTilesetImage;
         private void CreateImageFromTileset()
         {
             //there are enough windows that show tileset images you'd think I should turn some/all of this into a method somewhere
@@ -116,7 +117,7 @@ namespace MLLE
                 entries[i] = Palette.Convert(Tileset.Palette.Colors[i]);
             image.Palette = palette;
 
-            tilesetPicture.Image = image;
+            ThreadSafeTilesetImage = (tilesetPicture.Image = image).Clone() as Image;
             smartPicture.Image = Properties.Resources.SmartTilesPermutations;
             framesPicture.Image = new Bitmap(32, 32);
         }
@@ -198,7 +199,7 @@ namespace MLLE
                         if (rule.Result.Count < 8)
                         {
                             rule.Result.Add(newTileID);
-                            UpdateRuleResultImages(CurrentRuleID);
+                            UpdateRuleResultImages(rulePanel);
                         }
                         return;
                     }
@@ -262,7 +263,7 @@ namespace MLLE
                     graphics.ScaleTransform(-1, -1);
                     break;
             }
-            graphics.DrawImage(tilesetPicture.Image, RectangleAtOrigin, new Rectangle(PointFromTileID(tileID & AndValue), TileSize), GraphicsUnit.Pixel);
+            graphics.DrawImage(ThreadSafeTilesetImage, RectangleAtOrigin, new Rectangle(PointFromTileID(tileID & AndValue), TileSize), GraphicsUnit.Pixel);
             graphics.ResetTransform();
         }
 
@@ -274,7 +275,7 @@ namespace MLLE
                 framesPicture.Height = frames.Count * 32;
                 if (frames.Count > 0)
                 {
-                    lock (tilesetPicture)
+                    lock (ThreadSafeTilesetImage)
                     {
                         var image = new Bitmap(32, framesPicture.Height);
                         using (Graphics graphics = Graphics.FromImage(image))
@@ -320,8 +321,7 @@ namespace MLLE
             CurrentRuleID = -1;
             foreach (SmartTile.Rule rule in WorkingSmartTile.Assignments[CurrentSmartTileID].Rules)
             {
-                AddRule(rule);
-                UpdateRuleResultImages(panel4.Controls.Count - 2);
+                UpdateRuleResultImages(AddRule(rule));
             }
         }
 
@@ -334,7 +334,7 @@ namespace MLLE
         }
 
         static readonly System.Text.RegularExpressions.Regex SpecificTilesValidationPattern = new System.Text.RegularExpressions.Regex(@"^(?:\s*\d{1,4}\s*)(?:,\s*\d{1,4})*\s*$");
-        void AddRule(SmartTile.Rule rule)
+        Panel AddRule(SmartTile.Rule rule)
         {
             Panel panel = new Panel();
             panel.Tag = rule;
@@ -412,7 +412,26 @@ namespace MLLE
                 DeselectAllRules();
             };
 
-            panel.Controls.AddRange(new Control[]{ ifLabel, grid, notIn, criteriaSource, specificTileCriteria, andOrThen, results, deleteRuleButton });
+            Action RefreshRulesFromPanelOrder = () => {
+                var rules = WorkingSmartTile.Assignments[CurrentSmartTileID].Rules;
+                rules.Clear();
+                foreach (Control potentialPanel in panel4.Controls)
+                    if (potentialPanel is Panel)
+                        rules.Insert(0, potentialPanel.Tag as SmartTile.Rule);
+            };
+            Button duplicateRuleButton = new Button();
+            duplicateRuleButton.Text = "D";
+            duplicateRuleButton.Location = new Point(732, 4);
+            duplicateRuleButton.Size = new Size(16, 32);
+            duplicateRuleButton.Click += (s, e) => {
+                var newRule = new SmartTile.Rule(rule);
+                var newPanel = AddRule(new SmartTile.Rule(rule));
+                panel4.Controls.SetChildIndex(newPanel, panel4.Controls.GetChildIndex(panel));
+                RefreshRulesFromPanelOrder();
+                UpdateRuleResultImages(newPanel);
+            };
+
+            panel.Controls.AddRange(new Control[]{ ifLabel, grid, notIn, criteriaSource, specificTileCriteria, andOrThen, results, deleteRuleButton, duplicateRuleButton });
 
             for (int vDelta = -1; vDelta <= 1; vDelta += 2)
             {
@@ -431,16 +450,15 @@ namespace MLLE
                         if (index == rules.Count - 1)
                             return;
                     }
-                    SmartTile.Rule otherRule = rules[index + localVDelta];
-                    rules[index + localVDelta] = rule;
-                    rules[index] = otherRule;
                     panel4.Controls.SetChildIndex(panel, panel4.Controls.GetChildIndex(panel) - localVDelta);
+                    RefreshRulesFromPanelOrder();
                 };
                 panel.Controls.Add(adjustOrderButton);
             }
 
             foreach (Control control in panel.Controls)
             {
+                control.Left -= 5;
                 control.MouseClick += (s, e) => {
                     DeselectAllRules();
                     (s as Control).Parent.BackColor = Color.White;
@@ -451,7 +469,7 @@ namespace MLLE
                         if (X < rule.Result.Count)
                         {
                             rule.Result.RemoveAt(X);
-                            UpdateRuleResultImages(CurrentRuleID);
+                            UpdateRuleResultImages(panel);
                         }
                     }
                 };
@@ -459,6 +477,7 @@ namespace MLLE
             UpdateRuleGrid(grid);
             panel4.Controls.Add(panel);
             panel4.Controls.SetChildIndex(panel, 1);
+            return panel;
         }
 
         void DeselectAllRules()
@@ -468,14 +487,13 @@ namespace MLLE
             CurrentRuleID = -1;
         }
 
-        void UpdateRuleResultImages(int ruleID)
+        void UpdateRuleResultImages(Panel rulePanel)
         {
-            var frames = WorkingSmartTile.Assignments[CurrentSmartTileID].Rules[ruleID].Result;
-            Panel rulePanel = (panel4.Controls[panel4.Controls.Count - 1 - ruleID] as Panel);
+            var frames = (rulePanel.Tag as SmartTile.Rule).Result;
             PictureBox picture = rulePanel.Controls[6] as PictureBox;
             var image = new Bitmap(256, 32);
             if (frames.Count > 0)
-                lock (tilesetPicture)
+                lock (ThreadSafeTilesetImage)
                     using (Graphics graphics = Graphics.FromImage(image))
                         for (int i = 0; i < frames.Count; ++i)
                             DrawTilesetTileAt(graphics, new Point(i * 32, 0), frames[i]);
