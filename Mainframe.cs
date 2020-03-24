@@ -3214,10 +3214,10 @@ namespace MLLE
             int layerWidth = layer.TileMap.GetLength(0), layerHeight = layer.TileMap.GetLength(1);
             if (x >= 0 && y >= 0 && x < layerWidth && y < layerHeight && tile != null && (blankTilesOkay || tile > 0))
             {
-                if (J2L.VersionType == Version.AGA) actionCenter.Specifics[new Point(x, y)] = new TileAndEvent(layer.TileMap[x, y], (actionCenter.Layer == J2L.SpriteLayer) ? J2L.AGA_EventMap[x, y] : (AGAEvent?)null);
-                else actionCenter.Specifics[new Point(x, y)] = new TileAndEvent(layer.TileMap[x, y], (actionCenter.Layer == J2L.SpriteLayer) ? J2L.EventMap[x, y] : (uint?)null);
+                var oldTileAndEvent = new TileAndEvent(layer.TileMap[x, y], (actionCenter.Layer == J2L.SpriteLayer) ? ((J2L.VersionType != Version.AGA) ? new AGAEvent(J2L.EventMap[x, y]) : J2L.AGA_EventMap[x, y]) : (AGAEvent?)null);
                 if (CurrentTilesetOverlay != TilesetOverlay.SmartTiles)
                 {
+                    actionCenter.Specifics[new Point(x, y)] = oldTileAndEvent;
                     layer.TileMap[x, y] = (ushort)tile;
                     if (actionCenter.Layer == J2L.SpriteLayer)
                     {
@@ -3247,6 +3247,7 @@ namespace MLLE
                         }
                         if (smartTile.Apply(localTiles, ref tileID))
                         {
+                            try { actionCenter.Specifics.Add(new Point(x, y), oldTileAndEvent); } catch { }
                             layer.TileMap[x, y] = tileID;
                             if (layer == J2L.SpriteLayer)
                                 J2L.EventMap[x, y] = 0;
