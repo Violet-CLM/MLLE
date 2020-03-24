@@ -3225,29 +3225,48 @@ namespace MLLE
                 else
                 {
                     var smartTile = SmartTiles[(int)ev.Value.ID];
-                    bool success = (DirectAction || smartTile.TilesICanPlace.Contains(layer.TileMap[x,y])) && smartTile.Apply(layer.TileMap, new Point(x,y));
-                    if (success)
+                    ushort tileID = layer.TileMap[x, y];
+                    if (DirectAction || smartTile.TilesICanPlace.Contains(tileID))
                     {
-                        if (layer == J2L.SpriteLayer)
-                            J2L.EventMap[x, y] = 0;
-                    }
+                        ArrayMap<ushort> localTiles = new ArrayMap<ushort>(5, 5);
+                        for (int xx = 0; xx < 5; ++xx)
+                        {
+                            int xTile = Math.Max(0, Math.Min(layer.TileMap.GetLength(0) - 1, x + xx - 2));
+                            for (int yy = 0; yy < 5; ++yy)
+                            {
+                                int yTile = Math.Max(0, Math.Min(layer.TileMap.GetLength(1) - 1, y + yy - 2));
+                                ushort nearbyTileID = layer.TileMap[xTile, yTile];
+                                int animID = (nearbyTileID & (J2L.MaxTiles - 1)) - J2L.AnimOffset;
+                                if (animID >= 0)
+                                    nearbyTileID = J2L.Animations[animID].Sequence[0]; //always use first frame
+                                localTiles[xx, yy] = nearbyTileID;
+                            }
+                        }
+                        if (smartTile.Apply(localTiles, ref tileID))
+                        {
+                            layer.TileMap[x, y] = tileID;
+                            if (layer == J2L.SpriteLayer)
+                                J2L.EventMap[x, y] = 0;
+                            
+                            if (DirectAction)
+                            {
+                                for (int xx = x - 1; xx <= x + 1; ++xx)
+                                    if (xx >= 0 && x < layerWidth)
+                                        for (int yy = y - 1; yy <= y + 1; ++yy)
+                                            if (xx != x || yy != y) //not the center
+                                                if (yy >= 0 && yy < layerHeight)
+                                                    if (!ActOnATile(xx, yy, 0, ev, actionCenter, true, false)) //first try acting on the surrounding tiles with THIS smart tile, in case there are multiple smart tiles that share some individual tiles
+                                                        for (int i = 0; i < SmartTiles.Count; ++i) //then try all the rest
+                                                            if (i != ev.Value.ID)
+                                                                if (ActOnATile(xx, yy, 0, new AGAEvent((uint)i), actionCenter, true, false))
+                                                                    break;
+                                ActOnATile(x, y, 0, ev, actionCenter, true, false); //finally, do this center tile again to reflect changes in the surroundings
+                            }
 
-                    if (DirectAction)
-                    {
-                        for (int xx = x - 1; xx <= x + 1; ++xx)
-                            if (xx >= 0 && x < layerWidth)
-                                for (int yy = y - 1; yy <= y + 1; ++yy)
-                                    if (xx != x || yy != y) //not the center
-                                        if (yy >= 0 && yy < layerHeight)
-                                            if (!ActOnATile(xx, yy, 0, ev, actionCenter, true, false)) //first try acting on the surrounding tiles with THIS smart tile, in case there are multiple smart tiles that share some individual tiles
-                                                for (int i = 0; i < SmartTiles.Count; ++i) //then try all the rest
-                                                    if (i != ev.Value.ID)
-                                                        if (ActOnATile(xx, yy, 0, new AGAEvent((uint)i), actionCenter, true, false))
-                                                            break;
-                        ActOnATile(x, y, 0, ev, actionCenter, true, false); //finally, do this center tile again to reflect changes in the surroundings
+                            return true;
+                        }
                     }
-                    else
-                        return success;
+                    return false;
                 }
                 return true;
             }

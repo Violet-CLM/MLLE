@@ -7,16 +7,6 @@ using Extra.Collections;
 
 namespace MLLE
 {
-    public static class InputExtensions //https://stackoverflow.com/questions/3176602/how-to-force-a-number-to-be-in-a-range-in-c
-    {
-        public static int LimitToRange(
-            this int value, int inclusiveMinimum, int inclusiveMaximum)
-        {
-            if (value < inclusiveMinimum) { return inclusiveMinimum; }
-            if (value > inclusiveMaximum) { return inclusiveMaximum; }
-            return value;
-        }
-    }
     class SmartTile
     {
         internal List<ushort> Extras { get { return Assignments[35].Tiles; } }
@@ -60,12 +50,9 @@ namespace MLLE
                 Result.AddRange(other.Result);
             }
 
-            internal bool Applies(ArrayMap<ushort> tileMap, System.Drawing.Point location, List<SmartTile> otherSmartTiles)
+            internal bool Applies(ArrayMap<ushort> tileMap, List<SmartTile> otherSmartTiles)
             {
-                ushort tileID = tileMap[
-                    (location.X + X).LimitToRange(0, tileMap.GetLength(0) - 1),
-                    (location.Y + Y).LimitToRange(0, tileMap.GetLength(1) - 1)
-                ];
+                ushort tileID = tileMap[X+2, Y+2];
                 return Not ^ ((OtherSmartTileID == -1) ? SpecificTiles.Contains(tileID) : (otherSmartTiles[OtherSmartTileID].TilesICanPlace.Contains(tileID) || otherSmartTiles[OtherSmartTileID].Extras.Contains(tileID)));
             }
         }
@@ -390,18 +377,8 @@ namespace MLLE
         };
 
         Random Rand = new Random();
-        public bool Apply(ArrayMap<ushort> tileMap, System.Drawing.Point location)
+        public bool Apply(ArrayMap<ushort> localTiles, ref ushort tileID)
         {
-            ArrayMap<ushort> localTiles = new ArrayMap<ushort>(5, 5);
-            for (int xx = 0; xx < 5; ++xx)
-            {
-                int xTile = Math.Max(0, Math.Min(tileMap.GetLength(0) - 1, location.X + xx - 2));
-                for (int yy = 0; yy < 5; ++yy)
-                {
-                    int yTile = Math.Max(0, Math.Min(tileMap.GetLength(1) - 1, location.Y + yy - 2));
-                    localTiles[xx, yy] = tileMap[xTile, yTile];
-                }
-            }
             ArrayMap<bool?> LocalTilesAreRelated = new ArrayMap<bool?>(5,5);
             Func<int, int, bool> getRelatedness = (x, y) =>
             {
@@ -774,7 +751,7 @@ namespace MLLE
             foreach (Rule rule in Assignments[assignmentID].Rules)
             {
                 List<ushort> frames = rule.Result;
-                bool applies = lastRuleApplied && rule.Applies(tileMap, location, Tileset.SmartTiles);
+                bool applies = lastRuleApplied && rule.Applies(localTiles, Tileset.SmartTiles);
                 if (frames.Count == 0) //and
                 {
                     lastRuleApplied = applies;
@@ -783,7 +760,7 @@ namespace MLLE
                 {
                     if (applies)
                     {
-                        tileMap[location.X, location.Y] = frames[frames.Count == 1 ? 0 : Rand.Next(frames.Count)];
+                        tileID = frames[frames.Count == 1 ? 0 : Rand.Next(frames.Count)];
                         return true;
                     }
                     lastRuleApplied = true;
@@ -792,7 +769,7 @@ namespace MLLE
 
             var tiles = Assignments[assignmentID].Tiles;
             if (tiles.Count >= 1)
-                tileMap[location.X, location.Y] = tiles[tiles.Count == 1 ? 0 : Rand.Next(tiles.Count)];
+                tileID = tiles[tiles.Count == 1 ? 0 : Rand.Next(tiles.Count)];
             else
                 return false;
             return true;
