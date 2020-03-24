@@ -2756,18 +2756,17 @@ namespace MLLE
         private void GrabEventAtMouse() { if (J2L.VersionType == Version.AGA) ActiveEvent = MouseAGAEvent; else ActiveEvent.ID = MouseAGAEvent.ID; }
         private void PasteEventAtMouse()
         {
-            /*if (J2L.VersionType == Version.AGA) { if (LastFocusedZone == FocusedZone.Level) J2L.AGA_EventMap[MouseTileX, MouseTileY] = MouseAGAEvent = ActiveEvent; }
-            else*/
             if (LastFocusedZone == FocusedZone.Tileset) { J2L.EventTiles[MouseTile] = MouseAGAEvent.ID = ActiveEvent.ID; RedrawTilesetHowManyTimes = 2; }
             else if (LastFocusedZone == FocusedZone.Level && CurrentLayer == J2L.SpriteLayer)
             {
-                LayerAndSpecificTiles actionCenter = new LayerAndSpecificTiles(J2L.SpriteLayer);
-                ActOnATile(MouseTileX, MouseTileY, J2L.SpriteLayer.TileMap[MouseTileX, MouseTileY], ActiveEvent, actionCenter, true);
-                //actionCenter.Specifics.Add(new Point(MouseTileX, MouseTileY), new TileAndEvent(J2L.Layers[3].TileMap[MouseTileX, MouseTileY], (actionCenter.Layer == 3) ? J2L.EventMap[MouseTileX, MouseTileY] : (uint?)null));
-                Undoable.Push(actionCenter);
-                Redoable.Clear();
-                LevelHasBeenModified = true;
-                //J2L.EventMap[MouseTileX, MouseTileY] = MouseAGAEvent.ID = ActiveEvent.ID;
+                if (MouseTileX >= 0 && MouseTileY >= 0 && MouseTileX < CurrentLayer.Width && MouseTileY < CurrentLayer.Height) {
+                    LayerAndSpecificTiles actionCenter = new LayerAndSpecificTiles(J2L.SpriteLayer);
+                    actionCenter.Specifics[new Point(MouseTileX, MouseTileY)] = new TileAndEvent(CurrentLayer.TileMap[MouseTileX, MouseTileY], (J2L.VersionType != Version.AGA) ? new AGAEvent(J2L.EventMap[MouseTileX, MouseTileY]) : J2L.AGA_EventMap[MouseTileX, MouseTileY]);
+                    Undoable.Push(actionCenter);
+                    Redoable.Clear();
+                    LevelHasBeenModified = true;
+                    J2L.EventMap[MouseTileX, MouseTileY] = MouseAGAEvent.ID = ActiveEvent.ID;
+                }
             }
             UpdateMousePrintout();
         }
