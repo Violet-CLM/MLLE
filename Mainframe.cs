@@ -2918,6 +2918,8 @@ namespace MLLE
             Layer layer = J2L.AllLayers[LayerNumber];
             if (layer.HasTiles)
             {
+                var realTilesetOverlay = CurrentTilesetOverlay;
+                CurrentTilesetOverlay = TilesetOverlay.None; //clearing with smart tiles is slower, so don't do it
                 LayerAndSpecificTiles ActionCenter = new LayerAndSpecificTiles(layer);
                 if (WhereSelected == FocusedZone.Level)
                 {
@@ -2936,6 +2938,7 @@ namespace MLLE
                     }
                     _suspendEvent.Set();
                 }
+                CurrentTilesetOverlay = realTilesetOverlay;
                 if (ActionCenter.Specifics.Count > 0)
                 {
                     Undoable.Push(ActionCenter);
