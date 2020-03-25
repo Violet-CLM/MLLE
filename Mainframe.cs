@@ -397,7 +397,6 @@ namespace MLLE
                     return;
             }
             for (ushort x = 0; x < IsEachTileSelected.Length; x++) IsEachTileSelected[x] = new bool[1026];
-            for (ushort x = 0; x < ShouldEachTileBeFilledIn.Length; x++) ShouldEachTileBeFilledIn[x] = new bool[1026];
             GL.Disable(EnableCap.DepthTest);
             GL.Disable(EnableCap.CullFace);
             GeneratorOverlay = TexUtil.CreateTextureFromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Generator.png"));
@@ -2723,7 +2722,7 @@ namespace MLLE
 
         #region editing functions
         //List<Point> SelectedTileLocations = new List<Point>(512);
-        internal bool[][] IsEachTileSelected = new bool[1026][], ShouldEachTileBeFilledIn = new bool[1026][];
+        internal bool[][] IsEachTileSelected = new bool[1026][];
         Point UpperLeftSelectionCorner = new Point(1024, 1024), BottomRightSelectionCorner = new Point(0, 0);
         internal struct TileAndEvent
         {
@@ -3125,7 +3124,6 @@ namespace MLLE
 
         //Rectangle DrawRect = new Rectangle();
         Point DrawPoint = new Point();
-        Queue<Point> FillingQ = new Queue<Point>();
 
         private void editScriptToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -3284,6 +3282,7 @@ namespace MLLE
             }
             else return p;
         }
+        static readonly Point[] FillOffsets = { new Point(0,-1), new Point(1, 0), new Point(0, 1), new Point(-1, 0) };
         private void TakeAction()
         {
             if (WhereSelected == FocusedZone.Tileset) DeselectAll();
@@ -3309,37 +3308,58 @@ namespace MLLE
             else if (VisibleEditingTool == FillButton)
             {
                 Layer layer = CurrentLayer;
-                if (MouseTileX < layer.Width && MouseTileY < layer.Height)
+                uint maxX = layer.Width - 1, maxY = layer.Height - 1;
+                if (MouseTileX <= maxX && MouseTileY <= maxY)
                 {
-                    foreach (bool[] col in ShouldEachTileBeFilledIn) for (ushort y = 0; y < col.Length; y++) col[y] = false;
-                    ArrayMap<ushort> TileMap = layer.TileMap;
-                    ushort TargetTileID = TileMap[MouseTileX, MouseTileY];
-                    bool SelectedOnly = IsEachTileSelected[MouseTileX + 1][MouseTileY + 1];
-                    TryToFillTile(MouseTileX, MouseTileY, TileMap, ref TargetTileID, ref SelectedOnly, ref shiftPressed, ref ActionCenter);
-                    while (FillingQ.Count > 0)
+                    ArrayMap<ushort> tileMap = layer.TileMap;
+                    ushort targetTileID = tileMap[MouseTileX, MouseTileY];
+                    bool selectedOnly = IsEachTileSelected[MouseTileX + 1][MouseTileY + 1];
+
+                    HashSet<Point> allTilesToFill = new HashSet<Point>();
+                    Queue<Point> fillingQ = new Queue<Point>();
+                    Point startingPoint = new Point(MouseTileX, MouseTileY);
+                    fillingQ.Enqueue(startingPoint);
+                    allTilesToFill.Add(startingPoint);
+
+                    while (fillingQ.Count > 0)
                     {
-                        Point FillPoint = FillingQ.Dequeue();
-                        if (FillPoint.X > 0) TryToFillTile(FillPoint.X - 1, FillPoint.Y, TileMap, ref TargetTileID, ref SelectedOnly, ref shiftPressed, ref ActionCenter);
-                        if (FillPoint.X < layer.Width - 1) TryToFillTile(FillPoint.X + 1, FillPoint.Y, TileMap, ref TargetTileID, ref SelectedOnly, ref shiftPressed, ref ActionCenter);
-                        if (FillPoint.Y > 0) TryToFillTile(FillPoint.X, FillPoint.Y - 1, TileMap, ref TargetTileID, ref SelectedOnly, ref shiftPressed, ref ActionCenter);
-                        if (FillPoint.Y < layer.Height - 1) TryToFillTile(FillPoint.X, FillPoint.Y + 1, TileMap, ref TargetTileID, ref SelectedOnly, ref shiftPressed, ref ActionCenter);
+                        Point FillPoint = fillingQ.Dequeue();
+                        foreach (Point offset in FillOffsets)
+                        {
+                            Point offsetFillPoint = new Point(FillPoint.X, FillPoint.Y);
+                            offsetFillPoint.Offset(offset);
+                            if (
+                                offsetFillPoint.X >= 0 &&
+                                offsetFillPoint.Y >= 0 &&
+                                offsetFillPoint.X <= maxX &&
+                                offsetFillPoint.Y <= maxY &&
+                                tileMap[offsetFillPoint.X, offsetFillPoint.Y] == targetTileID &&
+                                IsEachTileSelected[offsetFillPoint.X + 1][offsetFillPoint.Y + 1] == selectedOnly &&
+                                allTilesToFill.Add(offsetFillPoint) //not previously in the HashSet
+                            )
+                                fillingQ.Enqueue(offsetFillPoint);
+                        }
                     }
-                    /*for (ushort x = 0; x < ShouldEachTileBeFilledIn.Length; x++)
-                        for (ushort y = 0; y < ShouldEachTileBeFilledIn.Length; y++)
-                            if (ShouldEachTileBeFilledIn[x][y])
+
+                    if (CurrentTilesetOverlay == TilesetOverlay.SmartTiles) DrawPoint = new Point(0, 0);
+                    foreach (Point fillPoint in allTilesToFill)
+                    {
+                        if (CurrentTilesetOverlay != TilesetOverlay.SmartTiles)
+                        {
+                            if (Control.ModifierKeys == Keys.Control) DrawPoint = MakeUpSomeValidStampCoordinates(shiftPressed, 0, 0, CurrentStamp.Length, CurrentStamp[0].Length);
+                            else
                             {
-                                if (Control.ModifierKeys == Keys.Control) DrawPoint = MakeUpSomeValidStampCoordinates(shiftPressed, 0, 0, CurrentStamp.Length, CurrentStamp[0].Length);
-                                else
-                                {
-                                    DrawPoint.X = x - MouseTileX;
-                                    while (DrawPoint.X < 0) DrawPoint.X += CurrentStamp.Length;
-                                    DrawPoint.X %= CurrentStamp.Length;
-                                    DrawPoint.Y = y - MouseTileY;
-                                    while (DrawPoint.Y < 0) DrawPoint.Y += CurrentStamp[0].Length;
-                                    DrawPoint.Y %= CurrentStamp[0].Length;
-                                }
-                                ActOnATile(x, y, CurrentStamp[DrawPoint.X][DrawPoint.Y].Tile, CurrentStamp[DrawPoint.X][DrawPoint.Y].Event, ActionCenter, shiftPressed | ShowBlankTileInStamp);
-                            }*/
+                                DrawPoint.X = fillPoint.X - MouseTileX;
+                                while (DrawPoint.X < 0) DrawPoint.X += CurrentStamp.Length;
+                                DrawPoint.X %= CurrentStamp.Length;
+                                DrawPoint.Y = fillPoint.Y - MouseTileY;
+                                while (DrawPoint.Y < 0) DrawPoint.Y += CurrentStamp[0].Length;
+                                DrawPoint.Y %= CurrentStamp[0].Length;
+                            }
+                        }
+                        var stampTile = CurrentStamp[DrawPoint.X][DrawPoint.Y];
+                        ActOnATile(fillPoint.X, fillPoint.Y, stampTile.Tile, stampTile.Event, ActionCenter, shiftPressed | ShowBlankTileInStamp);
+                    }
                 }
             }
             #endregion fill
@@ -3399,25 +3419,6 @@ namespace MLLE
                 Undoable.Push(ActionCenter);
                 Redoable.Clear();
                 LevelHasBeenModified = true;
-            }
-        }
-        private void TryToFillTile(int x, int y, ArrayMap<ushort> tileMap, ref ushort TargetTileID, ref bool select, ref bool shiftPressed, ref LayerAndSpecificTiles ActionCenter)
-        {
-            if (ShouldEachTileBeFilledIn[x][y] == false && IsEachTileSelected[x + 1][y + 1] == select && tileMap[x, y] == TargetTileID)
-            {
-                ShouldEachTileBeFilledIn[x][y] = true;
-                FillingQ.Enqueue(new Point(x, y));
-                if (Control.ModifierKeys == Keys.Control) DrawPoint = MakeUpSomeValidStampCoordinates(shiftPressed, 0, 0, CurrentStamp.Length, CurrentStamp[0].Length);
-                else
-                {
-                    DrawPoint.X = x - MouseTileX;
-                    while (DrawPoint.X < 0) DrawPoint.X += CurrentStamp.Length;
-                    DrawPoint.X %= CurrentStamp.Length;
-                    DrawPoint.Y = y - MouseTileY;
-                    while (DrawPoint.Y < 0) DrawPoint.Y += CurrentStamp[0].Length;
-                    DrawPoint.Y %= CurrentStamp[0].Length;
-                }
-                ActOnATile(x, y, CurrentStamp[DrawPoint.X][DrawPoint.Y].Tile, CurrentStamp[DrawPoint.X][DrawPoint.Y].Event, ActionCenter, shiftPressed | ShowBlankTileInStamp);
             }
         }
 
