@@ -3228,13 +3228,13 @@ namespace MLLE
                     ushort tileID = layer.TileMap[x, y];
                     if (DirectAction || smartTile.TilesICanPlace.Contains(tileID))
                     {
-                        ArrayMap<ushort> localTiles = new ArrayMap<ushort>(5, 5);
+                        ArrayMap<ushort> localTiles = new ArrayMap<ushort>(5, 6);
                         for (int xx = 0; xx < 5; ++xx)
                         {
                             int xTile = Math.Max(0, Math.Min(layer.TileMap.GetLength(0) - 1, x + xx - 2));
-                            for (int yy = 0; yy < 5; ++yy)
+                            for (int yy = 0; yy < 6; ++yy)
                             {
-                                int yTile = Math.Max(0, Math.Min(layer.TileMap.GetLength(1) - 1, y + yy - 2));
+                                int yTile = Math.Max(0, Math.Min(layer.TileMap.GetLength(1) - 1, y + yy - 3));
                                 ushort nearbyTileID = layer.TileMap[xTile, yTile];
                                 int animID = (nearbyTileID & (J2L.MaxTiles - 1)) - J2L.AnimOffset;
                                 if (animID >= 0)

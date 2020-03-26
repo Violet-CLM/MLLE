@@ -52,7 +52,7 @@ namespace MLLE
 
             internal bool Applies(ArrayMap<ushort> tileMap, List<SmartTile> otherSmartTiles)
             {
-                ushort tileID = tileMap[X+2, Y+2];
+                ushort tileID = tileMap[X+2, Y+3];
                 return Not ^ ((OtherSmartTileID == -1) ? SpecificTiles.Contains(tileID) : (otherSmartTiles[OtherSmartTileID].TilesICanPlace.Contains(tileID) || otherSmartTiles[OtherSmartTileID].Extras.Contains(tileID)));
             }
         }
@@ -379,11 +379,11 @@ namespace MLLE
         Random Rand = new Random();
         public bool Apply(ArrayMap<ushort> localTiles, ref ushort tileID)
         {
-            ArrayMap<bool?> LocalTilesAreRelated = new ArrayMap<bool?>(5,5);
+            ArrayMap<bool?> LocalTilesAreRelated = new ArrayMap<bool?>(5,6);
             Func<int, int, bool> getRelatedness = (x, y) =>
             {
                 x += 2;
-                y += 2;
+                y += 3;
                 return LocalTilesAreRelated[x, y] ?? (LocalTilesAreRelated[x, y] = TilesIGoNextTo.Contains(localTiles[x, y])).Value;
             };
 
@@ -419,7 +419,7 @@ namespace MLLE
                 case 5: //LU
                     if (!getRelatedness(-1, -1)) //thin
                     {
-                        if (getRelatedness(1, -1) && !getRelatedness(0, -2)) //horizontal tube slope
+                        if (getRelatedness(1, -1) && !getRelatedness(0, -2) && Assignments[94].Tiles.Count != 0) //horizontal tube slope
                             assignmentID = 94;
                         else if (getRelatedness(-1, 1) && !getRelatedness(-2, 0)) //vertical tube slope
                             assignmentID = 87;
@@ -428,6 +428,11 @@ namespace MLLE
                     }
                     else //thick
                     {
+                        if (!getRelatedness(1, -1) && !getRelatedness(0, -2) && getRelatedness(-1, -2) && !getRelatedness(-1, -3))
+                        {
+                            assignmentID = 93;
+                            break;
+                        }
                         if (Assignments[53].Tiles.Count != 0 && getRelatedness(1, -1)) //ceiling slope
                         {
                             if (getRelatedness(0, -2))
@@ -466,13 +471,13 @@ namespace MLLE
                                 }
                             }
                         }
-                        assignmentID = (!getRelatedness(1, -1) && !getRelatedness(0, -2) && getRelatedness(-1, -2) ? 93 : 22);
+                        assignmentID = 22;
                     }
                     break;
                 case 6: //LD
                     if (!getRelatedness(-1, 1)) //thin
                     {
-                        if (getRelatedness(1, 1) && !getRelatedness(0, 2)) //horizontal tube slope
+                        if (getRelatedness(1, 1) && !getRelatedness(0, 2) && Assignments[85].Tiles.Count != 0) //horizontal tube slope
                             assignmentID = 85;
                         else if (getRelatedness(-1, -1) && !getRelatedness(-2, 0)) //vertical tube slope
                             assignmentID = 97;
@@ -491,12 +496,26 @@ namespace MLLE
                                     break;
                                 }
                             }
-                            else
+                            else //downward slope at the end of the platform
                             {
-                                if (getRelatedness(-1, -1) && !getRelatedness(-1, -2) && Assignments[getRelatedness(0, 2) ? 83 : 93].Tiles.Count != 0) //downward slope at the end of the platform
+                                if (getRelatedness(-1, -1) && !getRelatedness(-1, -2)) //slope continues above but is not outright wall
                                 {
-                                    assignmentID = 41;
-                                    break;
+                                    if (!getRelatedness(0, 2))
+                                    {
+                                        if (Assignments[93].Tiles.Count != 0)
+                                        {
+                                            assignmentID = 41;
+                                            break;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (getRelatedness(-1, 2) && Assignments[83].Tiles.Count != 0)
+                                        {
+                                            assignmentID = 41;
+                                            break;
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -524,7 +543,7 @@ namespace MLLE
                     break;
                 case 7: //LUD
                     if (getRelatedness(-1, -1))
-                        assignmentID = getRelatedness(-1, 1) ? (!getRelatedness(1, -1) && !getRelatedness(0, -2) && getRelatedness(-1, -2) ? 83 : 12) : (getRelatedness(-2, 0) ? 27 : 56);
+                        assignmentID = getRelatedness(-1, 1) ? (!getRelatedness(1, -1) && !getRelatedness(0, -2) && getRelatedness(-1, -2) && !getRelatedness(-1, -3) ? 83 : 12) : (getRelatedness(-2, 0) ? 27 : 56);
                     else
                         assignmentID = getRelatedness(-1, 1) ? (getRelatedness(1, -1) || getRelatedness(0, -2) ? (getRelatedness(-2, 0) ? 37 : 46) : 90) : 15;
                     break;
@@ -534,7 +553,7 @@ namespace MLLE
                 case 9: //RU
                     if (!getRelatedness(1, -1)) //thin
                     {
-                        if (getRelatedness(-1, -1) && !getRelatedness(0, -2)) //horizontal tube slope
+                        if (getRelatedness(-1, -1) && !getRelatedness(0, -2) && Assignments[95].Tiles.Count != 0) //horizontal tube slope
                             assignmentID = 95;
                         else if (getRelatedness(1, 1) && !getRelatedness(2, 0)) //vertical tube slope
                             assignmentID = 96;
@@ -543,6 +562,11 @@ namespace MLLE
                     }
                     else //thick
                     {
+                        if (!getRelatedness(-1, -1) && !getRelatedness(0, -2) && getRelatedness(1, -2) && !getRelatedness(1, -3))
+                        {
+                            assignmentID = 92;
+                            break;
+                        }
                         if (Assignments[52].Tiles.Count != 0 && getRelatedness(-1, -1)) //ceiling slope
                         {
                             if (getRelatedness(0, -2))
@@ -581,13 +605,13 @@ namespace MLLE
                                 }
                             }
                         }
-                        assignmentID = !getRelatedness(-1, -1) && !getRelatedness(0, -2) && getRelatedness(1, -2) ? 92 : 20;
+                        assignmentID = 20;
                     }
                     break;
                 case 10: //RD
                     if (!getRelatedness(1, 1)) //thin
                     {
-                        if (getRelatedness(-1, 1) && !getRelatedness(0, 2)) //horizontal tube slope
+                        if (getRelatedness(-1, 1) && !getRelatedness(0, 2) && Assignments[84].Tiles.Count != 0) //horizontal tube slope
                             assignmentID = 84;
                         else if (getRelatedness(1, -1) && !getRelatedness(2, 0)) //vertical tube slope
                             assignmentID = 86;
@@ -606,12 +630,26 @@ namespace MLLE
                                     break;
                                 }
                             }
-                            else
+                            else //downward slope at the end of the platform
                             {
-                                if (getRelatedness(1, -1) && !getRelatedness(1, -2) && Assignments[getRelatedness(0, 2) ? 82 : 92].Tiles.Count != 0) //downward slope at the end of the platform
+                                if (getRelatedness(1, -1) && !getRelatedness(1, -2)) //slope continues above but is not outright wall
                                 {
-                                    assignmentID = 40;
-                                    break;
+                                    if (!getRelatedness(0, 2))
+                                    {
+                                        if (Assignments[92].Tiles.Count != 0)
+                                        {
+                                            assignmentID = 40;
+                                            break;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (getRelatedness(1, 2) && Assignments[82].Tiles.Count != 0)
+                                        {
+                                            assignmentID = 40;
+                                            break;
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -639,7 +677,7 @@ namespace MLLE
                     break;
                 case 11: //RUD
                     if (getRelatedness(1, -1))
-                        assignmentID = getRelatedness(1, 1) ? (!getRelatedness(-1, -1) && !getRelatedness(0, -2) && getRelatedness(1, -2) ? 82 : 10) : (getRelatedness(2, 0) ? 26 : 76);
+                        assignmentID = getRelatedness(1, 1) ? (!getRelatedness(-1, -1) && !getRelatedness(0, -2) && getRelatedness(1, -2) && !getRelatedness(1, -3) ? 82 : 10) : (getRelatedness(2, 0) ? 26 : 76);
                     else
                         assignmentID = getRelatedness(1, 1) ? (getRelatedness(-1, -1) || getRelatedness(0, -2) ? (getRelatedness(2, 0) ? 36 : 66) : 91) : 13;
                     break;
