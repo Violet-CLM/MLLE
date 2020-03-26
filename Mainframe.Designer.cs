@@ -66,6 +66,8 @@
             this.jazz2V123ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.jazz2V124ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
+            this.defineSmartTilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator23 = new System.Windows.Forms.ToolStripSeparator();
             this.playMusicToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveAsImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveTilesetImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -170,6 +172,7 @@
             this.OverEvents = new System.Windows.Forms.ToolStripMenuItem();
             this.OverTileTypes = new System.Windows.Forms.ToolStripMenuItem();
             this.OverMasks = new System.Windows.Forms.ToolStripMenuItem();
+            this.OverSmartTiles = new System.Windows.Forms.ToolStripMenuItem();
             this.TiletypeDropdown = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator15 = new System.Windows.Forms.ToolStripSeparator();
             this.imageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -192,6 +195,7 @@
             this.AnimScrollbar = new System.Windows.Forms.HScrollBar();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
+            this.addNewToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.weaponsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pinballToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.platformsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -438,12 +442,14 @@
             this.toolsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.changeVersionToolStripMenuItem,
             this.toolStripSeparator5,
+            this.defineSmartTilesToolStripMenuItem,
+            this.toolStripSeparator23,
             this.playMusicToolStripMenuItem,
             this.saveAsImageToolStripMenuItem,
             this.saveTilesetImageToolStripMenuItem,
             this.packageAsZiptoolStripMenuItem});
             this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
-            this.toolsToolStripMenuItem.Size = new System.Drawing.Size(47, 20);
+            this.toolsToolStripMenuItem.Size = new System.Drawing.Size(46, 20);
             this.toolsToolStripMenuItem.Text = "Tools";
             this.toolsToolStripMenuItem.DropDownOpening += new System.EventHandler(this.toolsToolStripMenuItem_DropDownOpening);
             // 
@@ -464,42 +470,42 @@
             // animaniacsToolStripMenuItem
             // 
             this.animaniacsToolStripMenuItem.Name = "animaniacsToolStripMenuItem";
-            this.animaniacsToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+            this.animaniacsToolStripMenuItem.Size = new System.Drawing.Size(162, 22);
             this.animaniacsToolStripMenuItem.Text = "Animaniacs";
             this.animaniacsToolStripMenuItem.Click += new System.EventHandler(this.animaniacsToolStripMenuItem_Click);
             // 
             // batteryCheckToolStripMenuItem
             // 
             this.batteryCheckToolStripMenuItem.Name = "batteryCheckToolStripMenuItem";
-            this.batteryCheckToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+            this.batteryCheckToolStripMenuItem.Size = new System.Drawing.Size(162, 22);
             this.batteryCheckToolStripMenuItem.Text = "Battery Check";
             this.batteryCheckToolStripMenuItem.Click += new System.EventHandler(this.batteryCheckToolStripMenuItem_Click);
             // 
             // jazz2V100ghToolStripMenuItem
             // 
             this.jazz2V100ghToolStripMenuItem.Name = "jazz2V100ghToolStripMenuItem";
-            this.jazz2V100ghToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+            this.jazz2V100ghToolStripMenuItem.Size = new System.Drawing.Size(162, 22);
             this.jazz2V100ghToolStripMenuItem.Text = "Jazz 2 v1.00g/h";
             this.jazz2V100ghToolStripMenuItem.Click += new System.EventHandler(this.jazz2V100ghToolStripMenuItem_Click);
             // 
             // jazz2V110oToolStripMenuItem
             // 
             this.jazz2V110oToolStripMenuItem.Name = "jazz2V110oToolStripMenuItem";
-            this.jazz2V110oToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+            this.jazz2V110oToolStripMenuItem.Size = new System.Drawing.Size(162, 22);
             this.jazz2V110oToolStripMenuItem.Text = "Jazz 2 v1.10o";
             this.jazz2V110oToolStripMenuItem.Click += new System.EventHandler(this.jazz2V110oToolStripMenuItem_Click);
             // 
             // jazz2V123ToolStripMenuItem
             // 
             this.jazz2V123ToolStripMenuItem.Name = "jazz2V123ToolStripMenuItem";
-            this.jazz2V123ToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+            this.jazz2V123ToolStripMenuItem.Size = new System.Drawing.Size(162, 22);
             this.jazz2V123ToolStripMenuItem.Text = "Jazz 2 v1.20-1.23";
             this.jazz2V123ToolStripMenuItem.Click += new System.EventHandler(this.jazz2V123ToolStripMenuItem_Click);
             // 
             // jazz2V124ToolStripMenuItem
             // 
             this.jazz2V124ToolStripMenuItem.Name = "jazz2V124ToolStripMenuItem";
-            this.jazz2V124ToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+            this.jazz2V124ToolStripMenuItem.Size = new System.Drawing.Size(162, 22);
             this.jazz2V124ToolStripMenuItem.Text = "Jazz 2 v1.24 (TSF)";
             this.jazz2V124ToolStripMenuItem.Click += new System.EventHandler(this.jazz2V124ToolStripMenuItem_Click);
             // 
@@ -507,6 +513,20 @@
             // 
             this.toolStripSeparator5.Name = "toolStripSeparator5";
             this.toolStripSeparator5.Size = new System.Drawing.Size(182, 6);
+            // 
+            // defineSmartTilesToolStripMenuItem
+            // 
+            this.defineSmartTilesToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.addNewToolStripMenuItem1});
+            this.defineSmartTilesToolStripMenuItem.Name = "defineSmartTilesToolStripMenuItem";
+            this.defineSmartTilesToolStripMenuItem.Size = new System.Drawing.Size(179, 22);
+            this.defineSmartTilesToolStripMenuItem.Text = "Define Smart Tiles";
+            this.defineSmartTilesToolStripMenuItem.DropDownOpening += new System.EventHandler(this.defineSmartTilesToolStripMenuItem_DropDownOpening);
+            // 
+            // toolStripSeparator23
+            // 
+            this.toolStripSeparator23.Name = "toolStripSeparator23";
+            this.toolStripSeparator23.Size = new System.Drawing.Size(176, 6);
             // 
             // playMusicToolStripMenuItem
             // 
@@ -587,7 +607,7 @@
             // addNewToolStripMenuItem
             // 
             this.addNewToolStripMenuItem.Name = "addNewToolStripMenuItem";
-            this.addNewToolStripMenuItem.Size = new System.Drawing.Size(132, 22);
+            this.addNewToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.addNewToolStripMenuItem.Text = "Add New...";
             this.addNewToolStripMenuItem.Click += new System.EventHandler(this.addNewToolStripMenuItem_Click);
             // 
@@ -1004,7 +1024,7 @@
             this.ParallaxButton.Image = ((System.Drawing.Image)(resources.GetObject("ParallaxButton.Image")));
             this.ParallaxButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.ParallaxButton.Name = "ParallaxButton";
-            this.ParallaxButton.Size = new System.Drawing.Size(51, 22);
+            this.ParallaxButton.Size = new System.Drawing.Size(52, 22);
             this.ParallaxButton.Tag = "Toggle viewing Parallax Display";
             this.ParallaxButton.Text = "Parallax";
             this.ParallaxButton.CheckedChanged += new System.EventHandler(this.ParallaxButton_CheckedChanged);
@@ -1109,7 +1129,7 @@
             // TilesetLabel
             // 
             this.TilesetLabel.Name = "TilesetLabel";
-            this.TilesetLabel.Size = new System.Drawing.Size(41, 24);
+            this.TilesetLabel.Size = new System.Drawing.Size(40, 24);
             this.TilesetLabel.Text = "Tileset";
             // 
             // TilesetSelection
@@ -1142,7 +1162,8 @@
             "(none)",
             "Events",
             "Tile Types",
-            "Masks"});
+            "Masks",
+            "Smart Tiles"});
             this.TilesetOverlaySelection.Name = "TilesetOverlaySelection";
             this.TilesetOverlaySelection.Size = new System.Drawing.Size(80, 27);
             this.TilesetOverlaySelection.Tag = "Select overlay data for tiles";
@@ -1467,7 +1488,8 @@
             this.OverNone,
             this.OverEvents,
             this.OverTileTypes,
-            this.OverMasks});
+            this.OverMasks,
+            this.OverSmartTiles});
             this.OverlayDropdown.Name = "OverlayDropdown";
             this.OverlayDropdown.Size = new System.Drawing.Size(166, 22);
             this.OverlayDropdown.Text = "Overlay";
@@ -1475,30 +1497,37 @@
             // OverNone
             // 
             this.OverNone.Name = "OverNone";
-            this.OverNone.Size = new System.Drawing.Size(126, 22);
+            this.OverNone.Size = new System.Drawing.Size(131, 22);
             this.OverNone.Text = "None";
             this.OverNone.Click += new System.EventHandler(this.OverNone_Click);
             // 
             // OverEvents
             // 
             this.OverEvents.Name = "OverEvents";
-            this.OverEvents.Size = new System.Drawing.Size(126, 22);
+            this.OverEvents.Size = new System.Drawing.Size(131, 22);
             this.OverEvents.Text = "Events";
             this.OverEvents.Click += new System.EventHandler(this.OverEvents_Click);
             // 
             // OverTileTypes
             // 
             this.OverTileTypes.Name = "OverTileTypes";
-            this.OverTileTypes.Size = new System.Drawing.Size(126, 22);
+            this.OverTileTypes.Size = new System.Drawing.Size(131, 22);
             this.OverTileTypes.Text = "Tile Types";
             this.OverTileTypes.Click += new System.EventHandler(this.OverTileTypes_Click);
             // 
             // OverMasks
             // 
             this.OverMasks.Name = "OverMasks";
-            this.OverMasks.Size = new System.Drawing.Size(126, 22);
+            this.OverMasks.Size = new System.Drawing.Size(131, 22);
             this.OverMasks.Text = "Masks";
             this.OverMasks.Click += new System.EventHandler(this.OverMasks_Click);
+            // 
+            // OverSmartTiles
+            // 
+            this.OverSmartTiles.Name = "OverSmartTiles";
+            this.OverSmartTiles.Size = new System.Drawing.Size(131, 22);
+            this.OverSmartTiles.Text = "Smart Tiles";
+            this.OverSmartTiles.Click += new System.EventHandler(this.OverSmartTiles_Click);
             // 
             // TiletypeDropdown
             // 
@@ -1706,6 +1735,13 @@
             // folderBrowserDialog1
             // 
             this.folderBrowserDialog1.ShowNewFolderButton = false;
+            // 
+            // addNewToolStripMenuItem1
+            // 
+            this.addNewToolStripMenuItem1.Name = "addNewToolStripMenuItem1";
+            this.addNewToolStripMenuItem1.Size = new System.Drawing.Size(152, 22);
+            this.addNewToolStripMenuItem1.Text = "Add New...";
+            this.addNewToolStripMenuItem1.Click += new System.EventHandler(this.defineSmartTilesToolStripMenuItem_Click);
             // 
             // weaponsToolStripMenuItem
             // 
@@ -1944,6 +1980,10 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator22;
         private System.Windows.Forms.ToolStripMenuItem editScriptToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem recentLevelsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem OverSmartTiles;
+        private System.Windows.Forms.ToolStripMenuItem defineSmartTilesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator23;
+        private System.Windows.Forms.ToolStripMenuItem addNewToolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem zoomingAbove100ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem Zoom200;
         private System.Windows.Forms.ToolStripMenuItem Zoom400;
@@ -1951,7 +1991,6 @@
         private System.Windows.Forms.ToolStripMenuItem saveTilesetImageToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem automaskToolStripMenuItem;
         private System.Windows.Forms.ToolStripButton ReplaceEventsToggle;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator23;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator24;
         private System.Windows.Forms.ToolStripMenuItem searchReplaceEventsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem findParameterValuesToolStripMenuItem;

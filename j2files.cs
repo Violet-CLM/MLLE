@@ -81,7 +81,7 @@ abstract class J2File //The fields shared by .j2l and .j2t files. No methods/int
     }
 }
 
-class J2TFile : J2File
+partial class J2TFile : J2File
 {
     internal uint Signature;
     public Palette Palette;

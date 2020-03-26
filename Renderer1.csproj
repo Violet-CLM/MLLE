@@ -69,6 +69,9 @@
     </Compile>
     <Compile Include="AGAfiles.cs" />
     <Compile Include="ArrayMap.cs" />
+    <Compile Include="CheckedComboBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="DirectorySetupForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -145,6 +148,7 @@
     <Compile Include="SFXForm.Designer.cs">
       <DependentUpon>SFXForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="SmartTiles.cs" />
     <Compile Include="TextEdit.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -162,6 +166,12 @@
     </Compile>
     <Compile Include="TileImageEditorForm.Designer.cs">
       <DependentUpon>TileImageEditorForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SmartTilesForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SmartTilesForm.Designer.cs">
+      <DependentUpon>SmartTilesForm.cs</DependentUpon>
     </Compile>
     <Compile Include="TilesetForm.cs">
       <SubType>Form</SubType>
@@ -285,6 +295,9 @@
     <EmbeddedResource Include="TileImageEditorForm.resx">
       <DependentUpon>TileImageEditorForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="SmartTilesForm.resx">
+      <DependentUpon>SmartTilesForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="TilesetForm.resx">
       <DependentUpon>TilesetForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -312,6 +325,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\RuleGrid.png" />
     <None Include="app.config" />
     <None Include="Icons\MLLE01.ico" />
     <None Include="Images\500Bumper.png" />
@@ -327,6 +341,7 @@
     <None Include="Images\Snow.png" />
     <None Include="Images\JazzAbout.bmp" />
     <None Include="Images\JazzAbout.png" />
+    <Content Include="Images\SmartTilesPermutations.png" />
     <Content Include="Images\BollPlatform.png" />
     <Content Include="Images\FruitPlatform.png" />
     <Content Include="Images\GrassPlatform.png" />
@@ -360,6 +375,7 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Folder Include="Resources\" />
   </ItemGroup>
