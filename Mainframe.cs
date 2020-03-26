@@ -3176,20 +3176,29 @@ namespace MLLE
                 toolStripItem.Click += (s, ee) => {
                     _suspendEvent.Reset();
                     var workingSmartTile = new SmartTile(smartTile);
-                    DialogResult formResult = new SmartTilesForm().ShowForm(workingSmartTile, J2L.Tilesets[0], localI);
-                    _suspendEvent.Set();
-                    if (formResult == DialogResult.OK)
+                    if (Control.ModifierKeys != Keys.Shift)
                     {
-                        smartTilesOfFirstTileset[localI] = workingSmartTile;
-                        workingSmartTile.UpdateAllPossibleTiles(smartTilesOfFirstTileset);
-                    }
-                    else if (formResult == DialogResult.Abort)
-                    {
-                        smartTilesOfFirstTileset.Remove(smartTile);
-                        SetStampDimensions(0, 0); //just to be safe
+                        DialogResult formResult = new SmartTilesForm().ShowForm(workingSmartTile, J2L.Tilesets[0], localI);
+                        _suspendEvent.Set();
+                        if (formResult == DialogResult.OK)
+                        {
+                            smartTilesOfFirstTileset[localI] = workingSmartTile;
+                            workingSmartTile.UpdateAllPossibleTiles(smartTilesOfFirstTileset);
+                        }
+                        else if (formResult == DialogResult.Abort)
+                        {
+                            smartTilesOfFirstTileset.Remove(smartTile);
+                            SetStampDimensions(0, 0); //just to be safe
+                        }
+                        else
+                            return;
                     }
                     else
-                        return;
+                    {
+                        workingSmartTile.Name += " (Copy)";
+                        smartTilesOfFirstTileset.Add(workingSmartTile);
+                        workingSmartTile.UpdateAllPossibleTiles(smartTilesOfFirstTileset);
+                    }
                     J2L.Tilesets[0].SaveSmartTiles();
                     RedrawTilesetHowManyTimes += 2;
                     LoadSmartTiles(false);
