@@ -50,10 +50,10 @@ namespace MLLE
                 Result.AddRange(other.Result);
             }
 
-            internal bool Applies(ArrayMap<ushort> tileMap, List<SmartTile> otherSmartTiles)
+            internal bool Applies(ArrayMap<ushort> tileMap, List<SmartTile> otherSmartTiles, IEqualityComparer<ushort> comparer)
             {
                 ushort tileID = tileMap[X+2, Y+3];
-                return Not ^ ((OtherSmartTileID == -1) ? SpecificTiles.Contains(tileID) : (otherSmartTiles[OtherSmartTileID].TilesICanPlace.Contains(tileID) || otherSmartTiles[OtherSmartTileID].Extras.Contains(tileID)));
+                return Not ^ ((OtherSmartTileID == -1) ? SpecificTiles.Contains(tileID, comparer) : (otherSmartTiles[OtherSmartTileID].TilesICanPlace.Contains(tileID) || otherSmartTiles[OtherSmartTileID].Extras.Contains(tileID, comparer)));
             }
         }
         internal class Assignment
@@ -789,7 +789,7 @@ namespace MLLE
             foreach (Rule rule in Assignments[assignmentID].Rules)
             {
                 List<ushort> frames = rule.Result;
-                bool applies = lastRuleApplied && rule.Applies(localTiles, Tileset.SmartTiles);
+                bool applies = lastRuleApplied && rule.Applies(localTiles, Tileset.SmartTiles, TilesICanPlace.Comparer);
                 if (frames.Count == 0) //and
                 {
                     lastRuleApplied = applies;
