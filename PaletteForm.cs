@@ -26,6 +26,8 @@ namespace MLLE
                 PaletteImage.ColorDisabled[i] = PaletteImage.ColorDisabled[Palette.PaletteSize - 10 + i] = true; //transparency, and default windows colors
             PaletteImage.Location = new Point(12, OKButton.Location.Y);
             PaletteImage.Palette = InitialPalette;
+            PaletteImage.MouseMove += PaletteImageMouseMove;
+            PaletteImage.MouseLeave += PaletteImageMouseLeave;
             Controls.Add(PaletteImage);
 
             ShowDialog();
@@ -119,7 +121,7 @@ namespace MLLE
                     {
                         if (binreader.BaseStream.Length < 1024)
                             return;
-                        else if (binreader.BaseStream.Length == 1032) //"color map" palette
+                        else if (binreader.BaseStream.Length == 1032) //"color table" palette
                             binreader.BaseStream.Seek(4, SeekOrigin.Begin);
                         PaletteImage.Palette = new Palette(binreader);
                     }
@@ -138,6 +140,36 @@ namespace MLLE
         private void toolsToolStripMenuItem_DropDownClosed(object sender, EventArgs e)
         {
             gradientToolStripMenuItem.Enabled = true; //so that Ctrl+G is always available
+        }
+        private void PaletteImageMouseMove(object sender, MouseEventArgs e)
+        {
+            if (!(sender as Control).ClientRectangle.Contains(e.Location))
+                return;
+            Text = "Level Palette \u2013 " + PaletteImage.getSelectedColor(e);
+        }
+        
+        private void PaletteImageMouseLeave(object sender, EventArgs e)
+        {
+            Text = "Level Palette";
+        }
+
+        private void SaveButton_Click(object sender, EventArgs e)
+        {
+
+            var levelImageSaveDialog = new SaveFileDialog();
+            levelImageSaveDialog.DefaultExt = "png";
+            levelImageSaveDialog.Filter = "Color Table|*.pal";
+            levelImageSaveDialog.FileName = "My Awesome Palette.pal";
+            if (levelImageSaveDialog.ShowDialog() == DialogResult.OK)
+            {
+                using (BinaryWriter binwriter = new BinaryWriter(File.Open(Path.ChangeExtension(levelImageSaveDialog.FileName, "pal"), FileMode.Create, FileAccess.Write), J2TFile.FileEncoding))
+                {
+                    binwriter.Write(new byte[] { 0x0, 0x3, 0x0, 0x1 }); //don't really know what these mean... maybe number of channels per color (3), and number of colors (256)? but that would be switching endianness...
+                    foreach (var color in PaletteImage.Palette.Colors)
+                        binwriter.Write(color);
+                    binwriter.Write((UInt32)0); //don't know what this means at all
+                }
+            }
         }
     }
 }

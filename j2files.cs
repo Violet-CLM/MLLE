@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Text;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.Runtime.InteropServices;
 using Ionic.Zlib;
 using Ionic.Crc;
 using Extra.Collections;
@@ -12,6 +15,7 @@ public enum VersionChangeResults { Success, TilesetTooBig, TooManyAnimatedTiles,
 public enum SavingResults { Success, UndefinedTiles, NoTilesetSelected, TilesetIsDifferentVersion, Error };
 public enum OpeningResults { Success, SuccessfulButAmbiguous, PasswordNeeded, WrongPassword, UnexpectedFourCC, IncorrectEncoding, SecurityEnvelopeDamaged, Error };
 public enum InsertFrameResults { Success, Full, StackOverflow };
+public enum BuildResults { Success, DifferentDimensions, BadDimensions, ImageWrongFormat, MaskWrongFormat, TooBigForVersion };
 
 abstract class J2File //The fields shared by .j2l and .j2t files. No methods/interface just yet, though that would be cool too.
 {
@@ -50,6 +54,31 @@ abstract class J2File //The fields shared by .j2l and .j2t files. No methods/int
         {Version.AmbiguousBCO, "Battery Check/Jazz 2 BETA v1.10o"},
         {Version.AGA, "Animaniacs: A Gigantic Adventure"},
         {Version.GorH, "Jazz 2 OEM v1.00g/h"} };
+
+    protected static byte[] getBytes(Encoding encoding, string s, int length)
+    {
+        byte[] bytes = new byte[length];
+        encoding.GetBytes(s, 0, s.Length, bytes, 0);
+        return bytes;
+    }
+
+    static public void ChangeTileVersion(ref UInt16 tileID, bool embiggen, uint tileCount)
+    {
+        if (embiggen)
+        {
+            if ((tileID & 0x400) != 0) //flipped
+                tileID ^= 0x1400; //switch from 0x400 to 0x1000
+            if ((tileID & (0x400 - 1)) >= tileCount) //animated
+                tileID += 0xC00;
+        }
+        else
+        {
+            if ((tileID & (0x1000 - 1)) >= tileCount) //animated
+                tileID -= 0xC00;
+            if ((tileID & 0x1000) != 0) //flipped
+                tileID ^= 0x1400; //switch from 0x1000 to 0x400
+        }
+    }
 }
 
 partial class J2TFile : J2File
@@ -86,6 +115,18 @@ partial class J2TFile : J2File
     {
         byte[] output = new byte[1024];
         for (short i = 0; i < 1024; i++) output[i] = ((bits[i / 8] & (byte)Math.Pow(2, (i % 8))) != 0) ? (byte)1 : (byte)0;
+        return output;
+    }
+    static internal byte[] ConvertByteMaskTo128Bits(byte[] bytes)
+    {
+        byte[] output = new byte[128];
+        for (int i = 0; i < 128; ++i)
+        {
+            byte val = 0;
+            for (int j = 0; j < 8; ++j)
+                val |= (byte)(bytes[(i << 3) | j] << j);
+            output[i] = val;
+        }
         return output;
     }
     static internal byte[] ProduceMasklessTileByteMask()
@@ -477,6 +518,279 @@ partial class J2TFile : J2File
     //public byte[] GetImage(ushort id) { return Images[ImageAddress[id]]; }
     //public byte[] GetMask(ushort id) { return Masks[MaskAddress[id]]; }
     //public byte[] GetFMask(ushort id) { return Masks[FlippedMaskAddress[id]]; }
+
+    public BuildResults Build(Bitmap image, Bitmap mask, string name)
+    {
+        if (image.Width != mask.Width || image.Height != mask.Height)
+            return BuildResults.DifferentDimensions;
+        if (image.Width != 320 || image.Height % 32 != 0)
+            return BuildResults.BadDimensions;
+        TileCount = (uint)image.Height / 32 * 10;
+        if (TileCount > MaxTiles)
+        {
+            if (VersionType == Version.JJ2)
+                VersionType = Version.TSF; //cheat
+            if (TileCount > MaxTiles) //still
+                return BuildResults.TooBigForVersion;
+        }
+        else if (TileCount <= 1020 && VersionType == Version.TSF)
+            VersionType = Version.JJ2; //increase accessibility
+        if (image.PixelFormat != System.Drawing.Imaging.PixelFormat.Format8bppIndexed)
+            return BuildResults.ImageWrongFormat;
+        if ((mask.PixelFormat & System.Drawing.Imaging.PixelFormat.Indexed) == 0)
+            return BuildResults.MaskWrongFormat;
+        
+        Header = (VersionType == Version.JJ2 || VersionType == Version.TSF) ? StandardHeader : "";
+        Magic = "TILE";
+        Signature = 0xAFBEADDEu; //DEADBEAF, rather
+        Name = name;
+
+        Images = new byte[MaxTiles][];
+        Masks = new byte[MaxTiles][];
+        IsFullyOpaque = new bool[MaxTiles];
+        TransparencyMaskJCS_Style = new byte[MaxTiles][];
+
+        Palette = new Palette();
+        for (uint i = 1; i < Palette.PaletteSize - 1; ++i)
+            Palette.Colors[i] = Palette.Convert(image.Palette.Entries[i]);
+        Palette.Colors[0] = new byte[] { 0, 0, 0, 0 }; //transparency must always be black, for MMX reasons
+        Palette.Colors[15] = Palette.Colors[255] = new byte[] { 255, 255, 255, 255 }; //these colors are both always white
+
+        {
+            var imageIndices = new byte[image.Width * image.Height];
+            var maskIndices = new byte[mask.Width * mask.Height];
+            var bothBmps = new Bitmap[] { image, mask };
+            var bothIndices = new byte[][] { imageIndices, maskIndices };
+
+            for (int i = 0; i < 2; ++i)
+            {
+                var data = bothBmps[i].LockBits(new Rectangle(0, 0, bothBmps[i].Width, bothBmps[i].Height), ImageLockMode.ReadOnly, PixelFormat.Format8bppIndexed);
+                for (int y = 0; y < bothBmps[i].Height; ++y)
+                    Marshal.Copy(new IntPtr((int)data.Scan0 + data.Stride * y), bothIndices[i], bothBmps[i].Width * y, bothBmps[i].Width);
+                bothBmps[i].UnlockBits(data);
+            }
+
+            for (int tileID = 0; tileID < (int)TileCount; ++tileID)
+            {
+                var imageArray =    Images[tileID] =                    new byte[32*32];
+                var transpArray =   TransparencyMaskJCS_Style[tileID] = new byte[32*32];
+                var maskArray =     Masks[tileID] =                     new byte[32*32];
+                int x = (tileID % 10) * 32, y = (tileID / 10) * 32;
+                for (int xx = 0; xx < 32; ++xx)
+                    for (int yy = 0; yy < 32; ++yy)
+                    {
+                        int tileIndex = xx | (yy << 5);
+                        int sourceIndex = (x | xx) + (y | yy) * 320;
+                        byte color = imageIndices[sourceIndex];
+                        if (color == 1) color = 0;
+                        if ((transpArray[tileIndex] = (byte)((imageArray[tileIndex] = color) != 0 ? 1 : 0)) == 0) IsFullyOpaque[tileID] = false;
+                        maskArray[tileIndex] = (byte)(maskIndices[sourceIndex] != 0 ? 1 : 0);
+                    }
+            }
+        }
+
+        TransparencyMaskJJ2_Style = TransparencyMaskJCS_Style.Clone() as byte[][];
+
+        return BuildResults.Success;
+    }
+
+    public struct ByteArrayKey //https://stackoverflow.com/questions/33031968/using-byte-array-as-dictionary-key?noredirect=1&lq=1
+    {
+        public readonly byte[] Bytes;
+        private readonly int _hashCode;
+
+        public override bool Equals(object obj)
+        {
+            var other = (ByteArrayKey)obj;
+            return Compare(Bytes, other.Bytes);
+        }
+
+        public override int GetHashCode()
+        {
+            return _hashCode;
+        }
+
+        private static int GetHashCode(byte[] bytes)
+        {
+            unchecked
+            {
+                var hash = 17;
+                for (var i = 0; i < bytes.Length; i++)
+                {
+                    hash = hash * 23 + bytes[i];
+                }
+                return hash;
+            }
+        }
+
+        public ByteArrayKey(byte[] bytes)
+        {
+            Bytes = bytes;
+            _hashCode = GetHashCode(bytes);
+        }
+
+        public static ByteArrayKey Create(byte[] bytes)
+        {
+            return new ByteArrayKey(bytes);
+        }
+
+        public static unsafe bool Compare(byte[] a1, byte[] a2)
+        {
+            if (a1 == null || a2 == null || a1.Length != a2.Length)
+                return false;
+            fixed (byte* p1 = a1, p2 = a2)
+            {
+                byte* x1 = p1, x2 = p2;
+                var l = a1.Length;
+                for (var i = 0; i < l / 8; i++, x1 += 8, x2 += 8)
+                    if (*(long*)x1 != *(long*)x2) return false;
+                if ((l & 4) != 0)
+                {
+                    if (*(int*)x1 != *(int*)x2) return false;
+                    x1 += 4;
+                    x2 += 4;
+                }
+                if ((l & 2) != 0)
+                {
+                    if (*(short*)x1 != *(short*)x2) return false;
+                    x1 += 2;
+                    x2 += 2;
+                }
+                if ((l & 1) != 0) if (*x1 != *x2) return false;
+                return true;
+            }
+        }
+    }
+
+    static byte[] GenerateTransparencyInstructionsFromTransparencyMask(byte[] input) //based on JJ2+'s jjPIXELMAP tile saving code
+    {
+        var instructions = new List<byte>(ConvertByteMaskTo128Bits(input));
+        
+        for (int pixelID = 0; pixelID < 32*32; ) { //see http://www.jazz2online.com/wiki/index.php?J2T_File_Format
+            byte numberOfOpaqueRegionsInRow = 0;
+            byte lastByteOpacity = 0;
+            byte lengthOfLastByteSeries = 0;
+            var rowInstructions = new List<byte>();
+            for (int column = 0; column < 32; ++column)
+            {
+                if (input[pixelID++] != lastByteOpacity)
+                {
+                    rowInstructions.Add(lengthOfLastByteSeries);
+                    lengthOfLastByteSeries = 1;
+                    if ((lastByteOpacity ^= 1) == 1)
+                        ++numberOfOpaqueRegionsInRow;
+                }
+                else
+                {
+                    lengthOfLastByteSeries += 1;
+                }
+            }
+            if (lastByteOpacity == 1)
+                rowInstructions.Add(lengthOfLastByteSeries);
+            instructions.Add(numberOfOpaqueRegionsInRow);
+            instructions.AddRange(rowInstructions);
+        }
+
+        return instructions.ToArray();
+    }
+
+    public SavingResults Save(string filepath)
+    {
+        FilenameOnly = Path.GetFileName(FullFilePath = filepath);
+        Encoding encoding = FileEncoding;
+
+        for (int i = 0; i < 4; i++)
+            UncompressedData[i] = new MemoryStream();
+        using (BinaryWriter data1writer = new BinaryWriter(UncompressedData[0], encoding))
+        using (BinaryWriter data2writer = new BinaryWriter(UncompressedData[1], encoding))
+        using (BinaryWriter data3writer = new BinaryWriter(UncompressedData[2], encoding))
+        using (BinaryWriter data4writer = new BinaryWriter(UncompressedData[3], encoding))
+        {
+            foreach (var color in Palette.Colors)
+                data1writer.Write(color);
+            data1writer.Write(TileCount);
+            for (int i = 0; i < MaxTiles * 2; ++i)
+                data1writer.Write(i < TileCount ? IsFullyOpaque[i] : false);
+
+            byte[][]
+                TransparencyInstructions = new byte[TileCount][],
+                MaskBits = new byte[TileCount][],
+                ReversedMaskBits = new byte[TileCount][];
+            for (uint i = 0; i < TileCount; ++i)
+            {
+                TransparencyInstructions[i] = GenerateTransparencyInstructionsFromTransparencyMask(TransparencyMaskJCS_Style[i]);
+                MaskBits[i] = ConvertByteMaskTo128Bits(Masks[i]);
+                ReversedMaskBits[i] = ConvertByteMaskTo128Bits(
+                    Masks[i]
+                     .Select((x, index) => new { x, index }) //https://stackoverflow.com/questions/11427413/linq-select-5-items-per-iteration
+                     .GroupBy(x => x.index / 32, y => y.x)
+                     .Select(r => r.Reverse())
+                     .SelectMany(b => b) //https://stackoverflow.com/questions/1590723/flatten-list-in-linq
+                     .ToArray()
+               );
+            }
+
+            var Sources = new byte[][][] { Images, TransparencyInstructions, MaskBits, ReversedMaskBits };
+            var MaskDictionary = new Dictionary<ByteArrayKey, int>();
+            var Destinations = new Dictionary<ByteArrayKey, int>[] { new Dictionary<ByteArrayKey, int>(), new Dictionary<ByteArrayKey, int>(), MaskDictionary, MaskDictionary };
+            var Writers = new BinaryWriter[] { data2writer, data3writer, data4writer, data4writer };
+
+            for (int dataID = 0; dataID < 4; ++dataID)
+            {
+                var source = Sources[dataID];
+                var dest = Destinations[dataID];
+                var writer = Writers[dataID];
+                int numberOfTimesToWrite = (dataID < 2) ? MaxTiles * 2 : MaxTiles;
+                for (int tileID = 0; tileID < numberOfTimesToWrite; ++tileID)
+                {
+                    if (tileID < TileCount)
+                    {
+                        var bytes = new ByteArrayKey(source[tileID]);
+                        if (!dest.ContainsKey(bytes))
+                        {
+                            dest[bytes] = (int)writer.BaseStream.Length;
+                            writer.Write(bytes.Bytes);
+                        }
+                        data1writer.Write(dest[bytes]);
+                    }
+                    else
+                        data1writer.Write(0);
+                }
+            }
+
+            using (BinaryWriter binwriter = new BinaryWriter(
+                File.Open(FullFilePath, FileMode.Create, FileAccess.Write),
+                encoding
+            ))
+            {
+                binwriter.Write(encoding.GetBytes(Header)); //the copyright notice
+                binwriter.Write(encoding.GetBytes(Magic)); // 'TILE'
+                binwriter.Write(Signature); // 'DEADBEAF'
+                binwriter.Write(getBytes(encoding, Name, 32));
+                binwriter.Write((ushort)((VersionType == Version.TSF) ? 0x201 : 0x200));
+                binwriter.Write(new byte[40]); // To be filled in later with filesize, CRC32, and the compressed and uncompressed data lengths, for a total of 10 longs or 40 bytes.
+                CRC32 CRCCalculator = new CRC32();
+                for (int i = 0; i < 4; i++)
+                {
+                    UncompressedDataLength[i] = (int)UncompressedData[i].Length;
+                    var zcomparray = ZlibStream.CompressBuffer(UncompressedData[i].ToArray());
+                    binwriter.Write(zcomparray);
+                    CompressedDataLength[i] = zcomparray.Length;
+                    CRCCalculator.SlurpBlock(zcomparray, 0, zcomparray.Length);
+                }
+                binwriter.Seek(encoding.GetByteCount(Header) + 42, 0);
+                binwriter.Write((int)(binwriter.BaseStream.Length));
+                binwriter.Write(CRCCalculator.Crc32Result); Crc32 = CRCCalculator.Crc32Result;
+                for (int i = 0; i < 4; i++)
+                {
+                    binwriter.Write(CompressedDataLength[i]);
+                    binwriter.Write(UncompressedDataLength[i]);
+                }
+            }
+        }
+
+        return SavingResults.Success;
+    }
 }
 
 class Layer
@@ -625,9 +939,9 @@ class Layer
         if (x < RealWidth && y < Height && x >= 0 && y >= 0) return TileMap[x, y];
         else return 0;
     }*/
-    public void GetOriginNumbers(int xPosition, int yPosition, ref int widthReduced, ref int heightReduced, ref int xOrigin, ref int yOrigin, ref int upperLeftX, ref int upperLeftY)
+    public void GetOriginNumbers(int xPosition, int yPosition, ref int widthReduced, ref int heightReduced, ref int xOrigin, ref int yOrigin, ref int upperLeftX, ref int upperLeftY, bool useLayer8Speeds)
     {
-        if (id == 7)
+        if (id == 7 && !useLayer8Speeds)
         {
             upperLeftX = -32 - widthReduced;
             upperLeftY = -32 - (LimitVisibleRegion ? heightReduced * 2 : heightReduced);
@@ -642,7 +956,7 @@ class Layer
         yOrigin = -32 - (upperLeftY % 32);
         upperLeftY /= 32;
     }
-    public void GetFixedCornerOriginNumbers(int xPosition, int yPosition, int widthReduced, int heightReduced, ref int xOrigin, ref int yOrigin, ref int upperLeftX, ref int upperLeftY, byte tileSize, bool applyWaveAsOffsets)
+    public void GetFixedCornerOriginNumbers(int xPosition, int yPosition, int widthReduced, int heightReduced, ref int xOrigin, ref int yOrigin, ref int upperLeftX, ref int upperLeftY, byte tileSize, bool applyWaveAsOffsets, bool useLayer8Speeds)
     {
         /*if (id == 7)
         {
@@ -654,7 +968,7 @@ class Layer
             upperLeftX = (int)Math.Floor(xPosition * XSpeed) - tileSize;
             upperLeftY = (int)(yPosition * YSpeed - (LimitVisibleRegion ? heightReduced * 2 : 0)) - tileSize;
         }*/
-        if (id == 7)
+        if (id == 7 && !useLayer8Speeds)
         {
             upperLeftX = -32;
             upperLeftY = -32;
@@ -712,6 +1026,17 @@ class Layer
         if (!isDefault)
             return Name;
         return (id + 1) + ": " + Name;
+    }
+
+    public void ChangeVersion(bool embiggen, uint tileCount)
+    {
+        if (HasTiles)
+            for (uint y = 0; y < Height; y++) for (uint x = 0; x < Width; ++x)
+                {
+                    ushort tileID = TileMap[x, y];
+                    J2TFile.ChangeTileVersion(ref tileID, embiggen, tileCount);
+                    TileMap[x, y] = tileID;
+                }
     }
 }
 
@@ -787,46 +1112,20 @@ class AnimatedTile
     }
     public void Advance(int frame, int random=0)
     {
-        if (frame * Speed / 70 > hitherto)
+        int newTime = frame * Speed / 70;
+        if (newTime > hitherto)
         {
             if (FrameCount>0) FrameList.Dequeue();
-            hitherto++;
+            hitherto = newTime;
         }
         if (FrameList.Count() == 0) GenerateFrameList(random);
     }
 
-    public void ChangeVersion(ref Version nuVersion, ref uint tileCount, ref ushort numberOfAnimations)
+    public void ChangeVersion(bool embiggen, uint tileCount)
     {
-        switch (nuVersion)
-        {
-            case Version.JJ2:
-            case Version.BC:
-            case Version.O:
-            case Version.GorH:
-                for (byte i = 0; i < FrameCount; i++)
-                {
-                    if (Sequence[i] > 4095 + tileCount) Sequence[i] -= 7168;
-                    else if (Sequence[i] >= tileCount)
-                    {
-                        if (Sequence[i] >= 4096 - numberOfAnimations) Sequence[i] -= 3072;
-                        else Sequence[i] += 8192;
-                    }
-                }
-                Reset();
-                break;
-            case Version.TSF:
-            case Version.AGA:
-                for (byte i = 0; i < FrameCount; i++)
-                {
-                    if (Sequence[i] >= 8192) Sequence[i] -= 8192;
-                    else if (Sequence[i] > 1023 + tileCount) Sequence[i] += 7168;
-                    else if (Sequence[i] >= tileCount) Sequence[i] += 3072;
-                }
-                Reset();
-                break;
-            default:
-                break;
-        }
+        for (byte i = 0; i < FrameCount; i++)
+            J2TFile.ChangeTileVersion(ref Sequence[i], embiggen, tileCount);
+        Reset();
     }
 }
 
@@ -955,16 +1254,21 @@ class J2LFile : J2File
     internal AGAEvent[,] AGA_EventMap;
 
     internal MLLE.PlusPropertyList PlusPropertyList = new MLLE.PlusPropertyList(null);
-    internal bool PlusOnly { get
+    internal bool ContainsVerticallyFlippedTiles { get
         {
-            if (Tilesets.Count > 1 || !AllLayers.SequenceEqual(DefaultLayers) || PlusPropertyList.LevelNeedsData5)
-                return true;
             if (DefaultLayers.FirstOrDefault(layer => (layer.PlusOnly || layer.ContainsVerticallyFlippedTiles)) != null)
                 return true;
             foreach (AnimatedTile CurrentAnimatedTile in Animations)
                 foreach (ushort tileID in CurrentAnimatedTile.Sequence)
                     if ((tileID & 0x2000) != 0) //flipped vertically
                         return true;
+            return false;
+        }
+    }
+    internal bool LevelNeedsData5 { get
+        {
+            if (Tilesets.Count > 1 || !AllLayers.SequenceEqual(DefaultLayers) || PlusPropertyList.LevelNeedsData5)
+                return true;
             return false;
         }
     }
@@ -1019,7 +1323,17 @@ class J2LFile : J2File
             raw %= (ushort)MaxTiles;
         }
         if (raw < TileCount) return raw;
-        else if (NumberOfAnimations >= MaxTiles - raw) return GetFrame(Animations[NumberOfAnimations - (MaxTiles - raw)].FrameList.Peek(), ref isFlipped, ref isVFlipped);
+        else if (NumberOfAnimations >= MaxTiles - raw)
+        {
+            try
+            {
+                return GetFrame(Animations[NumberOfAnimations - (MaxTiles - raw)].FrameList.Peek(), ref isFlipped, ref isVFlipped);
+            }
+            catch //threading issue, I think
+            {
+                return 0;
+            }
+        }
         else return 0;
     }
     public void SetPassword() { PasswordHash[0] = 0; PasswordHash[1] = 0xBA; PasswordHash[2] = 0xBE; }
@@ -1033,7 +1347,7 @@ class J2LFile : J2File
 
     int[] AGAMostValues = new int[256], AGAMostStrings = new int[256];
 
-    public OpeningResults OpenLevel(string filename, ref byte[] Data5, string password = null, Dictionary<Version, string> defaultDirectories = null, Encoding encoding = null, uint? SecurityStringOverride = null)
+    public OpeningResults OpenLevel(string filename, ref byte[] Data5, string password = null, Dictionary<Version, string> defaultDirectories = null, Encoding encoding = null, uint? SecurityStringOverride = null, bool onlyInterestedInData1 = false)
     {
         encoding = encoding ?? FileEncoding;
         using (BinaryReader binreader = new BinaryReader(File.Open(filename, FileMode.Open, FileAccess.Read), encoding))
@@ -1046,13 +1360,16 @@ class J2LFile : J2File
                 char[] tempHeader = (binreader.PeekChar() == 32) ? binreader.ReadChars(180) : new char[0];
                 char[] tempMagic = binreader.ReadChars(4);
                 byte[] tempPasswordHash = binreader.ReadBytes(3);
-                if (tempPasswordHash[0] != 0x00 || tempPasswordHash[1] != 0xBA || tempPasswordHash[2] != 0xBE)
+                if (!onlyInterestedInData1)
                 {
-                    if (password == null) return OpeningResults.PasswordNeeded;
-                    else
+                    if (tempPasswordHash[0] != 0x00 || tempPasswordHash[1] != 0xBA || tempPasswordHash[2] != 0xBE)
                     {
-                        int inPutWord = new CRC32().GetCrc32(new MemoryStream(Encoding.ASCII.GetBytes(password)));
-                        if ((inPutWord >> 16 & 0xff) != tempPasswordHash[0] || (inPutWord >> 8 & 0xff) != tempPasswordHash[1] || (inPutWord & 0xff) != tempPasswordHash[2]) return OpeningResults.WrongPassword;
+                        if (password == null) return OpeningResults.PasswordNeeded;
+                        else
+                        {
+                            int inPutWord = new CRC32().GetCrc32(new MemoryStream(Encoding.ASCII.GetBytes(password)));
+                            if ((inPutWord >> 16 & 0xff) != tempPasswordHash[0] || (inPutWord >> 8 & 0xff) != tempPasswordHash[1] || (inPutWord & 0xff) != tempPasswordHash[2]) return OpeningResults.WrongPassword;
+                        }
                     }
                 }
                 Header = new string(tempHeader); Magic = new string(tempMagic); PasswordHash = tempPasswordHash;
@@ -1187,8 +1504,8 @@ class J2LFile : J2File
                     //for (ushort i = 0; i < MaxTiles; i++) if (unknownsection3[i] != 0) Console.WriteLine(i.ToString() + ": " + unknownsection3[i].ToString());
                     if (VersionNumber == 256) AGA_unknownsection = data1reader.ReadBytes(32768); //wtf??
                     //for (int i = 0; i < 32768; i++) Console.Write(AGA_unknownsection[i]);
-                    Animations = new AnimatedTile[128];
-                    for (ushort i = 0; i < 128; i++)
+                    Animations = new AnimatedTile[256];
+                    for (ushort i = 0; i < 256; i++)
                     {
                         Animations[i] = new AnimatedTile();
                         if (i < NumberOfAnimations)
@@ -1204,125 +1521,128 @@ class J2LFile : J2File
                     }
                 }
                 #endregion data1
-                #region data2
-                EventMap = new uint[SpriteLayer.Width, SpriteLayer.Height];
-                using (BinaryReader data2reader = new BinaryReader(UncompressedData[1], encoding))
+                if (!onlyInterestedInData1)
                 {
-                    //ParameterMap = new uint[SpriteLayer.Width, SpriteLayer.Height];
-                    if (VersionNumber != 256) // not AGA
+                    #region data2
+                    EventMap = new uint[SpriteLayer.Width, SpriteLayer.Height];
+                    using (BinaryReader data2reader = new BinaryReader(UncompressedData[1], encoding))
                     {
-                        uint rlong;
-                        for (uint i = 0; i < UncompressedDataLength[1] / 4; i++)
+                        //ParameterMap = new uint[SpriteLayer.Width, SpriteLayer.Height];
+                        if (VersionNumber != 256) // not AGA
                         {
-                            rlong = data2reader.ReadUInt32();
-                            EventMap[i % SpriteLayer.Width, i / SpriteLayer.Width] = rlong;
-                            //ParameterMap[i % SpriteLayer.Width, i / SpriteLayer.Width] = rlong >> 8;
-                        }
-                    }
-                    else // AGA
-                    {
-                        CreateGlobalAGAEventsListIfNeedBe();
-                        AGA_LocalEvents = new List<String>();
-                        AGA_EventMap = new AGAEvent[SpriteLayer.Width, SpriteLayer.Height];
-                        //AGA_ParameterMap = new byte[SpriteLayer.Width, SpriteLayer.Height][];
-                        ushort numberOfLocalEvents = data2reader.ReadUInt16();
-                        for (ushort i = 0; i < numberOfLocalEvents; i++) AGA_LocalEvents.Add(new string(data2reader.ReadChars(64)).TrimEnd('\0'));
-                        ushort loadX, loadY, loadLongCount; int loadParamSize, loadMarker, loadOffset, loadStringSize; string loadEventName = ""; bool loadHasStrings; AGAEvent loadCurrentEvent;
-                        while (true)
-                        {
-                            try
+                            uint rlong;
+                            for (uint i = 0; i < UncompressedDataLength[1] / 4; i++)
                             {
-                                loadX = data2reader.ReadUInt16();
-                                loadY = data2reader.ReadUInt16();
-                                loadEventName = AGA_LocalEvents[data2reader.ReadUInt16()];
-                                //Console.WriteLine(String.Format("{0},{1}: {2}", loadX, loadY, loadEventName));
-                                loadMarker = data2reader.ReadInt32();
-                                loadCurrentEvent = new AGAEvent(loadMarker);
-                                loadCurrentEvent.ID = (uint)AGA_GlobalEvents.FindIndex((string pointer) => { return pointer == loadEventName; });
-                                //if ((loadMarker & ((2 << 16) - 1)) != 15840) Console.Write(String.Format("{0}: {1}", Convert.ToString(loadMarker, 2).PadLeft(32, '0'), loadEventName));
-                                if (loadMarker < 0)
-                                {
-                                    loadParamSize = data2reader.ReadInt32();
-                                    loadHasStrings = data2reader.ReadUInt16() == 2;
-                                    loadLongCount = data2reader.ReadUInt16();
-                                    /*if (loadLongCount > AGAMostValues[loadCurrentEvent.ID])
-                                    {
-                                        AGAMostValues[loadCurrentEvent.ID] = loadLongCount;
-                                        Console.WriteLine(String.Format("{0} ({1}): {2} parameters", loadEventName, loadCurrentEvent.ID, loadLongCount * 2));
-                                    }*/
-                                    for (byte i = 0; i < loadLongCount * 2; i++) loadCurrentEvent.Longs[i] = data2reader.ReadInt32();
-                                    if (loadHasStrings)
-                                    {
-                                        int numStrings = 0;
-                                        loadOffset = (loadLongCount + 1) * 8;
-                                        for (byte i = 0; loadOffset < loadParamSize; i++)
-                                        {
-                                            loadStringSize = data2reader.ReadInt32();
-                                            loadCurrentEvent.Strings[i] = new String(data2reader.ReadChars(loadStringSize - 1));
-                                            data2reader.ReadByte();
-                                            loadOffset += loadStringSize + 4;
-                                            numStrings++;
-                                        }
-                                        /*if (numStrings > AGAMostStrings[loadCurrentEvent.ID])
-                                        {
-                                            AGAMostStrings[loadCurrentEvent.ID] = loadLongCount;
-                                            Console.WriteLine(String.Format("{0} ({1}): {2} strings", loadEventName, loadCurrentEvent.ID, numStrings));
-                                        }*/
-                                    }
-                                    //AGA_ParameterMap[loadX, loadY] = data2reader.ReadBytes(loadParamSize - 4);
-                                    //if ((loadMarker & ((2 << 16) - 1)) != 15840) Console.WriteLine(String.Format(" ({0})", AGA_ParameterMap[loadX, loadY][2]));
-                                    //Console.WriteLine(String.Format("{0}: {1}, {2}; {3}", loadEventName, AGA_ParameterMap[loadX, loadY][0], AGA_ParameterMap[loadX, loadY][2], AGA_ParameterMap[loadX, loadY].Length - 4 - AGA_ParameterMap[loadX, loadY][2]*8));
-                                    //Console.WriteLine(String.Format("{0}: {1} bytes", loadEventName, loadParamSize));
-                                    //foreach (byte Byte in AGA_ParameterMap[loadX, loadY]) { Console.Write(Byte.ToString().PadLeft(3,'0')); Console.Write(' '); }
-                                    //Console.WriteLine();
-                                }
-                                else { /*if ((loadMarker & ((2 << 16) - 1)) != 15840) Console.WriteLine();*/ }
-                                AGA_EventMap[loadX, loadY] = loadCurrentEvent;
+                                rlong = data2reader.ReadUInt32();
+                                EventMap[i % SpriteLayer.Width, i / SpriteLayer.Width] = rlong;
+                                //ParameterMap[i % SpriteLayer.Width, i / SpriteLayer.Width] = rlong >> 8;
                             }
-                            catch { /*Console.WriteLine(loadEventName);*/ break; }
+                        }
+                        else // AGA
+                        {
+                            CreateGlobalAGAEventsListIfNeedBe();
+                            AGA_LocalEvents = new List<String>();
+                            AGA_EventMap = new AGAEvent[SpriteLayer.Width, SpriteLayer.Height];
+                            //AGA_ParameterMap = new byte[SpriteLayer.Width, SpriteLayer.Height][];
+                            ushort numberOfLocalEvents = data2reader.ReadUInt16();
+                            for (ushort i = 0; i < numberOfLocalEvents; i++) AGA_LocalEvents.Add(new string(data2reader.ReadChars(64)).TrimEnd('\0'));
+                            ushort loadX, loadY, loadLongCount; int loadParamSize, loadMarker, loadOffset, loadStringSize; string loadEventName = ""; bool loadHasStrings; AGAEvent loadCurrentEvent;
+                            while (true)
+                            {
+                                try
+                                {
+                                    loadX = data2reader.ReadUInt16();
+                                    loadY = data2reader.ReadUInt16();
+                                    loadEventName = AGA_LocalEvents[data2reader.ReadUInt16()];
+                                    //Console.WriteLine(String.Format("{0},{1}: {2}", loadX, loadY, loadEventName));
+                                    loadMarker = data2reader.ReadInt32();
+                                    loadCurrentEvent = new AGAEvent(loadMarker);
+                                    loadCurrentEvent.ID = (uint)AGA_GlobalEvents.FindIndex((string pointer) => { return pointer == loadEventName; });
+                                    //if ((loadMarker & ((2 << 16) - 1)) != 15840) Console.Write(String.Format("{0}: {1}", Convert.ToString(loadMarker, 2).PadLeft(32, '0'), loadEventName));
+                                    if (loadMarker < 0)
+                                    {
+                                        loadParamSize = data2reader.ReadInt32();
+                                        loadHasStrings = data2reader.ReadUInt16() == 2;
+                                        loadLongCount = data2reader.ReadUInt16();
+                                        /*if (loadLongCount > AGAMostValues[loadCurrentEvent.ID])
+                                        {
+                                            AGAMostValues[loadCurrentEvent.ID] = loadLongCount;
+                                            Console.WriteLine(String.Format("{0} ({1}): {2} parameters", loadEventName, loadCurrentEvent.ID, loadLongCount * 2));
+                                        }*/
+                                        for (byte i = 0; i < loadLongCount * 2; i++) loadCurrentEvent.Longs[i] = data2reader.ReadInt32();
+                                        if (loadHasStrings)
+                                        {
+                                            int numStrings = 0;
+                                            loadOffset = (loadLongCount + 1) * 8;
+                                            for (byte i = 0; loadOffset < loadParamSize; i++)
+                                            {
+                                                loadStringSize = data2reader.ReadInt32();
+                                                loadCurrentEvent.Strings[i] = new String(data2reader.ReadChars(loadStringSize - 1));
+                                                data2reader.ReadByte();
+                                                loadOffset += loadStringSize + 4;
+                                                numStrings++;
+                                            }
+                                            /*if (numStrings > AGAMostStrings[loadCurrentEvent.ID])
+                                            {
+                                                AGAMostStrings[loadCurrentEvent.ID] = loadLongCount;
+                                                Console.WriteLine(String.Format("{0} ({1}): {2} strings", loadEventName, loadCurrentEvent.ID, numStrings));
+                                            }*/
+                                        }
+                                        //AGA_ParameterMap[loadX, loadY] = data2reader.ReadBytes(loadParamSize - 4);
+                                        //if ((loadMarker & ((2 << 16) - 1)) != 15840) Console.WriteLine(String.Format(" ({0})", AGA_ParameterMap[loadX, loadY][2]));
+                                        //Console.WriteLine(String.Format("{0}: {1}, {2}; {3}", loadEventName, AGA_ParameterMap[loadX, loadY][0], AGA_ParameterMap[loadX, loadY][2], AGA_ParameterMap[loadX, loadY].Length - 4 - AGA_ParameterMap[loadX, loadY][2]*8));
+                                        //Console.WriteLine(String.Format("{0}: {1} bytes", loadEventName, loadParamSize));
+                                        //foreach (byte Byte in AGA_ParameterMap[loadX, loadY]) { Console.Write(Byte.ToString().PadLeft(3,'0')); Console.Write(' '); }
+                                        //Console.WriteLine();
+                                    }
+                                    else { /*if ((loadMarker & ((2 << 16) - 1)) != 15840) Console.WriteLine();*/ }
+                                    AGA_EventMap[loadX, loadY] = loadCurrentEvent;
+                                }
+                                catch { /*Console.WriteLine(loadEventName);*/ break; }
+                            }
                         }
                     }
-                }
-                Console.WriteLine();
-                #endregion data2
-                #region data3
-                using (BinaryReader data3reader = new BinaryReader(UncompressedData[2], encoding))
-                {
-                    Dictionary = new ushort[UncompressedDataLength[2] / 8][];
-                    for (uint i = 0; i < UncompressedDataLength[2] / 8; i++)
+                    Console.WriteLine();
+                    #endregion data2
+                    #region data3
+                    using (BinaryReader data3reader = new BinaryReader(UncompressedData[2], encoding))
                     {
-                        Dictionary[i] = new ushort[4];
-                        for (byte j = 0; j < 4; j++) Dictionary[i][j] = data3reader.ReadUInt16();
+                        Dictionary = new ushort[UncompressedDataLength[2] / 8][];
+                        for (uint i = 0; i < UncompressedDataLength[2] / 8; i++)
+                        {
+                            Dictionary[i] = new ushort[4];
+                            for (byte j = 0; j < 4; j++) Dictionary[i][j] = data3reader.ReadUInt16();
+                        }
                     }
-                }
-                #endregion data3
-                #region data4
-                using (BinaryReader data4reader = new BinaryReader(UncompressedData[3], encoding))
-                {
-                    for (int i = 0; i < DefaultLayers.Length; i++)
+                    #endregion data3
+                    #region data4
+                    using (BinaryReader data4reader = new BinaryReader(UncompressedData[3], encoding))
                     {
-                        Layer layer = DefaultLayers[i];
-                        layer.TileMap = new ArrayMap<ushort>(layer.Width, layer.Height);
-                        if (hasTiles[i])
-                            for (uint y = 0; y < layer.Height; y++) for (uint x = 0; x < layer.RealWidth; x += 4)
-                                {
-                                    ushort nuword = data4reader.ReadUInt16();
-                                    uint numberOfTilesToCopy =
-                                        (x + 4 <= layer.Width) ? 4u : //nowhere near right edge of layer (as defined by Width, not RealWidth, in case Tile Width makes the two different)
-                                        (x <= layer.Width) ? (layer.Width & 3) : //at right edge
-                                        0u //past right edge
-                                    ;
-                                    for (uint k = 0; k < numberOfTilesToCopy; k++)
-                                        layer.TileMap[x + k, y] = Dictionary[nuword][k];
-                                }
+                        for (int i = 0; i < DefaultLayers.Length; i++)
+                        {
+                            Layer layer = DefaultLayers[i];
+                            layer.TileMap = new ArrayMap<ushort>(layer.Width, layer.Height);
+                            if (hasTiles[i])
+                                for (uint y = 0; y < layer.Height; y++) for (uint x = 0; x < layer.RealWidth; x += 4)
+                                    {
+                                        ushort nuword = data4reader.ReadUInt16();
+                                        uint numberOfTilesToCopy =
+                                            (x + 4 <= layer.Width) ? 4u : //nowhere near right edge of layer (as defined by Width, not RealWidth, in case Tile Width makes the two different)
+                                            (x <= layer.Width) ? (layer.Width & 3) : //at right edge
+                                            0u //past right edge
+                                        ;
+                                        for (uint k = 0; k < numberOfTilesToCopy; k++)
+                                            layer.TileMap[x + k, y] = Dictionary[nuword][k];
+                                    }
+                        }
                     }
+                    #endregion data4
+                    #region data5
+                    var remainingLength = binreader.BaseStream.Length - binreader.BaseStream.Position;
+                    if (remainingLength > 0)
+                        Data5 = binreader.ReadBytes((int)remainingLength); //let the application figure out what to do with them
+                    #endregion
                 }
-                #endregion data4
-                #region data5
-                var remainingLength = binreader.BaseStream.Length - binreader.BaseStream.Position;
-                if (remainingLength > 0)
-                    Data5 = binreader.ReadBytes((int)remainingLength); //let the application figure out what to do with them
-                #endregion
             }
             else // is a .LEV file
             {
@@ -1527,9 +1847,10 @@ class J2LFile : J2File
             AGA_EventMap = new AGAEvent[SpriteLayer.Width, SpriteLayer.Height];
             AGA_unknownsection = new byte[32768]; //yeah, no clue
         }
-        Animations = new AnimatedTile[128]; for (byte i = 0; i < 128; i++) Animations[i] = new AnimatedTile();
+        Animations = new AnimatedTile[256]; for (ushort i = 0; i < 256; i++) Animations[i] = new AnimatedTile();
         EventMap = new uint[256, 64];
         //ParameterMap = new uint[256, 64];
+        PlusPropertyList = new MLLE.PlusPropertyList(null);
     }
     internal bool IsAnUndefinedTile(ushort id) { return false;}// (id >= MaxTiles * 2 || (id % MaxTiles >= TileCount && MaxTiles - NumberOfAnimations > id % MaxTiles)); }
     internal ushort SanitizeTileValue(ushort id) { return (IsAnUndefinedTile(id) || id % MaxTiles == 0) ? (ushort)0 : id; }
@@ -1579,7 +1900,7 @@ class J2LFile : J2File
         if (!eraseUndefinedTiles)
         {
             /*first non-Open/New reference to DefaultLayers in this file*/ foreach (Layer CurrentLayer in DefaultLayers) foreach (ushort tile in CurrentLayer.TileMap) if (IsAnUndefinedTile(tile)) return SavingResults.UndefinedTiles;
-            for (byte i = 0; i < NumberOfAnimations; i++) foreach (ushort tile in Animations[i].Sequence) if (IsAnUndefinedTile(tile)) return SavingResults.UndefinedTiles;
+            for (ushort i = 0; i < NumberOfAnimations; i++) foreach (ushort tile in Animations[i].Sequence) if (IsAnUndefinedTile(tile)) return SavingResults.UndefinedTiles;
         }
         if (storeGivenFilename) FilenameOnly = Path.GetFileName(FullFilePath = filename);
         Encoding encoding = FileEncoding;
@@ -1864,7 +2185,7 @@ class J2LFile : J2File
                     {
                         SecurityString = SecurityStringExtraDataNotForDirectEditing;
                     }
-                    else if (Data5 != null) //plus-only level, so damage the security envelope for JCS
+                    else if (Data5 != null || ContainsVerticallyFlippedTiles) //plus-only level, so damage the security envelope for JCS
                     {
                         SecurityString = SecurityStringMLLE;
                     }
@@ -1924,7 +2245,7 @@ class J2LFile : J2File
                     for (ushort i = 0; i < MaxTiles; i++) data1writer.Write(TileTypes[i]);
                     for (ushort i = 0; i < MaxTiles; i++) data1writer.Write((byte)0); // yeah, this section doesn't do anything
                     if (VersionType == Version.AGA) data1writer.Write(AGA_unknownsection); // mostly zeroes, but there are some ones, so there IS information stored here... WHAT COULD IT BE?
-                    for (byte i = 0; i < NumberOfAnimations; i++) // JCS: 256 for TSF, else 128. But that's not necessary.
+                    for (ushort i = 0; i < NumberOfAnimations; i++) // JCS: 256 for TSF, else 128. But that's not necessary.
                     {
                         //if (i < NumberOfAnimations)
                         //{
@@ -2066,13 +2387,6 @@ class J2LFile : J2File
         return SavingResults.Success;
     }
 
-    private byte[] getBytes(Encoding encoding, string s, int length)
-    {
-        byte[] bytes = new byte[length];
-        encoding.GetBytes(s, 0, s.Length, bytes, 0);
-        return bytes;
-    }
-
     private void DiscoverTilesThatAreFlippedAndOrUsedInLayer3()
     {
         for (ushort i = 0; i < MaxTiles; i++) IsEachTileUsed[i] = IsEachTileFlipped[i] = false;
@@ -2102,12 +2416,12 @@ class J2LFile : J2File
         }
     }
 
-    public void ResetAllAnimatedTiles() { for (byte i = 0; i < NumberOfAnimations; i++) Animations[i].Reset(); }
-    public void DeleteAnimation(byte id, bool adjustLaterAnims)
+    public void ResetAllAnimatedTiles() { for (ushort i = 0; i < NumberOfAnimations; i++) Animations[i].Reset(); }
+    public void DeleteAnimation(ushort id, bool adjustLaterAnims)
     {
-        for (byte i = id; i < NumberOfAnimations;)
+        for (ushort i = id; i < NumberOfAnimations;)
         {
-            if (i == 127) Animations[i] = new AnimatedTile();
+            if (i == (VersionType == Version.TSF ? 255 : 127)) Animations[i++] = new AnimatedTile();
             else Animations[i] = Animations[++i];
         }
         NumberOfAnimations--;
@@ -2117,7 +2431,7 @@ class J2LFile : J2File
                 for (ushort x = 0; x < CurrentLayer.Width; x++)
                     for (ushort y = 0; y < CurrentLayer.Height; y++)
                         IncreaseAnimationInstanceIfNeeded(CurrentLayer.TileMap, x, y, ref threshhold);
-        for (byte i = 0; i < NumberOfAnimations; i++)
+        for (ushort i = 0; i < NumberOfAnimations; i++)
             for (byte j = 0; j < Animations[i].FrameCount; j++)
                 IncreaseAnimationInstanceIfNeeded(ref Animations[i].Sequence[j], ref threshhold);
         AnimOffset++;
@@ -2139,7 +2453,7 @@ class J2LFile : J2File
     }
     public InsertFrameResults InsertAnimation(AnimatedTile nuAnim, byte location = 255)
     {
-        if (NumberOfAnimations == 128 || NumberOfAnimations + TileCount + 1 == MaxTiles) return InsertFrameResults.Full;
+        if (NumberOfAnimations >= (VersionType == Version.TSF ? 256 : 128) || NumberOfAnimations + TileCount + 1 == MaxTiles) return InsertFrameResults.Full;
         if (location > NumberOfAnimations) location = (byte)NumberOfAnimations;
         for (ushort i = NumberOfAnimations; i > location; ) Animations[i] = Animations[--i];
         Animations[location] = nuAnim;
@@ -2150,7 +2464,7 @@ class J2LFile : J2File
                 for (ushort x = 0; x < CurrentLayer.Width; x++)
                     for (ushort y = 0; y < CurrentLayer.Height; y++)
                         DecreaseAnimationInstanceIfNeeded(CurrentLayer.TileMap, x, y, ref threshhold);
-        for (byte i = 0; i < NumberOfAnimations; i++)
+        for (ushort i = 0; i < NumberOfAnimations; i++)
             for (byte j = 0; j < Animations[i].FrameCount; j++)
                 DecreaseAnimationInstanceIfNeeded(ref Animations[i].Sequence[j], ref threshhold);
         AnimOffset--;
@@ -2170,6 +2484,8 @@ class J2LFile : J2File
 
     public VersionChangeResults ChangeVersion(Version nuVersion)
     {
+        if (VersionType == Version.TSF && NumberOfAnimations > 128)
+            return VersionChangeResults.TooManyAnimatedTiles;
         uint J2TTileCount = (!HasTiles) ? 1 : TileCount;
         if (nuVersion != VersionType) switch (nuVersion)
             {
@@ -2187,20 +2503,11 @@ class J2LFile : J2File
                         }
                         if (MaxTiles == 4096)
                         {
-                            for (byte i = 0; i < NumberOfAnimations; i++) Animations[i].ChangeVersion(ref nuVersion,ref J2TTileCount, ref NumberOfAnimations);
-                            foreach (Layer CurrentLayer in AllLayers) if (CurrentLayer.HasTiles) for (ushort x = 0; x < CurrentLayer.Width; x++) for (ushort y = 0; y < CurrentLayer.Height; y++)
-                                        {
-                                            if (CurrentLayer.TileMap[x, y] > 4095 + J2TTileCount) CurrentLayer.TileMap[x, y] -= 7168; //Flipped animations
-                                            else if (CurrentLayer.TileMap[x, y] >= J2TTileCount)
-                                            {
-                                                if (CurrentLayer.TileMap[x, y] >= 4096 - NumberOfAnimations) CurrentLayer.TileMap[x, y] -= 3072; //Animations and flipped
-                                                else CurrentLayer.TileMap[x, y] += 8192; //Leftover +1020s from tileset change
-                                            }
-                                        }
-                            /*Array.Resize(ref EventTiles, 1024);
-                            Array.Resize(ref unknownsection2, 1024);
-                            Array.Resize(ref TileTypes, 1024);
-                            Array.Resize(ref unknownsection3, 1024);*/
+                            for (ushort i = 0; i < NumberOfAnimations; i++)
+                                Animations[i].ChangeVersion(false, J2TTileCount);
+                            foreach (Layer CurrentLayer in AllLayers)
+                                CurrentLayer.ChangeVersion(false, J2TTileCount);
+                            AnimOffset -= 4096 - 1024;
                         }
                         VersionType = nuVersion;
                         return VersionChangeResults.Success;
@@ -2210,13 +2517,10 @@ class J2LFile : J2File
                     Header = (nuVersion == Version.AGA) ? "" : StandardHeader;
                     if (MaxTiles == 1024)
                     {
-                        for (byte i = 0; i < NumberOfAnimations; i++) Animations[i].ChangeVersion(ref nuVersion, ref J2TTileCount, ref NumberOfAnimations);
-                        foreach (Layer CurrentLayer in AllLayers) if (CurrentLayer.HasTiles) for (ushort x = 0; x < CurrentLayer.Width; x++) for (ushort y = 0; y < CurrentLayer.Height; y++)
-                                    {
-                                        if (CurrentLayer.TileMap[x, y] > 8192) CurrentLayer.TileMap[x, y] -= 8192; //Restored leftovers
-                                        else if (CurrentLayer.TileMap[x, y] > 1023 + J2TTileCount) CurrentLayer.TileMap[x, y] += 7168; //Flipped animations
-                                        else if (CurrentLayer.TileMap[x, y] >= J2TTileCount) CurrentLayer.TileMap[x, y] += 3072; //Animations and flipped tiles
-                                    }
+                        for (ushort i = 0; i < NumberOfAnimations; i++)
+                            Animations[i].ChangeVersion(true, J2TTileCount);
+                        foreach (Layer CurrentLayer in AllLayers)
+                            CurrentLayer.ChangeVersion(true, J2TTileCount);
                         if (EventTiles.Length == 1024)
                         {
                             Array.Resize(ref EventTiles, 4096);
@@ -2224,6 +2528,7 @@ class J2LFile : J2File
                             Array.Resize(ref TileTypes, 4096);
                             Array.Resize(ref IsEachTileUsed, 4096);
                         }
+                        AnimOffset += 4096 - 1024;
                     }
                     if (nuVersion == Version.AGA) //pretend support!
                     {

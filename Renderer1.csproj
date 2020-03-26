@@ -40,6 +40,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -50,6 +51,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>MLLE.Program</StartupObject>
@@ -82,6 +84,12 @@
     <Compile Include="EventForm.Designer.cs">
       <DependentUpon>EventForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="FindParameterValues.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FindParameterValues.Designer.cs">
+      <DependentUpon>FindParameterValues.cs</DependentUpon>
+    </Compile>
     <Compile Include="LayerOrderForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -93,6 +101,12 @@
     </Compile>
     <Compile Include="LevelProperties.Designer.cs">
       <DependentUpon>LevelProperties.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PackageLevelForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PackageLevelForm.Designer.cs">
+      <DependentUpon>PackageLevelForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Palette.cs" />
     <Compile Include="PaletteForm.cs">
@@ -116,6 +130,12 @@
     </Compile>
     <Compile Include="PlusPropertyList.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SelectTileSet.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SelectTileSet.Designer.cs">
+      <DependentUpon>SelectTileSet.cs</DependentUpon>
+    </Compile>
     <Compile Include="SetPassword.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -159,6 +179,12 @@
     <Compile Include="TilesetForm.Designer.cs">
       <DependentUpon>TilesetForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="TileSetOrganizer.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TileSetOrganizer.Designer.cs">
+      <DependentUpon>TileSetOrganizer.cs</DependentUpon>
+    </Compile>
     <Compile Include="TriggerSelect.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -192,6 +218,12 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="TexLib.cs" />
+    <Compile Include="WeaponsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WeaponsForm.Designer.cs">
+      <DependentUpon>WeaponsForm.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Bass.Net, Version=2.4.8.0, Culture=neutral, PublicKeyToken=b7566c273e6ef480, processorArchitecture=MSIL">
@@ -224,11 +256,17 @@
     <EmbeddedResource Include="EventForm.resx">
       <DependentUpon>EventForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="FindParameterValues.resx">
+      <DependentUpon>FindParameterValues.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="LayerOrderForm.resx">
       <DependentUpon>LayerOrderForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="LevelProperties.resx">
       <DependentUpon>LevelProperties.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PackageLevelForm.resx">
+      <DependentUpon>PackageLevelForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="PaletteForm.resx">
       <DependentUpon>PaletteForm.cs</DependentUpon>
@@ -238,6 +276,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="PlusProperties.resx">
       <DependentUpon>PlusProperties.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SelectTileSet.resx">
+      <DependentUpon>SelectTileSet.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="SetPassword.resx">
       <DependentUpon>SetPassword.cs</DependentUpon>
@@ -260,6 +301,9 @@
     <EmbeddedResource Include="TilesetForm.resx">
       <DependentUpon>TilesetForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="TileSetOrganizer.resx">
+      <DependentUpon>TileSetOrganizer.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="TriggerSelect.resx">
       <DependentUpon>TriggerSelect.cs</DependentUpon>
     </EmbeddedResource>
@@ -275,6 +319,9 @@
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WeaponsForm.resx">
+      <DependentUpon>WeaponsForm.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
@@ -295,6 +342,14 @@
     <None Include="Images\JazzAbout.bmp" />
     <None Include="Images\JazzAbout.png" />
     <Content Include="Images\SmartTilesPermutations.png" />
+    <Content Include="Images\BollPlatform.png" />
+    <Content Include="Images\FruitPlatform.png" />
+    <Content Include="Images\GrassPlatform.png" />
+    <Content Include="Images\PinkPlatform.png" />
+    <Content Include="Images\SonicPlatform.png" />
+    <Content Include="Images\SpikeBoll.png" />
+    <None Include="Images\SpikePlatform.png" />
+    <Content Include="Images\SwingingVine.png" />
     <Content Include="MLLE.ico" />
     <Content Include="MLLE01.ico" />
   </ItemGroup>
@@ -321,6 +376,9 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Resources\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

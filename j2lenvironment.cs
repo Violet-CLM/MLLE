@@ -197,6 +197,84 @@ class TexturedJ2L : J2LFile
         ImageAtlas = TexUtil.CreateRGBATexture(AtlasLength * 32, AtlasLength * 32, workingAtlases[0]);
         if (includeMasks) MaskAtlas = TexUtil.CreateRGBATexture(AtlasLength * 32, AtlasLength * 32, workingAtlases[1]);
     }
+    public Bitmap[] RenderTilesetAsImage(TransparencySource source, bool includeMasks, Palette palette = null) //very similar to TilesetForm::CreateImageFromTileset
+    {
+        if (palette == null)
+            palette = Palette;
+        uint imageHeight = (TileCount + 9) / 10 * 32;
+
+        var image = new Bitmap(320, (int)imageHeight, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
+        var paletteD = image.Palette;
+        var entries = paletteD.Entries;
+        entries[0] = Color.FromArgb(87, 0, 203);
+        for (uint i = 1; i < Palette.PaletteSize; ++i)
+            entries[i] = Palette.Convert(palette.Colors[i]);
+        image.Palette = paletteD;
+        var data = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), System.Drawing.Imaging.ImageLockMode.WriteOnly, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
+        byte[] bytes = new byte[data.Height * data.Stride];
+
+        Bitmap mask = null;
+        System.Drawing.Imaging.BitmapData maskData = null;
+        byte[] maskBytes = null;
+        if (includeMasks)
+        {
+            mask = new Bitmap(320, (int)imageHeight, System.Drawing.Imaging.PixelFormat.Format1bppIndexed);
+            maskData = mask.LockBits(new Rectangle(0, 0, image.Width, image.Height), System.Drawing.Imaging.ImageLockMode.WriteOnly, System.Drawing.Imaging.PixelFormat.Format1bppIndexed);
+            maskBytes = new byte[maskData.Height * maskData.Stride];
+            var paletteM = mask.Palette;
+            paletteM.Entries[0] = Color.FromArgb(87, 0, 203);
+            paletteM.Entries[1] = Color.Black;
+            mask.Palette = paletteD;
+        }
+
+        for (ushort tileInLevelID = 0; tileInLevelID < TileCount; tileInLevelID++)
+        {
+            J2TFile J2T;
+            uint tileInTilesetID = getTileInTilesetID(tileInLevelID, out J2T);
+
+            bool customTileImage;
+            byte[] tileTrans;
+            byte[] tile = PlusPropertyList.TileImages[tileInLevelID];
+            if (!(customTileImage = (tile != null)))
+            {
+                tile = J2T.Images[J2T.ImageAddress[tileInTilesetID]];
+                tileTrans = ((source == TransparencySource.JJ2_Style) ? J2T.TransparencyMaskJJ2_Style : J2T.TransparencyMaskJCS_Style)[Array.BinarySearch(J2T.TransparencyMaskOffset, 0, (int)J2T.data3Counter, J2T.TransparencyMaskAddress[tileInTilesetID])];
+            }
+            else
+                tileTrans = tile;
+            var colorRemapping = (J2T.ColorRemapping == null || customTileImage) ? J2TFile.DefaultColorRemapping : J2T.ColorRemapping;
+            
+            var xOrg = (tileInLevelID % 10) * 32;
+            var yOrg = tileInLevelID / 10 * 32;
+            for (uint x = 0; x < 32; ++x)
+                for (uint y = 0; y < 32; ++y)
+                {
+                    uint xy = x + y * 32;
+                    if (tileTrans[xy] != 0)
+                        bytes[xOrg + x + (yOrg + y) * data.Stride] = colorRemapping[tile[xy]];
+                }
+
+            if (includeMasks)
+            {
+                byte[] tileMask = PlusPropertyList.TileMasks[tileInLevelID] ?? J2T.Masks[J2T.MaskAddress[tileInTilesetID]];
+                xOrg = (tileInLevelID % 10) * 32 / 8;
+                yOrg = tileInLevelID / 10 * 32;
+                for (uint x = 0; x < 32; ++x)
+                    for (uint y = 0; y < 32; ++y)
+                        if (tileMask[x + y * 32] != 0)
+                            maskBytes[xOrg + (x >> 3) + (yOrg + y) * maskData.Stride] |= (byte)(0x80 >> (int)(x & 7));
+            }
+        }
+
+        Marshal.Copy(bytes, 0, data.Scan0, bytes.Length);
+        image.UnlockBits(data);
+        if (includeMasks)
+        {
+            Marshal.Copy(maskBytes, 0, maskData.Scan0, maskBytes.Length);
+            mask.UnlockBits(maskData);
+        }
+        return new Bitmap[] { image, mask };
+    }
     public void RerenderTile(uint tileInLevelID)
     {
         var transformation = TileTypeColorTransformations[VersionType];
@@ -233,7 +311,7 @@ class TexturedJ2L : J2LFile
                             bmp.SetPixel(x, y, transformation(palette[newTile[x + y * 32]], TileTypes[tileInLevelID]));
             }
             System.Drawing.Imaging.BitmapData data = bmp.LockBits(new Rectangle(0, 0, 32, 32), System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-            GL.TexSubImage2D(TextureTarget.Texture2D, 0, (int)tileInLevelID % AtlasLength * 32, (int)tileInLevelID / AtlasLength * 32, 32, 32, PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
+            GL.TexSubImage2D(TextureTarget.Texture2D, 0, (int)tileInLevelID % AtlasLength * 32, (int)tileInLevelID / AtlasLength * 32, 32, 32, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
             bmp.UnlockBits(data);
         }
     }
@@ -258,7 +336,7 @@ class TexturedJ2L : J2LFile
                 for (int y = 0; y < 32; y++)
                     bmp.SetPixel(x, y, colors[tileMask[x + y * 32]]);
             System.Drawing.Imaging.BitmapData data = bmp.LockBits(new Rectangle(0, 0, 32, 32), System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-            GL.TexSubImage2D(TextureTarget.Texture2D, 0, (int)tileInLevelID % AtlasLength * 32, (int)tileInLevelID / AtlasLength * 32, 32, 32, PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
+            GL.TexSubImage2D(TextureTarget.Texture2D, 0, (int)tileInLevelID % AtlasLength * 32, (int)tileInLevelID / AtlasLength * 32, 32, 32, OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, data.Scan0);
             bmp.UnlockBits(data);
         }
     }
@@ -272,9 +350,14 @@ class TexturedJ2L : J2LFile
             return result;
         }
     }
-    public static void ProduceEventAndTypeListsFromIni(Version version, IniFile eventIni, IniFile typeIni, bool overwriteOldLists = false)
+    public static string[] GetDontUseEventListingForEventID(byte eventID)
     {
-        if (!overwriteOldLists && !(EventAtlas[version] == 0 || IniEventListing[version] == null)) return;
+        return new string[] { (eventID == 0) ? "(none)" : "Event " + eventID.ToString(), "-", "", "DON'T", "USE" };
+    }
+    public static void ProduceEventStringsFromIni(Version version, IniFile eventIni, IniFile typeIni, bool overwriteOldLists = false)
+    {
+        if (!overwriteOldLists && IniEventListing[version] != null)
+            return;
         string[][] StringList = IniEventListing[version] = new string[256][];
         for (int i = 0; i < 256; i++)
         {
@@ -283,46 +366,72 @@ class TexturedJ2L : J2LFile
                 StringList[i] = (((eventIni != typeIni && typeIni.IniReadValue("Events", i.ToString()).Length > 0) ? typeIni : eventIni).IniReadValue("Events", i.ToString()).Split('|'));
                 for (byte j = 0; j < StringList[i].Length; j++) StringList[i][j] = StringList[i][j].TrimEnd();
             }
-            else StringList[i] = new string[] { (i == 0) ? "(none)" : "Event " + i.ToString(), "-", "", "DON'T", "USE" };
+            else StringList[i] = GetDontUseEventListingForEventID((byte)i);
         }
-        StringFormat formatEvent = new StringFormat(), formatType = new StringFormat();
-        formatEvent.Alignment = formatEvent.LineAlignment = formatType.LineAlignment = StringAlignment.Center;
-        formatType.Alignment = StringAlignment.Near;
-        SolidBrush white = new SolidBrush(Color.White);
+    }
+    public static void ProduceTypeIcons(Version version, IniFile typeIni, bool overwriteOldImage = false)
+    {
+        if (!overwriteOldImage && TileTypeAtlas[version] != 0)
+            return;
+
         RectangleF rectE = new RectangleF(-16, 0, 64, 32);
         RectangleF rectT = new RectangleF(-2, 0, 256, 32);
-        using (Font arial = new Font(new FontFamily("Arial"), 8)) using (Bitmap text_bmp = new Bitmap(512, 512)) using (Bitmap type_bmp = new Bitmap(128,128)) using (formatType) using (formatEvent)
+
+        using (SolidBrush white = new SolidBrush(Color.White))
+        using (Font arial = new Font(new FontFamily("Arial"), 8))
+        using (Bitmap text_bmp = new Bitmap(512, 512))
+        using (Bitmap type_bmp = new Bitmap(128, 128))
+        using (Graphics totalgfx = Graphics.FromImage(text_bmp))
+        using (StringFormat formatType = new StringFormat())
         {
-            Bitmap single_bmp; Graphics gfx;
-            Graphics totalgfx = Graphics.FromImage(text_bmp);
+            formatType.LineAlignment = StringAlignment.Center;
+            formatType.Alignment = StringAlignment.Near;
+            totalgfx.Clear(Color.FromArgb(128, 0, 0, 0));
+            TileTypeNames[version] = new string[16];
+
+            for (int i = 1; i < 16; i++)
+                if ((TileTypeNames[version][i] = typeIni.IniReadValue("Tiles", i.ToString()) ?? "") != "")
+                    using (Bitmap single_bmp = new Bitmap(32, 32))
+                    using (Graphics gfx = Graphics.FromImage(single_bmp))
+                    {
+                        gfx.DrawString(typeIni.IniReadValue("Tiles", i.ToString()), arial, white, rectT, formatType);
+                        totalgfx.DrawImage(single_bmp, i % 4 * 32, i / 4 * 32);
+                    }
+            if (TileTypeAtlas[version] != 0)
+                GL.DeleteTexture(TileTypeAtlas[version]);
+            TileTypeAtlas[version] = TexUtil.CreateTextureFromBitmap(type_bmp);
+        }
+    }
+    public static void ProduceEventIcons(Version version, string[][] StringList, bool overwriteOldImage = false)
+    {
+        if (!overwriteOldImage && EventAtlas[version] != 0)
+            return;
+
+        RectangleF rectE = new RectangleF(-16, 0, 64, 32);
+        RectangleF rectT = new RectangleF(-2, 0, 256, 32);
+
+        using (SolidBrush white = new SolidBrush(Color.White))
+        using (Font arial = new Font(new FontFamily("Arial"), 8))
+        using (Bitmap text_bmp = new Bitmap(512, 512))
+        using (Bitmap type_bmp = new Bitmap(128, 128))
+        using (Graphics totalgfx = Graphics.FromImage(text_bmp))
+        using (StringFormat formatEvent = new StringFormat())
+        {
+            formatEvent.Alignment = formatEvent.LineAlignment = StringAlignment.Center;
             totalgfx.Clear(Color.FromArgb(128, 0, 0, 0));
             for (int i = 1; i < 256; i++)
+                using (Bitmap single_bmp = new Bitmap(32, 32))
+                using (Graphics gfx = Graphics.FromImage(single_bmp))
                 {
-                    single_bmp = new Bitmap(32, 32);
-                    gfx = Graphics.FromImage(single_bmp);
-                    //gfx.Clear(Color.FromArgb(128, 0, 0, 0));
-                    if (StringList[i].Length > 4 && StringList[i][4].TrimEnd() != "") gfx.DrawString(StringList[i][3] + "\n" + StringList[i][4], arial, white, rectE, formatEvent);
-                    else gfx.DrawString(StringList[i][3], arial, white, rectE, formatEvent);
+                    if (StringList[i].Length > 4 && StringList[i][4].TrimEnd() != "")
+                        gfx.DrawString(StringList[i][3] + "\n" + StringList[i][4], arial, white, rectE, formatEvent);
+                    else
+                        gfx.DrawString(StringList[i][3], arial, white, rectE, formatEvent);
                     totalgfx.DrawImage(single_bmp,i%16*32, i/16*32);
                 }
             if (EventAtlas[version] != 0)
                 GL.DeleteTexture(EventAtlas[version]);
             EventAtlas[version] = TexUtil.CreateTextureFromBitmap(text_bmp);
-
-            totalgfx = Graphics.FromImage(type_bmp);
-            totalgfx.Clear(Color.FromArgb(128, 0, 0, 0));
-            TileTypeNames[version] = new string[16];
-            for (int i = 1; i < 16; i++) if ((TileTypeNames[version][i] = typeIni.IniReadValue("Tiles", i.ToString()) ?? "") != "")
-                {
-                    single_bmp = new Bitmap(32, 32);
-                    gfx = Graphics.FromImage(single_bmp);
-                    //gfx.Clear(Color.FromArgb(128, 0, 0, 0));
-                    gfx.DrawString(typeIni.IniReadValue("Tiles", i.ToString()), arial, white, rectT, formatType);
-                    totalgfx.DrawImage(single_bmp, i % 4 * 32, i / 4 * 32);
-                }
-            if (TileTypeAtlas[version] != 0)
-                GL.DeleteTexture(TileTypeAtlas[version]);
-            TileTypeAtlas[version] = TexUtil.CreateTextureFromBitmap(type_bmp);
         }
     }
 }

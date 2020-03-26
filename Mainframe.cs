@@ -57,6 +57,14 @@ namespace MLLE
         {Version.AGA, null },
         {Version.GorH, null },
         };
+        public Dictionary<Version, List<StringAndIndex>> FlatEventLists = new Dictionary<Version, List<StringAndIndex>> {
+        {Version.BC, null },
+        {Version.O, null },
+        {Version.JJ2, null },
+        {Version.TSF, null },
+        {Version.AGA, null },
+        {Version.GorH, null },
+        };
         //public string BonusLevelName;
         public Dictionary<Version, Dictionary<EnableableTitles, string>> EnableableStrings = new Dictionary<Version, Dictionary<EnableableTitles, string>> {
         {Version.BC, null },
@@ -112,6 +120,8 @@ namespace MLLE
         MaskMode MaskDisplayMode;
         ParallaxMode ParallaxDisplayMode;
         internal byte ParallaxEventDisplayType = 0;
+        internal bool AllowExtraZooming = false;
+        private bool PreviewHelpStringColors = true;
         internal uint PlusTriggerZone = 0;
 
         private bool levelHasBeenModified = false;
@@ -186,7 +196,7 @@ namespace MLLE
                 Bools.Add(EnableableTitles.BoolDevelopingForPlus, ini.IniReadValue("Enableable", "BoolDevelopingForPlus") != "");
                 Bools.Add(EnableableTitles.UseText, ini.IniReadValue("Enableable", "BoolText") != "");
             }
-            imageToolStripMenuItem.Enabled = maskToolStripMenuItem.Enabled = jJ2PropertiesToolStripMenuItem.Enabled = EnableableBools[version][EnableableTitles.BoolDevelopingForPlus];
+            automaskToolStripMenuItem.Enabled = imageToolStripMenuItem.Enabled = maskToolStripMenuItem.Enabled = jJ2PropertiesToolStripMenuItem.Enabled = EnableableBools[version][EnableableTitles.BoolDevelopingForPlus];
             textStringsToolStripMenuItem.Enabled = EnableableBools[version][EnableableTitles.UseText];
             saveRunToolStripMenuItem.Enabled = runToolStripMenuItem.Enabled = EnableableStrings[version][EnableableTitles.SaveAndRun] != "";
             soundEffectsToolStripMenuItem.Enabled = (version == Version.AGA);
@@ -206,10 +216,17 @@ namespace MLLE
                 else
                     baseIni = ini;
             }
-            TexturedJ2L.ProduceEventAndTypeListsFromIni(version, baseIni, ini);
-            if (TreeStructure[version] == null)
+            TexturedJ2L.ProduceEventStringsFromIni(version, baseIni, ini);
+            TexturedJ2L.ProduceTypeIcons(version, ini);
+
+            bool differentEventListFromPreviousLevelInThisVersion = ProduceLevelSpecificEventStringListIfAppropriate(version);
+            if (!differentEventListFromPreviousLevelInThisVersion)
+                LevelSpecificEventStringList = TexturedJ2L.IniEventListing[version];
+            TexturedJ2L.ProduceEventIcons(version, LevelSpecificEventStringList, differentEventListFromPreviousLevelInThisVersion);
+            if ((TreeStructure[version] == null) || differentEventListFromPreviousLevelInThisVersion)
             {
                 List<TreeNode>[] TreeNodeLists = TreeStructure[version] = new List<TreeNode>[2];
+                List<StringAndIndex> FlatEventList = FlatEventLists[version] = new List<StringAndIndex>();
                 TreeNodeLists[0] = new List<TreeNode>();
                 TreeNodeLists[1] = new List<TreeNode>();
                 for (ushort i = 0; i < 256; i++)
@@ -232,16 +249,17 @@ namespace MLLE
                         if (CurrentIniLine.Length == 3 || CurrentIniLine[3] == "+") TreeNodeLists[1].First((TreeNode node) => { return node.Text == CurrentIniLine[2].TrimEnd(); }).Nodes.Add(CurrentIniLine[1].TrimEnd(), CurrentIniLine[0].TrimEnd());
                     }
                 }
-                string[][] EventsFromIni = TexturedJ2L.IniEventListing[version];
                 for (ushort i = 1; i < 256; i++)
                 {
-                    if (EventsFromIni[i][2].Trim() != "")
+                    if (LevelSpecificEventStringList[i][2].Trim() != "")
                     {
-                        TreeNodeLists[0].First((TreeNode node) => { return node.Nodes.ContainsKey(EventsFromIni[i][2].TrimEnd()); }).Nodes.Find(EventsFromIni[i][2].TrimEnd(), false)[0].Nodes.Add(i.ToString(), EventsFromIni[i][0].TrimEnd());
-                        if (EventsFromIni[i][1] == "+") TreeNodeLists[1].First((TreeNode node) => { return node.Nodes.ContainsKey(EventsFromIni[i][2].TrimEnd()); }).Nodes.Find(EventsFromIni[i][2].TrimEnd(), false)[0].Nodes.Add(i.ToString(), EventsFromIni[i][0].TrimEnd());
+                        FlatEventList.Add(new StringAndIndex(LevelSpecificEventStringList[i][0], i));
+                        TreeNodeLists[0].First((TreeNode node) => { return node.Nodes.ContainsKey(LevelSpecificEventStringList[i][2].TrimEnd()); }).Nodes.Find(LevelSpecificEventStringList[i][2].TrimEnd(), false)[0].Nodes.Add(i.ToString(), LevelSpecificEventStringList[i][0].TrimEnd());
+                        if (LevelSpecificEventStringList[i][1] == "+") TreeNodeLists[1].First((TreeNode node) => { return node.Nodes.ContainsKey(LevelSpecificEventStringList[i][2].TrimEnd()); }).Nodes.Find(LevelSpecificEventStringList[i][2].TrimEnd(), false)[0].Nodes.Add(i.ToString(), LevelSpecificEventStringList[i][0].TrimEnd());
                     }
                 }
             }
+
             TiletypeDropdown.DropDownItems.Clear();
             for (byte i = 0; i < 16; i++)
             {
@@ -264,6 +282,64 @@ namespace MLLE
             if (AllTilesetLists[version] == null) PopulateTilesetDropdown(version, ini);
             TilesetSelection.Items.Clear();
             foreach (NameAndFilename foo in AllTilesetLists[version]) TilesetSelection.Items.Add(foo);
+        }
+        string[][] LevelSpecificEventStringList;
+        private bool ProduceLevelSpecificEventStringListIfAppropriate(Version version)
+        {
+            string[][] defaults = TexturedJ2L.IniEventListing[version];
+            if (VersionIsPlusCompatible(version)) //otherwise there won't be any script file/s to worry about at all
+            {
+                var scriptFilepaths = new List<string>();
+                scriptFilepaths.Add(Path.ChangeExtension(J2L.FullFilePath, "j2as"));
+
+                var allIncludedLibraries = new HashSet<string>(StringComparer.OrdinalIgnoreCase); //avoid repeats, especially if a library tries to include itself recursively
+                allIncludedLibraries.Add(Path.GetFileName(scriptFilepaths[0])); //just to be safe
+
+                bool foundAtLeastOneLevelSpecificEventString = false;
+                for (int scriptID = 0; scriptID < scriptFilepaths.Count; ++scriptID)
+                {
+                    string scriptFilepath = scriptFilepaths[scriptID];
+                    if (File.Exists(scriptFilepath))
+                    {
+                        var fileContents = System.IO.File.ReadAllText(scriptFilepath, J2LFile.FileEncoding) + "\n";
+                        foreach (System.Text.RegularExpressions.Match match in System.Text.RegularExpressions.Regex.Matches(fileContents, "#include\\s+(['\"])(.+?)\\1", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+                            if (allIncludedLibraries.Add(match.Groups[2].Value)) //haven't seen this filename before
+                                scriptFilepaths.Add(Path.Combine(Path.GetDirectoryName(J2L.FullFilePath), match.Groups[2].Value)); //come back to this script later in the loop
+                        foreach (System.Text.RegularExpressions.Match match in System.Text.RegularExpressions.Regex.Matches(fileContents, @"//[!/][ \t]*[\\@]Event[ \t]+(\d+)[ \t]*=([^\r\n]*)\r?\n", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+                        {
+                            if (!foundAtLeastOneLevelSpecificEventString)
+                            {
+                                LevelSpecificEventStringList = new string[256][];
+                                foundAtLeastOneLevelSpecificEventString = true;
+                            }
+                            int eventID = int.Parse(match.Groups[1].ToString());
+                            if (LevelSpecificEventStringList[eventID] == null) //first attempt to set this string wins, because the level's main script should take precedence over any included libraries
+                            {
+                                string result = match.Groups[2].ToString();
+                                string[] resultSplitByPipes;
+                                if (result.Length == 0 || (resultSplitByPipes = result.Split('|')).Length < 4)
+                                    LevelSpecificEventStringList[eventID] = TexturedJ2L.GetDontUseEventListingForEventID((byte)eventID);
+                                else
+                                    LevelSpecificEventStringList[eventID] = resultSplitByPipes.Select(original => original.Trim()).ToArray();
+                            }
+                        }
+                    }
+                }
+
+                if (foundAtLeastOneLevelSpecificEventString)
+                {
+                    for (int i = 0; i < 256; ++i)
+                        if (LevelSpecificEventStringList[i] == null)
+                            LevelSpecificEventStringList[i] = defaults[i];
+                    return true;
+                }
+                else if (LevelSpecificEventStringList != null && LevelSpecificEventStringList != defaults) //the previous level (in this version) used custom events, but this one does not
+                {
+                    LevelSpecificEventStringList = defaults;
+                    return true; //different from previous level
+                }
+            }
+            return false; //no change
         }
         private void PopulateTilesetDropdown(Version version, IniFile ini)
         {
@@ -340,6 +416,8 @@ namespace MLLE
             }
             MakeVersionChangesAvailable();
 
+            SetStampDimensions(1, 1);
+            CurrentStamp[0][0] = new TileAndEvent(0, 0);
 
             for (int i = 1; i <= 10; ++i)
             {
@@ -419,13 +497,16 @@ namespace MLLE
             try { SubtractSelectionKey = StK[Settings.IniReadValue("Hotkeys", "SubtractFromSelection")]; }
             catch { SubtractSelectionKey = Keys.Control; }
             ParallaxEventDisplayType = (Settings.IniReadValue("Miscellaneous", "EventParallaxMode") == "0") ? (byte)0 : (byte)1; eventsForemostToolStripMenuItem.Checked = ParallaxEventDisplayType == 1;
-            
+            AllowExtraZooming = (Settings.IniReadValue("Miscellaneous", "ZoomingAbove100") == "1"); zoomingAbove100ToolStripMenuItem.Checked = Zoom200.Enabled = Zoom400.Enabled = AllowExtraZooming;
+            PreviewHelpStringColors = (Settings.IniReadValue("Miscellaneous", "PreviewHelpStringColors") != "0"); previewHelpStringColorsToolStripMenuItem.Checked = PreviewHelpStringColors;
+
+            ToolStripMenuItem[] recolorableSpriteSubcategories = { pinballToolStripMenuItem, platformsToolStripMenuItem, polesToolStripMenuItem, sceneryToolStripMenuItem };
             for (int i = 0; i < RecolorableSpriteNames.Length; ++i)
             {
                 ToolStripMenuItem toolstripitem = new ToolStripMenuItem(RecolorableSpriteNames[i]);
                 toolstripitem.Tag = i;
                 toolstripitem.Click += recolorableSpriteToolStripMenuItem_Click;
-                recolorEventsToolStripMenuItem.DropDownItems.Add(toolstripitem);
+                recolorableSpriteSubcategories[RecolorableSpriteCategories[i]].DropDownItems.Add(toolstripitem);
             }
 
             LevelDisplay.MouseWheel += LevelDisplay_MouseWheel;
@@ -483,10 +564,10 @@ namespace MLLE
                 DrawThread.Abort();
 
             DeleteLevelScriptIfEmpty();
-
-                bool windowIsMaximized = this.WindowState == FormWindowState.Maximized;
+            
+            bool windowIsMaximized = this.WindowState == FormWindowState.Maximized;
             Settings.IniWriteValue("Window", "Maximized", windowIsMaximized.ToString());
-            if (!windowIsMaximized)
+            if (!windowIsMaximized && this.Location.Y > -5) //otherwise something probably went wrong, so don't record these numbers
             {
                 Settings.IniWriteValue("Window", "X", this.Location.X.ToString());
                 Settings.IniWriteValue("Window", "Y", this.Location.Y.ToString());
@@ -832,6 +913,17 @@ namespace MLLE
                 _suspendEvent.Set();
             }
         }
+        private void automaskToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (MouseTile > 0 && MouseTile < J2L.TileCount)
+            {
+                J2TFile J2T;
+                uint tileInTilesetID = J2L.getTileInTilesetID((uint)MouseTile, out J2T);
+                J2L.PlusPropertyList.TileMasks[MouseTile] = (J2L.PlusPropertyList.TileImages[MouseTile] ?? J2T.Images[J2T.ImageAddress[tileInTilesetID]]).Select(val => val != 0 ? (byte)1 : (byte)0).ToArray();
+                RerenderTileMask((uint)MouseTile);
+            }
+        }
+
         #endregion Form Business
 
         #region Menu Busywork
@@ -915,9 +1007,17 @@ namespace MLLE
             }
             _suspendEvent.Set();
         }
+        
+        private void weaponsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _suspendEvent.Reset();
+            new WeaponsForm().ShowForm(ref J2L.PlusPropertyList.Weapons);
+            _suspendEvent.Set();
+        }
 
-        private static readonly Bitmap[] RecolorableSpriteResources = { Properties.Resources._500Bumper, Properties.Resources.CarrotBumper, Properties.Resources.CarrotusPole, Properties.Resources.DiamondusPole, Properties.Resources.Flipper, Properties.Resources.JunglePole, Properties.Resources.Leaf, Properties.Resources.PsychPole, Properties.Resources.SmallTree, Properties.Resources.Snow, Properties.Resources.Splash };
-        public static readonly string[] RecolorableSpriteNames = { "500 Bumper", "Carrot Bumper", "Carrotus Pole", "Diamondus Pole", "Flipper", "Jungle Pole", "Leaf", "Psych Pole", "Small Tree", "Snow", "Splash/Rain" };
+        private static readonly Bitmap[] RecolorableSpriteResources = { Properties.Resources._500Bumper, Properties.Resources.CarrotBumper, Properties.Resources.CarrotusPole, Properties.Resources.DiamondusPole, Properties.Resources.Flipper, Properties.Resources.JunglePole, Properties.Resources.Leaf, Properties.Resources.PsychPole, Properties.Resources.SmallTree, Properties.Resources.Snow, Properties.Resources.Splash, Properties.Resources.BollPlatform, Properties.Resources.FruitPlatform, Properties.Resources.GrassPlatform, Properties.Resources.PinkPlatform, Properties.Resources.SonicPlatform, Properties.Resources.SpikePlatform, Properties.Resources.SpikeBoll, Properties.Resources.SpikeBoll, Properties.Resources.SwingingVine };
+        public static readonly string[] RecolorableSpriteNames = { "500 Bumper", "Carrot Bumper", "Carrotus", "Diamondus", "Flipper", "Jungle", "Leaf", "Psych", "Small Tree", "Snow", "Splash/Rain", "Boll", "Fruit", "Grass", "Pink", "Sonic", "Spike", "Spike Boll 2D", "Spike Boll 3D", "Swinging Vine" };
+        private static readonly int[] RecolorableSpriteCategories = { 0, 0, 2, 2, 0, 2, 3, 2, 2, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 3 };
         private void RecolorSprite(int spriteID)
         {
             _suspendEvent.Reset();
@@ -963,11 +1063,21 @@ namespace MLLE
         {
             Settings.IniWriteValue("Miscellaneous", "EventParallaxMode", (ParallaxEventDisplayType = eventsForemostToolStripMenuItem.Checked ? (byte)1 : (byte)0).ToString());
         }
+        private void zoomingAbove100ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Settings.IniWriteValue("Miscellaneous", "ZoomingAbove100", (AllowExtraZooming = Zoom200.Enabled = Zoom400.Enabled = zoomingAbove100ToolStripMenuItem.Checked) ? "1" : "0");
+            if (!AllowExtraZooming && ZoomTileSize > 32)
+                Zoom(32);
+        }
+        private void previewHelpStringColorsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Settings.IniWriteValue("Miscellaneous", "PreviewHelpStringColors", (PreviewHelpStringColors = previewHelpStringColorsToolStripMenuItem.Checked) ? "1" : "0");
+        }
 
         private void DrawingToolButton_Click(object sender, EventArgs e)
         {
             DeepEditingTool = VisibleEditingTool = (ToolStripButton)sender;
-            for (byte i = 0; i < DrawingTools.Items.Count; i++) if (DrawingTools.Items[i].GetType() == sender.GetType())
+            for (byte i = 0; i < DrawingTools.Items.Count; i++) if (DrawingTools.Items[i].GetType() == sender.GetType() && DrawingTools.Items[i] != ReplaceEventsToggle)
                     ((ToolStripButton)DrawingTools.Items[i]).Checked = false;
             DeepEditingTool.Checked = true;
         }
@@ -980,30 +1090,86 @@ namespace MLLE
         private void saveAsImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _suspendEvent.Reset();
-            byte OriginalTileSize = ZoomTileSize;
-            LDScrollH.Value = LDScrollV.Value = 0;
-            Zoom((byte)(Math.Min(32, 4096 / Math.Max(J2L.SpriteLayer.Width, J2L.SpriteLayer.Height)/4*4)));
-            LevelDisplay.Width = (int)J2L.SpriteLayer.Width * ZoomTileSize + LDScrollH.Location.X;
-            LevelDisplay.Height = (int)J2L.SpriteLayer.Height * ZoomTileSize + LDScrollH.Height;
-            SafeToDisplay = false;
-            ChangeLayerByDefaultLayerID(J2LFile.SpriteLayerID);
-            SafeToDisplay = true;
-            LevelDisplay.Refresh();
-            LevelDisplay.Refresh();
-            using (Bitmap bmp = new Bitmap(LevelDisplay.Width - LDScrollH.Location.X, LevelDisplay.Height - LDScrollH.Height))
+
+            var levelImageSaveDialog = new SaveFileDialog();
+            levelImageSaveDialog.DefaultExt = "png";
+            levelImageSaveDialog.Filter = "Portable Network Graphics|*.png";
+            levelImageSaveDialog.FileName = Path.ChangeExtension(J2L.FilenameOnly, "png");
+            if (levelImageSaveDialog.ShowDialog() == DialogResult.OK)
             {
-                System.Drawing.Imaging.BitmapData data =
-                    bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), System.Drawing.Imaging.ImageLockMode.WriteOnly, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
-                GL.ReadPixels(LDScrollH.Location.X, LDScrollH.Height, LevelDisplay.Width - LDScrollH.Location.X, LevelDisplay.Height - LDScrollH.Height, PixelFormat.Bgr, PixelType.UnsignedByte, data.Scan0);
-                bmp.UnlockBits(data);
-                bmp.RotateFlip(RotateFlipType.RotateNoneFlipY);
-                bmp.Save(Path.ChangeExtension(J2L.FilenameOnly, "png"), System.Drawing.Imaging.ImageFormat.Png);
+                byte OriginalTileSize = ZoomTileSize;
+                LDScrollH.Value = LDScrollV.Value = 0;
+                Zoom((byte)(Math.Min(32, 4096 / Math.Max(J2L.SpriteLayer.Width, J2L.SpriteLayer.Height) / 4 * 4)));
+                LevelDisplay.Width = (int)J2L.SpriteLayer.Width * ZoomTileSize + LDScrollH.Location.X;
+                LevelDisplay.Height = (int)J2L.SpriteLayer.Height * ZoomTileSize + LDScrollH.Height;
+                SafeToDisplay = false;
+                ChangeLayerByDefaultLayerID(J2LFile.SpriteLayerID);
+                SafeToDisplay = true;
+                LevelDisplay.Refresh();
+                LevelDisplay.Refresh();
+                using (Bitmap bmp = new Bitmap(LevelDisplay.Width - LDScrollH.Location.X, LevelDisplay.Height - LDScrollH.Height))
+                {
+                    System.Drawing.Imaging.BitmapData data =
+                        bmp.LockBits(new Rectangle(0, 0, bmp.Width, bmp.Height), System.Drawing.Imaging.ImageLockMode.WriteOnly, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
+                    GL.ReadPixels(LDScrollH.Location.X, LDScrollH.Height, LevelDisplay.Width - LDScrollH.Location.X, LevelDisplay.Height - LDScrollH.Height, PixelFormat.Bgr, PixelType.UnsignedByte, data.Scan0);
+                    bmp.UnlockBits(data);
+                    bmp.RotateFlip(RotateFlipType.RotateNoneFlipY);
+                    bmp.Save(Path.ChangeExtension(levelImageSaveDialog.FileName, "png"), System.Drawing.Imaging.ImageFormat.Png);
+                }
+                LevelDisplay.Width = Width - LDScrollV.Width;
+                LevelDisplay.Height = LDScrollV.Height + LDScrollH.Height;
+                Zoom(OriginalTileSize);
             }
-            LevelDisplay.Width = Width - LDScrollV.Width;
-            LevelDisplay.Height = LDScrollV.Height + LDScrollH.Height;
-            Zoom(OriginalTileSize);
             _suspendEvent.Set();
-        } // this doesn't work right now
+        }
+        private void saveTilesetImageToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _suspendEvent.Reset();
+
+            var tilesetImageSaveDialog = new SaveFileDialog();
+            tilesetImageSaveDialog.DefaultExt = "png";
+            tilesetImageSaveDialog.Filter = "Portable Network Graphics|*.png";
+            tilesetImageSaveDialog.FileName = Path.ChangeExtension(J2L.Tilesets[0].FilenameOnly, "png");
+            if (tilesetImageSaveDialog.ShowDialog() == DialogResult.OK)
+            {
+                Bitmap[] images = J2L.RenderTilesetAsImage(TransparencySource.JCS_Style, true);
+                string mainFilename = Path.Combine(Path.GetDirectoryName(tilesetImageSaveDialog.FileName), Path.GetFileNameWithoutExtension(tilesetImageSaveDialog.FileName));
+                images[0].Save(mainFilename + "-image.png");
+                images[1].Save(mainFilename + "-mask.png");
+            }
+            _suspendEvent.Set();
+        }
+        private void toolsToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
+        {
+            defineSmartTilesToolStripMenuItem.Enabled = saveTilesetImageToolStripMenuItem.Enabled = J2L.HasTiles;
+        }
+
+        private void packageAsZiptoolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _suspendEvent.Reset();
+            if (PromptForSaving())
+            {
+                var packageSaveDialog = new SaveFileDialog();
+                packageSaveDialog.DefaultExt = "zip";
+                packageSaveDialog.Filter = "Zip Files|*.zip";
+                string initialFilename = Path.GetFileNameWithoutExtension(J2L.FilenameOnly);
+                var match = System.Text.RegularExpressions.Regex.Match(initialFilename, "^(.*[^\\d])\\d+$"); //strip numbers at end
+                if (match.Success)
+                    initialFilename = match.Groups[1].Value;
+                packageSaveDialog.FileName = Path.ChangeExtension(initialFilename, "zip");
+                if (packageSaveDialog.ShowDialog() == DialogResult.OK)
+                {
+                    new PackageLevelForm().ShowForm(
+                        J2L.FullFilePath,
+                        Path.ChangeExtension(packageSaveDialog.FileName, "zip"),
+                        DefaultFileExtensionStrings[DefaultFileExtension[J2L.VersionType]],
+                        J2L.VersionType != Version.AGA ? (J2L.VersionType != Version.GorH ? "j2t" : String.Empty) : "til",
+                        VersionIsPlusCompatible(J2L.VersionType)
+                    );
+                }
+            }
+            _suspendEvent.Set();
+        }
 
         private void L1Button_Click(object sender, EventArgs e) { ChangeLayerByDefaultLayerID(0); }
         private void L2Button_Click(object sender, EventArgs e) { ChangeLayerByDefaultLayerID(1); }
@@ -1021,7 +1187,7 @@ namespace MLLE
         private void GrabEventTS_Click(object sender, EventArgs e) { GrabEventAtMouse(); }
         private void PutEventTS_Click(object sender, EventArgs e) { PasteEventAtMouse(); }
 
-        internal void ZoomIn() { if (ZoomTileSize < 32) { Zoom((byte)(ZoomTileSize << 1)); } }
+        internal void ZoomIn() { if (ZoomTileSize < (AllowExtraZooming ? 128 : 32)) { Zoom((byte)(ZoomTileSize << 1)); } }
         internal void ZoomOut() { if (ZoomTileSize > 4) { Zoom((byte)(ZoomTileSize >> 1)); } }
         private void ZoomInButton_Click(object sender, EventArgs e) { ZoomIn(); }
         private void ZoomOutButton_Click(object sender, EventArgs e) { ZoomOut(); }
@@ -1029,6 +1195,8 @@ namespace MLLE
         private void Zoom50_Click(object sender, EventArgs e) { Zoom(16); }
         private void Zoom25_Click(object sender, EventArgs e) { Zoom(8); }
         private void Zoom12p5_Click(object sender, EventArgs e) { Zoom(4); }
+        private void Zoom200_Click(object sender, EventArgs e) { Zoom(64); }
+        private void Zoom400_Click(object sender, EventArgs e) { Zoom(128); }
         private void Zoom(byte newTileSize)
         {
             float Factor = newTileSize / 32F / ZoomTileFactor;
@@ -1042,6 +1210,8 @@ namespace MLLE
             Zoom50.Checked = newTileSize == 16;
             Zoom25.Checked = newTileSize == 8;
             Zoom12p5.Checked = newTileSize == 4;
+            Zoom200.Checked = newTileSize == 64;
+            Zoom400.Checked = newTileSize == 128;
         }
 
         int stream = 0;
@@ -1153,7 +1323,7 @@ namespace MLLE
         private void textStringsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _suspendEvent.Reset();
-            TextEdit TE = new TextEdit(J2L.Text);
+            TextEdit TE = new TextEdit(J2L.Text, PreviewHelpStringColors && J2L.VersionType != Version.AGA, VersionIsPlusCompatible(J2L.VersionType));
             TE.ShowDialog();
             if (TE.result == DialogResult.OK) { J2L.Text = TE.workTexts; LevelHasBeenModified = true; }
             _suspendEvent.Set();
@@ -1272,7 +1442,7 @@ namespace MLLE
         {
             if (EnableableBools[version] != null)
                 return EnableableBools[version][EnableableTitles.BoolDevelopingForPlus];
-            return new IniFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ProfileIniFilename[J2L.VersionType] + ".ini")).IniReadValue("Enableable", "BoolDevelopingForPlus") == "";
+            return new IniFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ProfileIniFilename[J2L.VersionType] + ".ini")).IniReadValue("Enableable", "BoolDevelopingForPlus") != "";
         }
         private bool EmptyActionStackIfItContainsVerticallyFlippedTiles(Stack<LayerAndSpecificTiles> stack)
         {
@@ -1288,7 +1458,7 @@ namespace MLLE
         internal void ChangeVersion(Version nuversion)
         {
             _suspendEvent.Reset();
-            if (!VersionIsPlusCompatible(nuversion) && J2L.PlusOnly)
+            if (!VersionIsPlusCompatible(nuversion) && (J2L.LevelNeedsData5 || J2L.ContainsVerticallyFlippedTiles))
                 MessageBox.Show("This level uses one or more features exclusive to JJ2+ and cannot be changed to a version that JJ2+ does not support.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             else
             {
@@ -1340,10 +1510,17 @@ namespace MLLE
             _suspendEvent.Set();
         }
 
+        private void findParameterValuesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _suspendEvent.Reset();
+            new FindParameterValues().ShowForm(ref J2L.EventMap, LevelSpecificEventStringList);
+            _suspendEvent.Set();
+        }
+
         #region Open
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            OpenJ2LDialog.FileName = J2L.NextLevel + DefaultFileExtensionStrings[DefaultFileExtension[J2L.VersionType]];
+            OpenJ2LDialog.FileName = Path.ChangeExtension(J2L.NextLevel, DefaultFileExtensionStrings[DefaultFileExtension[J2L.VersionType]]);
             _suspendEvent.Reset();
             DialogResult result = OpenJ2LDialog.ShowDialog();
             if (result == DialogResult.OK && PromptForSaving())
@@ -1444,8 +1621,7 @@ namespace MLLE
         internal void NewJ2L(Version? version = null)
         {
             SafeToDisplay = false;
-            if (version == null) J2L.NewLevel(J2L.VersionType);
-            else J2L.NewLevel((Version)version);
+            J2L.NewLevel(version ?? J2L.VersionType);
             J2L.FullFilePath = Path.Combine(DefaultDirectories[J2L.VersionType], J2L.FilenameOnly = DefaultLevelFilename);
             SetTitle(J2L.Name);
             CheckCurrentVersion();
@@ -1564,12 +1740,18 @@ namespace MLLE
         }
         private void PlayFromHere()
         {
-            uint oldEvent = J2L.EventMap[MouseTileX, MouseTileY];
-            J2L.EventMap[MouseTileX, MouseTileY] = uint.MaxValue;
-            J2L.SwapEvents((uint)StartPositionEventID, uint.MaxValue);
-            TrialRun();
-            J2L.SwapEvents(uint.MaxValue, (uint)StartPositionEventID);
-            J2L.EventMap[MouseTileX, MouseTileY] = oldEvent;
+            if (CurrentLayer.XSpeed == 1 && CurrentLayer.YSpeed == 1)
+            {
+                if (MouseTileX < J2L.EventMap.GetLength(0) && MouseTileY < J2L.EventMap.GetLength(1))
+                {
+                    uint oldEvent = J2L.EventMap[MouseTileX, MouseTileY];
+                    J2L.EventMap[MouseTileX, MouseTileY] = uint.MaxValue;
+                    J2L.SwapEvents((uint)StartPositionEventID, uint.MaxValue);
+                    TrialRun();
+                    J2L.SwapEvents(uint.MaxValue, (uint)StartPositionEventID);
+                    J2L.EventMap[MouseTileX, MouseTileY] = oldEvent;
+                }
+            }
         }
         private void runToolStripMenuItem_Click(object sender, EventArgs e) { TrialRun(); }
         private void DropdownPlayHere_Click(object sender, EventArgs e) { PlayFromHere(); }
@@ -1588,6 +1770,14 @@ namespace MLLE
         }
         void MakeBackup(string filepath)
         {
+            var backupDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Backups");
+            if (!Directory.Exists(backupDirectory))
+                Directory.CreateDirectory(backupDirectory);
+
+            string backupFilename = Path.Combine(backupDirectory, Path.GetFileNameWithoutExtension(J2L.FilenameOnly) + " " + DateTime.Now.ToString("MM-dd-yyyy hh-mm-ss tt") + ".zip");
+            if (File.Exists(backupFilename)) //saved twice in the same second
+                return;
+
             List<string> filenamesToMakeBackupsOf = new List<string>();
             filenamesToMakeBackupsOf.Add(filepath);
 
@@ -1607,11 +1797,7 @@ namespace MLLE
                 }
             }
 
-            var backupDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Backups");
-            if (!Directory.Exists(backupDirectory))
-                Directory.CreateDirectory(backupDirectory);
-
-            using (var zip = ZipFile.Open(Path.Combine(backupDirectory, Path.GetFileNameWithoutExtension(J2L.FilenameOnly) + " " + DateTime.Now.ToString("MM-dd-yyyy hh-mm-ss tt") + ".zip"), ZipArchiveMode.Create))
+            using (var zip = ZipFile.Open(backupFilename, ZipArchiveMode.Create))
                 foreach (string filename in filenamesToMakeBackupsOf)
                     zip.CreateEntryFromFile(filename, Path.GetFileName(filename));
 
@@ -1627,8 +1813,10 @@ namespace MLLE
             J2L.JCSVerticalFocus = (ushort)LDScrollV.Value;
 
             byte[] Data5 = null;
-            if (EnableableBools[J2L.VersionType][EnableableTitles.BoolDevelopingForPlus] && J2L.PlusOnly)
-                J2L.PlusPropertyList.CreateData5Section(ref Data5, J2L.Tilesets, J2L.AllLayers);
+            WeaponsForm.ExtendedWeapon[] CustomWeapons = null;
+            if (EnableableBools[J2L.VersionType][EnableableTitles.BoolDevelopingForPlus] && J2L.LevelNeedsData5)
+                if (!J2L.PlusPropertyList.CreateData5Section(out Data5, out CustomWeapons, J2L.Tilesets, J2L.AllLayers))
+                    return SavingResults.Error;
 
             SavingResults result = J2L.Save(filename, eraseUndefinedTiles, allowDifferentTilesetVersion, storeGivenFilename, Data5);
             if (result == SavingResults.Success)
@@ -1641,7 +1829,7 @@ namespace MLLE
 
                 PlusPropertyList.RemovePriorReferencesToMLLELibrary(filename);
                 if (Data5 != null)
-                    J2L.PlusPropertyList.SaveLibrary(filename, J2L.Tilesets, (J2L.AllLayers.Count(l => !l.isDefault) + 7) / 8);
+                    J2L.PlusPropertyList.SaveLibrary(filename, J2L.Tilesets, (J2L.AllLayers.Count(l => !l.isDefault) + 7) / 8, CustomWeapons);
 
                 MakeBackup(filename);
             }
@@ -1823,9 +2011,17 @@ namespace MLLE
                     accumulator -= 1000;
                     idleCounter = 0; // don't forget to reset the counter!
                 }
-                float deltaGametime = (float)milliseconds / 20.0f;
+                float deltaGametime = (float)milliseconds / 14.2857143f; //= 70
                 GameTime += deltaGametime;
-                if (SafeToDisplay) for (; GameTick < GameTime; GameTick++) //Advance Frame
+                if (deltaGametime < 10.0f)
+                    Thread.Sleep((int)Math.Ceiling(10.0f - deltaGametime));
+                if (!SafeToDisplay || WindowState == FormWindowState.Minimized)
+                {
+                    GameTick = (int)GameTime;
+                }
+                else
+                {
+                    for (; GameTick < GameTime; GameTick++) //Advance Frame
                     {
                         foreach (AnimatedTile anim in J2L.Animations)
                         {
@@ -1834,8 +2030,8 @@ namespace MLLE
                         }
                         if (AnimationSettings.Visible) WorkingAnimation.Advance(GameTick, (WorkingAnimation.Random != 0) ? _r.Next(WorkingAnimation.Random + 1) : 0);
                     }
-                else GameTick = (int)GameTime;
-                if (SafeToDisplay) Invoke(new MethodInvoker(delegate () { LevelDisplay.Invalidate(); }));
+                    Invoke(new MethodInvoker(delegate () { LevelDisplay.Invalidate(); }));
+                }
             }
         }
 
@@ -1940,8 +2136,7 @@ namespace MLLE
                             DrawColorRectangle(ref x, ref y, new Color4(24, 24, 48, 255));
                             #endregion draw animated tiles
                         }
-                        if (AnimationSettings.Visible)
-                        {
+                        if (AnimationSettings.Visible) {
                             #region draw current animation
                             int y = AnimationSettings.Bottom - LevelDisplay.Top;
                             int x = -AnimScrollbar.Value;
@@ -2028,10 +2223,13 @@ namespace MLLE
                 GL.MatrixMode(MatrixMode.Modelview);
                 GL.LoadIdentity();
                 GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+                //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
+                GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
                 if (ParallaxDisplayMode != ParallaxMode.NoParallax && MaskDisplayMode != MaskMode.FullMask)
                 {
-                    xspeedparallax = (CurrentLayer.XSpeed == 0) ? 0 : (int)((LDScrollH.Value + widthreduced) / CurrentLayer.XSpeed);
-                    yspeedparallax = (CurrentLayer.YSpeed == 0) ? 0 : (int)((LDScrollV.Value + (CurrentLayer.LimitVisibleRegion ? heightreduced * 2 : heightreduced)) / CurrentLayer.YSpeed);
+                    bool applyWavePropertiesAsOffsets = EnableableBools[J2L.VersionType][EnableableTitles.BoolDevelopingForPlus];
+                    xspeedparallax = (CurrentLayer.XSpeed == 0) ? 0 : (int)((LDScrollH.Value + widthreduced - (applyWavePropertiesAsOffsets ? (int)CurrentLayer.WaveX : 0)) / CurrentLayer.XSpeed);
+                    yspeedparallax = (CurrentLayer.YSpeed == 0) ? 0 : (int)((LDScrollV.Value + (CurrentLayer.LimitVisibleRegion ? heightreduced * 2 : heightreduced) - (applyWavePropertiesAsOffsets ? (int)CurrentLayer.WaveY : 0)) / CurrentLayer.YSpeed);
                     SetTextureTo(AtlasID.Image);
                     GL.Enable(EnableCap.Blend);
                     if (ParallaxDisplayMode == ParallaxMode.TemporaryParallax) GL.Color4((byte)255, (byte)255, (byte)255, (byte)64);
@@ -2295,7 +2493,7 @@ namespace MLLE
 
         internal void Reindeer(Layer currentlayer)
         {
-            currentlayer.GetFixedCornerOriginNumbers(xspeedparallax, yspeedparallax, widthreduced, heightreduced, ref xorigin, ref yorigin, ref upperleftx, ref upperlefty, ZoomTileSize, EnableableBools[J2L.VersionType][EnableableTitles.BoolDevelopingForPlus]);
+            currentlayer.GetFixedCornerOriginNumbers(xspeedparallax, yspeedparallax, widthreduced, heightreduced, ref xorigin, ref yorigin, ref upperleftx, ref upperlefty, ZoomTileSize, EnableableBools[J2L.VersionType][EnableableTitles.BoolDevelopingForPlus], J2L.VersionType == Version.AGA);
             tempxorigin = xorigin; tempupperleftx = upperleftx;
             if (currentlayer.TileWidth)
             {
@@ -2407,7 +2605,7 @@ namespace MLLE
             //yorigin = -ZoomTileSize - (upperlefty % ZoomTileSize);
             //upperlefty /= ZoomTileSize;
             //tempxorigin = xorigin; tempupperleftx = upperleftx;
-            currentlayer.GetFixedCornerOriginNumbers(xspeedparallax, yspeedparallax, widthreduced, heightreduced, ref xorigin, ref yorigin, ref upperleftx, ref upperlefty, ZoomTileSize, false);
+            currentlayer.GetFixedCornerOriginNumbers(xspeedparallax, yspeedparallax, widthreduced, heightreduced, ref xorigin, ref yorigin, ref upperleftx, ref upperlefty, ZoomTileSize, false, false);
             tempxorigin = xorigin; tempupperleftx = upperleftx;
             for (xloop = 0; xloop < drawxloopsize; xloop++)
             {
@@ -2609,12 +2807,12 @@ namespace MLLE
                     MouseTile = MouseTileX + MouseTileY * 10;
                     if (!J2L.HasTiles || MouseTile < J2L.TileCount)
                     {
-                        editAnimationToolStripMenuItem.Visible = deleteAnimationToolStripMenuItem.Visible = cloneAnimationToolStripMenuItem.Visible = !(imageToolStripMenuItem.Visible = maskToolStripMenuItem.Visible = toolStripSeparator15.Visible = TiletypeDropdown.Visible = OverlayDropdown.Visible = true);
+                        editAnimationToolStripMenuItem.Visible = deleteAnimationToolStripMenuItem.Visible = cloneAnimationToolStripMenuItem.Visible = !(automaskToolStripMenuItem.Visible = imageToolStripMenuItem.Visible = maskToolStripMenuItem.Visible = toolStripSeparator15.Visible = TiletypeDropdown.Visible = OverlayDropdown.Visible = true);
                     }
                     else
                     {
                         MouseTile = MouseTile - (int)J2L.TileCount + J2L.AnimOffset;
-                        editAnimationToolStripMenuItem.Visible = deleteAnimationToolStripMenuItem.Visible = cloneAnimationToolStripMenuItem.Visible = !(imageToolStripMenuItem.Visible = maskToolStripMenuItem.Visible = toolStripSeparator15.Visible = TiletypeDropdown.Visible = OverlayDropdown.Visible = false);
+                        editAnimationToolStripMenuItem.Visible = deleteAnimationToolStripMenuItem.Visible = cloneAnimationToolStripMenuItem.Visible = !(automaskToolStripMenuItem.Visible = imageToolStripMenuItem.Visible = maskToolStripMenuItem.Visible = toolStripSeparator15.Visible = TiletypeDropdown.Visible = OverlayDropdown.Visible = false);
                     }
                     MouseAGAEvent.ID = (J2L.VersionType == Version.AGA || MouseTile >= J2L.MaxTiles) ? 0 : J2L.EventTiles[MouseTile];
                     if (HowSelecting == FocusedZone.Tileset) { SelectionBoxCorners[2] = MouseTileX; SelectionBoxCorners[3] = MouseTileY; }
@@ -2650,17 +2848,19 @@ namespace MLLE
         {
             OldMouseTile = MouseTile;
             MouseTilePrintout.Text = String.Format("({0}, {1})", MouseTileX, MouseTileY);
-            MouseEventPrintout.Text =
-                (TexturedJ2L.IniEventListing[J2L.VersionType][MouseAGAEvent.ID & 255][0] ?? "") +
-                (
-                    (TexturedJ2L.IniEventListing[J2L.VersionType][MouseAGAEvent.ID & 255].Length > 5 && J2L.VersionType != Version.AGA) ?
-                        " (" + String.Join(
+            MouseEventPrintout.Text = NameEvent(MouseAGAEvent.ID, "");
+        }
+        public string NameEvent(uint ID, string defaultName) {
+            string[] eventEntryInINI = LevelSpecificEventStringList[ID & 255];
+            string name = eventEntryInINI[0] ?? defaultName;
+            if (J2L.VersionType != Version.AGA && eventEntryInINI.Length > 5)
+            {
+                name += " (" + String.Join(
                             ", ",
-                            PresentParameterValues(MouseAGAEvent.ID, TexturedJ2L.IniEventListing[J2L.VersionType][MouseAGAEvent.ID & 255])
-                        ) + ")" :
-                        ""
-                )
-            ;
+                            PresentParameterValues(ID, eventEntryInINI)
+                        ) + ")";
+            }
+            return name;
         }
         string[] PresentParameterValues(uint rawEvent, string[] iniEntry)
         {
@@ -2670,7 +2870,7 @@ namespace MLLE
             for (byte i = 0; i < output.Length; i++)
             {
                 paramName = iniEntry[i + 5].Split(':')[0];
-                if (i == 0 && paramName.Length > 4 && paramName.Substring(paramName.Length - 5, 5) == "Event") output[i] = paramName + "=" + '"' + TexturedJ2L.IniEventListing[J2L.VersionType][rawEvent << 12 >> 24][0] + '"';
+                if (i == 0 && paramName.Length > 4 && paramName.Substring(paramName.Length - 5, 5) == "Event") output[i] = paramName + "=" + '"' + LevelSpecificEventStringList[rawEvent << 12 >> 24][0] + '"';
                 else output[i] = paramName + "=" + values[i].ToString();
             }
             return output;
@@ -2772,7 +2972,7 @@ namespace MLLE
         private void SelectEventAtMouse()
         {
             _suspendEvent.Reset();
-            EventForm EF = new EventForm(this, TreeStructure[J2L.VersionType][(J2L.LevelMode == 1) ? 1 : 0].ToArray(), J2L.VersionType, (J2L.VersionType == Version.AGA && MouseAGAEvent.Bits == null) ? new AGAEvent(0) : MouseAGAEvent);
+            EventForm EF = new EventForm(this, TreeStructure[J2L.VersionType][(J2L.LevelMode == 1) ? 1 : 0].ToArray(), J2L.VersionType, (J2L.VersionType == Version.AGA && MouseAGAEvent.Bits == null) ? new AGAEvent(0) : MouseAGAEvent, LevelSpecificEventStringList);
             EF.ShowDialog();
             if (SelectReturnAGAEvent != null) { ActiveEvent = (AGAEvent)SelectReturnAGAEvent; PasteEventAtMouse(); }
             EF.ResetTree();
@@ -2847,14 +3047,14 @@ namespace MLLE
         {
             _suspendEvent.Reset();
             DialogResult result = MessageBox.Show("You are about to delete this animated tile. Select \"Yes\" to remove all instances of it from the level (recommended), or \"No\" to shift any later animated tiles downwards to take its place.", "Delete Animation", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Stop);
-            if (result != DialogResult.Cancel) { J2L.DeleteAnimation((byte)(id - J2L.AnimOffset), result == DialogResult.Yes); UneditAnimation(); LevelHasBeenModified = true; }
+            if (result != DialogResult.Cancel) { J2L.DeleteAnimation((ushort)(id - J2L.AnimOffset), result == DialogResult.Yes); UneditAnimation(); LevelHasBeenModified = true; }
             _suspendEvent.Set();
         }
         private void deleteAnimationToolStripMenuItem_Click(object sender, EventArgs e)
         {
             DeleteAnimation(MouseTile);
         }
-        private void cloneAnimationToolStripMenuItem_Click(object sender, EventArgs e) { J2L.InsertAnimation(J2L.Animations[MouseTile - J2L.AnimOffset]); LevelHasBeenModified = true; }
+        private void cloneAnimationToolStripMenuItem_Click(object sender, EventArgs e) { J2L.InsertAnimation(J2L.Animations[MouseTile - J2L.AnimOffset]); ResizeDisplay(); LevelHasBeenModified = true; }
 
         private void EditAnimation(AnimatedTile anim)
         {
@@ -2887,20 +3087,36 @@ namespace MLLE
                 AnimationSettings.Visible = AnimScrollbar.Visible = false;
                 MakeProposedScrollbarValueWork(TilesetScrollbar, TilesetScrollbar.Value);
             }
-            DetermineVisibilityOfAnimatedTiles();
-            RedrawTilesetHowManyTimes = 2;
+            ResizeDisplay();
         }
 
         private void AnimOK_Click(object sender, EventArgs e)
         {
             if (WorkingAnimation.FrameCount > 0)
             {
+                foreach (var frame in WorkingAnimation.FrameList) {
+                    if ((frame & 0x2000u) != 0)
+                    {
+                        _suspendEvent.Reset();
+                        bool clickedYes = MessageBox.Show(String.Format("At least one of the frames in this animated tile is vertically flipped. This is fine if you are planning on placing destruct or trigger scenery events (or similar) on all instances of this animated tile, but using it as a normal animated tile (which animates in realtime) will result in undefined behavior for JJ2+. Do you wish to continue?"), "Vertically Flipped Tile", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes;
+                        _suspendEvent.Set();
+                        if (clickedYes)
+                            break;
+                        else
+                            return;
+                    }
+                }
                 if (CurrentAnimationID < J2L.MaxTiles) J2L.Animations[CurrentAnimationID - J2L.AnimOffset] = WorkingAnimation;
                 else J2L.InsertAnimation(WorkingAnimation);
+                for (ushort i = 0; i < J2L.NumberOfAnimations; ++i)
+                    J2L.Animations[i].JustBeenEdited(GameTick); //refresh frame lists in case any of those animated tiles made references to other animated tiles
                 LevelHasBeenModified = true;
                 UneditAnimation();
             }
-            else DeleteAnimation(CurrentAnimationID);
+            else if (CurrentAnimationID < J2L.MaxTiles) //exists
+                DeleteAnimation(CurrentAnimationID);
+            else //doesn't exist
+                UneditAnimation();
         }
         private void AnimCancel_Click(object sender, EventArgs e) { UneditAnimation(); }
 
@@ -3077,6 +3293,19 @@ namespace MLLE
         bool MouseHeldDownSelection = false, MouseHeldDownAction = false;
         ToolStripButton DeepEditingTool, VisibleEditingTool;
 
+        private void CommaPressed(uint eventID) {
+            if (LastFocusedZone == FocusedZone.Level)
+            {
+                var tileMap = CurrentLayer.TileMap;
+                if (MouseTileX >= tileMap.GetLength(0) || MouseTileY >= tileMap.GetLength(1))
+                    return; //nothing can be done
+            }
+            SetStampDimensions(1, 1);
+            CurrentStamp[0][0] = new TileAndEvent((LastFocusedZone == FocusedZone.Level) ? CurrentLayer.TileMap[MouseTileX, MouseTileY] : (ushort)MouseTile, eventID);
+            ShowBlankTileInStamp = true;
+            DeselectAll();
+        }
+
         private void LevelDisplay_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
         {
             if (LastFocusedZone == FocusedZone.Tileset && CurrentTilesetOverlay == TilesetOverlay.SmartTiles)
@@ -3149,7 +3378,7 @@ namespace MLLE
                 recentLevelsToolStripMenuItem.DropDownItems.Add(toolStripItem);
             }
         }
-
+        
         private void defineSmartTilesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             _suspendEvent.Reset();
@@ -3207,13 +3436,9 @@ namespace MLLE
             }
             defineSmartTilesToolStripMenuItem.DropDownItems.Add(addNewToolStripMenuItem1);
         }
-        private void toolsToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
-        {
-            defineSmartTilesToolStripMenuItem.Enabled = J2L.HasTiles;
-        }
 
 
-        private bool ActOnATile(int x, int y, ushort? tile, uint ev, LayerAndSpecificTiles actionCenter, bool blankTilesOkay) { return ActOnATile(x, y, tile, new AGAEvent(ev), actionCenter, blankTilesOkay); }
+        private bool ActOnATile(int x, int y, ushort? tile, uint ev, LayerAndSpecificTiles actionCenter, bool blankTilesOkay, bool DirectAction = true) { return ActOnATile(x, y, tile, new AGAEvent(ev), actionCenter, blankTilesOkay, DirectAction); }
         private bool ActOnATile(int x, int y, ushort? tile, AGAEvent? ev, LayerAndSpecificTiles actionCenter, bool blankTilesOkay, bool DirectAction = true)
         {
             Layer layer = actionCenter.Layer;
@@ -3225,7 +3450,7 @@ namespace MLLE
                 {
                     actionCenter.Specifics[new Point(x, y)] = oldTileAndEvent;
                     layer.TileMap[x, y] = (ushort)tile;
-                    if (actionCenter.Layer == J2L.SpriteLayer)
+                    if (actionCenter.Layer == J2L.SpriteLayer && DirectAction && ReplaceEventsToggle.Checked)
                     {
                         if (J2L.VersionType == Version.AGA) J2L.AGA_EventMap[x, y] = ev ?? new AGAEvent(0);
                         else J2L.EventMap[x, y] = (ev == null) ? 0 : ((AGAEvent)ev).ID;
@@ -3255,8 +3480,8 @@ namespace MLLE
                         {
                             try { actionCenter.Specifics.Add(new Point(x, y), oldTileAndEvent); } catch { }
                             layer.TileMap[x, y] = tileID;
-                            if (layer == J2L.SpriteLayer)
-                                J2L.EventMap[x, y] = 0;
+                            if (layer == J2L.SpriteLayer && DirectAction && ReplaceEventsToggle.Checked)
+                                J2L.EventMap[x, y] = J2L.EventTiles[tileID % J2L.MaxTiles];
                             
                             if (DirectAction)
                             {
@@ -3442,8 +3667,10 @@ namespace MLLE
                 var tileMap = ReplacedActions.Layer.TileMap;
                 foreach (Point p in ReplacedActions.Specifics.Keys)
                 {
-                    if (J2L.VersionType == Version.AGA) NewActions.Specifics.Add(p, new TileAndEvent(tileMap[p.X, p.Y], J2L.AGA_EventMap[p.X, p.Y]));
-                    else NewActions.Specifics.Add(p, new TileAndEvent(tileMap[p.X, p.Y], J2L.EventMap[p.X, p.Y]));
+                    ushort tileID = tileMap[p.X, p.Y];
+                    if (ReplacedActions.Layer != J2L.SpriteLayer) NewActions.Specifics.Add(p, new TileAndEvent(tileID, 0));
+                    else if (J2L.VersionType == Version.AGA) NewActions.Specifics.Add(p, new TileAndEvent(tileID, J2L.AGA_EventMap[p.X, p.Y]));
+                    else NewActions.Specifics.Add(p, new TileAndEvent(tileID, J2L.EventMap[p.X, p.Y]));
                     tileMap[p.X, p.Y] = ReplacedActions.Specifics[p].Tile;
                     if (ReplacedActions.Layer == J2L.SpriteLayer)
                     {
@@ -3512,6 +3739,16 @@ namespace MLLE
             }
             SelectEvent.Enabled = GrabEvent.Enabled = PasteEvent.Enabled = CurrentLayer == J2L.SpriteLayer;
         }
+
+
+        private void TilesetMakerButton_Click(object sender, EventArgs e)
+        {
+            _suspendEvent.Reset();
+            new TileSetOrganizer().ShowForm(Settings, J2L.VersionType, Path.Combine(DefaultDirectories[J2L.VersionType], "Tiles"));
+            _suspendEvent.Set();
+
+        }
+
 
         private void Mainframe_Resize(object sender, EventArgs e) { }
         private void changeVersionToolStripMenuItem_MouseHover(object sender, EventArgs e)
