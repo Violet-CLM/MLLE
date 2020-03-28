@@ -893,6 +893,7 @@ partial class J2TFile
                 System.Windows.Forms.MessageBox.Show("The file \"" + filepath + "\" was not saved in a format that this version of MLLE understands. Please make sure you have the latest MLLE release.", "Incompatible File Version", System.Windows.Forms.MessageBoxButtons.OK, System.Windows.Forms.MessageBoxIcon.Error);
                 success = false;
             } else {
+                tileOffset -= FirstTile;
                 for (int numberOfSmartTiles = reader.ReadByte(); numberOfSmartTiles > 0; --numberOfSmartTiles)
                     SmartTiles.Add(new MLLE.SmartTile(maxTiles4096, this, version, reader, tileOffset));
                 foreach (MLLE.SmartTile smartTile in SmartTiles)
