@@ -3482,7 +3482,8 @@ namespace MLLE
                             layer.TileMap[x, y] = tileID;
                             if (layer == J2L.SpriteLayer && DirectAction && ReplaceEventsToggle.Checked)
                                 J2L.EventMap[x, y] = J2L.EventTiles[tileID % J2L.MaxTiles];
-                            
+
+                            bool mustBeSelected = IsEachTileSelected[x + 1][y + 1];
                             if (DirectAction)
                             {
                                 for (int xx = x - 1; xx <= x + 1; ++xx)
@@ -3490,11 +3491,12 @@ namespace MLLE
                                         for (int yy = y - 1; yy <= y + 1; ++yy)
                                             if (xx != x || yy != y) //not the center
                                                 if (yy >= 0 && yy < layerHeight)
-                                                    if (!ActOnATile(xx, yy, 0, ev, actionCenter, true, false)) //first try acting on the surrounding tiles with THIS smart tile, in case there are multiple smart tiles that share some individual tiles
-                                                        for (int i = 0; i < SmartTiles.Count; ++i) //then try all the rest
-                                                            if (i != ev.Value.ID)
-                                                                if (ActOnATile(xx, yy, 0, new AGAEvent((uint)i), actionCenter, true, false))
-                                                                    break;
+                                                    if (IsEachTileSelected[xx + 1][yy + 1] == mustBeSelected)
+                                                        if (!ActOnATile(xx, yy, 0, ev, actionCenter, true, false)) //first try acting on the surrounding tiles with THIS smart tile, in case there are multiple smart tiles that share some individual tiles
+                                                            for (int i = 0; i < SmartTiles.Count; ++i) //then try all the rest
+                                                                if (i != ev.Value.ID)
+                                                                    if (ActOnATile(xx, yy, 0, new AGAEvent((uint)i), actionCenter, true, false))
+                                                                        break;
                                 ActOnATile(x, y, 0, ev, actionCenter, true, false); //finally, do this center tile again to reflect changes in the surroundings
                             }
 
