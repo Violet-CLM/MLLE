@@ -53,7 +53,7 @@ namespace MLLE
             internal bool Applies(ArrayMap<ushort> tileMap, List<SmartTile> otherSmartTiles, IEqualityComparer<ushort> comparer)
             {
                 ushort tileID = tileMap[X+2, Y+3];
-                return Not ^ ((OtherSmartTileID == -1) ? SpecificTiles.Contains(tileID, comparer) : (otherSmartTiles[OtherSmartTileID].TilesICanPlace.Contains(tileID) || otherSmartTiles[OtherSmartTileID].Extras.Contains(tileID, comparer)));
+                return Not ^ ((OtherSmartTileID == -1) ? SpecificTiles.Contains(tileID, comparer) : (otherSmartTiles[OtherSmartTileID].TilesICanPlace.Contains(tileID, comparer) || otherSmartTiles[OtherSmartTileID].Extras.Contains(tileID, comparer)));
             }
         }
         internal class Assignment
@@ -384,7 +384,7 @@ namespace MLLE
             {
                 x += 2;
                 y += 3;
-                return LocalTilesAreRelated[x, y] ?? (LocalTilesAreRelated[x, y] = TilesIGoNextTo.Contains(localTiles[x, y])).Value;
+                return LocalTilesAreRelated[x, y] ?? (LocalTilesAreRelated[x, y] = TilesIGoNextTo.Contains(localTiles[x, y], TilesIGoNextTo.Comparer)).Value;
             };
 
             int assignmentID = 47;
@@ -828,7 +828,7 @@ namespace MLLE
                             return true;
                         }
                     }
-            if (TilesICanPlace.Contains(tileID)) //in a symmetrical assignment
+            if (TilesICanPlace.Contains(tileID, TilesICanPlace.Comparer)) //in a symmetrical assignment
                 return true; //but don't alter
             return false;
         }

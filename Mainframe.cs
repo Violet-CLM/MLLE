@@ -695,7 +695,8 @@ namespace MLLE
                 case Keys.F:
                 case (Keys.Control | Keys.F):
                     {
-                        if (LastFocusedZone == FocusedZone.AnimationEditing) WorkingAnimation.Sequence[SelectedAnimationFrame] ^= (ushort)J2L.MaxTiles;
+                        if (CurrentTilesetOverlay == TilesetOverlay.SmartTiles) { } //nothing
+                        else if (LastFocusedZone == FocusedZone.AnimationEditing) WorkingAnimation.Sequence[SelectedAnimationFrame] ^= (ushort)J2L.MaxTiles;
                         else if (CurrentStamp.Length > 0)
                         {
                             TileAndEvent[][] NuStamp = new TileAndEvent[CurrentStamp.Length][];
@@ -718,7 +719,7 @@ namespace MLLE
                 case Keys.I:
                 case (Keys.Control | Keys.I):
                     {
-                        if (VersionIsPlusCompatible(J2L.VersionType))
+                        if (VersionIsPlusCompatible(J2L.VersionType) && CurrentTilesetOverlay != TilesetOverlay.SmartTiles)
                         {
                             if (LastFocusedZone == FocusedZone.AnimationEditing) WorkingAnimation.Sequence[SelectedAnimationFrame] ^= (ushort)0x2000;
                             else if (CurrentStamp.Length > 0)
@@ -763,7 +764,7 @@ namespace MLLE
                                 int i = 0;
                                 while (true)
                                 {
-                                    if (SmartTiles[i].TilesICanPlace.Contains(tileID))
+                                    if (SmartTiles[i].TilesICanPlace.Contains(tileID, SmartTiles[i].TilesICanPlace.Comparer))
                                     {
                                         ev = (uint?)i;
                                         tileID = SmartTiles[i].PreviewTileID;
@@ -1284,7 +1285,8 @@ namespace MLLE
         {
             if (CurrentTilesetOverlay == TilesetOverlay.SmartTiles || TilesetOverlaySelection.SelectedIndex == 4)
             {
-                DeselectAll(); //selects in smart tiles mode are fundamentally different from other ones
+                if (WhereSelected != FocusedZone.Level)
+                    DeselectAll(); //selects in smart tiles mode are fundamentally different from other ones
                 SetStampDimensions(0, 0);
             }
             TilesetScrollbar.Enabled = true;
@@ -3460,7 +3462,7 @@ namespace MLLE
                 {
                     var smartTile = SmartTiles[(int)ev.Value.ID];
                     ushort tileID = layer.TileMap[x, y];
-                    if (DirectAction || smartTile.TilesICanPlace.Contains(tileID))
+                    if (DirectAction || smartTile.TilesICanPlace.Contains(tileID, smartTile.TilesICanPlace.Comparer))
                     {
                         ArrayMap<ushort> localTiles = new ArrayMap<ushort>(5, 6);
                         for (int xx = 0; xx < 5; ++xx)
@@ -3480,12 +3482,10 @@ namespace MLLE
                         {
                             try { actionCenter.Specifics.Add(new Point(x, y), oldTileAndEvent); } catch { }
                             layer.TileMap[x, y] = tileID;
-                            if (layer == J2L.SpriteLayer && DirectAction && ReplaceEventsToggle.Checked)
-                                J2L.EventMap[x, y] = J2L.EventTiles[tileID % J2L.MaxTiles];
 
-                            bool mustBeSelected = IsEachTileSelected[x + 1][y + 1];
                             if (DirectAction)
                             {
+                                bool mustBeSelected = IsEachTileSelected[x + 1][y + 1];
                                 for (int xx = x - 1; xx <= x + 1; ++xx)
                                     if (xx >= 0 && x < layerWidth)
                                         for (int yy = y - 1; yy <= y + 1; ++yy)
@@ -3498,6 +3498,9 @@ namespace MLLE
                                                                     if (ActOnATile(xx, yy, 0, new AGAEvent((uint)i), actionCenter, true, false))
                                                                         break;
                                 ActOnATile(x, y, 0, ev, actionCenter, true, false); //finally, do this center tile again to reflect changes in the surroundings
+
+                                if (layer == J2L.SpriteLayer && ReplaceEventsToggle.Checked)
+                                    J2L.EventMap[x, y] = J2L.EventTiles[layer.TileMap[x, y] % J2L.MaxTiles];
                             }
 
                             return true;
@@ -3521,6 +3524,8 @@ namespace MLLE
         static readonly Point[] FillOffsets = { new Point(0,-1), new Point(1, 0), new Point(0, 1), new Point(-1, 0) };
         private void TakeAction()
         {
+            if (CurrentStamp.Length == 0)
+                return;
             if (WhereSelected == FocusedZone.Tileset) DeselectAll();
             LayerAndSpecificTiles ActionCenter = new LayerAndSpecificTiles(CurrentLayer);
             bool shiftPressed = Control.ModifierKeys == Keys.Shift || Control.ModifierKeys == (Keys.Control | Keys.Shift);
