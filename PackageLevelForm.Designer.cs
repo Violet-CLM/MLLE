@@ -36,6 +36,7 @@
             this.checkboxExcludeDefault = new System.Windows.Forms.CheckBox();
             this.checkboxIncludeMusic = new System.Windows.Forms.CheckBox();
             this.checkboxAngelscriptFunctions = new System.Windows.Forms.CheckBox();
+            this.checkBoxMLLESet = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // textBox1
@@ -122,18 +123,28 @@
             this.checkboxAngelscriptFunctions.AutoSize = true;
             this.checkboxAngelscriptFunctions.Location = new System.Drawing.Point(16, 55);
             this.checkboxAngelscriptFunctions.Name = "checkboxAngelscriptFunctions";
-            this.checkboxAngelscriptFunctions.Size = new System.Drawing.Size(281, 17);
+            this.checkboxAngelscriptFunctions.Size = new System.Drawing.Size(211, 17);
             this.checkboxAngelscriptFunctions.TabIndex = 8;
-            this.checkboxAngelscriptFunctions.Text = "Search for Filenames Passed to AngelScript Functions";
+            this.checkboxAngelscriptFunctions.Text = "Search AngelScript Function Filenames";
             this.checkboxAngelscriptFunctions.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxMLLESet
+            // 
+            this.checkBoxMLLESet.AutoSize = true;
+            this.checkBoxMLLESet.Location = new System.Drawing.Point(228, 55);
+            this.checkBoxMLLESet.Name = "checkBoxMLLESet";
+            this.checkBoxMLLESet.Size = new System.Drawing.Size(163, 17);
+            this.checkBoxMLLESet.TabIndex = 9;
+            this.checkBoxMLLESet.Text = "Include Smart Tile Definitions";
+            this.checkBoxMLLESet.UseVisualStyleBackColor = true;
             // 
             // PackageLevelForm
             // 
             this.AcceptButton = this.OKButton;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.CancelButton = this.CancelButton;
             this.ClientSize = new System.Drawing.Size(414, 226);
+            this.Controls.Add(this.checkBoxMLLESet);
             this.Controls.Add(this.checkboxAngelscriptFunctions);
             this.Controls.Add(this.checkboxIncludeMusic);
             this.Controls.Add(this.checkboxExcludeDefault);
@@ -163,5 +174,6 @@
         private System.Windows.Forms.CheckBox checkboxExcludeDefault;
         private System.Windows.Forms.CheckBox checkboxIncludeMusic;
         private System.Windows.Forms.CheckBox checkboxAngelscriptFunctions;
+        private System.Windows.Forms.CheckBox checkBoxMLLESet;
     }
 }
