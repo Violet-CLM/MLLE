@@ -373,15 +373,13 @@ class TexturedJ2L : J2LFile
     {
         if (!overwriteOldImage && TileTypeAtlas[version] != 0)
             return;
-
-        RectangleF rectE = new RectangleF(-16, 0, 64, 32);
+        
         RectangleF rectT = new RectangleF(-2, 0, 256, 32);
 
         using (SolidBrush white = new SolidBrush(Color.White))
         using (Font arial = new Font(new FontFamily("Arial"), 8))
-        using (Bitmap text_bmp = new Bitmap(512, 512))
         using (Bitmap type_bmp = new Bitmap(128, 128))
-        using (Graphics totalgfx = Graphics.FromImage(text_bmp))
+        using (Graphics totalgfx = Graphics.FromImage(type_bmp))
         using (StringFormat formatType = new StringFormat())
         {
             formatType.LineAlignment = StringAlignment.Center;
@@ -408,12 +406,10 @@ class TexturedJ2L : J2LFile
             return;
 
         RectangleF rectE = new RectangleF(-16, 0, 64, 32);
-        RectangleF rectT = new RectangleF(-2, 0, 256, 32);
 
         using (SolidBrush white = new SolidBrush(Color.White))
         using (Font arial = new Font(new FontFamily("Arial"), 8))
         using (Bitmap text_bmp = new Bitmap(512, 512))
-        using (Bitmap type_bmp = new Bitmap(128, 128))
         using (Graphics totalgfx = Graphics.FromImage(text_bmp))
         using (StringFormat formatEvent = new StringFormat())
         {
