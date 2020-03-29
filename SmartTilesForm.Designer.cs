@@ -28,12 +28,10 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
             this.tilesetPicture = new System.Windows.Forms.PictureBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.ButtonCancel = new System.Windows.Forms.Button();
             this.OKButton = new System.Windows.Forms.Button();
-            this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.smartPicture = new System.Windows.Forms.PictureBox();
             this.framesPicture = new System.Windows.Forms.PictureBox();
             this.panel2 = new System.Windows.Forms.Panel();
@@ -64,7 +62,6 @@
             this.tilesetPicture.Size = new System.Drawing.Size(320, 50);
             this.tilesetPicture.TabIndex = 0;
             this.tilesetPicture.TabStop = false;
-            this.toolTip1.SetToolTip(this.tilesetPicture, "Left or right click to set this as the first or last imported tile.");
             this.tilesetPicture.MouseClick += new System.Windows.Forms.MouseEventHandler(this.tilesetPicture_MouseClick);
             this.tilesetPicture.MouseLeave += new System.EventHandler(this.tilesetPicture_MouseLeave);
             this.tilesetPicture.MouseMove += new System.Windows.Forms.MouseEventHandler(this.tilesetPicture_MouseMove);
@@ -109,7 +106,6 @@
             this.smartPicture.Size = new System.Drawing.Size(320, 320);
             this.smartPicture.TabIndex = 0;
             this.smartPicture.TabStop = false;
-            this.toolTip1.SetToolTip(this.smartPicture, "Left or right click to set this as the first or last imported tile.");
             this.smartPicture.MouseClick += new System.Windows.Forms.MouseEventHandler(this.smartPicture_MouseClick);
             this.smartPicture.MouseLeave += new System.EventHandler(this.tilesetPicture_MouseLeave);
             this.smartPicture.MouseMove += new System.Windows.Forms.MouseEventHandler(this.smartPicture_MouseMove);
@@ -122,7 +118,6 @@
             this.framesPicture.Size = new System.Drawing.Size(32, 32);
             this.framesPicture.TabIndex = 0;
             this.framesPicture.TabStop = false;
-            this.toolTip1.SetToolTip(this.framesPicture, "Preview frames");
             this.framesPicture.MouseClick += new System.Windows.Forms.MouseEventHandler(this.framesPicture_MouseClick);
             // 
             // panel2
@@ -278,7 +273,6 @@
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.Button ButtonCancel;
         private System.Windows.Forms.Button OKButton;
-        private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.Panel panel2;
         private System.Windows.Forms.PictureBox smartPicture;
         private System.Windows.Forms.Panel HighlightPanel;
