@@ -1314,6 +1314,19 @@ namespace MLLE
             RedrawTilesetHowManyTimes = 2;
             TilesetScrollbar.Focus();
         }
+        private void TilesetOverlaySelection_DropDown(object sender, EventArgs e)
+        {
+            if (TilesetOverlaySelection.Items.Count == 4)
+            {
+                if (SmartTiles.Count > 1)
+                    TilesetOverlaySelection.Items.Add("Smart Tiles");
+            }
+            else
+            {
+                if (SmartTiles.Count <= 1)
+                    TilesetOverlaySelection.Items.RemoveAt(4);
+            }
+        }
 
         private void OverNone_Click(object sender, EventArgs e) { TilesetOverlaySelection.SelectedIndex = 0; }
         private void OverEvents_Click(object sender, EventArgs e) { TilesetOverlaySelection.SelectedIndex = 1; }

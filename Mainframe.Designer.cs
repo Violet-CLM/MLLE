@@ -67,7 +67,8 @@
             this.jazz2V124ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.defineSmartTilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator23 = new System.Windows.Forms.ToolStripSeparator();
+            this.addNewToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator25 = new System.Windows.Forms.ToolStripSeparator();
             this.playMusicToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveAsImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveTilesetImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -79,6 +80,11 @@
             this.tilesetsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addNewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.recolorEventsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.pinballToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.platformsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.polesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.sceneryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.weaponsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator22 = new System.Windows.Forms.ToolStripSeparator();
             this.editScriptToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.preferencesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -195,12 +201,6 @@
             this.AnimScrollbar = new System.Windows.Forms.HScrollBar();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
-            this.addNewToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-            this.weaponsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.pinballToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.platformsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.polesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.sceneryToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MainMenu.SuspendLayout();
             this.DrawingTools.SuspendLayout();
             this.StatusBar.SuspendLayout();
@@ -443,7 +443,7 @@
             this.changeVersionToolStripMenuItem,
             this.toolStripSeparator5,
             this.defineSmartTilesToolStripMenuItem,
-            this.toolStripSeparator23,
+            this.toolStripSeparator25,
             this.playMusicToolStripMenuItem,
             this.saveAsImageToolStripMenuItem,
             this.saveTilesetImageToolStripMenuItem,
@@ -463,7 +463,7 @@
             this.jazz2V123ToolStripMenuItem,
             this.jazz2V124ToolStripMenuItem});
             this.changeVersionToolStripMenuItem.Name = "changeVersionToolStripMenuItem";
-            this.changeVersionToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
+            this.changeVersionToolStripMenuItem.Size = new System.Drawing.Size(184, 22);
             this.changeVersionToolStripMenuItem.Text = "Change Version";
             this.changeVersionToolStripMenuItem.MouseHover += new System.EventHandler(this.changeVersionToolStripMenuItem_MouseHover);
             // 
@@ -512,27 +512,34 @@
             // toolStripSeparator5
             // 
             this.toolStripSeparator5.Name = "toolStripSeparator5";
-            this.toolStripSeparator5.Size = new System.Drawing.Size(182, 6);
+            this.toolStripSeparator5.Size = new System.Drawing.Size(181, 6);
             // 
             // defineSmartTilesToolStripMenuItem
             // 
             this.defineSmartTilesToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.addNewToolStripMenuItem1});
             this.defineSmartTilesToolStripMenuItem.Name = "defineSmartTilesToolStripMenuItem";
-            this.defineSmartTilesToolStripMenuItem.Size = new System.Drawing.Size(179, 22);
+            this.defineSmartTilesToolStripMenuItem.Size = new System.Drawing.Size(184, 22);
             this.defineSmartTilesToolStripMenuItem.Text = "Define Smart Tiles";
             this.defineSmartTilesToolStripMenuItem.DropDownOpening += new System.EventHandler(this.defineSmartTilesToolStripMenuItem_DropDownOpening);
             // 
-            // toolStripSeparator23
+            // addNewToolStripMenuItem1
             // 
-            this.toolStripSeparator23.Name = "toolStripSeparator23";
-            this.toolStripSeparator23.Size = new System.Drawing.Size(176, 6);
+            this.addNewToolStripMenuItem1.Name = "addNewToolStripMenuItem1";
+            this.addNewToolStripMenuItem1.Size = new System.Drawing.Size(132, 22);
+            this.addNewToolStripMenuItem1.Text = "Add New...";
+            this.addNewToolStripMenuItem1.Click += new System.EventHandler(this.defineSmartTilesToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator25
+            // 
+            this.toolStripSeparator25.Name = "toolStripSeparator25";
+            this.toolStripSeparator25.Size = new System.Drawing.Size(181, 6);
             // 
             // playMusicToolStripMenuItem
             // 
             this.playMusicToolStripMenuItem.CheckOnClick = true;
             this.playMusicToolStripMenuItem.Name = "playMusicToolStripMenuItem";
-            this.playMusicToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
+            this.playMusicToolStripMenuItem.Size = new System.Drawing.Size(184, 22);
             this.playMusicToolStripMenuItem.Text = "Play Music";
             this.playMusicToolStripMenuItem.Click += new System.EventHandler(this.playMusicToolStripMenuItem_Click);
             // 
@@ -540,21 +547,21 @@
             // 
             this.saveAsImageToolStripMenuItem.Image = ((System.Drawing.Image)(resources.GetObject("saveAsImageToolStripMenuItem.Image")));
             this.saveAsImageToolStripMenuItem.Name = "saveAsImageToolStripMenuItem";
-            this.saveAsImageToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
+            this.saveAsImageToolStripMenuItem.Size = new System.Drawing.Size(184, 22);
             this.saveAsImageToolStripMenuItem.Text = "Save Level Image...";
             this.saveAsImageToolStripMenuItem.Click += new System.EventHandler(this.saveAsImageToolStripMenuItem_Click);
             // 
             // saveTilesetImageToolStripMenuItem
             // 
             this.saveTilesetImageToolStripMenuItem.Name = "saveTilesetImageToolStripMenuItem";
-            this.saveTilesetImageToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
+            this.saveTilesetImageToolStripMenuItem.Size = new System.Drawing.Size(184, 22);
             this.saveTilesetImageToolStripMenuItem.Text = "Save Tileset Images...";
             this.saveTilesetImageToolStripMenuItem.Click += new System.EventHandler(this.saveTilesetImageToolStripMenuItem_Click);
             // 
             // packageAsZiptoolStripMenuItem
             // 
             this.packageAsZiptoolStripMenuItem.Name = "packageAsZiptoolStripMenuItem";
-            this.packageAsZiptoolStripMenuItem.Size = new System.Drawing.Size(185, 22);
+            this.packageAsZiptoolStripMenuItem.Size = new System.Drawing.Size(184, 22);
             this.packageAsZiptoolStripMenuItem.Text = "Package in ZIP file...";
             this.packageAsZiptoolStripMenuItem.Click += new System.EventHandler(this.packageAsZiptoolStripMenuItem_Click);
             // 
@@ -607,7 +614,7 @@
             // addNewToolStripMenuItem
             // 
             this.addNewToolStripMenuItem.Name = "addNewToolStripMenuItem";
-            this.addNewToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.addNewToolStripMenuItem.Size = new System.Drawing.Size(132, 22);
             this.addNewToolStripMenuItem.Text = "Add New...";
             this.addNewToolStripMenuItem.Click += new System.EventHandler(this.addNewToolStripMenuItem_Click);
             // 
@@ -621,6 +628,37 @@
             this.recolorEventsToolStripMenuItem.Name = "recolorEventsToolStripMenuItem";
             this.recolorEventsToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
             this.recolorEventsToolStripMenuItem.Text = "Recolor Events";
+            // 
+            // pinballToolStripMenuItem
+            // 
+            this.pinballToolStripMenuItem.Name = "pinballToolStripMenuItem";
+            this.pinballToolStripMenuItem.Size = new System.Drawing.Size(125, 22);
+            this.pinballToolStripMenuItem.Text = "Pinball";
+            // 
+            // platformsToolStripMenuItem
+            // 
+            this.platformsToolStripMenuItem.Name = "platformsToolStripMenuItem";
+            this.platformsToolStripMenuItem.Size = new System.Drawing.Size(125, 22);
+            this.platformsToolStripMenuItem.Text = "Platforms";
+            // 
+            // polesToolStripMenuItem
+            // 
+            this.polesToolStripMenuItem.Name = "polesToolStripMenuItem";
+            this.polesToolStripMenuItem.Size = new System.Drawing.Size(125, 22);
+            this.polesToolStripMenuItem.Text = "Poles";
+            // 
+            // sceneryToolStripMenuItem
+            // 
+            this.sceneryToolStripMenuItem.Name = "sceneryToolStripMenuItem";
+            this.sceneryToolStripMenuItem.Size = new System.Drawing.Size(125, 22);
+            this.sceneryToolStripMenuItem.Text = "Scenery";
+            // 
+            // weaponsToolStripMenuItem
+            // 
+            this.weaponsToolStripMenuItem.Name = "weaponsToolStripMenuItem";
+            this.weaponsToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.weaponsToolStripMenuItem.Text = "Weapons...";
+            this.weaponsToolStripMenuItem.Click += new System.EventHandler(this.weaponsToolStripMenuItem_Click);
             // 
             // toolStripSeparator22
             // 
@@ -1165,8 +1203,9 @@
             "Masks",
             "Smart Tiles"});
             this.TilesetOverlaySelection.Name = "TilesetOverlaySelection";
-            this.TilesetOverlaySelection.Size = new System.Drawing.Size(80, 27);
+            this.TilesetOverlaySelection.Size = new System.Drawing.Size(80, 23);
             this.TilesetOverlaySelection.Tag = "Select overlay data for tiles";
+            this.TilesetOverlaySelection.DropDown += new System.EventHandler(this.TilesetOverlaySelection_DropDown);
             this.TilesetOverlaySelection.SelectedIndexChanged += new System.EventHandler(this.TilesetOverlaySelection_SelectedIndexChanged);
             this.TilesetOverlaySelection.MouseEnter += new System.EventHandler(this.DescribableControl_MouseEnter);
             // 
@@ -1736,44 +1775,6 @@
             // 
             this.folderBrowserDialog1.ShowNewFolderButton = false;
             // 
-            // addNewToolStripMenuItem1
-            // 
-            this.addNewToolStripMenuItem1.Name = "addNewToolStripMenuItem1";
-            this.addNewToolStripMenuItem1.Size = new System.Drawing.Size(152, 22);
-            this.addNewToolStripMenuItem1.Text = "Add New...";
-            this.addNewToolStripMenuItem1.Click += new System.EventHandler(this.defineSmartTilesToolStripMenuItem_Click);
-            // 
-            // weaponsToolStripMenuItem
-            // 
-            this.weaponsToolStripMenuItem.Name = "weaponsToolStripMenuItem";
-            this.weaponsToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
-            this.weaponsToolStripMenuItem.Text = "Weapons...";
-            this.weaponsToolStripMenuItem.Click += new System.EventHandler(this.weaponsToolStripMenuItem_Click);
-            // 
-            // pinballToolStripMenuItem
-            // 
-            this.pinballToolStripMenuItem.Name = "pinballToolStripMenuItem";
-            this.pinballToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.pinballToolStripMenuItem.Text = "Pinball";
-            // 
-            // platformsToolStripMenuItem
-            // 
-            this.platformsToolStripMenuItem.Name = "platformsToolStripMenuItem";
-            this.platformsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.platformsToolStripMenuItem.Text = "Platforms";
-            // 
-            // polesToolStripMenuItem
-            // 
-            this.polesToolStripMenuItem.Name = "polesToolStripMenuItem";
-            this.polesToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.polesToolStripMenuItem.Text = "Poles";
-            // 
-            // sceneryToolStripMenuItem
-            // 
-            this.sceneryToolStripMenuItem.Name = "sceneryToolStripMenuItem";
-            this.sceneryToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.sceneryToolStripMenuItem.Text = "Scenery";
-            // 
             // Mainframe
             // 
             this.AllowDrop = true;
@@ -1999,5 +2000,6 @@
         private System.Windows.Forms.ToolStripMenuItem platformsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem polesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem sceneryToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator25;
     }
 }

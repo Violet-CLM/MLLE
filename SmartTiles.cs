@@ -870,6 +870,7 @@ namespace MLLE
             SmartTiles.Add(zero);
             foreach (J2TFile tileset in J2L.Tilesets)
                 SmartTiles.AddRange(tileset.SmartTiles);
+            OverSmartTiles.Visible = SmartTiles.Count > 1;
         }
     }
 }
