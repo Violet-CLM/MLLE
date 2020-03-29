@@ -134,48 +134,52 @@ namespace MLLE
                 var record = listView1.SelectedItems[0];
                 var J2T = new J2TFile();
                 J2T.VersionType = VersionType;
-                Bitmap image, mask;
+                Bitmap image = new Bitmap(1,1), mask = new Bitmap(1,1);
                 string sourceFilepath = Path.Combine(TileDirectory, record.SubItems[2].Text);
                 try
                 {
                     image = new Bitmap(sourceFilepath);
                     sourceFilepath = Path.Combine(TileDirectory, record.SubItems[3].Text);
                     mask = new Bitmap(sourceFilepath);
+
+                    switch (J2T.Build(image, mask, record.Text))
+                    {
+                        case BuildResults.DifferentDimensions:
+                            MessageBox.Show(String.Format("The image and the mask must be the same dimensions. Your image is {0} by {1}, and your mask is {2} by {3}.", image.Width, image.Height, mask.Width, mask.Height), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            break;
+                        case BuildResults.BadDimensions:
+                            MessageBox.Show(String.Format("A tileset image must be 320 pixels wide and a multiple of 32 pixels high. Your image is {0} by {1}.", image.Width, image.Height), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            break;
+                        case BuildResults.ImageWrongFormat:
+                            MessageBox.Show("Your image file is saved in an incorrect color mode. A tileset image must use 8-bit color with no transparency (color 0 is used for transparency instead).", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            break;
+                        case BuildResults.MaskWrongFormat:
+                            MessageBox.Show("Your mask file is saved in an incorrect color mode. A tileset mask must use 8-bit color with no transparency (color 0 is used for transparency instead).", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            break;
+                        case BuildResults.TooBigForVersion:
+                            MessageBox.Show(String.Format("Your tileset images are too big. The tile limit for a {0} tileset is {1} tiles, but your tileset contains {2}.", J2File.FullVersionNames[J2T.VersionType], J2T.MaxTiles, (image.Height / 32 * 10)), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            break;
+                        case BuildResults.Success:
+                            string fullFilePath = Path.Combine(Directory.GetParent(TileDirectory).ToString(), record.SubItems[1].Text);
+                            if (J2T.Save(fullFilePath) != SavingResults.Success)
+                                MessageBox.Show("Something went wrong.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            else
+                                MessageBox.Show(String.Format("OK: Your tileset '{0}' has been built at {1} with {2} tiles ({3} Kb).", record.Text, fullFilePath, (image.Height / 32 * 10), new System.IO.FileInfo(fullFilePath).Length / 1024), "Successful Build", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            break;
+                    }
                 }
                 catch (FileNotFoundException)
                 {
                     MessageBox.Show(sourceFilepath + " not found!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
                 }
                 catch
                 {
                     MessageBox.Show(sourceFilepath + " does not use an image format supported by this program. (Try PNG, GIF, TIFF, or BMP.)", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
                 }
-                switch (J2T.Build(image, mask, record.Text))
+                finally
                 {
-                    case BuildResults.DifferentDimensions:
-                        MessageBox.Show(String.Format("The image and the mask must be the same dimensions. Your image is {0} by {1}, and your mask is {2} by {3}.", image.Width, image.Height, mask.Width, mask.Height), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        break;
-                    case BuildResults.BadDimensions:
-                        MessageBox.Show(String.Format("A tileset image must be 320 pixels wide and a multiple of 32 pixels high. Your image is {0} by {1}.", image.Width, image.Height), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        break;
-                    case BuildResults.ImageWrongFormat:
-                        MessageBox.Show("Your image file is saved in an incorrect color mode. A tileset image must use 8-bit color with no transparency (color 0 is used for transparency instead).", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        break;
-                    case BuildResults.MaskWrongFormat:
-                        MessageBox.Show("Your mask file is saved in an incorrect color mode. A tileset mask must use 8-bit color with no transparency (color 0 is used for transparency instead).", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        break;
-                    case BuildResults.TooBigForVersion:
-                        MessageBox.Show(String.Format("Your tileset images are too big. The tile limit for a {0} tileset is {1} tiles, but your tileset contains {2}.", J2File.FullVersionNames[J2T.VersionType], J2T.MaxTiles, (image.Height / 32 * 10)), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        break;
-                    case BuildResults.Success:
-                        string fullFilePath = Path.Combine(Directory.GetParent(TileDirectory).ToString(), record.SubItems[1].Text);
-                        if (J2T.Save(fullFilePath) != SavingResults.Success)
-                            MessageBox.Show("Something went wrong.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        else
-                            MessageBox.Show(String.Format("OK: Your tileset '{0}' has been built at {1} with {2} tiles ({3} Kb).", record.Text, fullFilePath, (image.Height / 32 * 10), new System.IO.FileInfo(fullFilePath).Length / 1024), "Successful Build", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        break;
+                    image.Dispose();
+                    mask.Dispose();
                 }
             }
         }
