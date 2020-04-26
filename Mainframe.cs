@@ -1946,11 +1946,12 @@ namespace MLLE
             heightreduced = (LevelDisplayViewportHeight - 200) / 2;
             drawxloopsize = (int)Math.Ceiling(LevelDisplayViewportWidth / (float)ZoomTileSize) + 2;
             drawyloopsize = (int)Math.Ceiling(LevelDisplayViewportHeight / (float)ZoomTileSize) + 2;
-            LDScrollH.LargeChange = LDScrollV.LargeChange = (LDScrollH.SmallChange = LDScrollV.SmallChange = ZoomTileSize) * 8;
+            int smallChange = ZoomTileSize;
+            int largeChange = smallChange * 8;
             if (SafeToDisplay)
             {
-                LDScrollH.Maximum = Math.Max(0, (int)CurrentLayer.Width * ZoomTileSize - LevelDisplayViewportWidth + LDScrollH.LargeChange);
-                LDScrollV.Maximum = Math.Max(0, (int)CurrentLayer.Height * ZoomTileSize - LevelDisplayViewportHeight + LDScrollV.LargeChange);
+                LDScrollH.Maximum = Math.Max(0, (int)CurrentLayer.Width * ZoomTileSize - LevelDisplayViewportWidth + largeChange);
+                LDScrollV.Maximum = Math.Max(0, (int)CurrentLayer.Height * ZoomTileSize - LevelDisplayViewportHeight + largeChange);
                 TilesetScrollbar.Maximum = Math.Max(0, (!J2L.HasTiles) ? 0 : ((int)J2L.TileCount + J2L.NumberOfAnimations + 10) / 10 * 32 - TilesetScrollbar.Height + 256);
                 //TilesetScrollbar.Maximum += TilesetScrollbar.LargeChange;
                 TilesetScrollbar.Refresh();
@@ -1960,6 +1961,8 @@ namespace MLLE
                 MakeProposedScrollbarValueWork(LDScrollV, LDScrollV.Value);
                 RedrawTilesetHowManyTimes = 2;
             }
+            LDScrollH.SmallChange = LDScrollV.SmallChange = smallChange;
+            LDScrollH.LargeChange = LDScrollV.LargeChange = largeChange;
             //ResizingOccured = true;
         }
         private void LevelDisplay_Load(object sender, EventArgs e)
