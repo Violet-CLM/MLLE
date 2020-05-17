@@ -212,45 +212,18 @@ namespace MLLE
             DrawImage();
         }
 
-        static readonly byte[] DIBHeaderFor32x32PalettedImages = {
-            0x28,0,0,0, //bV5Size
-            0x20,0,0,0, //bV5Width
-            0x20,0,0,0, //bV5Height
-            1,0, //bV5Planes
-            8,0, //bV5Size
-            0,0,0,0, //bV5Compression
-            0,4,0,0, //bV5SizeImage
-            0xD4,0x0E,0,0, //bV5XPelsPerMeter
-            0xD4,0x0E,0,0, //bV5YPelsPerMeter
-            0,1,0,0, //bV5ClrUsed
-            0,1,0,0 //bV5ClrImportant
-        };
         private void copyToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (EditingImage)
             {
-                using (System.IO.MemoryStream memStream = new System.IO.MemoryStream())
-                {
-                    using (var writer = new System.IO.BinaryWriter(memStream, J2File.FileEncoding, true))
-                    {
-                        writer.Write(DIBHeaderFor32x32PalettedImages);
-                        for (uint i = 0; i < Palette.PaletteSize; ++i) //reverse color order
-                        {
-                            var bytesToRearrange = originalPalette.Palette.Colors[i];
-                            writer.Write(bytesToRearrange[2]);
-                            writer.Write(bytesToRearrange[1]);
-                            writer.Write(bytesToRearrange[0]);
-                            writer.Write(bytesToRearrange[3]);
-                        }
-                        for (int y = 31; y >= 0; --y)
-                            writer.Write(Image.Skip(y * 32).Take(32).ToArray()); //reverse row order
-                    }
-
-                    memStream.Seek(0, System.IO.SeekOrigin.Begin);
-                    var dob = new DataObject();
-                    dob.SetData(DataFormats.Dib, false, memStream);
-                    Clipboard.SetDataObject(dob, true);
-                }
+                Bitmap bitmap = new Bitmap(32, 32, PixelFormat.Format8bppIndexed);
+                var palette = bitmap.Palette;
+                var entries = palette.Entries;
+                for (uint i = 0; i < Palette.PaletteSize; ++i)
+                    entries[i] = Palette.Convert(originalPalette.Palette.Colors[i]);
+                bitmap.Palette = palette;
+                BitmapStuff.ByteArrayToBitmap(Image, bitmap, true);
+                BitmapStuff.CopyBitmapToClipboard(bitmap);
             }
             else
             {
@@ -269,7 +242,7 @@ namespace MLLE
                 if (over)
                 {
                     for (int i = 0; i < 32 * 32; ++i)
-                        if (clipboard[i] != 0)
+                        if (clipboard[i] > 1)
                             Image[i] = clipboard[i];
                 }
                 else //under

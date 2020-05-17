@@ -33,7 +33,7 @@ namespace MLLE
             biHeight = bitmapSize.Height;
             biPlanes = 1;
             biBitCount = 8;
-            biCompression = 8;
+            biCompression = 0;
             biSizeImage = biWidth * biHeight;
             biXPelsPerMeter = biYPelsPerMeter = 0x0ED4; //doesn't really matter
             biClrUsed = 256;
@@ -60,8 +60,8 @@ namespace MLLE
 
     class BitmapStuff
     {
-        //from https://stackoverflow.com/questions/2384/read-binary-file-into-a-struct
-        private static T ByteToType<T>(System.IO.BinaryReader reader)
+        //from https://stackoverflow.com/questions/2384/read-binary-file-into-a-struct... supposedly this isn't as fast as reading each property individually, but at this scale it doesn't matter
+        private static T ReadStruct<T>(System.IO.BinaryReader reader)
         {
             byte[] bytes = reader.ReadBytes(Marshal.SizeOf(typeof(T)));
 
@@ -70,6 +70,15 @@ namespace MLLE
             handle.Free();
 
             return theStructure;
+        }
+        private static void WriteStruct<T>(T structToWrite, System.IO.BinaryWriter writer)
+        {
+            byte[] buff = new byte[Marshal.SizeOf(typeof(T))];//Create Buffer
+            GCHandle handle = GCHandle.Alloc(buff, GCHandleType.Pinned);//Hands off GC
+                                                                        //Marshal the structure
+            Marshal.StructureToPtr(structToWrite, handle.AddrOfPinnedObject(), false);
+            writer.Write(buff);
+            handle.Free();
         }
 
         static public void ByteArrayToBitmap(byte[] byteArray, Bitmap bitmap, bool flipV = false)
@@ -105,7 +114,7 @@ namespace MLLE
                     if (memStream.Length > Marshal.SizeOf(typeof(BITMAPINFOHEADER)) + Palette.PaletteSize * 4)
                         using (var reader = new System.IO.BinaryReader(memStream, J2File.FileEncoding, true))
                         {
-                            BITMAPINFOHEADER header = ByteToType<BITMAPINFOHEADER>(reader);
+                            BITMAPINFOHEADER header = ReadStruct<BITMAPINFOHEADER>(reader);
                             if (header.Matches(intendedSize))
                             {
                                 Bitmap result = new Bitmap(header.biWidth, header.biHeight, PixelFormat.Format8bppIndexed);
@@ -124,6 +133,30 @@ namespace MLLE
                         }
             //else
             return null;
+        }
+        static public void CopyBitmapToClipboard(Bitmap bitmap)
+        {
+            using (System.IO.MemoryStream memStream = new System.IO.MemoryStream())
+            {
+                using (var writer = new System.IO.BinaryWriter(memStream, J2File.FileEncoding, true))
+                {
+                    WriteStruct(new BITMAPINFOHEADER(bitmap.Size), writer);
+                    for (uint i = 0; i < Palette.PaletteSize; ++i) //reverse color order
+                    {
+                        var bytesToRearrange = bitmap.Palette.Entries[i];
+                        writer.Write(bytesToRearrange.B);
+                        writer.Write(bytesToRearrange.G);
+                        writer.Write(bytesToRearrange.R);
+                        writer.Write(byte.MaxValue);
+                    }
+                    writer.Write(BitmapToByteArray(bitmap));
+                }
+
+                memStream.Seek(0, System.IO.SeekOrigin.Begin);
+                var dob = new DataObject();
+                dob.SetData(DataFormats.Dib, false, memStream);
+                Clipboard.SetDataObject(dob, true);
+            }
         }
     }
 }
