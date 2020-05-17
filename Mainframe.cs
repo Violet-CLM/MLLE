@@ -937,16 +937,23 @@ namespace MLLE
                     if (IsEachTileSelected[x + 1][y + 1])
                     {
                         uint tileID = (uint)(y * 10 + x);
-                        byte[] tileImageAsBytes = J2L.PlusPropertyList.TileImages[tileID];
-                        if (tileImageAsBytes == null)
+                        if (tileID < J2L.TileCount)
                         {
-                            J2TFile J2T;
-                            uint tileInTilesetID = J2L.getTileInTilesetID(tileID, out J2T);
-                            tileImageAsBytes = J2T.Images[J2T.ImageAddress[tileInTilesetID]];
+                            byte[] tileImageAsBytes = J2L.PlusPropertyList.TileImages[tileID];
+                            if (tileImageAsBytes == null)
+                            {
+                                J2TFile J2T;
+                                uint tileInTilesetID = J2L.getTileInTilesetID(tileID, out J2T);
+                                tileImageAsBytes = J2T.Images[J2T.ImageAddress[tileInTilesetID]];
+                                if (J2T.ColorRemapping != null)
+                                {
+                                    tileImageAsBytes = tileImageAsBytes.Select(c => J2T.ColorRemapping[c]).ToArray();
+                                }
+                            }
+                            int firstResultByteIndex = (x - UpperLeftSelectionCorner.X) * 32 + (y - UpperLeftSelectionCorner.Y) * 32 * result.Width;
+                            for (int b = 0; b < 32 * 32; ++b)
+                                resultAsBytes[firstResultByteIndex + (b & 31) + (b >> 5) * result.Width] = tileImageAsBytes[b];
                         }
-                        int firstResultByteIndex = (x - UpperLeftSelectionCorner.X) * 32 + (y - UpperLeftSelectionCorner.Y) * 32 * result.Width;
-                        for (int b = 0; b < 32 * 32; ++b)
-                            resultAsBytes[firstResultByteIndex + (b & 31) + (b >> 5) * result.Width] = tileImageAsBytes[b];
                     }
             BitmapStuff.ByteArrayToBitmap(resultAsBytes, result, true);
             J2L.Palette.Apply(result);
