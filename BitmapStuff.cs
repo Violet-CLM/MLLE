@@ -41,11 +41,11 @@ namespace MLLE
         }
 
         //confirm that this is a proper DIB header we got from the clipboard
-        public bool Matches(Size intendedSize)
+        public bool Matches(Size? intendedSize)
         {
             if (intendedSize != null)
             {
-                if (biWidth != intendedSize.Width || biHeight != intendedSize.Height)
+                if (biWidth != intendedSize.Value.Width || biHeight != intendedSize.Value.Height)
                     return false;
             }
             if (biSizeImage != biWidth * biHeight) //don't support negative biHeight values... they're easier to handle but seemingly less common.
@@ -107,7 +107,7 @@ namespace MLLE
         {
             return Clipboard.ContainsData(DataFormats.Dib);
         }
-        static public Bitmap GetBitmapFromClipboard(Size intendedSize)
+        static public Bitmap GetBitmapFromClipboard(Size? intendedSize)
         {
             if (ClipboardHasBitmap())
                 using (var memStream = Clipboard.GetData(DataFormats.Dib) as System.IO.MemoryStream)

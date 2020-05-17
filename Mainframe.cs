@@ -960,6 +960,36 @@ namespace MLLE
             BitmapStuff.CopyBitmapToClipboard(result);
         }
 
+        private void pasteImageToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Bitmap clipboardBitmap = BitmapStuff.GetBitmapFromClipboard(null);
+            if (clipboardBitmap != null)
+            {
+                int selectionWidth = (BottomRightSelectionCorner.X - UpperLeftSelectionCorner.X) * 32;
+                int selectionHeight = (BottomRightSelectionCorner.Y - UpperLeftSelectionCorner.Y) * 32;
+                if (selectionWidth != clipboardBitmap.Width || selectionHeight != clipboardBitmap.Height)
+                {
+                    var clipboardBytes = BitmapStuff.BitmapToByteArray(clipboardBitmap);
+                    var resizedBytes = new byte[selectionWidth * selectionHeight];
+                    //nearest neighbor the pasted image into the selected tiles
+                    for (int x = UpperLeftSelectionCorner.X; x < BottomRightSelectionCorner.X; ++x)
+                        for (int y = UpperLeftSelectionCorner.Y; y < BottomRightSelectionCorner.Y; ++y)
+                            if (IsEachTileSelected[x + 1][y + 1])
+                                for (int xx = 0; xx < selectionWidth; ++xx)
+                                {
+                                    int xxx = xx * clipboardBitmap.Width / selectionWidth;
+                                    for (int yy = 0; yy < selectionHeight; ++yy)
+                                        resizedBytes[xx + yy * selectionWidth] = clipboardBytes[xxx + (yy * clipboardBitmap.Height / selectionHeight) * clipboardBitmap.Width];
+                                }
+                    Bitmap resizedBitmap = new Bitmap(selectionWidth, selectionHeight, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
+                    BitmapStuff.ByteArrayToBitmap(resizedBytes, resizedBitmap, true);
+                    resizedBitmap.Palette = clipboardBitmap.Palette;
+
+                    BitmapStuff.CopyBitmapToClipboard(resizedBitmap); //todo
+                }
+            }
+        }
+
         #endregion Form Business
 
         #region Menu Busywork
