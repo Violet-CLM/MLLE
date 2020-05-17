@@ -72,6 +72,7 @@
     <Compile Include="CheckedComboBox.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="BitmapStuff.cs" />
     <Compile Include="DirectorySetupForm.cs">
       <SubType>Form</SubType>
     </Compile>

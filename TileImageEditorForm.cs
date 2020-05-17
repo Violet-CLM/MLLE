@@ -261,38 +261,25 @@ namespace MLLE
 
         private void pasteImage(bool over)
         {
-            if (Clipboard.ContainsData(DataFormats.Dib))
-                using (var memStream = Clipboard.GetData(DataFormats.Dib) as System.IO.MemoryStream)
-                    if (memStream.Length == DIBHeaderFor32x32PalettedImages.Length + 256 * 4 + 32 * 32)
-                        using (var reader = new System.IO.BinaryReader(memStream, J2File.FileEncoding, true))
-                        {
-                            var header = reader.ReadBytes(DIBHeaderFor32x32PalettedImages.Length);
-                            header[24] = header[28] = 0xD4; //we don't really care what the image editing program thinks are optimal pixels per meter, so normalize these in advance of the SequenceEqual comparison below
-                            header[25] = header[29] = 0x0E;
-                            header[37] = 1; //0 is as valid a number for bV5ClrImportant as 256 is, so again, normalize.
-                            if (header.SequenceEqual(DIBHeaderFor32x32PalettedImages))
-                            {
-                                reader.ReadBytes(256 * 4); //skip over palette
-
-                                MakeEntireImageUndoable();
-                                var clipboard = new List<byte>();
-                                for (int y = 0; y < 32; ++y)
-                                    clipboard.InsertRange(0, reader.ReadBytes(32));
-                                if (over)
-                                {
-                                    for (int i = 0; i < 32 * 32; ++i)
-                                        if (clipboard[i] != 0)
-                                            Image[i] = clipboard[i];
-                                }
-                                else //under
-                                {
-                                    for (int i = 0; i < 32 * 32; ++i)
-                                        if (Image[i] == 0)
-                                            Image[i] = clipboard[i];
-                                }
-                                DrawImage();
-                            }
-                        }
+            Bitmap pastedBitmap = BitmapStuff.GetBitmapFromClipboard(new Size(32, 32));
+            if (pastedBitmap != null) //no errors, everything about the header looks right
+            {
+                MakeEntireImageUndoable();
+                var clipboard = BitmapStuff.BitmapToByteArray(pastedBitmap);
+                if (over)
+                {
+                    for (int i = 0; i < 32 * 32; ++i)
+                        if (clipboard[i] != 0)
+                            Image[i] = clipboard[i];
+                }
+                else //under
+                {
+                    for (int i = 0; i < 32 * 32; ++i)
+                        if (Image[i] == 0)
+                            Image[i] = clipboard[i];
+                }
+                DrawImage();
+            }
 
         }
         private void pasteToolStripMenuItem_Click(object sender, EventArgs e)
