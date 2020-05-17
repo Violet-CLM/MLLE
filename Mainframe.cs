@@ -969,24 +969,38 @@ namespace MLLE
                 int selectionHeight = (BottomRightSelectionCorner.Y - UpperLeftSelectionCorner.Y) * 32;
                 if (selectionWidth != clipboardBitmap.Width || selectionHeight != clipboardBitmap.Height)
                 {
-                    var clipboardBytes = BitmapStuff.BitmapToByteArray(clipboardBitmap);
-                    var resizedBytes = new byte[selectionWidth * selectionHeight];
+                    if (MessageBox.Show(string.Format(
+                        "You are pasting a {0}x{1} pixel image into an area of {4}x{5} pixels ({2}x{3} tiles). The image will be automatically resized to fit. Do you wish to continue?",
+                        clipboardBitmap.Width,
+                        clipboardBitmap.Height,
+                        BottomRightSelectionCorner.X - UpperLeftSelectionCorner.X,
+                        BottomRightSelectionCorner.Y - UpperLeftSelectionCorner.Y,
+                        selectionWidth,
+                        selectionHeight
+                    ), "Resizing Image", MessageBoxButtons.YesNo, MessageBoxIcon.Hand) == DialogResult.No)
+                        return;
+                }
+                byte[] colorRemappings = null;
+                if (new SpriteRecolorForm().ShowForm(J2L.Palette, clipboardBitmap.Clone() as Bitmap, ref colorRemappings, HotKolors[1]))
+                {
+                    byte[] clipboardBytes = BitmapStuff.BitmapToByteArray(clipboardBitmap);
                     //nearest neighbor the pasted image into the selected tiles
                     for (int x = UpperLeftSelectionCorner.X; x < BottomRightSelectionCorner.X; ++x)
                         for (int y = UpperLeftSelectionCorner.Y; y < BottomRightSelectionCorner.Y; ++y)
                             if (IsEachTileSelected[x + 1][y + 1])
-                                for (int xx = 0; xx < selectionWidth; ++xx)
+                            {
+                                uint tileID = (uint)(x + y * 10);
+                                byte[] newTileImage = J2L.PlusPropertyList.TileImages[tileID] = new byte[32 * 32];
+                                for (int xx = 0; xx < 32; ++xx)
                                 {
-                                    int xxx = xx * clipboardBitmap.Width / selectionWidth;
-                                    for (int yy = 0; yy < selectionHeight; ++yy)
-                                        resizedBytes[xx + yy * selectionWidth] = clipboardBytes[xxx + (yy * clipboardBitmap.Height / selectionHeight) * clipboardBitmap.Width];
+                                    int xxx = ((x - UpperLeftSelectionCorner.X) * 32 + xx) * clipboardBitmap.Width / selectionWidth;
+                                    for (int yy = 0; yy < 32; ++yy)
+                                        newTileImage[xx + yy * 32] = colorRemappings[clipboardBytes[xxx + (((y - UpperLeftSelectionCorner.Y) * 32 + yy) * clipboardBitmap.Height / selectionHeight) * clipboardBitmap.Width]];
                                 }
-                    Bitmap resizedBitmap = new Bitmap(selectionWidth, selectionHeight, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
-                    BitmapStuff.ByteArrayToBitmap(resizedBytes, resizedBitmap, true);
-                    resizedBitmap.Palette = clipboardBitmap.Palette;
-
-                    BitmapStuff.CopyBitmapToClipboard(resizedBitmap); //todo
+                                RerenderTile(tileID);
+                            }
                 }
+
             }
         }
 
