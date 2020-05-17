@@ -2802,6 +2802,7 @@ namespace MLLE
             AnimScrollbar.Focus();
             LevelDisplay.ContextMenuStrip = null;
         }
+        bool HoveringOverAnimationAreaOfTilesetPane = false;
         private void LevelDisplay_MouseMove(object sender, System.Windows.Forms.MouseEventArgs e)
         {
             if (e.X <= DrawingTools.Left)
@@ -2823,15 +2824,9 @@ namespace MLLE
                     MouseTileX = e.X / 32;
                     MouseTileY = (e.Y + TilesetScrollbar.Value - TilesetScrollbar.Minimum) / 32;
                     MouseTile = MouseTileX + MouseTileY * 10;
-                    if (!J2L.HasTiles || MouseTile < J2L.TileCount)
-                    {
-                        editAnimationToolStripMenuItem.Visible = deleteAnimationToolStripMenuItem.Visible = cloneAnimationToolStripMenuItem.Visible = !(automaskToolStripMenuItem.Visible = imageToolStripMenuItem.Visible = maskToolStripMenuItem.Visible = toolStripSeparator15.Visible = TiletypeDropdown.Visible = OverlayDropdown.Visible = true);
-                    }
-                    else
-                    {
+                    HoveringOverAnimationAreaOfTilesetPane = J2L.HasTiles && MouseTile >= J2L.TileCount;
+                    if (HoveringOverAnimationAreaOfTilesetPane)
                         MouseTile = MouseTile - (int)J2L.TileCount + J2L.AnimOffset;
-                        editAnimationToolStripMenuItem.Visible = deleteAnimationToolStripMenuItem.Visible = cloneAnimationToolStripMenuItem.Visible = !(automaskToolStripMenuItem.Visible = imageToolStripMenuItem.Visible = maskToolStripMenuItem.Visible = toolStripSeparator15.Visible = TiletypeDropdown.Visible = OverlayDropdown.Visible = false);
-                    }
                     MouseAGAEvent.ID = (J2L.VersionType == Version.AGA || MouseTile >= J2L.MaxTiles) ? 0 : J2L.EventTiles[MouseTile];
                     if (HowSelecting == FocusedZone.Tileset) { SelectionBoxCorners[2] = MouseTileX; SelectionBoxCorners[3] = MouseTileY; }
                 }
@@ -3763,6 +3758,33 @@ namespace MLLE
             SelectEvent.Enabled = GrabEvent.Enabled = PasteEvent.Enabled = CurrentLayer == J2L.SpriteLayer;
         }
 
+        private void TContextMenu_Opening(object sender, CancelEventArgs e)
+        {
+            //animated tile options
+            editAnimationToolStripMenuItem.Visible =
+            deleteAnimationToolStripMenuItem.Visible =
+            cloneAnimationToolStripMenuItem.Visible =
+                HoveringOverAnimationAreaOfTilesetPane;
+
+            //regular tile options
+            copyImageToolStripMenuItem.Visible =
+            pasteImageToolStripMenuItem.Visible =
+            toolStripSeparator26.Visible =
+            automaskToolStripMenuItem.Visible =
+            imageToolStripMenuItem.Visible =
+            maskToolStripMenuItem.Visible =
+            toolStripSeparator15.Visible =
+            TiletypeDropdown.Visible =
+            OverlayDropdown.Visible =
+                !HoveringOverAnimationAreaOfTilesetPane;
+
+            if (!HoveringOverAnimationAreaOfTilesetPane)
+            {
+                bool atLeastOneTileSelected = J2L.HasTiles && LastFocusedZone == FocusedZone.Tileset && IsEachTileSelected.Any(col => col.Contains(true));
+                copyImageToolStripMenuItem.Enabled = atLeastOneTileSelected;
+                pasteImageToolStripMenuItem.Enabled = atLeastOneTileSelected && BitmapStuff.ClipboardHasBitmap();
+            }
+        }
 
         private void TilesetMakerButton_Click(object sender, EventArgs e)
         {

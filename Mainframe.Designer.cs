@@ -201,6 +201,9 @@
             this.AnimScrollbar = new System.Windows.Forms.HScrollBar();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
+            this.copyImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator26 = new System.Windows.Forms.ToolStripSeparator();
+            this.pasteImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MainMenu.SuspendLayout();
             this.DrawingTools.SuspendLayout();
             this.StatusBar.SuspendLayout();
@@ -1203,7 +1206,7 @@
             "Masks",
             "Smart Tiles"});
             this.TilesetOverlaySelection.Name = "TilesetOverlaySelection";
-            this.TilesetOverlaySelection.Size = new System.Drawing.Size(80, 23);
+            this.TilesetOverlaySelection.Size = new System.Drawing.Size(80, 27);
             this.TilesetOverlaySelection.Tag = "Select overlay data for tiles";
             this.TilesetOverlaySelection.DropDown += new System.EventHandler(this.TilesetOverlaySelection_DropDown);
             this.TilesetOverlaySelection.SelectedIndexChanged += new System.EventHandler(this.TilesetOverlaySelection_SelectedIndexChanged);
@@ -1491,35 +1494,39 @@
             this.automaskToolStripMenuItem,
             this.editAnimationToolStripMenuItem,
             this.cloneAnimationToolStripMenuItem,
-            this.deleteAnimationToolStripMenuItem});
+            this.deleteAnimationToolStripMenuItem,
+            this.toolStripSeparator26,
+            this.copyImageToolStripMenuItem,
+            this.pasteImageToolStripMenuItem});
             this.TContextMenu.Name = "TContextMenu";
-            this.TContextMenu.Size = new System.Drawing.Size(167, 258);
+            this.TContextMenu.Size = new System.Drawing.Size(181, 330);
+            this.TContextMenu.Opening += new System.ComponentModel.CancelEventHandler(this.TContextMenu_Opening);
             // 
             // SetEventTS
             // 
             this.SetEventTS.Name = "SetEventTS";
-            this.SetEventTS.Size = new System.Drawing.Size(166, 22);
+            this.SetEventTS.Size = new System.Drawing.Size(180, 22);
             this.SetEventTS.Text = "Set Event";
             this.SetEventTS.Click += new System.EventHandler(this.SetEventTS_Click);
             // 
             // GrabEventTS
             // 
             this.GrabEventTS.Name = "GrabEventTS";
-            this.GrabEventTS.Size = new System.Drawing.Size(166, 22);
+            this.GrabEventTS.Size = new System.Drawing.Size(180, 22);
             this.GrabEventTS.Text = "Copy Event";
             this.GrabEventTS.Click += new System.EventHandler(this.GrabEventTS_Click);
             // 
             // PutEventTS
             // 
             this.PutEventTS.Name = "PutEventTS";
-            this.PutEventTS.Size = new System.Drawing.Size(166, 22);
+            this.PutEventTS.Size = new System.Drawing.Size(180, 22);
             this.PutEventTS.Text = "Paste Event";
             this.PutEventTS.Click += new System.EventHandler(this.PutEventTS_Click);
             // 
             // toolStripSeparator14
             // 
             this.toolStripSeparator14.Name = "toolStripSeparator14";
-            this.toolStripSeparator14.Size = new System.Drawing.Size(163, 6);
+            this.toolStripSeparator14.Size = new System.Drawing.Size(177, 6);
             // 
             // OverlayDropdown
             // 
@@ -1530,7 +1537,7 @@
             this.OverMasks,
             this.OverSmartTiles});
             this.OverlayDropdown.Name = "OverlayDropdown";
-            this.OverlayDropdown.Size = new System.Drawing.Size(166, 22);
+            this.OverlayDropdown.Size = new System.Drawing.Size(180, 22);
             this.OverlayDropdown.Text = "Overlay";
             // 
             // OverNone
@@ -1571,53 +1578,53 @@
             // TiletypeDropdown
             // 
             this.TiletypeDropdown.Name = "TiletypeDropdown";
-            this.TiletypeDropdown.Size = new System.Drawing.Size(166, 22);
+            this.TiletypeDropdown.Size = new System.Drawing.Size(180, 22);
             this.TiletypeDropdown.Text = "Type";
             // 
             // toolStripSeparator15
             // 
             this.toolStripSeparator15.Name = "toolStripSeparator15";
-            this.toolStripSeparator15.Size = new System.Drawing.Size(163, 6);
+            this.toolStripSeparator15.Size = new System.Drawing.Size(177, 6);
             // 
             // imageToolStripMenuItem
             // 
             this.imageToolStripMenuItem.Name = "imageToolStripMenuItem";
-            this.imageToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.imageToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.imageToolStripMenuItem.Text = "Edit Image...";
             this.imageToolStripMenuItem.Click += new System.EventHandler(this.imageToolStripMenuItem_Click);
             // 
             // maskToolStripMenuItem
             // 
             this.maskToolStripMenuItem.Name = "maskToolStripMenuItem";
-            this.maskToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.maskToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.maskToolStripMenuItem.Text = "Edit Mask...";
             this.maskToolStripMenuItem.Click += new System.EventHandler(this.maskToolStripMenuItem_Click);
             // 
             // automaskToolStripMenuItem
             // 
             this.automaskToolStripMenuItem.Name = "automaskToolStripMenuItem";
-            this.automaskToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.automaskToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.automaskToolStripMenuItem.Text = "Automask";
             this.automaskToolStripMenuItem.Click += new System.EventHandler(this.automaskToolStripMenuItem_Click);
             // 
             // editAnimationToolStripMenuItem
             // 
             this.editAnimationToolStripMenuItem.Name = "editAnimationToolStripMenuItem";
-            this.editAnimationToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.editAnimationToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.editAnimationToolStripMenuItem.Text = "Edit Animation";
             this.editAnimationToolStripMenuItem.Click += new System.EventHandler(this.editAnimationToolStripMenuItem_Click);
             // 
             // cloneAnimationToolStripMenuItem
             // 
             this.cloneAnimationToolStripMenuItem.Name = "cloneAnimationToolStripMenuItem";
-            this.cloneAnimationToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.cloneAnimationToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.cloneAnimationToolStripMenuItem.Text = "Clone Animation";
             this.cloneAnimationToolStripMenuItem.Click += new System.EventHandler(this.cloneAnimationToolStripMenuItem_Click);
             // 
             // deleteAnimationToolStripMenuItem
             // 
             this.deleteAnimationToolStripMenuItem.Name = "deleteAnimationToolStripMenuItem";
-            this.deleteAnimationToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.deleteAnimationToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.deleteAnimationToolStripMenuItem.Text = "Delete Animation";
             this.deleteAnimationToolStripMenuItem.Click += new System.EventHandler(this.deleteAnimationToolStripMenuItem_Click);
             // 
@@ -1774,6 +1781,23 @@
             // folderBrowserDialog1
             // 
             this.folderBrowserDialog1.ShowNewFolderButton = false;
+            // 
+            // copyImageToolStripMenuItem
+            // 
+            this.copyImageToolStripMenuItem.Name = "copyImageToolStripMenuItem";
+            this.copyImageToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.copyImageToolStripMenuItem.Text = "Copy Image";
+            // 
+            // toolStripSeparator26
+            // 
+            this.toolStripSeparator26.Name = "toolStripSeparator26";
+            this.toolStripSeparator26.Size = new System.Drawing.Size(177, 6);
+            // 
+            // pasteImageToolStripMenuItem
+            // 
+            this.pasteImageToolStripMenuItem.Name = "pasteImageToolStripMenuItem";
+            this.pasteImageToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.pasteImageToolStripMenuItem.Text = "Paste Image...";
             // 
             // Mainframe
             // 
@@ -2001,5 +2025,8 @@
         private System.Windows.Forms.ToolStripMenuItem polesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem sceneryToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator25;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator26;
+        private System.Windows.Forms.ToolStripMenuItem copyImageToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem pasteImageToolStripMenuItem;
     }
 }
