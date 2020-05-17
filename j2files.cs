@@ -550,9 +550,7 @@ partial class J2TFile : J2File
         IsFullyOpaque = new bool[MaxTiles];
         TransparencyMaskJCS_Style = new byte[MaxTiles][];
 
-        Palette = new Palette();
-        for (uint i = 1; i < Palette.PaletteSize - 1; ++i)
-            Palette.Colors[i] = Palette.Convert(image.Palette.Entries[i]);
+        Palette = new Palette(image.Palette);
         Palette.Colors[0] = new byte[] { 0, 0, 0, 0 }; //transparency must always be black, for MMX reasons
         Palette.Colors[15] = Palette.Colors[255] = new byte[] { 255, 255, 255, 255 }; //these colors are both always white
 

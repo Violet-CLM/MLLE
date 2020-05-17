@@ -217,11 +217,7 @@ namespace MLLE
             if (EditingImage)
             {
                 Bitmap bitmap = new Bitmap(32, 32, PixelFormat.Format8bppIndexed);
-                var palette = bitmap.Palette;
-                var entries = palette.Entries;
-                for (uint i = 0; i < Palette.PaletteSize; ++i)
-                    entries[i] = Palette.Convert(originalPalette.Palette.Colors[i]);
-                bitmap.Palette = palette;
+                originalPalette.Palette.Apply(bitmap);
                 BitmapStuff.ByteArrayToBitmap(Image, bitmap, true);
                 BitmapStuff.CopyBitmapToClipboard(bitmap);
             }

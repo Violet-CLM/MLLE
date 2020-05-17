@@ -110,12 +110,10 @@ namespace MLLE
             Marshal.Copy(bytes, 0, data.Scan0, bytes.Length);
             image.UnlockBits(data);
 
-            var palette = image.Palette;
-            var entries = palette.Entries;
-            entries[0] = TexturedJ2L.TranspColor;
-            for (uint i = 1; i < Palette.PaletteSize; ++i)
-                entries[i] = Palette.Convert(Tileset.Palette.Colors[i]);
-            image.Palette = palette;
+            var palette = new Palette();
+            palette.CopyFrom(Tileset.Palette);
+            palette.Colors[0] = Palette.Convert(TexturedJ2L.TranspColor);
+            palette.Apply(image);
 
             ThreadSafeTilesetImage = (tilesetPicture.Image = image).Clone() as Image;
             smartPicture.Image = Properties.Resources.SmartTilesPermutations;

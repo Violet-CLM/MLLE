@@ -199,17 +199,11 @@ class TexturedJ2L : J2LFile
     }
     public Bitmap[] RenderTilesetAsImage(TransparencySource source, bool includeMasks, Palette palette = null) //very similar to TilesetForm::CreateImageFromTileset
     {
-        if (palette == null)
-            palette = Palette;
         uint imageHeight = (TileCount + 9) / 10 * 32;
 
         var image = new Bitmap(320, (int)imageHeight, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
-        var paletteD = image.Palette;
-        var entries = paletteD.Entries;
-        entries[0] = Color.FromArgb(87, 0, 203);
-        for (uint i = 1; i < Palette.PaletteSize; ++i)
-            entries[i] = Palette.Convert(palette.Colors[i]);
-        image.Palette = paletteD;
+        (palette ?? Palette).Apply(image);
+        image.Palette.Entries[0] = Color.FromArgb(87, 0, 203);
         var data = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), System.Drawing.Imaging.ImageLockMode.WriteOnly, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
         byte[] bytes = new byte[data.Height * data.Stride];
 
@@ -224,7 +218,7 @@ class TexturedJ2L : J2LFile
             var paletteM = mask.Palette;
             paletteM.Entries[0] = Color.FromArgb(87, 0, 203);
             paletteM.Entries[1] = Color.Black;
-            mask.Palette = paletteD;
+            mask.Palette = image.Palette;
         }
 
         for (ushort tileInLevelID = 0; tileInLevelID < TileCount; tileInLevelID++)
