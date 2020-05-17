@@ -924,6 +924,34 @@ namespace MLLE
                 RerenderTileMask((uint)MouseTile);
             }
         }
+        private void copyImageToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Bitmap result = new Bitmap(
+                (BottomRightSelectionCorner.X - UpperLeftSelectionCorner.X) * 32,
+                (BottomRightSelectionCorner.Y - UpperLeftSelectionCorner.Y) * 32,
+                System.Drawing.Imaging.PixelFormat.Format8bppIndexed
+            );
+            byte[] resultAsBytes = new byte[result.Width * result.Height];
+            for (int x = UpperLeftSelectionCorner.X; x < BottomRightSelectionCorner.X; ++x)
+                for (int y = UpperLeftSelectionCorner.Y; y < BottomRightSelectionCorner.Y; ++y)
+                    if (IsEachTileSelected[x + 1][y + 1])
+                    {
+                        uint tileID = (uint)(y * 10 + x);
+                        byte[] tileImageAsBytes = J2L.PlusPropertyList.TileImages[tileID];
+                        if (tileImageAsBytes == null)
+                        {
+                            J2TFile J2T;
+                            uint tileInTilesetID = J2L.getTileInTilesetID(tileID, out J2T);
+                            tileImageAsBytes = J2T.Images[J2T.ImageAddress[tileInTilesetID]];
+                        }
+                        int firstResultByteIndex = (x - UpperLeftSelectionCorner.X) * 32 + (y - UpperLeftSelectionCorner.Y) * 32 * result.Width;
+                        for (int b = 0; b < 32 * 32; ++b)
+                            resultAsBytes[firstResultByteIndex + (b & 31) + (b >> 5) * result.Width] = tileImageAsBytes[b];
+                    }
+            BitmapStuff.ByteArrayToBitmap(resultAsBytes, result, true);
+            J2L.Palette.Apply(result);
+            BitmapStuff.CopyBitmapToClipboard(result);
+        }
 
         #endregion Form Business
 
@@ -3532,6 +3560,7 @@ namespace MLLE
             }
             else return p;
         }
+
         static readonly Point[] FillOffsets = { new Point(0,-1), new Point(1, 0), new Point(0, 1), new Point(-1, 0) };
         private void TakeAction()
         {

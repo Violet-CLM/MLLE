@@ -1787,6 +1787,7 @@
             this.copyImageToolStripMenuItem.Name = "copyImageToolStripMenuItem";
             this.copyImageToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.copyImageToolStripMenuItem.Text = "Copy Image";
+            this.copyImageToolStripMenuItem.Click += new System.EventHandler(this.copyImageToolStripMenuItem_Click);
             // 
             // toolStripSeparator26
             // 

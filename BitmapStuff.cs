@@ -87,7 +87,7 @@ namespace MLLE
             {
                 if (flipV)
                 {
-                    byteArray = Enumerable.Range(0, 32).Select(y => byteArray.Skip((31-y) * 32).Take(32)).SelectMany(r => r).ToArray();
+                    byteArray = Enumerable.Range(0, bitmap.Height).Select(y => byteArray.Skip((bitmap.Height-1-y) * bitmap.Width).Take(bitmap.Width)).SelectMany(r => r).ToArray();
                 }
                 var data = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.WriteOnly, PixelFormat.Format8bppIndexed);
                 Marshal.Copy(byteArray, 0, data.Scan0, byteArray.Length);
