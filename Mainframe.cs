@@ -967,6 +967,7 @@ namespace MLLE
             {
                 int selectionWidth = (BottomRightSelectionCorner.X - UpperLeftSelectionCorner.X) * 32;
                 int selectionHeight = (BottomRightSelectionCorner.Y - UpperLeftSelectionCorner.Y) * 32;
+                _suspendEvent.Reset();
                 if (selectionWidth != clipboardBitmap.Width || selectionHeight != clipboardBitmap.Height)
                 {
                     if (MessageBox.Show(string.Format(
@@ -978,7 +979,10 @@ namespace MLLE
                         selectionWidth,
                         selectionHeight
                     ), "Resizing Image", MessageBoxButtons.YesNo, MessageBoxIcon.Hand) == DialogResult.No)
+                    {
+                        _suspendEvent.Set();
                         return;
+                    }
                 }
                 byte[] colorRemappings = null;
                 if (new SpriteRecolorForm().ShowForm(J2L.Palette, clipboardBitmap.Clone() as Bitmap, ref colorRemappings, HotKolors[1]))
@@ -1000,7 +1004,7 @@ namespace MLLE
                                 RerenderTile(tileID);
                             }
                 }
-
+                _suspendEvent.Set();
             }
         }
 
