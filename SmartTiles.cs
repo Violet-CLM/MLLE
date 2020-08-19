@@ -11,7 +11,7 @@ namespace MLLE
     {
         internal List<ushort> Extras { get { return Assignments[35].Tiles; } }
         internal List<int> Friends = new List<int>();
-        internal ushort PreviewTileID;
+        internal ushort[] PreviewTileIDs = new ushort[9];
         internal string Name = "Smart Tile";
         private J2TFile Tileset;
         internal class ushortComparer : IEqualityComparer<ushort>
@@ -80,7 +80,7 @@ namespace MLLE
         internal SmartTile(SmartTile other)
         {
             Assignments = other.Assignments.Select(ass => new Assignment(ass)).ToArray();
-            PreviewTileID = other.PreviewTileID;
+            PreviewTileIDs = other.PreviewTileIDs.Clone() as ushort[];
             Name = other.Name;
             Friends = new List<int>(other.Friends);
             TilesICanPlace = new HashSet<ushort>(other.TilesICanPlace.Comparer);
@@ -158,6 +158,7 @@ namespace MLLE
                 TilesIGoNextTo.UnionWith(smartTile.Extras);
             }
         }
+        static readonly private int[] PreviewTileSourceInitialAssignmentIDs = { 0, 1, 2, 10, 11, 12, 20, 21, 22 };
         internal void UpdateAllPossibleTiles(List<SmartTile> smartTiles, bool updateFriends = true)
         {
             TilesICanPlace.Clear();
@@ -172,22 +173,14 @@ namespace MLLE
             if (updateFriends)
                 UpdateTilesIGonextTo(smartTiles);
             
-            Assignment previewTileSource = Assignments[1];
-            if (previewTileSource.Empty)
-            {
-                previewTileSource = Assignments[11];
-                if (previewTileSource.Empty)
-                {
-                    previewTileSource = Assignments[14];
-                    if (previewTileSource.Empty)
-                    {
-                        previewTileSource = Assignments[47];
-                        if (previewTileSource.Empty) //should only happen if this is a non-primary tileset with only a subset of its tiles included
-                            previewTileSource.Tiles.Add(0);
-                    }
-                }
-            }
-            PreviewTileID = previewTileSource.Tiles[Rand.Next(previewTileSource.Tiles.Count)];
+            PreviewTileIDs = PreviewTileSourceInitialAssignmentIDs.Select(a => {
+                ResolveAssignmentIDToSomethingWithTilesInIt(ref a);
+                return Assignments[a].Empty ? 
+                    (ushort)0 :
+                    Assignments[a].Tiles
+                        [Rand.Next(Assignments[a].Tiles.Count)
+                    ];
+            }).ToArray();
         }
 
         static readonly internal ushort[][] AlternativeAssignments = new ushort[100][]{
@@ -775,15 +768,7 @@ namespace MLLE
                     break;
             }
 
-            while (Assignments[assignmentID].Tiles.Count == 0)
-            {
-                ushort[] alternatives = AlternativeAssignments[assignmentID];
-                int alternativeID = 0;
-                for (; alternativeID < alternatives.Length - 1; ++alternativeID)
-                    if (!Assignments[alternatives[alternativeID]].Empty)
-                        break;
-                assignmentID = alternatives[alternativeID];
-            }
+            ResolveAssignmentIDToSomethingWithTilesInIt(ref assignmentID);
 
             bool lastRuleApplied = true;
             foreach (Rule rule in Assignments[assignmentID].Rules)
@@ -811,6 +796,19 @@ namespace MLLE
             else
                 return false;
             return true;
+        }
+
+        private void ResolveAssignmentIDToSomethingWithTilesInIt(ref int assignmentID)
+        {
+            while (Assignments[assignmentID].Tiles.Count == 0)
+            {
+                ushort[] alternatives = AlternativeAssignments[assignmentID];
+                int alternativeID = 0;
+                for (; alternativeID < alternatives.Length - 1; ++alternativeID)
+                    if (!Assignments[alternatives[alternativeID]].Empty)
+                        break;
+                assignmentID = alternatives[alternativeID];
+            }
         }
 
         internal bool SmartFlipTile(ref ushort tileID, bool vertical)
@@ -866,7 +864,7 @@ namespace MLLE
             SmartTile zero = new SmartTile(J2L.MaxTiles == 4096, null);
             zero.Assignments[11].Tiles.Add(0);
             zero.TilesICanPlace.Add(0);
-            zero.PreviewTileID = 0;
+            zero.PreviewTileIDs = new ushort[9];
             SmartTiles.Add(zero);
             foreach (J2TFile tileset in J2L.Tilesets)
                 SmartTiles.AddRange(tileset.SmartTiles);

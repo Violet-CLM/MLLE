@@ -757,7 +757,7 @@ namespace MLLE
                             if (LastFocusedZone != FocusedZone.Level)
                             {
                                 ev = (uint?)tileID;
-                                tileID = SmartTiles[(int)ev.Value].PreviewTileID;
+                                tileID = SmartTiles[(int)ev.Value].PreviewTileIDs[1];
                             }
                             else
                             {
@@ -767,7 +767,7 @@ namespace MLLE
                                     if (SmartTiles[i].TilesICanPlace.Contains(tileID, SmartTiles[i].TilesICanPlace.Comparer))
                                     {
                                         ev = (uint?)i;
-                                        tileID = SmartTiles[i].PreviewTileID;
+                                        tileID = SmartTiles[i].PreviewTileIDs[1];
                                         break;
                                     }
                                     else if (++i == SmartTiles.Count)
@@ -783,7 +783,7 @@ namespace MLLE
                         DeselectAll();
                         return true;
                     }
-                case Keys.Back: if (CurrentTilesetOverlay != TilesetOverlay.SmartTiles || SmartTiles[0].PreviewTileID == 0) { ShowBlankTileInStamp = true; SetStampDimensions(1, 1); CurrentStamp[0][0] = new TileAndEvent(0, 0); DeselectAll(); } return true;
+                case Keys.Back: /*if (CurrentTilesetOverlay != TilesetOverlay.SmartTiles || SmartTiles[0].PreviewTileIDs == 0)*/ { ShowBlankTileInStamp = true; SetStampDimensions(1, 1); CurrentStamp[0][0] = new TileAndEvent(0, 0); DeselectAll(); } return true;
 
                 case (Keys.Control | Keys.B):
                     {
@@ -2306,12 +2306,15 @@ namespace MLLE
                     else
                     {
                         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-                        int x = 0, y = 0;
+                        int x = 7, y = 7;
                         for (int i = 0; i < SmartTiles.Count; i++)
                         {
-                            DrawTile(ref x, ref y, SmartTiles[i].PreviewTileID, 32, true);
-                            if (x == 288) { x = 0; y += 32; }
-                            else { x += 32; }
+                            int previewTileID = 0;
+                            for (int yy = y; yy < y+96; yy += 32)
+                                for (int xx = x; xx < x+96; xx += 32)
+                                    DrawTile(ref xx, ref yy, SmartTiles[i].PreviewTileIDs[previewTileID++], 32, true);
+                            if (x >= 200) { x = 7; y += 105; }
+                            else { x += 105; }
                         }
                     }
                     if (ParallaxDisplayMode != ParallaxMode.NoParallax) GL.Enable(EnableCap.Blend);
@@ -2904,9 +2907,18 @@ namespace MLLE
                     LastFocusedZone = FocusedZone.Tileset;
                     TilesetScrollbar.Focus();
                     LevelDisplay.ContextMenuStrip = TContextMenu;
-                    MouseTileX = e.X / 32;
-                    MouseTileY = (e.Y + TilesetScrollbar.Value - TilesetScrollbar.Minimum) / 32;
-                    MouseTile = MouseTileX + MouseTileY * 10;
+                    if (CurrentTilesetOverlay != TilesetOverlay.SmartTiles)
+                    {
+                        MouseTileX = e.X / 32;
+                        MouseTileY = (e.Y + TilesetScrollbar.Value - TilesetScrollbar.Minimum) / 32;
+                        MouseTile = MouseTileX + MouseTileY * 10;
+                    }
+                    else
+                    {
+                        MouseTileX = e.X / 106;
+                        MouseTileY = (e.Y + TilesetScrollbar.Value - TilesetScrollbar.Minimum) / 106;
+                        MouseTile = MouseTileX + MouseTileY * 3;
+                    }
                     HoveringOverAnimationAreaOfTilesetPane = J2L.HasTiles && MouseTile >= J2L.TileCount;
                     if (HoveringOverAnimationAreaOfTilesetPane)
                         MouseTile = MouseTile - (int)J2L.TileCount + J2L.AnimOffset;
@@ -3409,7 +3421,7 @@ namespace MLLE
                 if (MouseTile < SmartTiles.Count)
                 {
                     SetStampDimensions(1, 1);
-                    CurrentStamp[0][0] = new TileAndEvent(SmartTiles[MouseTile].PreviewTileID, (uint?)MouseTile);
+                    CurrentStamp[0][0] = new TileAndEvent(SmartTiles[MouseTile].PreviewTileIDs[1], (uint?)MouseTile);
                     ShowBlankTileInStamp = true;
                 }
             }
