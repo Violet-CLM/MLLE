@@ -261,6 +261,7 @@ namespace MLLE
 
         private void panel1_Click(object sender, EventArgs e)
         {
+            colorDialog1.Color = ColorBox.BackColor;
             DialogResult result = colorDialog1.ShowDialog();
             if (result == DialogResult.OK) ColorBox.BackColor = colorDialog1.Color;
             Param1.Value = colorDialog1.Color.R;
