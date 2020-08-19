@@ -158,7 +158,7 @@ namespace MLLE
                 TilesIGoNextTo.UnionWith(smartTile.Extras);
             }
         }
-        static readonly private int[] PreviewTileSourceInitialAssignmentIDs = { 0, 1, 2, 10, 11, 12, 20, 21, 22 };
+        static readonly private int[] MandatoryAssignmentIDs = { 11, 14, 47 };
         internal void UpdateAllPossibleTiles(List<SmartTile> smartTiles, bool updateFriends = true)
         {
             TilesICanPlace.Clear();
@@ -172,15 +172,25 @@ namespace MLLE
 
             if (updateFriends)
                 UpdateTilesIGonextTo(smartTiles);
-            
-            PreviewTileIDs = PreviewTileSourceInitialAssignmentIDs.Select(a => {
-                ResolveAssignmentIDToSomethingWithTilesInIt(ref a);
-                return Assignments[a].Empty ? 
-                    (ushort)0 :
-                    Assignments[a].Tiles
-                        [Rand.Next(Assignments[a].Tiles.Count)
-                    ];
-            }).ToArray();
+
+            ushort qualifyingTileID = Assignments[MandatoryAssignmentIDs.First(i => !Assignments[i].Empty)].Tiles[0];
+            ArrayMap<ushort> surroundingTiles = new ArrayMap<ushort>(3 + 2 * 2, 3 + 3 + 2);
+            for (int x = 2; x < 5; ++x)
+                for (int y = 3; y < 6; ++y)
+                    surroundingTiles[x, y] = qualifyingTileID;
+            for (int pass = 0; pass < 2; ++pass) //why not
+                for (int x = 2; x < 5; ++x)
+                    for (int y = 3; y < 6; ++y)
+                    {
+                        ArrayMap<ushort> localTiles = new ArrayMap<ushort>(5, 6);
+                        for (int xx = 0; xx < 5; ++xx)
+                            for (int yy = 0; yy < 6; ++yy)
+                                localTiles[xx, yy] = surroundingTiles[x + xx - 2, y + yy - 3];
+                        ushort tileID = surroundingTiles[x, y];
+                        if (Apply(localTiles, ref tileID)) //not sure why this would return false, but...
+                            surroundingTiles[x, y] = tileID;
+                    }
+            PreviewTileIDs = Enumerable.Range(0, 9).Select(i => surroundingTiles[(i % 3) + 2, (i / 3) + 3]).ToArray();
         }
 
         static readonly internal ushort[][] AlternativeAssignments = new ushort[100][]{
