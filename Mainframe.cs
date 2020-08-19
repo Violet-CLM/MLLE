@@ -2423,7 +2423,7 @@ namespace MLLE
                     GL.Color4((byte)255, (byte)255, (byte)255, (byte)128);
                     for (int xloop = 0, xoffset = x; xloop < CurrentStamp.Length; xloop++, xoffset += ZoomTileSize) for (int yloop = 0, yoffset = y; yloop < CurrentStamp[0].Length; yloop++, yoffset += ZoomTileSize)
                         {
-                            if (CurrentStamp[xloop][yloop].Tile != null) DrawTile(ref xoffset, ref yoffset, (ushort)CurrentStamp[xloop][yloop].Tile, ZoomTileSize, Control.ModifierKeys == Keys.Shift || ShowBlankTileInStamp);
+                            if (CurrentStamp[xloop][yloop].Tile != null) DrawTile(ref xoffset, ref yoffset, (ushort)CurrentStamp[xloop][yloop].Tile, ZoomTileSize, (Control.ModifierKeys == Keys.Shift && ActiveForm == this) || ShowBlankTileInStamp);
                         }
                     GL.Color4((byte)255, (byte)255, (byte)255, (byte)255);
                     GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
