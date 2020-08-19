@@ -225,6 +225,7 @@ namespace MLLE
                 HighlightPanel.Visible = true;
                 HighlightPanel.Location = new Point((e.X & ~31) + 11, (e.Y & ~31) + 11); //11 is half of (32-10), and the highlight is 10x10
                 CurrentSmartTileID = newSmartTileID;
+                AddRuleButton.Enabled = true;
 
                 if (e.Button == MouseButtons.Right)
                 {
