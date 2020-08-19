@@ -2915,7 +2915,7 @@ namespace MLLE
                     }
                     else
                     {
-                        MouseTileX = e.X / 106;
+                        MouseTileX = Math.Min(2, e.X / 106);
                         MouseTileY = (e.Y + TilesetScrollbar.Value - TilesetScrollbar.Minimum) / 106;
                         MouseTile = MouseTileX + MouseTileY * 3;
                     }
@@ -2955,8 +2955,16 @@ namespace MLLE
         private void UpdateMousePrintout()
         {
             OldMouseTile = MouseTile;
-            MouseTilePrintout.Text = String.Format("({0}, {1})", MouseTileX, MouseTileY);
-            MouseEventPrintout.Text = NameEvent(MouseAGAEvent.ID, "");
+            if (CurrentTilesetOverlay != TilesetOverlay.SmartTiles || LastFocusedZone != FocusedZone.Tileset)
+            {
+                MouseTilePrintout.Text = String.Format("({0}, {1})", MouseTileX, MouseTileY);
+                MouseEventPrintout.Text = NameEvent(MouseAGAEvent.ID, "");
+            }
+            else
+            {
+                MouseTilePrintout.Text = MouseTile.ToString();
+                MouseEventPrintout.Text = MouseTile < SmartTiles.Count ? SmartTiles[MouseTile].Name : "(none)";
+            }
         }
         public string NameEvent(uint ID, string defaultName) {
             string[] eventEntryInINI = LevelSpecificEventStringList[ID & 255];
