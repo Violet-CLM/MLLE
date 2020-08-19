@@ -2316,6 +2316,13 @@ namespace MLLE
                             if (x >= 200) { x = 7; y += 105; }
                             else { x += 105; }
                         }
+                        if (WhereSelected == FocusedZone.Tileset && CurrentStamp.Length > 0)
+                        {
+                            uint selectedSmartTileID = CurrentStamp[0][0].Event.Value.ID;
+                            GL.Translate(7 + (selectedSmartTileID%3) * 105, 7 + (selectedSmartTileID/3) * 105, 0);
+                            EmborderSelectedTiles(0,0, 32, 96,96);
+                            RedrawTilesetHowManyTimes = 2;
+                        }
                     }
                     if (ParallaxDisplayMode != ParallaxMode.NoParallax) GL.Enable(EnableCap.Blend);
                     if (RedrawTilesetHowManyTimes != 0) RedrawTilesetHowManyTimes--;
@@ -3143,7 +3150,7 @@ namespace MLLE
                                 }
                             }
                             else if (AnimationSettings.Visible) return;
-                            else if (HowSelecting == FocusedZone.Tileset && !MouseHeldDownSelection) EndSelection();
+                            else if (HowSelecting == FocusedZone.Tileset && !MouseHeldDownSelection && CurrentTilesetOverlay != TilesetOverlay.SmartTiles) EndSelection();
                         }
                         break;
                     }
@@ -3431,6 +3438,11 @@ namespace MLLE
                     SetStampDimensions(1, 1);
                     CurrentStamp[0][0] = new TileAndEvent(SmartTiles[MouseTile].PreviewTileIDs[1], (uint?)MouseTile);
                     ShowBlankTileInStamp = true;
+                    HowSelecting = WhereSelected = FocusedZone.Tileset;
+                    RedrawTilesetHowManyTimes += 2;
+                    for (int x = 0; x < 3; ++x)
+                        for (int y = 0; y < 3; ++y)
+                            IsEachTileSelected[x + 1][y + 1] = true;
                 }
             }
             else if (AnimationSettings.Visible || e.Button == MouseButtons.Right || (LastFocusedZone == FocusedZone.Tileset && (!J2L.HasTiles || MouseTile >= J2L.MaxTiles)))
@@ -3458,6 +3470,7 @@ namespace MLLE
         private void LevelDisplay_MouseUp(object sender, System.Windows.Forms.MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Right) return;
+            if (LastFocusedZone == FocusedZone.Tileset && CurrentTilesetOverlay == TilesetOverlay.SmartTiles) return;
             MouseHeldDownAction = false;
             if (MouseHeldDownSelection)
             {
