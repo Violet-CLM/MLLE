@@ -1784,6 +1784,15 @@ namespace MLLE
                             .Replace('/', Path.DirectorySeparatorChar)
                     );
                     string extraArgs = EnableableStrings[J2L.VersionType][EnableableTitles.SaveAndRunArgs];
+                    string originalScriptFilePath = Path.ChangeExtension(J2L.FullFilePath, ".j2as");
+                    if (File.Exists(originalScriptFilePath))
+                    {
+                        System.Text.RegularExpressions.MatchCollection matches = null;
+                        if (System.IO.File.ReadAllLines(originalScriptFilePath).Any(l => (matches = System.Text.RegularExpressions.Regex.Matches(l, @"//[!/][ \t]*[\\@]SaveAndRunArgs[ \t]+(.+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase)).Count != 0))
+                        {
+                            extraArgs = matches[0].Groups[1].ToString();
+                        }
+                    }
                     var pro = new System.Diagnostics.Process();
                     pro.StartInfo.WorkingDirectory = DefaultDirectories[J2L.VersionType];
                     pro.StartInfo.FileName = EnableableStrings[J2L.VersionType][EnableableTitles.SaveAndRun];
