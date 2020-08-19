@@ -3906,7 +3906,7 @@ namespace MLLE
 
             if (!HoveringOverAnimationAreaOfTilesetPane)
             {
-                bool atLeastOneTileSelected = J2L.HasTiles && LastFocusedZone == FocusedZone.Tileset && IsEachTileSelected.Any(col => col.Contains(true));
+                bool atLeastOneTileSelected = J2L.HasTiles && LastFocusedZone == FocusedZone.Tileset && CurrentTilesetOverlay != TilesetOverlay.SmartTiles && IsEachTileSelected.Any(col => col.Contains(true));
                 copyImageToolStripMenuItem.Enabled = atLeastOneTileSelected;
                 pasteImageToolStripMenuItem.Enabled = atLeastOneTileSelected && BitmapStuff.ClipboardHasBitmap();
             }
