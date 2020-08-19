@@ -887,6 +887,7 @@ namespace MLLE
             zero.TilesICanPlace.Add(0);
             zero.PreviewTileIDs = new ushort[9];
             zero.Name = "(Blank)";
+            zero.Available = true;
             SmartTiles.Add(zero);
             foreach (J2TFile tileset in J2L.Tilesets)
                 SmartTiles.AddRange(tileset.SmartTiles);
