@@ -756,6 +756,10 @@ namespace MLLE
                         if (CurrentTilesetOverlay == TilesetOverlay.SmartTiles) {
                             if (LastFocusedZone != FocusedZone.Level)
                             {
+                                if (MouseTile >= SmartTiles.Count)
+                                    return true;
+                                if (!SmartTiles[MouseTile].Available)
+                                    return true;
                                 ev = (uint?)tileID;
                                 tileID = SmartTiles[(int)ev.Value].PreviewTileIDs[1];
                             }
@@ -764,7 +768,7 @@ namespace MLLE
                                 int i = 0;
                                 while (true)
                                 {
-                                    if (SmartTiles[i].TilesICanPlace.Contains(tileID, SmartTiles[i].TilesICanPlace.Comparer))
+                                    if (SmartTiles[i].Available && SmartTiles[i].TilesICanPlace.Contains(tileID, SmartTiles[i].TilesICanPlace.Comparer))
                                     {
                                         ev = (uint?)i;
                                         tileID = SmartTiles[i].PreviewTileIDs[1];
@@ -3442,7 +3446,7 @@ namespace MLLE
         {
             if (LastFocusedZone == FocusedZone.Tileset && CurrentTilesetOverlay == TilesetOverlay.SmartTiles)
             {
-                if (MouseTile < SmartTiles.Count)
+                if (MouseTile < SmartTiles.Count && SmartTiles[MouseTile].Available)
                 {
                     SetStampDimensions(1, 1);
                     CurrentStamp[0][0] = new TileAndEvent(SmartTiles[MouseTile].PreviewTileIDs[1], (uint?)MouseTile);

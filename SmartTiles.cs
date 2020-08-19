@@ -12,6 +12,7 @@ namespace MLLE
         internal List<ushort> Extras { get { return Assignments[35].Tiles; } }
         internal List<int> Friends = new List<int>();
         internal ushort[] PreviewTileIDs = new ushort[9];
+        internal bool Available = false;
         internal string Name = "Smart Tile";
         private J2TFile Tileset;
         internal class ushortComparer : IEqualityComparer<ushort>
@@ -173,24 +174,34 @@ namespace MLLE
             if (updateFriends)
                 UpdateTilesIGonextTo(smartTiles);
 
-            ushort qualifyingTileID = Assignments[MandatoryAssignmentIDs.First(i => !Assignments[i].Empty)].Tiles[0];
-            ArrayMap<ushort> surroundingTiles = new ArrayMap<ushort>(3 + 2 * 2, 3 + 3 + 2);
-            for (int x = 2; x < 5; ++x)
-                for (int y = 3; y < 6; ++y)
-                    surroundingTiles[x, y] = qualifyingTileID;
-            for (int pass = 0; pass < 2; ++pass) //why not
+            try
+            {
+                var qualifyingAssignment = Assignments[MandatoryAssignmentIDs.First(i => !Assignments[i].Empty)];
+                ushort qualifyingTileID = qualifyingAssignment.Tiles[0];
+                ArrayMap<ushort> surroundingTiles = new ArrayMap<ushort>(3 + 2 * 2, 3 + 3 + 2);
                 for (int x = 2; x < 5; ++x)
                     for (int y = 3; y < 6; ++y)
-                    {
-                        ArrayMap<ushort> localTiles = new ArrayMap<ushort>(5, 6);
-                        for (int xx = 0; xx < 5; ++xx)
-                            for (int yy = 0; yy < 6; ++yy)
-                                localTiles[xx, yy] = surroundingTiles[x + xx - 2, y + yy - 3];
-                        ushort tileID = surroundingTiles[x, y];
-                        if (Apply(localTiles, ref tileID)) //not sure why this would return false, but...
-                            surroundingTiles[x, y] = tileID;
-                    }
-            PreviewTileIDs = Enumerable.Range(0, 9).Select(i => surroundingTiles[(i % 3) + 2, (i / 3) + 3]).ToArray();
+                        surroundingTiles[x, y] = qualifyingTileID;
+                for (int pass = 0; pass < 2; ++pass) //why not
+                    for (int x = 2; x < 5; ++x)
+                        for (int y = 3; y < 6; ++y)
+                        {
+                            ArrayMap<ushort> localTiles = new ArrayMap<ushort>(5, 6);
+                            for (int xx = 0; xx < 5; ++xx)
+                                for (int yy = 0; yy < 6; ++yy)
+                                    localTiles[xx, yy] = surroundingTiles[x + xx - 2, y + yy - 3];
+                            ushort tileID = surroundingTiles[x, y];
+                            if (Apply(localTiles, ref tileID)) //not sure why this would return false, but...
+                                surroundingTiles[x, y] = tileID;
+                        }
+                PreviewTileIDs = Enumerable.Range(0, 9).Select(i => surroundingTiles[(i % 3) + 2, (i / 3) + 3]).ToArray();
+                Available = true;
+            }
+            catch //in First
+            {
+                PreviewTileIDs = new ushort[9];
+                Available = false;
+            }
         }
 
         static readonly internal ushort[][] AlternativeAssignments = new ushort[100][]{
