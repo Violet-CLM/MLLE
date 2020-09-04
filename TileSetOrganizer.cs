@@ -202,6 +202,12 @@ namespace MLLE
                 {
                     MessageBox.Show(sourceFilepath + " does not use an image format supported by this program. (Try PNG, GIF, TIFF, or BMP.)", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
+                finally
+                {
+                    image.Dispose();
+                    image32.Dispose();
+                    mask.Dispose();
+                }
             }
         }
 
