@@ -80,11 +80,7 @@ namespace MLLE
             pictureBox1.Image = image;
             
             TilesetOriginalColorsImage = image.Clone() as Bitmap;
-            var palette = TilesetOriginalColorsImage.Palette;
-            var entries = palette.Entries;
-            for (uint i = 0; i < Palette.PaletteSize; ++i)
-                entries[i] = Palette.Convert(Tileset.Palette.Colors[i]);
-            TilesetOriginalColorsImage.Palette = palette;
+            Tileset.Palette.Apply(TilesetOriginalColorsImage);
 
             DrawTilesetUsingRemappedLevelPalette();
         }

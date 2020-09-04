@@ -129,10 +129,13 @@ namespace MLLE
             {
                 if (DataSource.Width != WidthBox.Value || DataSource.Height != HeightBox.Value)
                 {
-                    newrectangle = LayerAlign.Show(CurrentLayer, (int)WidthBox.Value - (int)DataSource.Width, (int)HeightBox.Value - (int)DataSource.Height);
-                    if (newrectangle == null) return false;
-                    SourceForm.Undoable = new Stack<MLLE.Mainframe.LayerAndSpecificTiles>(SourceForm.Undoable.Where(action => action.Layer != DataSource));
-                    SourceForm.Redoable = new Stack<MLLE.Mainframe.LayerAndSpecificTiles>(SourceForm.Redoable.Where(action => action.Layer != DataSource));
+                    if (DataSource.HasTiles)
+                    {
+                        newrectangle = LayerAlign.Show(CurrentLayer, (int)WidthBox.Value - (int)DataSource.Width, (int)HeightBox.Value - (int)DataSource.Height);
+                        if (newrectangle == null) return false;
+                        SourceForm.Undoable = new Stack<MLLE.Mainframe.LayerAndSpecificTiles>(SourceForm.Undoable.Where(action => action.Layer != DataSource));
+                        SourceForm.Redoable = new Stack<MLLE.Mainframe.LayerAndSpecificTiles>(SourceForm.Redoable.Where(action => action.Layer != DataSource));
+                    }
                 }
 
                 DataSource.Width = (uint)WidthBox.Value;
@@ -261,6 +264,7 @@ namespace MLLE
 
         private void panel1_Click(object sender, EventArgs e)
         {
+            colorDialog1.Color = ColorBox.BackColor;
             DialogResult result = colorDialog1.ShowDialog();
             if (result == DialogResult.OK) ColorBox.BackColor = colorDialog1.Color;
             Param1.Value = colorDialog1.Color.R;

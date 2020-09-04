@@ -105,6 +105,13 @@ namespace MLLE
                 filePathsToInclude.Add(newFilepath);
                 fileNamesToInclude.Add(newFilename);
                 textBox1.AppendText(Environment.NewLine + "Found " + quotedFilename);
+
+                if (checkBoxMLLESet.Checked && Path.GetExtension(newFilepath).Equals('.' + tilesetExtension, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    var mllesetFilepath = Path.ChangeExtension(newFilepath, "MLLESet");
+                    if (File.Exists(mllesetFilepath))
+                        addFilepath(ref mllesetFilepath);
+                }
                 return DialogResult.Yes;
             }
         }

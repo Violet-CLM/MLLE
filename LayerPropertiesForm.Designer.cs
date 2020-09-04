@@ -64,6 +64,9 @@
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.Copy4 = new System.Windows.Forms.Button();
             this.groupBoxPlus = new System.Windows.Forms.GroupBox();
+            this.SpriteParam = new System.Windows.Forms.NumericUpDown();
+            this.RotationAngle = new System.Windows.Forms.NumericUpDown();
+            this.RotationRadiusMultiplier = new System.Windows.Forms.NumericUpDown();
             this.SpriteMode = new System.Windows.Forms.ComboBox();
             this.LabelRotationAngle = new System.Windows.Forms.Label();
             this.Hidden = new System.Windows.Forms.CheckBox();
@@ -77,9 +80,6 @@
             this.YOffset = new System.Windows.Forms.TextBox();
             this.OffsetYLabel = new System.Windows.Forms.Label();
             this.ButtonApply = new System.Windows.Forms.Button();
-            this.RotationAngle = new System.Windows.Forms.NumericUpDown();
-            this.RotationRadiusMultiplier = new System.Windows.Forms.NumericUpDown();
-            this.SpriteParam = new System.Windows.Forms.NumericUpDown();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -90,9 +90,9 @@
             ((System.ComponentModel.ISupportInitialize)(this.Param2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.Param3)).BeginInit();
             this.groupBoxPlus.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.SpriteParam)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.RotationAngle)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.RotationRadiusMultiplier)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.SpriteParam)).BeginInit();
             this.SuspendLayout();
             // 
             // OKButton
@@ -491,6 +491,7 @@
             // colorDialog1
             // 
             this.colorDialog1.AnyColor = true;
+            this.colorDialog1.FullOpen = true;
             // 
             // Copy4
             // 
@@ -526,6 +527,60 @@
             this.groupBoxPlus.TabIndex = 8;
             this.groupBoxPlus.TabStop = false;
             this.groupBoxPlus.Text = "JJ2+ Properties";
+            // 
+            // SpriteParam
+            // 
+            this.SpriteParam.Location = new System.Drawing.Point(204, 69);
+            this.SpriteParam.Maximum = new decimal(new int[] {
+            255,
+            0,
+            0,
+            0});
+            this.SpriteParam.Name = "SpriteParam";
+            this.SpriteParam.Size = new System.Drawing.Size(50, 20);
+            this.SpriteParam.TabIndex = 15;
+            this.SpriteParam.ValueChanged += new System.EventHandler(this.GenericInputChanged);
+            // 
+            // RotationAngle
+            // 
+            this.RotationAngle.Increment = new decimal(new int[] {
+            32,
+            0,
+            0,
+            0});
+            this.RotationAngle.Location = new System.Drawing.Point(61, 94);
+            this.RotationAngle.Maximum = new decimal(new int[] {
+            1024,
+            0,
+            0,
+            0});
+            this.RotationAngle.Minimum = new decimal(new int[] {
+            1024,
+            0,
+            0,
+            -2147483648});
+            this.RotationAngle.Name = "RotationAngle";
+            this.RotationAngle.Size = new System.Drawing.Size(50, 20);
+            this.RotationAngle.TabIndex = 10;
+            this.RotationAngle.ValueChanged += new System.EventHandler(this.GenericInputChanged);
+            // 
+            // RotationRadiusMultiplier
+            // 
+            this.RotationRadiusMultiplier.Location = new System.Drawing.Point(204, 95);
+            this.RotationRadiusMultiplier.Maximum = new decimal(new int[] {
+            10,
+            0,
+            0,
+            0});
+            this.RotationRadiusMultiplier.Minimum = new decimal(new int[] {
+            10,
+            0,
+            0,
+            -2147483648});
+            this.RotationRadiusMultiplier.Name = "RotationRadiusMultiplier";
+            this.RotationRadiusMultiplier.Size = new System.Drawing.Size(50, 20);
+            this.RotationRadiusMultiplier.TabIndex = 9;
+            this.RotationRadiusMultiplier.ValueChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // SpriteMode
             // 
@@ -700,60 +755,6 @@
             this.ButtonApply.UseVisualStyleBackColor = true;
             this.ButtonApply.Click += new System.EventHandler(this.ButtonApply_Click);
             // 
-            // RotationAngle
-            // 
-            this.RotationAngle.Increment = new decimal(new int[] {
-            32,
-            0,
-            0,
-            0});
-            this.RotationAngle.Location = new System.Drawing.Point(61, 94);
-            this.RotationAngle.Maximum = new decimal(new int[] {
-            1024,
-            0,
-            0,
-            0});
-            this.RotationAngle.Minimum = new decimal(new int[] {
-            1024,
-            0,
-            0,
-            -2147483648});
-            this.RotationAngle.Name = "RotationAngle";
-            this.RotationAngle.Size = new System.Drawing.Size(50, 20);
-            this.RotationAngle.TabIndex = 10;
-            this.RotationAngle.ValueChanged += new System.EventHandler(this.GenericInputChanged);
-            // 
-            // RotationRadiusMultiplier
-            // 
-            this.RotationRadiusMultiplier.Location = new System.Drawing.Point(204, 95);
-            this.RotationRadiusMultiplier.Maximum = new decimal(new int[] {
-            10,
-            0,
-            0,
-            0});
-            this.RotationRadiusMultiplier.Minimum = new decimal(new int[] {
-            10,
-            0,
-            0,
-            -2147483648});
-            this.RotationRadiusMultiplier.Name = "RotationRadiusMultiplier";
-            this.RotationRadiusMultiplier.Size = new System.Drawing.Size(50, 20);
-            this.RotationRadiusMultiplier.TabIndex = 9;
-            this.RotationRadiusMultiplier.ValueChanged += new System.EventHandler(this.GenericInputChanged);
-            // 
-            // SpriteParam
-            // 
-            this.SpriteParam.Location = new System.Drawing.Point(204, 69);
-            this.SpriteParam.Maximum = new decimal(new int[] {
-            255,
-            0,
-            0,
-            0});
-            this.SpriteParam.Name = "SpriteParam";
-            this.SpriteParam.Size = new System.Drawing.Size(50, 20);
-            this.SpriteParam.TabIndex = 15;
-            this.SpriteParam.ValueChanged += new System.EventHandler(this.GenericInputChanged);
-            // 
             // LayerPropertiesForm
             // 
             this.AcceptButton = this.OKButton;
@@ -792,9 +793,9 @@
             ((System.ComponentModel.ISupportInitialize)(this.Param3)).EndInit();
             this.groupBoxPlus.ResumeLayout(false);
             this.groupBoxPlus.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.SpriteParam)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.RotationAngle)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.RotationRadiusMultiplier)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.SpriteParam)).EndInit();
             this.ResumeLayout(false);
 
         }

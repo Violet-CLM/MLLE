@@ -498,6 +498,6 @@
 </value>
   </data>
   <data name="textBoxDescription.Text" xml:space="preserve">
-    <value>An alternative level editor to JCS that offers various options that JCS does not, such as longer text strings, an integrated layer edit/parallax view screen, more useful parameter fields for many events, more complex tile selection and tile placement options, a redo buffer, better layer resizing, JJ2+ features (including levels with infinite layers and tilesets, as well as custom palettes) and support for every single related game (1.23, 1.24, Battery Check, 1.10o, 1.00g/h, and Animaniacs: A Gigantic Adventure).</value>
+    <value>An alternative level editor to JCS that offers various options that JCS does not, such as longer text strings, an integrated layer edit/parallax view screen, more useful parameter fields for many events, autocompleting tiles, more complex tile selection and tile placement options, a redo buffer, better layer resizing, JJ2+ features (including levels with infinite layers and tilesets, custom weapons, and custom palettes) and support for every single related game (1.23, 1.24, Battery Check, 1.10o, 1.00g/h, and Animaniacs: A Gigantic Adventure).</value>
   </data>
 </root>

@@ -5,6 +5,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using Ionic.Zlib;
+using System;
 
 namespace MLLE
 {
@@ -219,6 +220,18 @@ namespace MLLE
         public Color WaterGradientStop { get; set; }
 
 
+        
+        [DescriptionAttribute("Which event (if >32) will be used as a +15 Ammo Crate for weapon #7."),
+        CategoryAttribute("Missing Objects")]
+        public byte Gun7Crate { get; set; }
+        [DescriptionAttribute("Which event (if >32) will be used as a +15 Ammo Crate for weapon #8."),
+        CategoryAttribute("Missing Objects")]
+        public byte Gun8Crate { get; set; }
+        [DescriptionAttribute("Which event (if >32) will be used as a +15 Ammo Crate for weapon #9."),
+        CategoryAttribute("Missing Objects")]
+        public byte Gun9Crate { get; set; }
+
+
         [Browsable(false)]
         internal Palette Palette;
 
@@ -232,6 +245,42 @@ namespace MLLE
         [Browsable(false)]
         internal byte[][] TileMasks;
 
+
+        internal class Weapon
+        {
+            public const int NumberOfCommonOptions = 6;
+
+            internal string Name;
+            internal int[] Options;
+            internal Weapon() { }
+            internal Weapon(string n, int[] o) { Name = n; Options = o; }
+
+            internal Weapon Clone()
+            {
+                return new Weapon(Name, Options.Clone() as int[]);
+            }
+            public override bool Equals(object other)
+            {
+                if (other == null || GetType() != other.GetType())
+                    return false;
+
+                Weapon otherWeapon = other as Weapon;
+                return Name.Equals(otherWeapon.Name) && Options.SequenceEqual(otherWeapon.Options);
+            }
+        }
+        static readonly Weapon[] WeaponDefaults = new Weapon[9] {
+            new Weapon("Blaster",           new int[]{-1,1,0, 3, 3, 3}),
+            new Weapon("Bouncer",           new int[]{-1,0,1, 3, 3, 0,  0,1}),
+            new Weapon("Ice",               new int[]{-1,0,1, 3, 3, 0,  1}),
+            new Weapon("Seeker",            new int[]{-1,0,1,10,10, 0}),
+            new Weapon("RFs",               new int[]{-1,0,1,10,10, 0}),
+            new Weapon("Toaster",           new int[]{-1,0,1, 3, 3, 0}),
+            new Weapon("TNT",               new int[]{-1,0,0,10,10, 0,  0}),
+            new Weapon("Gun8",              new int[]{-1,0,0,10,10, 0,  0}),
+            new Weapon("Electro Blaster",   new int[]{-1,0,0,10,10, 0})
+        };
+        [Browsable(false)]
+        internal Weapon[] Weapons;
 
         const float DefaultWaterLevel = 0x7FFF;
         public PlusPropertyList(PlusPropertyList? other) : this()
@@ -254,15 +303,9 @@ namespace MLLE
                     Palette.CopyFrom(other.Value.Palette);
                 }
 
-                for (int i = 0; i < ColorRemappings.Length; ++i)
-                {
-                    if (other.Value.ColorRemappings[i] == null)
-                        ColorRemappings[i] = null;
-                    else
-                    {
+                for (int i = 0; i < other.Value.ColorRemappings.Length; ++i)
+                    if (other.Value.ColorRemappings[i] != null)
                         ColorRemappings[i] = other.Value.ColorRemappings[i].Clone() as byte[];
-                    }
-                }
 
                 for (int i = 0; i < TileImages.Length; ++i)
                 {
@@ -283,6 +326,8 @@ namespace MLLE
                         TileMasks[i] = other.Value.TileMasks[i].Clone() as byte[];
                     }
                 }
+
+                Weapons = other.Value.Weapons.Select(w => w.Clone()).ToArray();
             }
             else
             {
@@ -294,7 +339,9 @@ namespace MLLE
                 WaterLevel = DefaultWaterLevel;
                 WaterGradientStart = Color.Black;
                 WaterGradientStop = Color.Black;
+                Gun7Crate = Gun7Crate = Gun9Crate = 0;
                 Palette = null;
+                Weapons = WeaponDefaults.Select(w => w.Clone()).ToArray();
             }
         }
 
@@ -413,18 +460,23 @@ namespace MLLE
                     WaterLevel != DefaultWaterLevel ||
                     WaterGradientStart.ToArgb() != comparableBlack ||
                     WaterGradientStop.ToArgb() != comparableBlack ||
+                    Gun7Crate != 0 || Gun8Crate != 0 || Gun9Crate != 0 ||
                     Palette != null ||
                     ColorRemappings.FirstOrDefault(it => it != null) != null ||
                     TileImages.FirstOrDefault(it => it != null) != null ||
-                    TileMasks.FirstOrDefault(it => it != null) != null
+                    TileMasks.FirstOrDefault(it => it != null) != null ||
+                    !Weapons.SequenceEqual(WeaponDefaults)
                 )
                     return true;
                 return false;
             }
         }
-        internal void CreateData5Section(ref byte[] Data5, List<J2TFile> Tilesets, List<Layer> Layers)
+        internal bool CreateData5Section(out byte[] Data5, out WeaponsForm.ExtendedWeapon[] CustomWeapons, List<J2TFile> Tilesets, List<Layer> Layers)
         {
+            Data5 = null;
+            CustomWeapons = new WeaponsForm.ExtendedWeapon[9];
             var data5header = new MemoryStream();
+
             using (MemoryStream data5body = new MemoryStream())
             using (BinaryWriter data5writer = new BinaryWriter(data5header, J2LFile.FileEncoding))
             using (BinaryWriter data5bodywriter = new BinaryWriter(data5body, J2LFile.FileEncoding))
@@ -506,12 +558,64 @@ namespace MLLE
                         }
                 }
 
+                for (int weaponID = 0; weaponID < Weapons.Length; ++weaponID)
+                {
+                    Weapon weapon = Weapons[weaponID];
+                    Weapon defaultWeapon = WeaponDefaults[weaponID];
+                    bool isGun8InSlot8 = weaponID == 7 && weapon.Name == "Gun8"; //hardcoded laxer standards... parameter need not match
+                    bool isCustom = !isGun8InSlot8 && !(weapon.Name.Equals(defaultWeapon.Name) && weapon.Options.Skip(Weapon.NumberOfCommonOptions).SequenceEqual(defaultWeapon.Options.Skip(Weapon.NumberOfCommonOptions)));
+                    data5bodywriter.Write(isCustom);
+                    int[] options = weapon.Options;
+                    data5bodywriter.Write(options[0]);
+                    data5bodywriter.Write((byte)options[1]);
+                    data5bodywriter.Write(options[2] != 0);
+                    data5bodywriter.Write((byte)options[3]);
+                    data5bodywriter.Write((byte)options[4]);
+                    data5bodywriter.Write((byte)options[5]);
+                    if (weaponID == 6)
+                        data5bodywriter.Write(Gun7Crate);
+                    else if (weaponID == 7)
+                        data5bodywriter.Write(Gun8Crate);
+                    else if (weaponID == 8)
+                        data5bodywriter.Write(Gun9Crate);
+                    if (isGun8InSlot8)
+                        data5bodywriter.Write((byte)options[Weapon.NumberOfCommonOptions]);
+                    else if (isCustom)
+                    {
+                        data5bodywriter.Write(weapon.Name);
+                        var extendedWeapon = WeaponsForm.GetAllAvailableWeapons().Find(w => w.Name == weapon.Name);
+                        if (extendedWeapon == null)
+                        {
+                            MessageBox.Show(String.Format("Sorry, the MLLE \"Weapons\" folder did not include any .ini file defining a weapon with the name \"{0}.\"", weapon.Name), "Weapon not found", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return false;
+                        }
+                        CustomWeapons[weaponID] = extendedWeapon;
+                        data5bodywriter.Write(extendedWeapon.OptionTypes.Skip(Weapon.NumberOfCommonOptions).Select(o => o == WeaponsForm.ExtendedWeapon.oTypes.Int ? sizeof(int) : sizeof(byte)).Sum());
+                        for (int optionID = Weapon.NumberOfCommonOptions; optionID < options.Length; ++optionID)
+                        {
+                            switch (extendedWeapon.OptionTypes[optionID]) {
+                                case WeaponsForm.ExtendedWeapon.oTypes.Bool:
+                                    data5bodywriter.Write(options[optionID] != 0);
+                                    break;
+                                case WeaponsForm.ExtendedWeapon.oTypes.Dropdown:
+                                    data5bodywriter.Write((byte)options[optionID]);
+                                    break;
+                                case WeaponsForm.ExtendedWeapon.oTypes.Int:
+                                default:
+                                    data5bodywriter.Write(options[optionID]);
+                                    break;
+                            }
+                        }
+                    }
+                }
+
                 var data5bodycompressed = ZlibStream.CompressBuffer(data5body.ToArray());
                 data5writer.Write((uint)data5bodycompressed.Length);
                 data5writer.Write((uint)data5body.Length);
                 data5writer.Write(data5bodycompressed);
             }
             Data5 = data5header.ToArray();
+            return true;
         }
         internal bool LevelIsReadable(byte[] Data5, List<J2TFile> Tilesets, List<Layer> Layers, string Filepath)
         {
@@ -555,7 +659,7 @@ namespace MLLE
                         Palette = new Palette(data5bodyreader, true);
 
                     for (int i = 0; i < Mainframe.RecolorableSpriteNames.Length; ++i)
-                        if (data5bodyreader.ReadBoolean())
+                        if ((i < 11 || data5Version >= 0x105) && data5bodyreader.ReadBoolean()) //the recolorable sprite list was expanded in MLLE-Include-1.5
                         {
                             ColorRemappings[i] = new byte[Palette.PaletteSize];
                             for (uint j = 0; j < Palette.PaletteSize; ++j)
@@ -642,6 +746,49 @@ namespace MLLE
                                 {
                                     int tileID = data5bodyreader.ReadUInt16();
                                     images[tileID] = data5bodyreader.ReadBytes(32 * 32);
+                                }
+                            }
+
+                            if (data5Version >= 0x105) //weapons were added in MLLE-Include-1.5(w)
+                            {
+                                for (int weaponID = 0; weaponID < 9; ++weaponID)
+                                {
+                                    bool customWeapon = data5bodyreader.ReadBoolean();
+                                    Weapon weapon = Weapons[weaponID];
+                                    weapon.Options[0] = data5bodyreader.ReadInt32(); //maximum
+                                    for (int optionID = 1; optionID < Weapon.NumberOfCommonOptions; ++optionID)
+                                        weapon.Options[optionID] = data5bodyreader.ReadByte(); //birds and crates and gems and replenishment
+                                    if (weaponID == 6)
+                                        Gun7Crate = data5bodyreader.ReadByte();
+                                    else if (weaponID == 7)
+                                        Gun8Crate = data5bodyreader.ReadByte();
+                                    else if (weaponID == 8)
+                                        Gun9Crate = data5bodyreader.ReadByte();
+                                    if (customWeapon)
+                                    {
+                                        string name = data5bodyreader.ReadString();
+                                        var extendedWeapon = WeaponsForm.GetAllAvailableWeapons().Find(w => w.Name == name);
+                                        if (extendedWeapon == null)
+                                        {
+                                            MessageBox.Show(String.Format("Sorry, the MLLE \"Weapons\" folder did not include any .ini file defining a weapon with the name \"{0}.\"", name), "Weapon not found", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                            return false;
+                                        }
+                                        
+                                        Weapons[weaponID].Name = name;
+                                        Array.Resize(ref Weapons[weaponID].Options, extendedWeapon.Options.Length);
+                                        data5bodyreader.ReadInt32(); //length of jjSTREAM
+                                        for (int optionID = Weapon.NumberOfCommonOptions; optionID < weapon.Options.Length; ++optionID)
+                                            switch (extendedWeapon.OptionTypes[optionID]) {
+                                                case WeaponsForm.ExtendedWeapon.oTypes.Bool:
+                                                case WeaponsForm.ExtendedWeapon.oTypes.Dropdown:
+                                                    weapon.Options[optionID] = data5bodyreader.ReadByte();
+                                                    break;
+                                                case WeaponsForm.ExtendedWeapon.oTypes.Int:
+                                                    weapon.Options[optionID] = data5bodyreader.ReadInt32();
+                                                    break;
+                                            }
+                                    } else if (weaponID == 7)
+                                        weapon.Options[Weapon.NumberOfCommonOptions] = data5bodyreader.ReadByte(); //Gun8 style
                                 }
                             }
                         }

@@ -44,6 +44,21 @@ internal class Palette
         }
     }
 
+    internal void Apply(Bitmap bitmap)
+    {
+        var palette = bitmap.Palette;
+        var entries = palette.Entries;
+        for (uint i = 0; i < PaletteSize; ++i)
+            entries[i] = Convert(Colors[i]);
+        bitmap.Palette = palette;
+    }
+    internal Palette(ColorPalette original)
+    {
+        var entries = original.Entries;
+        for (uint i = 0; i < PaletteSize; ++i)
+            Colors[i] = Convert(entries[i]);
+    }
+
     public void WriteLEVStyle(BinaryWriter binwriter)
     {
         foreach (byte[] color in Colors)
