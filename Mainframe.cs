@@ -3100,7 +3100,14 @@ namespace MLLE
                     Undoable.Push(actionCenter);
                     Redoable.Clear();
                     LevelHasBeenModified = true;
-                    J2L.EventMap[MouseTileX, MouseTileY] = MouseAGAEvent.ID = ActiveEvent.ID;
+                    if (J2L.VersionType == Version.AGA)
+                    {
+                        J2L.AGA_EventMap[MouseTileX, MouseTileY] = MouseAGAEvent = ActiveEvent;
+                    }
+                    else
+                    {
+                        J2L.EventMap[MouseTileX, MouseTileY] = MouseAGAEvent.ID = ActiveEvent.ID;
+                    }
                 }
             }
             UpdateMousePrintout();
