@@ -564,9 +564,7 @@ namespace MLLE
                 DrawThread.Abort();
 
             if (J2L != null)
-            {
                 DeleteLevelScriptIfEmpty();
-            }
             
             bool windowIsMaximized = this.WindowState == FormWindowState.Maximized;
             Settings.IniWriteValue("Window", "Maximized", windowIsMaximized.ToString());
