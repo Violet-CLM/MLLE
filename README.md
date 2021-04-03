@@ -11,28 +11,28 @@ Installation instructions:
 * If you already have a previous release of MLLE installed, you should not re-extract any of the .ini files, for risk of losing your personal settings.
 
 There’s no help file, because help files are hard, but here are some hotkeys:
-1-8: View that layer.
-Ctrl + 1-8: Edit layer properties for that layer.
-Ctrl + plus/minus: Zoom in/out.
-Ctrl + M: Toggle mask mode.
-M: View partial mask.
-Ctrl + P: Toggle parallax mode.
-P: View partial parallax.
-Ctrl + V: Toggle event view.
-Ctrl + Shift + R: Save & Run, with the start position temporarily moved to wherever your mouse is.
-F, Backspace, E, Ctrl + E, Shift + E: You know how these things work.
-I: Flip tiles vertically (available only for JJ2+ levels)
-Comma: Copy current tile.
-Shift + Comma: Copy current tile and the event on it.
-B: Begin or end a selection of tiles to grab.
-Delete: Clear layer/selection.
-Ctrl + C: Copy current selection.
-Ctrl + X: Copy and delete current selection.
-Ctrl + D: Deselect all.
-Ctrl + Z, Ctrl + Y: Undo, Redo.
-For editing tileset:
-Shift + T: Assign tile transparent tiletype.
-Shift + 0-9: Assign tile that tiletype, if possible. (e.g. 1 for Transparent and 4 for Caption in regular JJ2 levels.)
+* 1-8: View that layer.
+* Ctrl + 1-8: Edit layer properties for that layer.
+* Ctrl + plus/minus: Zoom in/out.
+* Ctrl + M: Toggle mask mode.
+* M: View partial mask.
+* Ctrl + P: Toggle parallax mode.
+* P: View partial parallax.
+* Ctrl + V: Toggle event view.
+* Ctrl + Shift + R: Save & Run, with the start position temporarily moved to wherever your mouse is.
+* F, Backspace, E, Ctrl + E, Shift + E: You know how these things work.
+* I: Flip tiles vertically (available only for JJ2+ levels)
+* Comma: Copy current tile.
+* Shift + Comma: Copy current tile and the event on it.
+* B: Begin or end a selection of tiles to grab.
+* Delete: Clear layer/selection.
+* Ctrl + C: Copy current selection.
+* Ctrl + X: Copy and delete current selection.
+* Ctrl + D: Deselect all.
+* Ctrl + Z, Ctrl + Y: Undo, Redo.
+* For editing tileset:
+* Shift + T: Assign tile transparent tiletype.
+* Shift + 0-9: Assign tile that tiletype, if possible. (e.g. 1 for Transparent and 4 for Caption in regular JJ2 levels.)
 Additionally, holding down the Control key while using either of the first two drawing tools (Paintbrush and Fill) triggers an alternate mode wherein they work somewhat differently. The Control key also serves as an eyedropper tool when you are redrawing tile images in JJ2+ levels.
 
 Building
