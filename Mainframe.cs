@@ -2928,16 +2928,19 @@ namespace MLLE
                     LastFocusedZone = FocusedZone.Tileset;
                     TilesetScrollbar.Focus();
                     LevelDisplay.ContextMenuStrip = TContextMenu;
+
+                    int mouseY = e.Y >= 0 ? e.Y : 0;
+
                     if (CurrentTilesetOverlay != TilesetOverlay.SmartTiles)
                     {
                         MouseTileX = e.X / 32;
-                        MouseTileY = (e.Y + TilesetScrollbar.Value - TilesetScrollbar.Minimum) / 32;
+                        MouseTileY = (mouseY + TilesetScrollbar.Value - TilesetScrollbar.Minimum) / 32;
                         MouseTile = MouseTileX + MouseTileY * 10;
                     }
                     else
                     {
                         MouseTileX = Math.Min(2, e.X / 106);
-                        MouseTileY = (e.Y + TilesetScrollbar.Value - TilesetScrollbar.Minimum) / 106;
+                        MouseTileY = (mouseY + TilesetScrollbar.Value - TilesetScrollbar.Minimum) / 106;
                         MouseTile = MouseTileX + MouseTileY * 3;
                     }
                     HoveringOverAnimationAreaOfTilesetPane = J2L.HasTiles && MouseTile >= J2L.TileCount;
