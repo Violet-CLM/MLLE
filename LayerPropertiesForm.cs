@@ -136,6 +136,10 @@ namespace MLLE
                         SourceForm.Undoable = new Stack<MLLE.Mainframe.LayerAndSpecificTiles>(SourceForm.Undoable.Where(action => action.Layer != DataSource));
                         SourceForm.Redoable = new Stack<MLLE.Mainframe.LayerAndSpecificTiles>(SourceForm.Redoable.Where(action => action.Layer != DataSource));
                     }
+                    else
+                    {
+                        DataSource.TileMap = new ArrayMap<ushort> ((uint)WidthBox.Value, (uint)HeightBox.Value);
+                    }
                 }
 
                 DataSource.Width = (uint)WidthBox.Value;
