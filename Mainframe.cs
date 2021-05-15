@@ -3519,17 +3519,21 @@ namespace MLLE
         {
             recentLevelsToolStripMenuItem.DropDownItems.Clear();
             recentLevelsToolStripMenuItem.Enabled = RecentlyLoadedLevels.Count > 0;
+            _suspendEvent.Reset();
             for (int i = 0; i < RecentlyLoadedLevels.Count; ++i)
             {
                 string recentLevel = RecentlyLoadedLevels[i];
 
                 var toolStripItem = new ToolStripMenuItem((i + 1).ToString() + " " + Path.GetFileName(recentLevel));
                 toolStripItem.Click += (s, ee) => {
-                    LoadJ2L(recentLevel);
-                };
-
+                    if (PromptForSaving()) {
+                        DeleteLevelScriptIfEmpty();
+                        LoadJ2L(recentLevel);
+                    }
+                };                
                 recentLevelsToolStripMenuItem.DropDownItems.Add(toolStripItem);
             }
+            _suspendEvent.Set();
         }
         
         private void defineSmartTilesToolStripMenuItem_Click(object sender, EventArgs e)
