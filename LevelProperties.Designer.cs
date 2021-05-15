@@ -113,7 +113,7 @@
             this.HideHCL.Location = new System.Drawing.Point(10, 150);
             this.HideHCL.Name = "HideHCL";
             this.HideHCL.Size = new System.Drawing.Size(164, 17);
-            this.HideHCL.TabIndex = 14;
+            this.HideHCL.TabIndex = 10;
             this.HideHCL.Text = "Hide in Home-Cooked Levels";
             this.HideHCL.UseVisualStyleBackColor = true;
             // 
@@ -127,7 +127,7 @@
             this.NextLevel.MaxLength = 31;
             this.NextLevel.Name = "NextLevel";
             this.NextLevel.Size = new System.Drawing.Size(110, 21);
-            this.NextLevel.TabIndex = 13;
+            this.NextLevel.TabIndex = 3;
             // 
             // IsMultiplayer
             // 
@@ -135,7 +135,7 @@
             this.IsMultiplayer.Location = new System.Drawing.Point(174, 150);
             this.IsMultiplayer.Name = "IsMultiplayer";
             this.IsMultiplayer.Size = new System.Drawing.Size(76, 17);
-            this.IsMultiplayer.TabIndex = 0;
+            this.IsMultiplayer.TabIndex = 11;
             this.IsMultiplayer.Text = "Multiplayer";
             this.IsMultiplayer.UseVisualStyleBackColor = true;
             // 
@@ -144,7 +144,7 @@
             this.BrowseSecret.Location = new System.Drawing.Point(191, 98);
             this.BrowseSecret.Name = "BrowseSecret";
             this.BrowseSecret.Size = new System.Drawing.Size(60, 20);
-            this.BrowseSecret.TabIndex = 12;
+            this.BrowseSecret.TabIndex = 8;
             this.BrowseSecret.Text = "Browse...";
             this.BrowseSecret.UseVisualStyleBackColor = true;
             this.BrowseSecret.Click += new System.EventHandler(this.BrowseSecret_Click);
@@ -154,7 +154,7 @@
             this.BrowseMusic.Location = new System.Drawing.Point(191, 72);
             this.BrowseMusic.Name = "BrowseMusic";
             this.BrowseMusic.Size = new System.Drawing.Size(60, 20);
-            this.BrowseMusic.TabIndex = 11;
+            this.BrowseMusic.TabIndex = 6;
             this.BrowseMusic.Text = "Browse...";
             this.BrowseMusic.UseVisualStyleBackColor = true;
             this.BrowseMusic.Click += new System.EventHandler(this.BrowseMusic_Click);
@@ -164,7 +164,7 @@
             this.BrowseNext.Location = new System.Drawing.Point(191, 46);
             this.BrowseNext.Name = "BrowseNext";
             this.BrowseNext.Size = new System.Drawing.Size(60, 20);
-            this.BrowseNext.TabIndex = 10;
+            this.BrowseNext.TabIndex = 4;
             this.BrowseNext.Text = "Browse...";
             this.BrowseNext.UseVisualStyleBackColor = true;
             this.BrowseNext.Click += new System.EventHandler(this.BrowseNext_Click);
@@ -183,7 +183,7 @@
             this.BonusLevel.MaxLength = 31;
             this.BonusLevel.Name = "BonusLevel";
             this.BonusLevel.Size = new System.Drawing.Size(176, 20);
-            this.BonusLevel.TabIndex = 8;
+            this.BonusLevel.TabIndex = 9;
             // 
             // label4
             // 
@@ -200,7 +200,7 @@
             this.SecretLevel.MaxLength = 31;
             this.SecretLevel.Name = "SecretLevel";
             this.SecretLevel.Size = new System.Drawing.Size(110, 20);
-            this.SecretLevel.TabIndex = 6;
+            this.SecretLevel.TabIndex = 7;
             // 
             // label3
             // 
@@ -217,7 +217,7 @@
             this.MusicFile.MaxLength = 31;
             this.MusicFile.Name = "MusicFile";
             this.MusicFile.Size = new System.Drawing.Size(110, 20);
-            this.MusicFile.TabIndex = 4;
+            this.MusicFile.TabIndex = 5;
             this.MusicFile.TextChanged += new System.EventHandler(this.MusicFile_TextChanged);
             // 
             // label2
@@ -244,7 +244,7 @@
             this.LevelName.MaxLength = 31;
             this.LevelName.Name = "LevelName";
             this.LevelName.Size = new System.Drawing.Size(176, 20);
-            this.LevelName.TabIndex = 0;
+            this.LevelName.TabIndex = 2;
             // 
             // groupBox2
             // 
@@ -269,7 +269,7 @@
             0});
             this.MinLight.Name = "MinLight";
             this.MinLight.Size = new System.Drawing.Size(46, 20);
-            this.MinLight.TabIndex = 3;
+            this.MinLight.TabIndex = 13;
             this.MinLight.Value = new decimal(new int[] {
             100,
             0,
@@ -286,7 +286,7 @@
             0});
             this.StartLight.Name = "StartLight";
             this.StartLight.Size = new System.Drawing.Size(46, 20);
-            this.StartLight.TabIndex = 2;
+            this.StartLight.TabIndex = 12;
             this.StartLight.Value = new decimal(new int[] {
             100,
             0,
@@ -328,7 +328,7 @@
             this.radioButton2.Location = new System.Drawing.Point(6, 47);
             this.radioButton2.Name = "radioButton2";
             this.radioButton2.Size = new System.Drawing.Size(115, 17);
-            this.radioButton2.TabIndex = 2;
+            this.radioButton2.TabIndex = 15;
             this.radioButton2.TabStop = true;
             this.radioButton2.Text = "Vertical Splitscreen";
             this.radioButton2.UseVisualStyleBackColor = true;
@@ -339,7 +339,7 @@
             this.radioButton1.Location = new System.Drawing.Point(6, 23);
             this.radioButton1.Name = "radioButton1";
             this.radioButton1.Size = new System.Drawing.Size(127, 17);
-            this.radioButton1.TabIndex = 1;
+            this.radioButton1.TabIndex = 14;
             this.radioButton1.TabStop = true;
             this.radioButton1.Text = "Horizontal Splitscreen";
             this.radioButton1.UseVisualStyleBackColor = true;

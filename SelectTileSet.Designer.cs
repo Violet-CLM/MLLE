@@ -45,7 +45,7 @@
             this.OK.Location = new System.Drawing.Point(227, 8);
             this.OK.Name = "OK";
             this.OK.Size = new System.Drawing.Size(75, 23);
-            this.OK.TabIndex = 0;
+            this.OK.TabIndex = 4;
             this.OK.Text = "OK";
             this.OK.UseVisualStyleBackColor = true;
             this.OK.Click += new System.EventHandler(this.OK_Click);
@@ -56,7 +56,7 @@
             this.Cancel.Location = new System.Drawing.Point(227, 37);
             this.Cancel.Name = "Cancel";
             this.Cancel.Size = new System.Drawing.Size(75, 23);
-            this.Cancel.TabIndex = 1;
+            this.Cancel.TabIndex = 5;
             this.Cancel.Text = "Cancel";
             this.Cancel.UseVisualStyleBackColor = true;
             // 
@@ -102,7 +102,7 @@
             this.boxName.MaxLength = 31;
             this.boxName.Name = "boxName";
             this.boxName.Size = new System.Drawing.Size(154, 20);
-            this.boxName.TabIndex = 6;
+            this.boxName.TabIndex = 0;
             this.boxName.TextChanged += new System.EventHandler(this.boxName_TextChanged);
             // 
             // boxFilename
@@ -111,7 +111,7 @@
             this.boxFilename.MaxLength = 250;
             this.boxFilename.Name = "boxFilename";
             this.boxFilename.Size = new System.Drawing.Size(154, 20);
-            this.boxFilename.TabIndex = 7;
+            this.boxFilename.TabIndex = 1;
             this.boxFilename.TextChanged += new System.EventHandler(this.boxFilename_TextChanged);
             // 
             // boxImage
@@ -122,7 +122,7 @@
             this.boxImage.Name = "boxImage";
             this.boxImage.Size = new System.Drawing.Size(154, 21);
             this.boxImage.Sorted = true;
-            this.boxImage.TabIndex = 8;
+            this.boxImage.TabIndex = 2;
             // 
             // boxMask
             // 
@@ -134,7 +134,7 @@
             this.boxMask.Name = "boxMask";
             this.boxMask.Size = new System.Drawing.Size(154, 21);
             this.boxMask.Sorted = true;
-            this.boxMask.TabIndex = 9;
+            this.boxMask.TabIndex = 3;
             // 
             // SelectTileSet
             // 

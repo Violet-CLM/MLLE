@@ -46,7 +46,7 @@
             this.Add.Location = new System.Drawing.Point(437, 12);
             this.Add.Name = "Add";
             this.Add.Size = new System.Drawing.Size(75, 23);
-            this.Add.TabIndex = 0;
+            this.Add.TabIndex = 1;
             this.Add.Text = "Add...";
             this.Add.UseVisualStyleBackColor = true;
             this.Add.Click += new System.EventHandler(this.Add_Click);
@@ -58,7 +58,7 @@
             this.OK.Location = new System.Drawing.Point(436, 246);
             this.OK.Name = "OK";
             this.OK.Size = new System.Drawing.Size(75, 23);
-            this.OK.TabIndex = 1;
+            this.OK.TabIndex = 0;
             this.OK.Text = "OK";
             this.OK.UseVisualStyleBackColor = true;
             this.OK.Click += new System.EventHandler(this.OK_Click);
@@ -107,6 +107,7 @@
             this.sourceImage,
             this.sourceMask});
             this.listView1.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
+            this.listView1.HideSelection = false;
             this.listView1.Location = new System.Drawing.Point(13, 13);
             this.listView1.MultiSelect = false;
             this.listView1.Name = "listView1";

@@ -133,7 +133,7 @@
             this.LayerSelect.Location = new System.Drawing.Point(7, 20);
             this.LayerSelect.Name = "LayerSelect";
             this.LayerSelect.Size = new System.Drawing.Size(246, 21);
-            this.LayerSelect.TabIndex = 0;
+            this.LayerSelect.TabIndex = 4;
             this.LayerSelect.SelectedIndexChanged += new System.EventHandler(this.LayerSelect_SelectedIndexChanged);
             // 
             // groupBox2
@@ -187,7 +187,7 @@
             this.AutoYSpeed.Location = new System.Drawing.Point(203, 46);
             this.AutoYSpeed.Name = "AutoYSpeed";
             this.AutoYSpeed.Size = new System.Drawing.Size(50, 20);
-            this.AutoYSpeed.TabIndex = 4;
+            this.AutoYSpeed.TabIndex = 8;
             this.AutoYSpeed.Text = "0";
             this.AutoYSpeed.TextChanged += new System.EventHandler(this.GenericInputChanged);
             // 
@@ -206,7 +206,7 @@
             this.XSpeed.Location = new System.Drawing.Point(60, 20);
             this.XSpeed.Name = "XSpeed";
             this.XSpeed.Size = new System.Drawing.Size(50, 20);
-            this.XSpeed.TabIndex = 2;
+            this.XSpeed.TabIndex = 5;
             this.XSpeed.Text = "0";
             this.XSpeed.TextChanged += new System.EventHandler(this.GenericInputChanged);
             // 
@@ -216,7 +216,7 @@
             this.AutoXSpeed.Location = new System.Drawing.Point(203, 20);
             this.AutoXSpeed.Name = "AutoXSpeed";
             this.AutoXSpeed.Size = new System.Drawing.Size(50, 20);
-            this.AutoXSpeed.TabIndex = 0;
+            this.AutoXSpeed.TabIndex = 7;
             this.AutoXSpeed.Text = "0";
             this.AutoXSpeed.TextChanged += new System.EventHandler(this.GenericInputChanged);
             // 
@@ -269,7 +269,7 @@
             0});
             this.WidthBox.Name = "WidthBox";
             this.WidthBox.Size = new System.Drawing.Size(50, 20);
-            this.WidthBox.TabIndex = 8;
+            this.WidthBox.TabIndex = 17;
             this.WidthBox.Value = new decimal(new int[] {
             1,
             0,
@@ -292,7 +292,7 @@
             0});
             this.HeightBox.Name = "HeightBox";
             this.HeightBox.Size = new System.Drawing.Size(50, 20);
-            this.HeightBox.TabIndex = 7;
+            this.HeightBox.TabIndex = 18;
             this.HeightBox.Value = new decimal(new int[] {
             1,
             0,
@@ -306,7 +306,7 @@
             this.LimitVisibleRegion.Location = new System.Drawing.Point(9, 70);
             this.LimitVisibleRegion.Name = "LimitVisibleRegion";
             this.LimitVisibleRegion.Size = new System.Drawing.Size(111, 17);
-            this.LimitVisibleRegion.TabIndex = 6;
+            this.LimitVisibleRegion.TabIndex = 21;
             this.LimitVisibleRegion.Text = "Limit visible region";
             this.LimitVisibleRegion.UseVisualStyleBackColor = true;
             this.LimitVisibleRegion.CheckedChanged += new System.EventHandler(this.GenericInputChanged);
@@ -317,7 +317,7 @@
             this.TileHeight.Location = new System.Drawing.Point(127, 49);
             this.TileHeight.Name = "TileHeight";
             this.TileHeight.Size = new System.Drawing.Size(75, 17);
-            this.TileHeight.TabIndex = 5;
+            this.TileHeight.TabIndex = 20;
             this.TileHeight.Text = "Tile height";
             this.TileHeight.UseVisualStyleBackColor = true;
             this.TileHeight.CheckedChanged += new System.EventHandler(this.TileHeight_CheckedChanged);
@@ -328,7 +328,7 @@
             this.TileWidth.Location = new System.Drawing.Point(9, 49);
             this.TileWidth.Name = "TileWidth";
             this.TileWidth.Size = new System.Drawing.Size(71, 17);
-            this.TileWidth.TabIndex = 4;
+            this.TileWidth.TabIndex = 19;
             this.TileWidth.Text = "Tile width";
             this.TileWidth.UseVisualStyleBackColor = true;
             this.TileWidth.CheckedChanged += new System.EventHandler(this.GenericInputChanged);
@@ -372,7 +372,7 @@
             0});
             this.Param1.Name = "Param1";
             this.Param1.Size = new System.Drawing.Size(50, 20);
-            this.Param1.TabIndex = 13;
+            this.Param1.TabIndex = 26;
             this.Param1.ValueChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // Param2
@@ -385,7 +385,7 @@
             0});
             this.Param2.Name = "Param2";
             this.Param2.Size = new System.Drawing.Size(50, 20);
-            this.Param2.TabIndex = 11;
+            this.Param2.TabIndex = 27;
             this.Param2.ValueChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // Param3
@@ -398,7 +398,7 @@
             0});
             this.Param3.Name = "Param3";
             this.Param3.Size = new System.Drawing.Size(50, 20);
-            this.Param3.TabIndex = 9;
+            this.Param3.TabIndex = 28;
             this.Param3.ValueChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // RedLabel
@@ -439,7 +439,7 @@
             this.TextureModeSelect.Location = new System.Drawing.Point(9, 15);
             this.TextureModeSelect.Name = "TextureModeSelect";
             this.TextureModeSelect.Size = new System.Drawing.Size(244, 21);
-            this.TextureModeSelect.TabIndex = 4;
+            this.TextureModeSelect.TabIndex = 23;
             this.TextureModeSelect.SelectedIndexChanged += new System.EventHandler(this.TextureModeSelect_SelectedIndexChanged);
             // 
             // ColorLabel
@@ -460,7 +460,7 @@
             this.Stars.Location = new System.Drawing.Point(9, 42);
             this.Stars.Name = "Stars";
             this.Stars.Size = new System.Drawing.Size(102, 17);
-            this.Stars.TabIndex = 2;
+            this.Stars.TabIndex = 24;
             this.Stars.Text = "Parallaxing stars";
             this.Stars.UseVisualStyleBackColor = true;
             this.Stars.CheckedChanged += new System.EventHandler(this.GenericInputChanged);
@@ -473,7 +473,7 @@
             this.ColorBox.Location = new System.Drawing.Point(145, 42);
             this.ColorBox.Name = "ColorBox";
             this.ColorBox.Size = new System.Drawing.Size(20, 20);
-            this.ColorBox.TabIndex = 1;
+            this.ColorBox.TabIndex = 25;
             this.ColorBox.Visible = false;
             this.ColorBox.Click += new System.EventHandler(this.panel1_Click);
             // 
@@ -483,7 +483,7 @@
             this.TextureMode.Location = new System.Drawing.Point(9, -1);
             this.TextureMode.Name = "TextureMode";
             this.TextureMode.Size = new System.Drawing.Size(91, 17);
-            this.TextureMode.TabIndex = 0;
+            this.TextureMode.TabIndex = 22;
             this.TextureMode.Text = "Texture mode";
             this.TextureMode.UseVisualStyleBackColor = true;
             this.TextureMode.CheckedChanged += new System.EventHandler(this.TextureMode_CheckedChanged);
@@ -499,7 +499,7 @@
             this.Copy4.Location = new System.Drawing.Point(278, 447);
             this.Copy4.Name = "Copy4";
             this.Copy4.Size = new System.Drawing.Size(75, 23);
-            this.Copy4.TabIndex = 10;
+            this.Copy4.TabIndex = 3;
             this.Copy4.Text = "Copy Layer4";
             this.Copy4.UseVisualStyleBackColor = true;
             this.Copy4.Click += new System.EventHandler(this.Copy4_Click);
@@ -538,7 +538,7 @@
             0});
             this.SpriteParam.Name = "SpriteParam";
             this.SpriteParam.Size = new System.Drawing.Size(50, 20);
-            this.SpriteParam.TabIndex = 15;
+            this.SpriteParam.TabIndex = 14;
             this.SpriteParam.ValueChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // RotationAngle
@@ -561,7 +561,7 @@
             -2147483648});
             this.RotationAngle.Name = "RotationAngle";
             this.RotationAngle.Size = new System.Drawing.Size(50, 20);
-            this.RotationAngle.TabIndex = 10;
+            this.RotationAngle.TabIndex = 15;
             this.RotationAngle.ValueChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // RotationRadiusMultiplier
@@ -579,7 +579,7 @@
             -2147483648});
             this.RotationRadiusMultiplier.Name = "RotationRadiusMultiplier";
             this.RotationRadiusMultiplier.Size = new System.Drawing.Size(50, 20);
-            this.RotationRadiusMultiplier.TabIndex = 9;
+            this.RotationRadiusMultiplier.TabIndex = 16;
             this.RotationRadiusMultiplier.ValueChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // SpriteMode
@@ -639,7 +639,7 @@
             this.SpriteMode.MaxDropDownItems = 10;
             this.SpriteMode.Name = "SpriteMode";
             this.SpriteMode.Size = new System.Drawing.Size(51, 21);
-            this.SpriteMode.TabIndex = 14;
+            this.SpriteMode.TabIndex = 13;
             this.SpriteMode.SelectedIndexChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // LabelRotationAngle
@@ -657,7 +657,7 @@
             this.Hidden.Location = new System.Drawing.Point(203, 46);
             this.Hidden.Name = "Hidden";
             this.Hidden.Size = new System.Drawing.Size(48, 17);
-            this.Hidden.TabIndex = 9;
+            this.Hidden.TabIndex = 12;
             this.Hidden.Text = "Hide";
             this.Hidden.UseVisualStyleBackColor = true;
             this.Hidden.CheckedChanged += new System.EventHandler(this.GenericInputChanged);
@@ -668,7 +668,7 @@
             this.NameBox.Location = new System.Drawing.Point(60, 44);
             this.NameBox.Name = "NameBox";
             this.NameBox.Size = new System.Drawing.Size(137, 20);
-            this.NameBox.TabIndex = 5;
+            this.NameBox.TabIndex = 11;
             this.NameBox.TextChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // LabelRotationRadiusMultiplier
@@ -713,7 +713,7 @@
             this.XOffset.Location = new System.Drawing.Point(60, 20);
             this.XOffset.Name = "XOffset";
             this.XOffset.Size = new System.Drawing.Size(50, 20);
-            this.XOffset.TabIndex = 2;
+            this.XOffset.TabIndex = 9;
             this.XOffset.Text = "0";
             this.XOffset.TextChanged += new System.EventHandler(this.GenericInputChanged);
             // 
@@ -732,7 +732,7 @@
             this.YOffset.Location = new System.Drawing.Point(203, 20);
             this.YOffset.Name = "YOffset";
             this.YOffset.Size = new System.Drawing.Size(50, 20);
-            this.YOffset.TabIndex = 0;
+            this.YOffset.TabIndex = 10;
             this.YOffset.Text = "0";
             this.YOffset.TextChanged += new System.EventHandler(this.GenericInputChanged);
             // 
@@ -750,7 +750,7 @@
             this.ButtonApply.Location = new System.Drawing.Point(278, 70);
             this.ButtonApply.Name = "ButtonApply";
             this.ButtonApply.Size = new System.Drawing.Size(75, 23);
-            this.ButtonApply.TabIndex = 11;
+            this.ButtonApply.TabIndex = 2;
             this.ButtonApply.Text = "Apply";
             this.ButtonApply.UseVisualStyleBackColor = true;
             this.ButtonApply.Click += new System.EventHandler(this.ButtonApply_Click);
