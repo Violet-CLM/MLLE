@@ -1720,7 +1720,11 @@ namespace MLLE
             }
         }
 
-        private void newToolStripMenuItem_Click(object sender, EventArgs e) { if (PromptForSaving()) { NewJ2L(); _suspendEvent.Set(); } }
+        private void newToolStripMenuItem_Click(object sender, EventArgs e) {
+            if (PromptForSaving())
+                NewJ2L();
+            _suspendEvent.Set();
+        }
         internal void NewJ2L(Version? version = null)
         {
             SafeToDisplay = false;
@@ -3519,7 +3523,6 @@ namespace MLLE
         {
             recentLevelsToolStripMenuItem.DropDownItems.Clear();
             recentLevelsToolStripMenuItem.Enabled = RecentlyLoadedLevels.Count > 0;
-            _suspendEvent.Reset();
             for (int i = 0; i < RecentlyLoadedLevels.Count; ++i)
             {
                 string recentLevel = RecentlyLoadedLevels[i];
@@ -3530,10 +3533,10 @@ namespace MLLE
                         DeleteLevelScriptIfEmpty();
                         LoadJ2L(recentLevel);
                     }
+                    _suspendEvent.Set();
                 };                
                 recentLevelsToolStripMenuItem.DropDownItems.Add(toolStripItem);
             }
-            _suspendEvent.Set();
         }
         
         private void defineSmartTilesToolStripMenuItem_Click(object sender, EventArgs e)
