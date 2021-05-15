@@ -2972,11 +2972,11 @@ namespace MLLE
                 }
                 else MouseAGAEvent.ID = 0;
                 if (HowSelecting == FocusedZone.Level) { SelectionBoxCorners[2] = MouseTileX; SelectionBoxCorners[3] = MouseTileY; }
-            }
-            if (MouseTile != OldMouseTile)
-            {
-                if (MouseHeldDownAction) TakeAction();
-                UpdateMousePrintout();
+                if (MouseTile != OldMouseTile)
+                {
+                    if (MouseHeldDownAction) TakeAction();
+                    UpdateMousePrintout();
+                }
             }
         }
 
