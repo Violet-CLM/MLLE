@@ -1943,9 +1943,22 @@ namespace MLLE
                     LevelHasBeenModified = false;
                 }
 
-                PlusPropertyList.RemovePriorReferencesToMLLELibrary(filename);
+                string scriptFilepath = Path.ChangeExtension(filename, ".j2as");
+                string fileContents = "";
+                if (File.Exists(scriptFilepath))
+                    fileContents = System.IO.File.ReadAllText(scriptFilepath, J2LFile.FileEncoding);
+                string originalFileContents = fileContents;
+
+                PlusPropertyList.RemovePriorReferencesToMLLELibrary(ref fileContents);
                 if (Data5 != null)
-                    J2L.PlusPropertyList.SaveLibrary(filename, J2L.Tilesets, (J2L.AllLayers.Count(l => !l.isDefault) + 7) / 8, CustomWeapons);
+                    J2L.PlusPropertyList.SaveLibrary(ref fileContents, scriptFilepath, J2L.Tilesets, (J2L.AllLayers.Count(l => !l.isDefault) + 7) / 8, CustomWeapons);
+
+                if (fileContents != originalFileContents) { //made any change
+                    if (fileContents.Length > 0)
+                        System.IO.File.WriteAllText(scriptFilepath, fileContents, J2LFile.FileEncoding);
+                    else if (File.Exists(scriptFilepath)) //should always be true, but let's play it safe
+                        File.Delete(scriptFilepath);
+                }
 
                 MakeBackup(filename);
             }

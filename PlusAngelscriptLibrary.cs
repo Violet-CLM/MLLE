@@ -353,7 +353,7 @@ shared interface MLLEWeaponApply { bool Apply(uint, se::WeaponHook@ = null, jjST
             return Path.Combine(Path.GetDirectoryName(filepath), Path.GetFileNameWithoutExtension(filepath) + "-MLLE-Data-" + (index + 1) + ".j2l");
         }
 
-        internal void SaveLibrary(string filepath, List<J2TFile> Tilesets, int numberOfExtraDataLevels, WeaponsForm.ExtendedWeapon[] customWeapons)
+        internal void SaveLibrary(ref string fileContents, string filepath, List<J2TFile> Tilesets, int numberOfExtraDataLevels, WeaponsForm.ExtendedWeapon[] customWeapons)
         {
             var encoding = J2LFile.FileEncoding;
             List<string> RequiredFilenames = new List<string>();
@@ -381,10 +381,6 @@ shared interface MLLEWeaponApply { bool Apply(uint, se::WeaponHook@ = null, jjST
                 binwriter.Write(libraryFileAsBytes);
             }
 
-            string scriptFilepath = Path.ChangeExtension(filepath, ".j2as");
-            string fileContents = "";
-            if (File.Exists(scriptFilepath))
-                fileContents = System.IO.File.ReadAllText(scriptFilepath, encoding);
             RequiredFilenames.Add(Path.GetFileName(filepath));
             for (int i = 1; i < Tilesets.Count; ++i)
                 RequiredFilenames.Add(Tilesets[i].FilenameOnly);
@@ -496,7 +492,6 @@ shared interface MLLEWeaponApply { bool Apply(uint, se::WeaponHook@ = null, jjST
                     fileContents = new Regex(functionPattern + @"[\s;]*}\r?\n?").Replace(weaponHookCallFindRegex.Replace(fileContents, ""), ""); //remove the method call, then remove the hook function it was in if that hook is now totally empty
                 }
             }
-            System.IO.File.WriteAllText(scriptFilepath, fileContents, encoding);
         }
         static readonly string[][] WeaponHookSpecs = {
             new string[]{"void", "onMain", "processMain"},
@@ -506,24 +501,14 @@ shared interface MLLEWeaponApply { bool Apply(uint, se::WeaponHook@ = null, jjST
             new string[]{"void", "onReceive", "processPacket", "jjSTREAM & in", "packet", "int", "fromClientID" }
         };
 
-        public static void RemovePriorReferencesToMLLELibrary(string filepath)
+        public static void RemovePriorReferencesToMLLELibrary(ref string fileContents)
         {
-            string scriptFilepath = Path.ChangeExtension(filepath, ".j2as");
-            if (File.Exists(scriptFilepath))
-            {
-                var encoding = J2LFile.FileEncoding;
-                string fileContents = System.IO.File.ReadAllText(scriptFilepath, encoding);
-                fileContents = new Regex(
-                    "^[^\\n]*(" +
-                        "///@MLLE-Generated" + //get rid of all lines that end in the "///@MLLE-Generated" tag
-                        "|" +
-                        "#include\\s+['\"]MLLE-Include-\\d+\\.\\d+\\.asc['\"]" + //get rid of existing #include calls to MLLE-Include, especially if they referenced older/newer versions of the file
-                    ")[^\\n]*\\r?\\n?", RegexOptions.Multiline).Replace(fileContents, "");
-                if (fileContents.Length > 0)
-                    System.IO.File.WriteAllText(scriptFilepath, fileContents, encoding);
-                else
-                    File.Delete(scriptFilepath);
-            }
+            fileContents = new Regex(
+                "^[^\\n]*(" +
+                    "///@MLLE-Generated" + //get rid of all lines that end in the "///@MLLE-Generated" tag
+                    "|" +
+                    "#include\\s+['\"]MLLE-Include-\\d+\\.\\d+\\.asc['\"]" + //get rid of existing #include calls to MLLE-Include, especially if they referenced older/newer versions of the file
+                ")[^\\n]*\\r?\\n?", RegexOptions.Multiline).Replace(fileContents, "");
         }
     }
 }
