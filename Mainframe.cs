@@ -2986,26 +2986,24 @@ namespace MLLE
                 else MouseAGAEvent.ID = 0;
                 if (HowSelecting == FocusedZone.Level) { SelectionBoxCorners[2] = MouseTileX; SelectionBoxCorners[3] = MouseTileY; }
                 if (MouseTile != OldMouseTile)
-                {
                     if (MouseHeldDownAction) TakeAction();
-                    UpdateMousePrintout();
-                }
             }
+            if (MouseTile != OldMouseTile)
+                UpdateMousePrintout();
         }
 
         private void UpdateMousePrintout()
         {
             OldMouseTile = MouseTile;
-            if (CurrentTilesetOverlay != TilesetOverlay.SmartTiles || LastFocusedZone != FocusedZone.Tileset)
-            {
-                MouseTilePrintout.Text = String.Format("({0}, {1})", MouseTileX, MouseTileY);
-                MouseEventPrintout.Text = NameEvent(MouseAGAEvent.ID, "");
-            }
-            else
-            {
+            if (LastFocusedZone == FocusedZone.Tileset)
                 MouseTilePrintout.Text = MouseTile.ToString();
+            else
+                MouseTilePrintout.Text = String.Format("({0}, {1})", MouseTileX, MouseTileY);
+
+            if (CurrentTilesetOverlay != TilesetOverlay.SmartTiles)
+                MouseEventPrintout.Text = NameEvent(MouseAGAEvent.ID, "");
+            else
                 MouseEventPrintout.Text = MouseTile < SmartTiles.Count ? SmartTiles[MouseTile].Name : "(none)";
-            }
         }
         public string NameEvent(uint ID, string defaultName) {
             string[] eventEntryInINI = LevelSpecificEventStringList[ID & 255];
