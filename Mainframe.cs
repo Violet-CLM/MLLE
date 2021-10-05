@@ -122,6 +122,7 @@ namespace MLLE
         internal byte ParallaxEventDisplayType = 0;
         internal bool AllowExtraZooming = false;
         private bool PreviewHelpStringColors = true;
+        private bool BDisablesSmartTiles = false;
         internal uint PlusTriggerZone = 0;
 
         private bool levelHasBeenModified = false;
@@ -499,6 +500,7 @@ namespace MLLE
             ParallaxEventDisplayType = (Settings.IniReadValue("Miscellaneous", "EventParallaxMode") == "0") ? (byte)0 : (byte)1; eventsForemostToolStripMenuItem.Checked = ParallaxEventDisplayType == 1;
             AllowExtraZooming = (Settings.IniReadValue("Miscellaneous", "ZoomingAbove100") == "1"); zoomingAbove100ToolStripMenuItem.Checked = Zoom200.Enabled = Zoom400.Enabled = AllowExtraZooming;
             PreviewHelpStringColors = (Settings.IniReadValue("Miscellaneous", "PreviewHelpStringColors") != "0"); previewHelpStringColorsToolStripMenuItem.Checked = PreviewHelpStringColors;
+            BDisablesSmartTiles = (Settings.IniReadValue("Miscellaneous", "BDisablesSmartTiles") == "1"); bDisablesSmartTilesToolStripMenuItem.Checked = BDisablesSmartTiles;
 
             ToolStripMenuItem[] recolorableSpriteSubcategories = { pinballToolStripMenuItem, platformsToolStripMenuItem, polesToolStripMenuItem, sceneryToolStripMenuItem };
             for (int i = 0; i < RecolorableSpriteNames.Length; ++i)
@@ -807,8 +809,16 @@ namespace MLLE
                     }
                 case Keys.B:
                     {
-                        if (CurrentTilesetOverlay == TilesetOverlay.SmartTiles) { } //do nothing
-                        else if (LastFocusedZone != HowSelecting) BeginSelection(SelectionType.New);
+                        if (CurrentTilesetOverlay == TilesetOverlay.SmartTiles) {
+                            if (BDisablesSmartTiles)
+                            {
+                                TilesetOverlaySelection.SelectedIndex = 2;
+                                if (LastFocusedZone != FocusedZone.Level) //so, tileset
+                                    return true; //too hard to predict what would happen if the normal tileset view reasserted itself before B happened
+                            } else
+                                return true;
+                        }
+                        if (LastFocusedZone != HowSelecting) BeginSelection(SelectionType.New);
                         else { EndSelection(); MakeSelectionIntoStamp(); if (WhereSelected == FocusedZone.Level) DeselectAll(); }
                         return true;
                     }
@@ -1161,6 +1171,11 @@ namespace MLLE
         private void previewHelpStringColorsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Settings.IniWriteValue("Miscellaneous", "PreviewHelpStringColors", (PreviewHelpStringColors = previewHelpStringColorsToolStripMenuItem.Checked) ? "1" : "0");
+        }
+        private void bDisablesSmartTilesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Settings.IniWriteValue("Miscellaneous", "BDisablesSmartTiles", (BDisablesSmartTiles = bDisablesSmartTilesToolStripMenuItem.Checked) ? "1" : "0");
+            
         }
 
         private void DrawingToolButton_Click(object sender, EventArgs e)

@@ -204,6 +204,7 @@
             this.AnimScrollbar = new System.Windows.Forms.HScrollBar();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
+            this.bDisablesSmartTilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MainMenu.SuspendLayout();
             this.DrawingTools.SuspendLayout();
             this.StatusBar.SuspendLayout();
@@ -681,6 +682,7 @@
             this.eventsForemostToolStripMenuItem,
             this.zoomingAbove100ToolStripMenuItem,
             this.previewHelpStringColorsToolStripMenuItem,
+            this.bDisablesSmartTilesToolStripMenuItem,
             this.toolStripSeparator19,
             this.setTransparentColorToolStripMenuItem,
             this.setTile0ColorToolStripMenuItem,
@@ -1801,6 +1803,14 @@
             // 
             this.folderBrowserDialog1.ShowNewFolderButton = false;
             // 
+            // bDisablesSmartTilesToolStripMenuItem
+            // 
+            this.bDisablesSmartTilesToolStripMenuItem.CheckOnClick = true;
+            this.bDisablesSmartTilesToolStripMenuItem.Name = "bDisablesSmartTilesToolStripMenuItem";
+            this.bDisablesSmartTilesToolStripMenuItem.Size = new System.Drawing.Size(214, 22);
+            this.bDisablesSmartTilesToolStripMenuItem.Text = "\'B\' disables Smart Tiles";
+            this.bDisablesSmartTilesToolStripMenuItem.Click += new System.EventHandler(this.bDisablesSmartTilesToolStripMenuItem_Click);
+            // 
             // Mainframe
             // 
             this.AllowDrop = true;
@@ -2030,5 +2040,6 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator26;
         private System.Windows.Forms.ToolStripMenuItem copyImageToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem pasteImageToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem bDisablesSmartTilesToolStripMenuItem;
     }
 }
