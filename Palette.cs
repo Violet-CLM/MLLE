@@ -44,12 +44,14 @@ internal class Palette
         }
     }
 
-    internal void Apply(Bitmap bitmap)
+    internal void Apply(Bitmap bitmap, Color? firstColor = null)
     {
         var palette = bitmap.Palette;
         var entries = palette.Entries;
         for (uint i = 0; i < PaletteSize; ++i)
             entries[i] = Convert(Colors[i]);
+        if (firstColor.HasValue)
+            entries[0] = firstColor.Value;
         bitmap.Palette = palette;
     }
     internal Palette(ColorPalette original)

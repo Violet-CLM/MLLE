@@ -202,8 +202,7 @@ class TexturedJ2L : J2LFile
         uint imageHeight = (TileCount + 9) / 10 * 32;
 
         var image = new Bitmap(320, (int)imageHeight, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
-        (palette ?? Palette).Apply(image);
-        image.Palette.Entries[0] = Color.FromArgb(87, 0, 203);
+        (palette ?? Palette).Apply(image, Color.FromArgb(87, 0, 203));
         var data = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), System.Drawing.Imaging.ImageLockMode.WriteOnly, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
         byte[] bytes = new byte[data.Height * data.Stride];
 

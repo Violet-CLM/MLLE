@@ -3949,6 +3949,13 @@ namespace MLLE
             if (!HoveringOverAnimationAreaOfTilesetPane)
             {
                 SingleTileSubmenuDropdown.Text = "Tile #" + MouseTile.ToString();
+                Bitmap thumbnail = new Bitmap(32,32, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
+                J2TFile J2T;
+                uint tileInTilesetID = J2L.getTileInTilesetID((uint)MouseTile, out J2T);
+                BitmapStuff.ByteArrayToBitmap(J2L.PlusPropertyList.TileImages[MouseTile] ?? J2T.Images[J2T.ImageAddress[tileInTilesetID]], thumbnail);
+                J2L.Palette.Apply(thumbnail, Color.Transparent);
+                SingleTileSubmenuDropdown.Image = thumbnail;
+
                 bool atLeastOneTileSelected = J2L.HasTiles && LastFocusedZone == FocusedZone.Tileset && CurrentTilesetOverlay != TilesetOverlay.SmartTiles && IsEachTileSelected.Any(col => col.Contains(true));
                 SelectedTilesSubmenuDropdown.Enabled = atLeastOneTileSelected;
                 pasteImageToolStripMenuItem.Enabled = BitmapStuff.ClipboardHasBitmap();
