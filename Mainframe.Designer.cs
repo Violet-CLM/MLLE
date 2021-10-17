@@ -91,6 +91,7 @@
             this.eventsForemostToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.zoomingAbove100ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.previewHelpStringColorsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.bDisablesSmartTilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator19 = new System.Windows.Forms.ToolStripSeparator();
             this.setTransparentColorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.setTile0ColorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -187,7 +188,6 @@
             this.editAnimationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.cloneAnimationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteAnimationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator26 = new System.Windows.Forms.ToolStripSeparator();
             this.copyImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.pasteImageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.AnimationSettings = new System.Windows.Forms.Panel();
@@ -204,7 +204,8 @@
             this.AnimScrollbar = new System.Windows.Forms.HScrollBar();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
-            this.bDisablesSmartTilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.SingleTileSubmenuDropdown = new System.Windows.Forms.ToolStripMenuItem();
+            this.SelectedTilesSubmenuDropdown = new System.Windows.Forms.ToolStripMenuItem();
             this.MainMenu.SuspendLayout();
             this.DrawingTools.SuspendLayout();
             this.StatusBar.SuspendLayout();
@@ -714,6 +715,14 @@
             this.previewHelpStringColorsToolStripMenuItem.Size = new System.Drawing.Size(214, 22);
             this.previewHelpStringColorsToolStripMenuItem.Text = "Preview Help String Colors";
             this.previewHelpStringColorsToolStripMenuItem.Click += new System.EventHandler(this.previewHelpStringColorsToolStripMenuItem_Click);
+            // 
+            // bDisablesSmartTilesToolStripMenuItem
+            // 
+            this.bDisablesSmartTilesToolStripMenuItem.CheckOnClick = true;
+            this.bDisablesSmartTilesToolStripMenuItem.Name = "bDisablesSmartTilesToolStripMenuItem";
+            this.bDisablesSmartTilesToolStripMenuItem.Size = new System.Drawing.Size(214, 22);
+            this.bDisablesSmartTilesToolStripMenuItem.Text = "\'B\' disables Smart Tiles";
+            this.bDisablesSmartTilesToolStripMenuItem.Click += new System.EventHandler(this.bDisablesSmartTilesToolStripMenuItem_Click);
             // 
             // toolStripSeparator19
             // 
@@ -1484,24 +1493,15 @@
             // TContextMenu
             // 
             this.TContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.SetEventTS,
-            this.GrabEventTS,
-            this.PutEventTS,
-            this.toolStripSeparator14,
             this.OverlayDropdown,
-            this.TiletypeDropdown,
             this.toolStripSeparator15,
-            this.imageToolStripMenuItem,
-            this.maskToolStripMenuItem,
-            this.automaskToolStripMenuItem,
+            this.SingleTileSubmenuDropdown,
+            this.SelectedTilesSubmenuDropdown,
             this.editAnimationToolStripMenuItem,
             this.cloneAnimationToolStripMenuItem,
-            this.deleteAnimationToolStripMenuItem,
-            this.toolStripSeparator26,
-            this.copyImageToolStripMenuItem,
-            this.pasteImageToolStripMenuItem});
+            this.deleteAnimationToolStripMenuItem});
             this.TContextMenu.Name = "TContextMenu";
-            this.TContextMenu.Size = new System.Drawing.Size(181, 330);
+            this.TContextMenu.Size = new System.Drawing.Size(181, 368);
             this.TContextMenu.Opening += new System.ComponentModel.CancelEventHandler(this.TContextMenu_Opening);
             // 
             // SetEventTS
@@ -1545,35 +1545,35 @@
             // OverNone
             // 
             this.OverNone.Name = "OverNone";
-            this.OverNone.Size = new System.Drawing.Size(131, 22);
+            this.OverNone.Size = new System.Drawing.Size(180, 22);
             this.OverNone.Text = "None";
             this.OverNone.Click += new System.EventHandler(this.OverNone_Click);
             // 
             // OverEvents
             // 
             this.OverEvents.Name = "OverEvents";
-            this.OverEvents.Size = new System.Drawing.Size(131, 22);
+            this.OverEvents.Size = new System.Drawing.Size(180, 22);
             this.OverEvents.Text = "Events";
             this.OverEvents.Click += new System.EventHandler(this.OverEvents_Click);
             // 
             // OverTileTypes
             // 
             this.OverTileTypes.Name = "OverTileTypes";
-            this.OverTileTypes.Size = new System.Drawing.Size(131, 22);
+            this.OverTileTypes.Size = new System.Drawing.Size(180, 22);
             this.OverTileTypes.Text = "Tile Types";
             this.OverTileTypes.Click += new System.EventHandler(this.OverTileTypes_Click);
             // 
             // OverMasks
             // 
             this.OverMasks.Name = "OverMasks";
-            this.OverMasks.Size = new System.Drawing.Size(131, 22);
+            this.OverMasks.Size = new System.Drawing.Size(180, 22);
             this.OverMasks.Text = "Masks";
             this.OverMasks.Click += new System.EventHandler(this.OverMasks_Click);
             // 
             // OverSmartTiles
             // 
             this.OverSmartTiles.Name = "OverSmartTiles";
-            this.OverSmartTiles.Size = new System.Drawing.Size(131, 22);
+            this.OverSmartTiles.Size = new System.Drawing.Size(180, 22);
             this.OverSmartTiles.Text = "Smart Tiles";
             this.OverSmartTiles.Click += new System.EventHandler(this.OverSmartTiles_Click);
             // 
@@ -1629,11 +1629,6 @@
             this.deleteAnimationToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.deleteAnimationToolStripMenuItem.Text = "Delete Animation";
             this.deleteAnimationToolStripMenuItem.Click += new System.EventHandler(this.deleteAnimationToolStripMenuItem_Click);
-            // 
-            // toolStripSeparator26
-            // 
-            this.toolStripSeparator26.Name = "toolStripSeparator26";
-            this.toolStripSeparator26.Size = new System.Drawing.Size(177, 6);
             // 
             // copyImageToolStripMenuItem
             // 
@@ -1803,13 +1798,30 @@
             // 
             this.folderBrowserDialog1.ShowNewFolderButton = false;
             // 
-            // bDisablesSmartTilesToolStripMenuItem
+            // SingleTileSubmenuDropdown
             // 
-            this.bDisablesSmartTilesToolStripMenuItem.CheckOnClick = true;
-            this.bDisablesSmartTilesToolStripMenuItem.Name = "bDisablesSmartTilesToolStripMenuItem";
-            this.bDisablesSmartTilesToolStripMenuItem.Size = new System.Drawing.Size(214, 22);
-            this.bDisablesSmartTilesToolStripMenuItem.Text = "\'B\' disables Smart Tiles";
-            this.bDisablesSmartTilesToolStripMenuItem.Click += new System.EventHandler(this.bDisablesSmartTilesToolStripMenuItem_Click);
+            this.SingleTileSubmenuDropdown.Name = "SingleTileSubmenuDropdown";
+            this.SingleTileSubmenuDropdown.Size = new System.Drawing.Size(180, 22);
+            this.SingleTileSubmenuDropdown.Text = "Tile";
+            SingleTileSubmenuDropdown.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.SetEventTS,
+            this.GrabEventTS,
+            this.PutEventTS,
+            this.TiletypeDropdown,
+            this.toolStripSeparator14,
+            this.imageToolStripMenuItem,
+            this.maskToolStripMenuItem,
+            this.automaskToolStripMenuItem,
+            });
+            // 
+            // SelectedTilesSubmenuDropdown
+            // 
+            this.SelectedTilesSubmenuDropdown.Name = "SelectedTilesSubmenuDropdown";
+            this.SelectedTilesSubmenuDropdown.Size = new System.Drawing.Size(180, 22);
+            this.SelectedTilesSubmenuDropdown.Text = "Selected Tiles";
+            SelectedTilesSubmenuDropdown.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.copyImageToolStripMenuItem,
+            this.pasteImageToolStripMenuItem});
             // 
             // Mainframe
             // 
@@ -2037,9 +2049,10 @@
         private System.Windows.Forms.ToolStripMenuItem polesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem sceneryToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator25;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator26;
         private System.Windows.Forms.ToolStripMenuItem copyImageToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem pasteImageToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem bDisablesSmartTilesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem SingleTileSubmenuDropdown;
+        private System.Windows.Forms.ToolStripMenuItem SelectedTilesSubmenuDropdown;
     }
 }

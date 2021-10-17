@@ -3941,22 +3941,17 @@ namespace MLLE
                 HoveringOverAnimationAreaOfTilesetPane;
 
             //regular tile options
-            copyImageToolStripMenuItem.Visible =
-            pasteImageToolStripMenuItem.Visible =
-            toolStripSeparator26.Visible =
-            automaskToolStripMenuItem.Visible =
-            imageToolStripMenuItem.Visible =
-            maskToolStripMenuItem.Visible =
-            toolStripSeparator15.Visible =
-            TiletypeDropdown.Visible =
+            SingleTileSubmenuDropdown.Visible = 
+            SelectedTilesSubmenuDropdown.Visible = 
             OverlayDropdown.Visible =
                 !HoveringOverAnimationAreaOfTilesetPane;
 
             if (!HoveringOverAnimationAreaOfTilesetPane)
             {
+                SingleTileSubmenuDropdown.Text = "Tile #" + MouseTile.ToString();
                 bool atLeastOneTileSelected = J2L.HasTiles && LastFocusedZone == FocusedZone.Tileset && CurrentTilesetOverlay != TilesetOverlay.SmartTiles && IsEachTileSelected.Any(col => col.Contains(true));
-                copyImageToolStripMenuItem.Enabled = atLeastOneTileSelected;
-                pasteImageToolStripMenuItem.Enabled = atLeastOneTileSelected && BitmapStuff.ClipboardHasBitmap();
+                SelectedTilesSubmenuDropdown.Enabled = atLeastOneTileSelected;
+                pasteImageToolStripMenuItem.Enabled = BitmapStuff.ClipboardHasBitmap();
             }
         }
 
