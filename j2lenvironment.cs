@@ -401,7 +401,7 @@ class TexturedJ2L : J2LFile
             TileTypeAtlas[version] = TexUtil.CreateTextureFromBitmap(type_bmp);
         }
     }
-    public static void ProduceEventIcons(Version version, string[][] StringList, bool overwriteOldImage = false)
+    public static void ProduceEventIcons(Version version, string[][] StringList, bool overwriteOldImage = false, byte? GeneratorEventID = null)
     {
         if (!overwriteOldImage && EventAtlas[version] != 0)
             return;
@@ -419,16 +419,29 @@ class TexturedJ2L : J2LFile
             formatEvent.Alignment = formatEvent.LineAlignment = StringAlignment.Center;
             totalgfx.Clear(Color.FromArgb(128, 0, 0, 0));
             for (int i = 1; i < 256; i++)
-                using (Bitmap single_bmp = new Bitmap(32, 32))
-                using (Graphics gfx = Graphics.FromImage(single_bmp))
+            {
+                if (i != GeneratorEventID)
                 {
-                    if (StringList[i].Length > 4 && StringList[i][4].TrimEnd() != "")
-                        gfx.DrawString(StringList[i][3] + "\n" + StringList[i][4], arial, white, rectE, formatEvent);
-                    else
-                        gfx.DrawString(StringList[i][3], arial, white, rectE, formatEvent);
-                    totalgfx.DrawImage(single_bmp,i%16*32, i/16*32);
-                    //totalgfx2.DrawImage(single_bmp,i%16*64+16, i/16*64+16); //todo
+                    using (Bitmap single_bmp = new Bitmap(32, 32))
+                    using (Graphics gfx = Graphics.FromImage(single_bmp))
+                    {
+                        if (StringList[i].Length > 4 && StringList[i][4].TrimEnd() != "")
+                            gfx.DrawString(StringList[i][3] + "\n" + StringList[i][4], arial, white, rectE, formatEvent);
+                        else
+                            gfx.DrawString(StringList[i][3], arial, white, rectE, formatEvent);
+                        totalgfx.DrawImage(single_bmp,i%16*32, i/16*32);
+                        //totalgfx2.DrawImage(single_bmp,i%16*64+16, i/16*64+16); //todo
+                    }
                 }
+                else
+                {
+                    totalgfx.Clip = new Region(new Rectangle(i % 16 * 32, i / 16 * 32, 32, 32));
+                    totalgfx.Clear(Color.Transparent);
+                    using (Bitmap single_bmp = new Bitmap(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Generator.png")))
+                    totalgfx.DrawImage(single_bmp, i % 16 * 32, i / 16 * 32);
+                    totalgfx.ResetClip();
+                }
+            }
             if (EventAtlas[version] != 0)
                 GL.DeleteTexture(EventAtlas[version]);
             EventAtlas[version] = TexUtil.CreateTextureFromBitmap(text_bmp);

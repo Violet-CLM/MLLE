@@ -21,7 +21,7 @@ namespace MLLE
     public enum EnableableTitles { SecretLevelName, BonusLevelName, Lighting, Splitscreen, HideInHCL, Multiplayer, BoolDevelopingForPlus, UseText, SaveAndRun, SaveAndRunArgs, Illuminate, DiffLabel, Diff1, Diff2, Diff3, Diff4 }
     public enum FocusedZone { None, Tileset, Level, AnimationEditing }
     public enum SelectionType { New, Add, Subtract, Rectangle, HollowRectangle }
-    public enum AtlasID { Null, Image, Mask, EventNames, Selection, Generator, TileTypes, EventSprites }
+    public enum AtlasID { Null, Image, Mask, EventNames, Selection, TileTypes, EventSprites }
     public enum TilesetOverlay { None, TileTypes, Events, Masks, SmartTiles }
 
     public partial class Mainframe : Form
@@ -44,7 +44,7 @@ namespace MLLE
         {Version.GorH, null },
         };
         //internal int[] eventtexturenumberlist = new int[256];
-        internal int GeneratorOverlay, SelectionOverlay;
+        internal int SelectionOverlay;
         //internal string[][] EventsFromIni;
         internal List<string[]> TextureTypes = new List<string[]>(4);
         internal string[] CurrentIniLine;
@@ -224,7 +224,7 @@ namespace MLLE
             bool differentEventListFromPreviousLevelInThisVersion = ProduceLevelSpecificEventStringListIfAppropriate(version);
             if (!differentEventListFromPreviousLevelInThisVersion)
                 LevelSpecificEventStringList = TexturedJ2L.IniEventListing[version];
-            TexturedJ2L.ProduceEventIcons(version, LevelSpecificEventStringList, differentEventListFromPreviousLevelInThisVersion);
+            TexturedJ2L.ProduceEventIcons(version, LevelSpecificEventStringList, differentEventListFromPreviousLevelInThisVersion, GeneratorEventID);
             if ((TreeStructure[version] == null) || differentEventListFromPreviousLevelInThisVersion)
             {
                 List<TreeNode>[] TreeNodeLists = TreeStructure[version] = new List<TreeNode>[2];
@@ -482,7 +482,6 @@ namespace MLLE
             for (ushort x = 0; x < IsEachTileSelected.Length; x++) IsEachTileSelected[x] = new bool[1026];
             GL.Disable(EnableCap.DepthTest);
             GL.Disable(EnableCap.CullFace);
-            GeneratorOverlay = TexUtil.CreateTextureFromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Generator.png"));
             SelectionOverlay = TexUtil.CreateTextureFromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SelectionRectangles.png"));
             GL.BindTexture(TextureTarget.Texture2D, J2L.ImageAtlas);
             GL.ClearColor(HotKolors[0]);
@@ -2168,9 +2167,6 @@ namespace MLLE
                     case AtlasID.Image:
                         nuInt = J2L.ImageAtlas;
                         break;
-                    case AtlasID.Generator:
-                        nuInt = GeneratorOverlay;
-                        break;
                     case AtlasID.EventNames:
                         nuInt = TexturedJ2L.EventAtlas[J2L.VersionType];
                         break;
@@ -2683,28 +2679,14 @@ namespace MLLE
             if (difficulty != 5) GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
             if ((id & 255) == GeneratorEventID)
             {
-                if (stijnVision)
-                {
-                    xFrac = (GeneratorEventID.Value % 16) * 0.0625F;
-                    yFrac = (int)(GeneratorEventID.Value / 16) * 0.0625F;
-                    GL.Begin(BeginMode.Quads);
-                    GL.TexCoord2(xFrac, yFrac + 0.0625F); GL.Vertex2(x, y + TileSize);
-                    GL.TexCoord2(xFrac, yFrac); GL.Vertex2(x, y);
-                    GL.TexCoord2(xFrac + 0.0625F, yFrac); GL.Vertex2(x + TileSize, y);
-                    GL.TexCoord2(xFrac + 0.0625F, yFrac + 0.0625F); GL.Vertex2(x + TileSize, y + TileSize);
-                    GL.End();
-                }
-                else
-                {
-                    SetTextureTo(AtlasID.Generator);
-                    GL.Begin(BeginMode.Quads);
-                    GL.TexCoord2(0, 1); GL.Vertex2(x, y + TileSize);
-                    GL.TexCoord2(0, 0); GL.Vertex2(x, y);
-                    GL.TexCoord2(1, 0); GL.Vertex2(x + TileSize, y);
-                    GL.TexCoord2(1, 1); GL.Vertex2(x + TileSize, y + TileSize);
-                    GL.End();
-                    SetTextureTo(AtlasID.EventNames);
-                }
+                xFrac = (GeneratorEventID.Value % 16) * 0.0625F;
+                yFrac = (int)(GeneratorEventID.Value / 16) * 0.0625F;
+                GL.Begin(BeginMode.Quads);
+                GL.TexCoord2(xFrac, yFrac + 0.0625F); GL.Vertex2(x, y + TileSize);
+                GL.TexCoord2(xFrac, yFrac); GL.Vertex2(x, y);
+                GL.TexCoord2(xFrac + 0.0625F, yFrac); GL.Vertex2(x + TileSize, y);
+                GL.TexCoord2(xFrac + 0.0625F, yFrac + 0.0625F); GL.Vertex2(x + TileSize, y + TileSize);
+                GL.End();
             }
         }
         internal void DrawTileType(int x, int y, byte id)
