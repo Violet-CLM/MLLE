@@ -396,10 +396,13 @@ namespace MLLE
                 if (brush != null)
                     brush.Dispose();
 
-            if (result && (image == null || !Image.SequenceEqual(image)))
-            {
-                image = (Image.SequenceEqual(originalImage)) ? null : Image;
-                return true;
+            if (result) { //clicked OK
+                bool changed = !Image.SequenceEqual(image ?? originalImage);
+                if (Image.SequenceEqual(originalImage))
+                    image = null;
+                else
+                    image = Image;
+                return changed;
             }
 
             return false;

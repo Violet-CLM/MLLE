@@ -929,15 +929,24 @@ namespace MLLE
                 _suspendEvent.Set();
             }
         }
+        private void automaskTile(uint tileID)
+        {
+            J2TFile J2T;
+            uint tileInTilesetID = J2L.getTileInTilesetID(tileID, out J2T);
+            byte[] originalMask = J2T.Masks[J2T.MaskAddress[tileInTilesetID]];
+            byte[] oldMask = J2L.PlusPropertyList.TileMasks[MouseTile] ?? originalMask;
+            byte[] newMask = (J2L.PlusPropertyList.TileImages[MouseTile] ?? J2T.Images[J2T.ImageAddress[tileInTilesetID]]).Select(val => val != 0 ? (byte)1 : (byte)0).ToArray();
+            if (originalMask.SequenceEqual(newMask))
+                J2L.PlusPropertyList.TileMasks[MouseTile] = null;
+            else
+                J2L.PlusPropertyList.TileMasks[MouseTile] = newMask;
+            if (!oldMask.SequenceEqual(newMask))
+                RerenderTileMask(tileID);
+        }
         private void automaskToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (MouseTile > 0 && MouseTile < J2L.TileCount)
-            {
-                J2TFile J2T;
-                uint tileInTilesetID = J2L.getTileInTilesetID((uint)MouseTile, out J2T);
-                J2L.PlusPropertyList.TileMasks[MouseTile] = (J2L.PlusPropertyList.TileImages[MouseTile] ?? J2T.Images[J2T.ImageAddress[tileInTilesetID]]).Select(val => val != 0 ? (byte)1 : (byte)0).ToArray();
-                RerenderTileMask((uint)MouseTile);
-            }
+                automaskTile((uint)MouseTile);
         }
         private void copyImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -1009,13 +1018,18 @@ namespace MLLE
                             if (IsEachTileSelected[x + 1][y + 1])
                             {
                                 uint tileID = (uint)(x + y * 10);
-                                byte[] newTileImage = J2L.PlusPropertyList.TileImages[tileID] = new byte[32 * 32];
+                                byte[] newTileImage = new byte[32 * 32];
                                 for (int xx = 0; xx < 32; ++xx)
                                 {
                                     int xxx = ((x - UpperLeftSelectionCorner.X) * 32 + xx) * clipboardBitmap.Width / selectionWidth;
                                     for (int yy = 0; yy < 32; ++yy)
                                         newTileImage[xx + yy * 32] = colorRemappings[clipboardBytes[xxx + (((y - UpperLeftSelectionCorner.Y) * 32 + yy) * clipboardBitmap.Height / selectionHeight) * clipboardBitmap.Width]];
                                 }
+                                J2TFile J2T;
+                                uint tileInTilesetID = J2L.getTileInTilesetID(tileID, out J2T);
+                                if (newTileImage.SequenceEqual(J2T.Images[J2T.ImageAddress[tileInTilesetID]]))
+                                    newTileImage = null;
+                                J2L.PlusPropertyList.TileImages[tileID] = newTileImage;
                                 RerenderTile(tileID);
                             }
                 }
