@@ -401,10 +401,12 @@ class TexturedJ2L : J2LFile
             TileTypeAtlas[version] = TexUtil.CreateTextureFromBitmap(type_bmp);
         }
     }
-    public static void ProduceEventIcons(Version version, string[][] StringList, bool overwriteOldImage = false, byte? GeneratorEventID = null, string spriteFilename = "")
+    public static void ProduceEventIcons(Version version, string[][] StringList, bool overwriteOldImage = false, byte? GeneratorEventID = null, string spriteFilename = "", bool[] whichAreCustom = null)
     {
         if (!overwriteOldImage && EventAtlas[version] != 0)
             return;
+        if (whichAreCustom == null)
+            whichAreCustom = new bool[256];
 
         RectangleF rectE = new RectangleF(-16, 0, 64, 32);
 
@@ -431,8 +433,11 @@ class TexturedJ2L : J2LFile
                             gfx.DrawString(StringList[i][3], arial, white, rectE, formatEvent);
                         totalgfx.DrawImage(single_bmp,i%16*32, i/16*32);
                         if (text_bmp2.Width == 1024) //not AGA
-                            if (text_bmp2.GetPixel(i % 16 * 64 + 32, i / 16 * 64 + 32).A == 0) { //no sprite defined for this event, as measured by checking the middle pixel
+                            if (whichAreCustom[i] || text_bmp2.GetPixel(i % 16 * 64 + 32, i / 16 * 64 + 32).A == 0) { //a custom event, or else there's no sprite defined for this event, as measured by checking the middle pixel
                                 int x = i % 16 * 64 + 16, y = i / 16 * 64 + 16;
+                                totalgfx2.Clip = new Region(new Rectangle(x-16,y-16, 64, 64));
+                                totalgfx2.Clear(Color.Transparent);
+                                totalgfx2.ResetClip();
                                 totalgfx2.FillRegion(new SolidBrush(Color.FromArgb(128, 0, 0, 0)), new Region(new Rectangle(x, y, 32, 32)));
                                 totalgfx2.DrawImage(single_bmp, x,y,32,32); //use the standard text preview instead
                             }

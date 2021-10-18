@@ -223,11 +223,11 @@ namespace MLLE
             TexturedJ2L.ProduceEventStringsFromIni(version, baseIni, ini);
             TexturedJ2L.ProduceTypeIcons(version, ini);
 
-            bool differentEventListFromPreviousLevelInThisVersion = ProduceLevelSpecificEventStringListIfAppropriate(version);
-            if (!differentEventListFromPreviousLevelInThisVersion)
+            bool[] differentEventListFromPreviousLevelInThisVersion = ProduceLevelSpecificEventStringListIfAppropriate(version);
+            if (differentEventListFromPreviousLevelInThisVersion == null)
                 LevelSpecificEventStringList = TexturedJ2L.IniEventListing[version];
-            TexturedJ2L.ProduceEventIcons(version, LevelSpecificEventStringList, differentEventListFromPreviousLevelInThisVersion, GeneratorEventID, baseEventListFilename);
-            if ((TreeStructure[version] == null) || differentEventListFromPreviousLevelInThisVersion)
+            TexturedJ2L.ProduceEventIcons(version, LevelSpecificEventStringList, differentEventListFromPreviousLevelInThisVersion != null, GeneratorEventID, baseEventListFilename, differentEventListFromPreviousLevelInThisVersion);
+            if ((TreeStructure[version] == null) || (differentEventListFromPreviousLevelInThisVersion != null))
             {
                 List<TreeNode>[] TreeNodeLists = TreeStructure[version] = new List<TreeNode>[2];
                 List<StringAndIndex> FlatEventList = FlatEventLists[version] = new List<StringAndIndex>();
@@ -299,11 +299,12 @@ namespace MLLE
             }
         }
         string[][] LevelSpecificEventStringList;
-        private bool ProduceLevelSpecificEventStringListIfAppropriate(Version version)
+        private bool[] ProduceLevelSpecificEventStringListIfAppropriate(Version version)
         {
             string[][] defaults = TexturedJ2L.IniEventListing[version];
             if (VersionIsPlusCompatible(version)) //otherwise there won't be any script file/s to worry about at all
             {
+                bool[] whichAreCustom = new bool[256];
                 var scriptFilepaths = new List<string>();
                 scriptFilepaths.Add(Path.ChangeExtension(J2L.FullFilePath, "j2as"));
 
@@ -336,6 +337,7 @@ namespace MLLE
                                     LevelSpecificEventStringList[eventID] = TexturedJ2L.GetDontUseEventListingForEventID((byte)eventID);
                                 else
                                     LevelSpecificEventStringList[eventID] = resultSplitByPipes.Select(original => original.Trim()).ToArray();
+                                whichAreCustom[eventID] = true;
                             }
                         }
                     }
@@ -346,15 +348,15 @@ namespace MLLE
                     for (int i = 0; i < 256; ++i)
                         if (LevelSpecificEventStringList[i] == null)
                             LevelSpecificEventStringList[i] = defaults[i];
-                    return true;
+                    return whichAreCustom;
                 }
                 else if (LevelSpecificEventStringList != null && LevelSpecificEventStringList != defaults) //the previous level (in this version) used custom events, but this one does not
                 {
                     LevelSpecificEventStringList = defaults;
-                    return true; //different from previous level
+                    return whichAreCustom; //different from previous level
                 }
             }
-            return false; //no change
+            return null; //no change
         }
         private void PopulateTilesetDropdown(Version version, IniFile ini)
         {
