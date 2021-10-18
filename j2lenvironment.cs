@@ -55,7 +55,7 @@ class TexturedJ2L : J2LFile
         {Version.GorH, 0 },
         };
     internal static Dictionary<Version, int> EventSpriteAtlas = new Dictionary<Version, int> {
-        //{Version.BC, 0 },
+        {Version.BC, 0 },
         {Version.O, 0 },
         {Version.JJ2, 0 },
         {Version.TSF, 0 },
@@ -401,7 +401,7 @@ class TexturedJ2L : J2LFile
             TileTypeAtlas[version] = TexUtil.CreateTextureFromBitmap(type_bmp);
         }
     }
-    public static void ProduceEventIcons(Version version, string[][] StringList, bool overwriteOldImage = false, byte? GeneratorEventID = null)
+    public static void ProduceEventIcons(Version version, string[][] StringList, bool overwriteOldImage = false, byte? GeneratorEventID = null, string spriteFilename = "")
     {
         if (!overwriteOldImage && EventAtlas[version] != 0)
             return;
@@ -411,7 +411,7 @@ class TexturedJ2L : J2LFile
         using (SolidBrush white = new SolidBrush(Color.White))
         using (Font arial = new Font(new FontFamily("Arial"), 8))
         using (Bitmap text_bmp = new Bitmap(512, 512))
-        using (Bitmap text_bmp2 = new Bitmap(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "jazz.png")))
+        using (Bitmap text_bmp2 = (spriteFilename != "" && EventSpriteAtlas.ContainsKey(version)) ? new Bitmap(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MLLE Event Sprites - " + spriteFilename + ".png")) : new Bitmap(1, 1))
         using (Graphics totalgfx = Graphics.FromImage(text_bmp))
         using (Graphics totalgfx2 = Graphics.FromImage(text_bmp2))
         using (StringFormat formatEvent = new StringFormat())
@@ -430,11 +430,12 @@ class TexturedJ2L : J2LFile
                         else
                             gfx.DrawString(StringList[i][3], arial, white, rectE, formatEvent);
                         totalgfx.DrawImage(single_bmp,i%16*32, i/16*32);
-                        if (text_bmp2.GetPixel(i % 16 * 64 + 32, i / 16 * 64 + 32).A == 0) { //no sprite defined for this event, as measured by checking the middle pixel
-                            int x = i % 16 * 64 + 16, y = i / 16 * 64 + 16;
-                            totalgfx2.FillRegion(new SolidBrush(Color.FromArgb(128, 0, 0, 0)), new Region(new Rectangle(x, y, 32, 32)));
-                            totalgfx2.DrawImage(single_bmp, x,y,32,32); //use the standard text preview instead
-                        }
+                        if (text_bmp2.Width == 1024) //not AGA
+                            if (text_bmp2.GetPixel(i % 16 * 64 + 32, i / 16 * 64 + 32).A == 0) { //no sprite defined for this event, as measured by checking the middle pixel
+                                int x = i % 16 * 64 + 16, y = i / 16 * 64 + 16;
+                                totalgfx2.FillRegion(new SolidBrush(Color.FromArgb(128, 0, 0, 0)), new Region(new Rectangle(x, y, 32, 32)));
+                                totalgfx2.DrawImage(single_bmp, x,y,32,32); //use the standard text preview instead
+                            }
                     }
                 }
                 else
@@ -449,7 +450,7 @@ class TexturedJ2L : J2LFile
             if (EventAtlas[version] != 0)
                 GL.DeleteTexture(EventAtlas[version]);
             EventAtlas[version] = TexUtil.CreateTextureFromBitmap(text_bmp);
-            if (EventSpriteAtlas.ContainsKey(version)) //not AGA, not currently BC either (todo)
+            if (text_bmp2.Width == 1024) //not AGA
             {
                 if (EventSpriteAtlas[version] != 0)
                     GL.DeleteTexture(EventSpriteAtlas[version]);

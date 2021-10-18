@@ -98,13 +98,13 @@ namespace MLLE
         {Version.AGA, 1},
         {Version.GorH, 2},
         };
-        public static Dictionary<Version, string> ProfileIniFilename = new Dictionary<Version, string> {
-        {Version.BC, "MLLEProfile - Battery Check"},
-        {Version.O, "MLLEProfile - 110o"},
-        {Version.JJ2, "MLLEProfile - JJ2"},
-        {Version.TSF, "MLLEProfile - TSF"},
-        {Version.AGA, "MLLEProfile - AGA"},
-        {Version.GorH, "MLLEProfile - 100gh"},
+        public static Dictionary<Version, string> ProfileName = new Dictionary<Version, string> {
+        {Version.BC, "Battery Check"},
+        {Version.O, "110o"},
+        {Version.JJ2, "JJ2"},
+        {Version.TSF, "TSF"},
+        {Version.AGA, "AGA"},
+        {Version.GorH, "100gh"},
         };
         public static string[] DefaultFileExtensionStrings = new string[] { ".j2l", ".lvl", ".lev" };
         public byte? GeneratorEventID = null, StartPositionEventID = null;
@@ -176,7 +176,7 @@ namespace MLLE
 
         private void ProcessIni(Version version)
         {
-            IniFile ini = new IniFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ProfileIniFilename[J2L.VersionType] + ".ini"));
+            IniFile ini = new IniFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MLLEProfile - " + ProfileName[J2L.VersionType] + ".ini"));
             if (EnableableStrings[version] == null)
             {
                 Dictionary<EnableableTitles, bool> Bools = EnableableBools[version] = new Dictionary<EnableableTitles, bool>();
@@ -209,22 +209,24 @@ namespace MLLE
             {
                 AmbientSounds[version] = new MemoryStream[512];
             }
-            IniFile baseIni;
+            string baseEventListFilename = ini.IniReadValue("Events", "Base"); //usually "jazz"
+            IniFile baseIni = ini;
+            if (baseEventListFilename != "")
             {
-                string iniFilename = Path.ChangeExtension(Settings.IniReadValue("EventListBases", ini.IniReadValue("Events", "Base")), "ini");
+                string iniFilename = Path.ChangeExtension(Settings.IniReadValue("EventListBases", baseEventListFilename), "ini");
                 string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, iniFilename);
                 if (File.Exists(path))
                     baseIni = new IniFile(path);
-                else
-                    baseIni = ini;
             }
+            else
+                baseEventListFilename = ProfileName[version]; //e.g. "Battery Check"
             TexturedJ2L.ProduceEventStringsFromIni(version, baseIni, ini);
             TexturedJ2L.ProduceTypeIcons(version, ini);
 
             bool differentEventListFromPreviousLevelInThisVersion = ProduceLevelSpecificEventStringListIfAppropriate(version);
             if (!differentEventListFromPreviousLevelInThisVersion)
                 LevelSpecificEventStringList = TexturedJ2L.IniEventListing[version];
-            TexturedJ2L.ProduceEventIcons(version, LevelSpecificEventStringList, differentEventListFromPreviousLevelInThisVersion, GeneratorEventID);
+            TexturedJ2L.ProduceEventIcons(version, LevelSpecificEventStringList, differentEventListFromPreviousLevelInThisVersion, GeneratorEventID, baseEventListFilename);
             if ((TreeStructure[version] == null) || differentEventListFromPreviousLevelInThisVersion)
             {
                 List<TreeNode>[] TreeNodeLists = TreeStructure[version] = new List<TreeNode>[2];
@@ -287,6 +289,14 @@ namespace MLLE
             if (AllTilesetLists[version] == null) PopulateTilesetDropdown(version, ini);
             TilesetSelection.Items.Clear();
             foreach (NameAndFilename foo in AllTilesetLists[version]) TilesetSelection.Items.Add(foo);
+
+            if (!TexturedJ2L.EventSpriteAtlas.ContainsKey(version)) { //AGA
+                stijnVisionToolStripMenuItem.Enabled = false; //too complicated and too little user interest to figure this out
+                stijnVision = false;
+            } else {
+                stijnVisionToolStripMenuItem.Enabled = true;
+                stijnVision = stijnVisionToolStripMenuItem.Checked;
+            }
         }
         string[][] LevelSpecificEventStringList;
         private bool ProduceLevelSpecificEventStringListIfAppropriate(Version version)
@@ -504,7 +514,7 @@ namespace MLLE
             AllowExtraZooming = (Settings.IniReadValue("Miscellaneous", "ZoomingAbove100") == "1"); zoomingAbove100ToolStripMenuItem.Checked = Zoom200.Enabled = Zoom400.Enabled = AllowExtraZooming;
             PreviewHelpStringColors = (Settings.IniReadValue("Miscellaneous", "PreviewHelpStringColors") != "0"); previewHelpStringColorsToolStripMenuItem.Checked = PreviewHelpStringColors;
             BDisablesSmartTiles = (Settings.IniReadValue("Miscellaneous", "BDisablesSmartTiles") == "1"); bDisablesSmartTilesToolStripMenuItem.Checked = BDisablesSmartTiles;
-            stijnVision = (Settings.IniReadValue("Miscellaneous", "stijnVision") == "1"); stijnVisionToolStripMenuItem.Checked = stijnVision;
+            stijnVisionToolStripMenuItem.Checked = (Settings.IniReadValue("Miscellaneous", "stijnVision") == "1"); //but don't necessarily turn on the actual bool, in case this is AGA
 
             ToolStripMenuItem[] recolorableSpriteSubcategories = { pinballToolStripMenuItem, platformsToolStripMenuItem, polesToolStripMenuItem, sceneryToolStripMenuItem };
             for (int i = 0; i < RecolorableSpriteNames.Length; ++i)
@@ -1606,7 +1616,7 @@ namespace MLLE
         {
             if (EnableableBools[version] != null)
                 return EnableableBools[version][EnableableTitles.BoolDevelopingForPlus];
-            return new IniFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ProfileIniFilename[J2L.VersionType] + ".ini")).IniReadValue("Enableable", "BoolDevelopingForPlus") != "";
+            return new IniFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MLLEProfile - " + ProfileName[J2L.VersionType] + ".ini")).IniReadValue("Enableable", "BoolDevelopingForPlus") != "";
         }
         private bool EmptyActionStackIfItContainsVerticallyFlippedTiles(Stack<LayerAndSpecificTiles> stack)
         {
