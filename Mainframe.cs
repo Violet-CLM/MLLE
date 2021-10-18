@@ -3983,10 +3983,14 @@ namespace MLLE
                 HoveringOverAnimationAreaOfTilesetPane;
 
             //regular tile options
-            SingleTileSubmenuDropdown.Visible = 
-            SelectedTilesSubmenuDropdown.Visible = 
-            OverlayDropdown.Visible =
-                !HoveringOverAnimationAreaOfTilesetPane;
+            SingleTileSubmenuDropdown.Visible = SelectedTilesSubmenuDropdown.Visible = !HoveringOverAnimationAreaOfTilesetPane;
+
+            //JJ2+ tile options
+            imageToolStripMenuItem.Visible = maskToolStripMenuItem.Visible = automaskToolStripMenuItem.Visible = toolStripSeparator14.Visible =
+            copyImageToolStripMenuItem.Visible = pasteImageToolStripMenuItem.Visible = resetImagesToolStripMenuItem.Visible = toolStripSeparator26.Visible =
+                !AnimationSettings.Visible && EnableableBools[J2L.VersionType][EnableableTitles.BoolDevelopingForPlus];
+
+            OverSmartTiles.Enabled = !AnimationSettings.Visible; //may not always be Visible, though, depending on tileset/s
 
             if (!HoveringOverAnimationAreaOfTilesetPane)
             {
