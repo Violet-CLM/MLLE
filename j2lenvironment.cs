@@ -430,7 +430,11 @@ class TexturedJ2L : J2LFile
                         else
                             gfx.DrawString(StringList[i][3], arial, white, rectE, formatEvent);
                         totalgfx.DrawImage(single_bmp,i%16*32, i/16*32);
-                        //totalgfx2.DrawImage(single_bmp,i%16*64+16, i/16*64+16); //todo
+                        if (text_bmp2.GetPixel(i % 16 * 64 + 32, i / 16 * 64 + 32).A == 0) { //no sprite defined for this event, as measured by checking the middle pixel
+                            int x = i % 16 * 64 + 16, y = i / 16 * 64 + 16;
+                            totalgfx2.FillRegion(new SolidBrush(Color.FromArgb(128, 0, 0, 0)), new Region(new Rectangle(x, y, 32, 32)));
+                            totalgfx2.DrawImage(single_bmp, x,y,32,32); //use the standard text preview instead
+                        }
                     }
                 }
                 else
