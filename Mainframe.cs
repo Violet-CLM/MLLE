@@ -1036,6 +1036,20 @@ namespace MLLE
                 _suspendEvent.Set();
             }
         }
+        private void resetImagesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            for (int x = UpperLeftSelectionCorner.X; x < BottomRightSelectionCorner.X; ++x)
+                for (int y = UpperLeftSelectionCorner.Y; y < BottomRightSelectionCorner.Y; ++y)
+                    if (IsEachTileSelected[x + 1][y + 1])
+                    {
+                        uint tileID = (uint)(x + y * 10);
+                        J2L.PlusPropertyList.TileImages[tileID] = null;
+                        J2L.PlusPropertyList.TileMasks[tileID] = null;
+                        RerenderTile(tileID);
+                        RerenderTileMask(tileID);
+                    }
+
+        }
 
         #endregion Form Business
 
