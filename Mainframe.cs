@@ -261,17 +261,20 @@ namespace MLLE
                 }
             }
 
-            TiletypeDropdown.DropDownItems.Clear();
-            for (byte i = 0; i < 16; i++)
-            {
-                string label = (i == 0) ? "Normal" : TexturedJ2L.TileTypeNames[version][i];
-                if (label != "")
+            ToolStripMenuItem[] dropdowns = { TiletypeDropdown, TiletypeDropdown2 };
+            foreach (var dropdown in dropdowns) {
+                dropdown.DropDownItems.Clear();
+                for (byte i = 0; i < 16; i++)
                 {
-                    ToolStripMenuItem option = new ToolStripMenuItem(i.ToString() + ": " + label);
-                    option.Tag = i;
-                    option.Size = new System.Drawing.Size(152, 22);
-                    option.Click += new System.EventHandler(this.MenuTypeInstance_Click);
-                    TiletypeDropdown.DropDownItems.Add(option);
+                    string label = (i == 0) ? "Normal" : TexturedJ2L.TileTypeNames[version][i];
+                    if (label != "")
+                    {
+                        ToolStripMenuItem option = new ToolStripMenuItem(i.ToString() + ": " + label);
+                        option.Tag = i;
+                        option.Size = new System.Drawing.Size(152, 22);
+                        option.Click += (dropdown == TiletypeDropdown) ? new System.EventHandler(this.MenuTypeInstance_Click) : new System.EventHandler(this.MenuTypeInstance_Click2);
+                        dropdown.DropDownItems.Add(option);
+                    }
                 }
             }
             TextureTypes.Clear();
@@ -1215,6 +1218,17 @@ namespace MLLE
         }
 
         private void MenuTypeInstance_Click(object sender, EventArgs e) { setTileType((byte)((ToolStripItem)sender).Tag); }
+        private void MenuTypeInstance_Click2(object sender, EventArgs e) {
+            byte tileType = (byte)((ToolStripItem)sender).Tag;
+            for (int x = UpperLeftSelectionCorner.X; x < BottomRightSelectionCorner.X; ++x)
+                for (int y = UpperLeftSelectionCorner.Y; y < BottomRightSelectionCorner.Y; ++y)
+                    if (IsEachTileSelected[x + 1][y + 1])
+                    {
+                        uint tileID = (uint)(x + y * 10);
+                        J2L.TileTypes[tileID] = tileType;
+                        RerenderTile(tileID);
+                    }
+        }
 
         private void DropdownClear_Click(object sender, EventArgs e) { Clear(CurrentLayerID); }
         private void ClearButton_Click(object sender, EventArgs e) { Clear(CurrentLayerID); }
