@@ -21,7 +21,7 @@ namespace MLLE
     public enum EnableableTitles { SecretLevelName, BonusLevelName, Lighting, Splitscreen, HideInHCL, Multiplayer, BoolDevelopingForPlus, UseText, SaveAndRun, SaveAndRunArgs, Illuminate, DiffLabel, Diff1, Diff2, Diff3, Diff4 }
     public enum FocusedZone { None, Tileset, Level, AnimationEditing }
     public enum SelectionType { New, Add, Subtract, Rectangle, HollowRectangle }
-    public enum AtlasID { Null, Image, Mask, EventNames, Selection, Generator, TileTypes }
+    public enum AtlasID { Null, Image, Mask, EventNames, Selection, Generator, TileTypes, EventSprites }
     public enum TilesetOverlay { None, TileTypes, Events, Masks, SmartTiles }
 
     public partial class Mainframe : Form
@@ -123,6 +123,7 @@ namespace MLLE
         internal bool AllowExtraZooming = false;
         private bool PreviewHelpStringColors = true;
         private bool BDisablesSmartTiles = false;
+        private bool stijnVision = false;
         internal uint PlusTriggerZone = 0;
 
         private bool levelHasBeenModified = false;
@@ -504,6 +505,7 @@ namespace MLLE
             AllowExtraZooming = (Settings.IniReadValue("Miscellaneous", "ZoomingAbove100") == "1"); zoomingAbove100ToolStripMenuItem.Checked = Zoom200.Enabled = Zoom400.Enabled = AllowExtraZooming;
             PreviewHelpStringColors = (Settings.IniReadValue("Miscellaneous", "PreviewHelpStringColors") != "0"); previewHelpStringColorsToolStripMenuItem.Checked = PreviewHelpStringColors;
             BDisablesSmartTiles = (Settings.IniReadValue("Miscellaneous", "BDisablesSmartTiles") == "1"); bDisablesSmartTilesToolStripMenuItem.Checked = BDisablesSmartTiles;
+            stijnVision = (Settings.IniReadValue("Miscellaneous", "stijnVision") == "1"); stijnVisionToolStripMenuItem.Checked = stijnVision;
 
             ToolStripMenuItem[] recolorableSpriteSubcategories = { pinballToolStripMenuItem, platformsToolStripMenuItem, polesToolStripMenuItem, sceneryToolStripMenuItem };
             for (int i = 0; i < RecolorableSpriteNames.Length; ++i)
@@ -1206,7 +1208,10 @@ namespace MLLE
         private void bDisablesSmartTilesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Settings.IniWriteValue("Miscellaneous", "BDisablesSmartTiles", (BDisablesSmartTiles = bDisablesSmartTilesToolStripMenuItem.Checked) ? "1" : "0");
-            
+        }
+        private void stijnVisionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Settings.IniWriteValue("Miscellaneous", "stijnVision", (stijnVision = stijnVisionToolStripMenuItem.Checked) ? "1" : "0");
         }
 
         private void DrawingToolButton_Click(object sender, EventArgs e)
@@ -2169,6 +2174,9 @@ namespace MLLE
                     case AtlasID.EventNames:
                         nuInt = TexturedJ2L.EventAtlas[J2L.VersionType];
                         break;
+                    case AtlasID.EventSprites:
+                        nuInt = TexturedJ2L.EventSpriteAtlas[J2L.VersionType];
+                        break;
                     case AtlasID.TileTypes:
                         nuInt = TexturedJ2L.TileTypeAtlas[J2L.VersionType];
                         break;
@@ -2660,6 +2668,12 @@ namespace MLLE
             GL.Color4((byte)255, (difficulty < 2) ? (byte)255 : (byte)0, (difficulty % 3 == 0) ? (byte)255 : (byte)0, (byte)255);
             byte drawid = (byte)(((id & 255) == GeneratorEventID) ? id << 12 >> 24 : id & 255);
             float xFrac = (drawid % 16) * 0.0625F, yFrac = (int)(drawid / 16) * 0.0625F;
+            if (stijnVision) //draw 64x64 images centered around the 32x32 tile
+            {
+                x -= TileSize / 2;
+                y -= TileSize / 2;
+                TileSize *= 2;
+            }
             GL.Begin(BeginMode.Quads);
             GL.TexCoord2(xFrac, yFrac + 0.0625F); GL.Vertex2(x, y + TileSize);
             GL.TexCoord2(xFrac, yFrac); GL.Vertex2(x, y);
@@ -2669,14 +2683,28 @@ namespace MLLE
             if (difficulty != 5) GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
             if ((id & 255) == GeneratorEventID)
             {
-                SetTextureTo(AtlasID.Generator);
-                GL.Begin(BeginMode.Quads);
-                GL.TexCoord2(0, 1); GL.Vertex2(x, y + TileSize);
-                GL.TexCoord2(0, 0); GL.Vertex2(x, y);
-                GL.TexCoord2(1, 0); GL.Vertex2(x + TileSize, y);
-                GL.TexCoord2(1, 1); GL.Vertex2(x + TileSize, y + TileSize);
-                GL.End();
-                SetTextureTo(AtlasID.EventNames);
+                if (stijnVision)
+                {
+                    xFrac = (GeneratorEventID.Value % 16) * 0.0625F;
+                    yFrac = (int)(GeneratorEventID.Value / 16) * 0.0625F;
+                    GL.Begin(BeginMode.Quads);
+                    GL.TexCoord2(xFrac, yFrac + 0.0625F); GL.Vertex2(x, y + TileSize);
+                    GL.TexCoord2(xFrac, yFrac); GL.Vertex2(x, y);
+                    GL.TexCoord2(xFrac + 0.0625F, yFrac); GL.Vertex2(x + TileSize, y);
+                    GL.TexCoord2(xFrac + 0.0625F, yFrac + 0.0625F); GL.Vertex2(x + TileSize, y + TileSize);
+                    GL.End();
+                }
+                else
+                {
+                    SetTextureTo(AtlasID.Generator);
+                    GL.Begin(BeginMode.Quads);
+                    GL.TexCoord2(0, 1); GL.Vertex2(x, y + TileSize);
+                    GL.TexCoord2(0, 0); GL.Vertex2(x, y);
+                    GL.TexCoord2(1, 0); GL.Vertex2(x + TileSize, y);
+                    GL.TexCoord2(1, 1); GL.Vertex2(x + TileSize, y + TileSize);
+                    GL.End();
+                    SetTextureTo(AtlasID.EventNames);
+                }
             }
         }
         internal void DrawTileType(int x, int y, byte id)
@@ -2796,7 +2824,7 @@ namespace MLLE
         internal void EventReindeer()
         {
             Layer currentlayer = J2L.SpriteLayer;
-            SetTextureTo(AtlasID.EventNames);
+            SetTextureTo(!stijnVision ? AtlasID.EventNames : AtlasID.EventSprites);
             //upperleftx = xspeedparallax - /*widthreduced -*/ ZoomTileSize;
             //upperlefty = yspeedparallax - /*heightreduced -*/ ZoomTileSize;
             //xorigin = -ZoomTileSize - (upperleftx % ZoomTileSize);

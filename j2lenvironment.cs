@@ -54,6 +54,14 @@ class TexturedJ2L : J2LFile
         {Version.AGA, 0 },
         {Version.GorH, 0 },
         };
+    internal static Dictionary<Version, int> EventSpriteAtlas = new Dictionary<Version, int> {
+        //{Version.BC, 0 },
+        {Version.O, 0 },
+        {Version.JJ2, 0 },
+        {Version.TSF, 0 },
+        //{Version.AGA, 0 },
+        {Version.GorH, 0 },
+        };
     internal static Dictionary<Version, string[]> TileTypeNames = new Dictionary<Version, string[]> {
         {Version.BC, null },
         {Version.O, null },
@@ -403,7 +411,9 @@ class TexturedJ2L : J2LFile
         using (SolidBrush white = new SolidBrush(Color.White))
         using (Font arial = new Font(new FontFamily("Arial"), 8))
         using (Bitmap text_bmp = new Bitmap(512, 512))
+        using (Bitmap text_bmp2 = new Bitmap(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "jazz.png")))
         using (Graphics totalgfx = Graphics.FromImage(text_bmp))
+        using (Graphics totalgfx2 = Graphics.FromImage(text_bmp2))
         using (StringFormat formatEvent = new StringFormat())
         {
             formatEvent.Alignment = formatEvent.LineAlignment = StringAlignment.Center;
@@ -417,10 +427,17 @@ class TexturedJ2L : J2LFile
                     else
                         gfx.DrawString(StringList[i][3], arial, white, rectE, formatEvent);
                     totalgfx.DrawImage(single_bmp,i%16*32, i/16*32);
+                    //totalgfx2.DrawImage(single_bmp,i%16*64+16, i/16*64+16); //todo
                 }
             if (EventAtlas[version] != 0)
                 GL.DeleteTexture(EventAtlas[version]);
             EventAtlas[version] = TexUtil.CreateTextureFromBitmap(text_bmp);
+            if (EventSpriteAtlas.ContainsKey(version)) //not AGA, not currently BC either (todo)
+            {
+                if (EventSpriteAtlas[version] != 0)
+                    GL.DeleteTexture(EventSpriteAtlas[version]);
+                EventSpriteAtlas[version] = TexUtil.CreateTextureFromBitmap(text_bmp2);
+            }
         }
     }
 }
