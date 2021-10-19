@@ -124,6 +124,7 @@ namespace MLLE
         private bool PreviewHelpStringColors = true;
         private bool BDisablesSmartTiles = false;
         private bool stijnVision = false;
+        private int DifficultyShaderHandle;
         internal uint PlusTriggerZone = 0;
 
         private bool levelHasBeenModified = false;
@@ -516,7 +517,8 @@ namespace MLLE
             AllowExtraZooming = (Settings.IniReadValue("Miscellaneous", "ZoomingAbove100") == "1"); zoomingAbove100ToolStripMenuItem.Checked = Zoom200.Enabled = Zoom400.Enabled = AllowExtraZooming;
             PreviewHelpStringColors = (Settings.IniReadValue("Miscellaneous", "PreviewHelpStringColors") != "0"); previewHelpStringColorsToolStripMenuItem.Checked = PreviewHelpStringColors;
             BDisablesSmartTiles = (Settings.IniReadValue("Miscellaneous", "BDisablesSmartTiles") == "1"); bDisablesSmartTilesToolStripMenuItem.Checked = BDisablesSmartTiles;
-            stijnVisionToolStripMenuItem.Checked = (Settings.IniReadValue("Miscellaneous", "stijnVision") == "1"); //but don't necessarily turn on the actual bool, in case this is AGA
+            stijnVisionToolStripMenuItem.Checked = (Settings.IniReadValue("Miscellaneous", "stijnVision") == "1");
+            stijnVision = stijnVisionToolStripMenuItem.Checked && stijnVisionToolStripMenuItem.Enabled;
 
             ToolStripMenuItem[] recolorableSpriteSubcategories = { pinballToolStripMenuItem, platformsToolStripMenuItem, polesToolStripMenuItem, sceneryToolStripMenuItem };
             for (int i = 0; i < RecolorableSpriteNames.Length; ++i)
@@ -548,6 +550,27 @@ namespace MLLE
                     default:
                         break;
                 }
+
+            DifficultyShaderHandle = GL.CreateProgram();
+            int fragmentShader = GL.CreateShader(ShaderType.FragmentShader);
+            GL.ShaderSource(fragmentShader, @"
+out vec4 outputColor;
+uniform sampler2D texture0;
+
+void main() {
+    vec4 pixel = texture2D(texture0, gl_TexCoord[0].xy);
+    float grayscale = dot(pixel.rgb, vec3(0.299, 0.587, 0.114));
+    outputColor = vec4((gl_Color * grayscale).rgb, pixel.a);
+}
+");
+            GL.CompileShader(fragmentShader);
+            GL.AttachShader(DifficultyShaderHandle, fragmentShader);
+            GL.LinkProgram(DifficultyShaderHandle);
+            //int param;
+            //GL.GetShader(fragmentShader, ShaderParameter.CompileStatus, out param);
+            //MessageBox.Show(GL.GetShaderInfoLog(fragmentShader), param.ToString());
+            GL.DetachShader(DifficultyShaderHandle, fragmentShader);
+            GL.DeleteShader(fragmentShader);
 
             sw.Start();
             DrawThread = new Thread(TimePasses);
@@ -2669,7 +2692,7 @@ namespace MLLE
                 GL.End();
             }
         }
-        internal void DrawEvent(int x, int y, uint id, byte TileSize = 32)
+        internal void DrawEvent(int x, int y, uint id, ushort TileSize = 32)
         {
             uint difficulty = id << 22 >> 30;
             //previd = 40000;
@@ -2681,6 +2704,8 @@ namespace MLLE
                 x -= TileSize / 2;
                 y -= TileSize / 2;
                 TileSize *= 2;
+                if (difficulty != 0)
+                    GL.UseProgram(DifficultyShaderHandle);
             }
             GL.Begin(BeginMode.Quads);
             GL.TexCoord2(xFrac, yFrac + 0.0625F); GL.Vertex2(x, y + TileSize);
@@ -2688,7 +2713,11 @@ namespace MLLE
             GL.TexCoord2(xFrac + 0.0625F, yFrac); GL.Vertex2(x + TileSize, y);
             GL.TexCoord2(xFrac + 0.0625F, yFrac + 0.0625F); GL.Vertex2(x + TileSize, y + TileSize);
             GL.End();
-            if (difficulty != 5) GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
+            if (difficulty != 0) {
+                GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
+                if (stijnVision)
+                    GL.UseProgram(0);
+            }
             if ((id & 255) == GeneratorEventID)
             {
                 xFrac = (GeneratorEventID.Value % 16) * 0.0625F;
