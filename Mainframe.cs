@@ -2699,7 +2699,7 @@ void main() {
             GL.Color4((byte)255, (difficulty < 2) ? (byte)255 : (byte)0, (difficulty % 3 == 0) ? (byte)255 : (byte)0, (byte)255);
             byte drawid = (byte)(((id & 255) == GeneratorEventID) ? id << 12 >> 24 : id & 255);
             float xFrac = (drawid % 16) * 0.0625F, yFrac = (int)(drawid / 16) * 0.0625F;
-            if (stijnVision) //draw 64x64 images centered around the 32x32 tile
+            if (stijnVision && PrevAtlas == AtlasID.EventSprites) //draw 64x64 images centered around the 32x32 tile
             {
                 x -= TileSize / 2;
                 y -= TileSize / 2;
@@ -3218,7 +3218,7 @@ void main() {
         private void GrabEventAtMouse() { if (J2L.VersionType == Version.AGA) ActiveEvent = MouseAGAEvent; else ActiveEvent.ID = MouseAGAEvent.ID; }
         private void PasteEventAtMouse()
         {
-            if (LastFocusedZone == FocusedZone.Tileset) { J2L.EventTiles[MouseTile] = MouseAGAEvent.ID = ActiveEvent.ID; RedrawTilesetHowManyTimes = 2; }
+            if (LastFocusedZone == FocusedZone.Tileset) { J2L.EventTiles[MouseTile] = MouseAGAEvent.ID = ActiveEvent.ID; LevelHasBeenModified = true; RedrawTilesetHowManyTimes = 2; }
             else if (LastFocusedZone == FocusedZone.Level && CurrentLayer == J2L.SpriteLayer)
             {
                 if (MouseTileX >= 0 && MouseTileY >= 0 && MouseTileX < CurrentLayer.Width && MouseTileY < CurrentLayer.Height) {
