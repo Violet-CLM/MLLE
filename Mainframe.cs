@@ -1730,6 +1730,14 @@ void main() {
             _suspendEvent.Set();
         }
 
+        void AddFilepathToRecentLevels(string filepath)
+        {
+            RecentlyLoadedLevels.RemoveAll(fn => fn == filepath); //no dupes
+            RecentlyLoadedLevels.Insert(0, filepath);
+            for (int i = 0; i < 10 && i < RecentlyLoadedLevels.Count; ++i)
+                Settings.IniWriteValue("RecentLevels", (i + 1).ToString(), RecentlyLoadedLevels[i]);
+        }
+
         #region Open
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -1807,12 +1815,7 @@ void main() {
                     ProcessIni(J2L.VersionType);
                 }
                 SetTitle(J2L.Name, J2L.FilenameOnly);
-                RecentlyLoadedLevels.RemoveAll(fn => fn == filename); //no dupes
-                RecentlyLoadedLevels.Insert(0, filename);
-                for (int i = 0; i < 10 && i < RecentlyLoadedLevels.Count; ++i)
-                {
-                    Settings.IniWriteValue("RecentLevels", (i + 1).ToString(), RecentlyLoadedLevels[i]);
-                }
+                AddFilepathToRecentLevels(filename);
                 J2L.Generate_Textures(TransparencySource.JJ2_Style, true);
                 GL.BindTexture(TextureTarget.Texture2D, J2L.ImageAtlas);
                 Undoable.Clear();
@@ -2051,6 +2054,7 @@ void main() {
                 {
                     SetTitle(J2L.Name, Path.GetFileName(J2L.FilenameOnly));
                     LevelHasBeenModified = false;
+                    AddFilepathToRecentLevels(filename); //usually will already be there from opening the level, but what if this is a NEW level?
                 }
 
                 string scriptFilepath = Path.ChangeExtension(filename, ".j2as");
