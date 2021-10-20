@@ -1792,10 +1792,11 @@ void main() {
             }
             else if (openResults == OpeningResults.Success || openResults == OpeningResults.SuccessfulButAmbiguous)
             {
-                if (!J2L.PlusPropertyList.LevelIsReadable(Data5, J2L.Tilesets, J2L.AllLayers, filename))
+                string readableResult = J2L.PlusPropertyList.LevelIsReadable(Data5, J2L.Tilesets, J2L.AllLayers, filename);
+                if (readableResult != null)
                 {
-                    MessageBox.Show("This level was not saved in a format that this version of MLLE understands. Please try downloading the latest MLLE release and trying again.", "This level cannot be loaded", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    SafeToDisplay = true;
+                    MessageBox.Show(readableResult, "This level cannot be loaded", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    NewJ2L(); //dump whatever parts of the level had already been loaded prior to this error
                     return;
                 }
                 //EventsFromIni = TexturedJ2L.ReadEventIni("MLLEProfile.ini");

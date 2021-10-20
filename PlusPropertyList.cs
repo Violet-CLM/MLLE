@@ -617,20 +617,20 @@ namespace MLLE
             Data5 = data5header.ToArray();
             return true;
         }
-        internal bool LevelIsReadable(byte[] Data5, List<J2TFile> Tilesets, List<Layer> Layers, string Filepath)
+        internal string LevelIsReadable(byte[] Data5, List<J2TFile> Tilesets, List<Layer> Layers, string Filepath)
         {
             if (Data5 == null || Data5.Length < 20) //level stops at the end of data4, as is good and proper
             {
                 this = new PlusPropertyList(null);
-                return true;
+                return null;
             }
             using (BinaryReader data5reader = new BinaryReader(new MemoryStream(Data5), J2LFile.FileEncoding))
             {
                 if (new string(data5reader.ReadChars(4)) != MLLEData5MagicString)
-                    return false;
+                    return "This level was saved in some unknown editor software that this release of MLLE does not recognize. Resaving it might inadvertently corrupt data saved in it, so MLLE will not open it. You could try checking to see if there is a more recent MLLE release that adds support for this format.";
                 uint data5Version = data5reader.ReadUInt32();
                 if (data5Version > CurrentMLLEData5Version)
-                    return false;
+                    return "This level appears to have been saved in a more recent release of MLLE and uses one or more features that this release cannot read. Please try downloading the latest MLLE release and trying again.";
                 //should be okay to read at this point
                 
                 this = new PlusPropertyList(null);
@@ -688,8 +688,7 @@ namespace MLLE
                         else
                         {
                             this = new PlusPropertyList(null);
-                            MessageBox.Show("Additional tileset \"" + tilesetFilepath + "\" not found; MLLE will stop trying to read this Data5 section.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
-                            return false;
+                            return "Additional tileset \"" + tilesetFilepath + "\" not found; MLLE will stop trying to read this Data5 section.";
                         }
                     }
 
@@ -711,8 +710,7 @@ namespace MLLE
                             else
                             {
                                 this = new PlusPropertyList(null);
-                                MessageBox.Show("Additional file \"" + levelFilePath + "\" not found; MLLE will stop trying to read this Data5 section.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
-                                return false;
+                                return "Additional file \"" + levelFilePath + "\" not found; MLLE will stop trying to read this Data5 section.";
                             }
                         }
                         int nextNonDefaultLayerID = 0;
@@ -770,8 +768,8 @@ namespace MLLE
                                         var extendedWeapon = WeaponsForm.GetAllAvailableWeapons().Find(w => w.Name == name);
                                         if (extendedWeapon == null)
                                         {
-                                            MessageBox.Show(String.Format("Sorry, the MLLE \"Weapons\" folder did not include any .ini file defining a weapon with the name \"{0}.\"", name), "Weapon not found", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                            return false;
+                                            this = new PlusPropertyList(null);
+                                            return "Sorry, the MLLE \"Weapons\" folder did not include any .ini file defining a weapon with the name \"" + name + ".\" You will need to download or otherwise obtain such a .ini file before you can open this level. Consider contacting the level's author for help.";
                                         }
                                         
                                         Weapons[weaponID].Name = name;
@@ -795,7 +793,7 @@ namespace MLLE
                     }
                 }
             }
-            return true;
+            return null;
         }
     }
 }
