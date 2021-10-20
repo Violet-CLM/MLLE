@@ -106,6 +106,14 @@ namespace MLLE
         {Version.AGA, "AGA"},
         {Version.GorH, "100gh"},
         };
+        public static Dictionary<Version, bool[]> EventsDrawnAsStringsInStijnVision = new Dictionary<Version, bool[]> {
+        {Version.BC, null},
+        {Version.O, null},
+        {Version.JJ2, null },
+        {Version.TSF, null},
+        //{Version.AGA, null},
+        {Version.GorH, null},
+        };
         public static string[] DefaultFileExtensionStrings = new string[] { ".j2l", ".lvl", ".lev" };
         public byte? GeneratorEventID = null, StartPositionEventID = null;
 
@@ -116,7 +124,7 @@ namespace MLLE
         float ZoomTileFactor = 1;
 
         internal bool LevelDisplayLoaded = false;
-        internal bool EventDisplayMode = true;
+        internal int EventDisplayMode = 1;
         MaskMode MaskDisplayMode;
         ParallaxMode ParallaxDisplayMode;
         internal byte ParallaxEventDisplayType = 0;
@@ -224,12 +232,14 @@ namespace MLLE
             TexturedJ2L.ProduceEventStringsFromIni(version, baseIni, ini);
             TexturedJ2L.ProduceTypeIcons(version, ini);
 
-            bool[] differentEventListFromPreviousLevelInThisVersion = ProduceLevelSpecificEventStringListIfAppropriate(version);
-            if (differentEventListFromPreviousLevelInThisVersion == null)
+            bool[] customEvents = ProduceLevelSpecificEventStringListIfAppropriate(version);
+            bool differentEventListFromPreviousLevelInThisVersion = customEvents != null;
+            if (!differentEventListFromPreviousLevelInThisVersion)
                 LevelSpecificEventStringList = TexturedJ2L.IniEventListing[version];
-            TexturedJ2L.ProduceEventIcons(version, LevelSpecificEventStringList, differentEventListFromPreviousLevelInThisVersion != null, GeneratorEventID, baseEventListFilename, differentEventListFromPreviousLevelInThisVersion);
-            if ((TreeStructure[version] == null) || (differentEventListFromPreviousLevelInThisVersion != null))
+            TexturedJ2L.ProduceEventIcons(version, LevelSpecificEventStringList, ref customEvents, differentEventListFromPreviousLevelInThisVersion, GeneratorEventID, baseEventListFilename);
+            if ((TreeStructure[version] == null) || differentEventListFromPreviousLevelInThisVersion)
             {
+                EventsDrawnAsStringsInStijnVision[version] = customEvents;
                 List<TreeNode>[] TreeNodeLists = TreeStructure[version] = new List<TreeNode>[2];
                 List<StringAndIndex> FlatEventList = FlatEventLists[version] = new List<StringAndIndex>();
                 TreeNodeLists[0] = new List<TreeNode>();
@@ -723,7 +733,11 @@ void main() {
 
                 case (Keys.Control | Keys.P): { ParallaxButton.Checked = DropdownParallax.Checked = !ParallaxButton.Checked; return true; }
                 case (Keys.Control | Keys.M): { MaskButton.Checked = DropdownMask.Checked = !MaskButton.Checked; return true; }
-                case (Keys.Control | Keys.V): { EventsButton.Checked = DropdownEvents.Checked = !EventsButton.Checked; return true; }
+                case (Keys.Control | Keys.V): {
+                        if ((stijnVision && EventDisplayMode == 1)) EventDisplayMode = 2;
+                        else EventsButton.Checked = DropdownEvents.Checked = !EventsButton.Checked;
+                        return true;
+                    }
 
                 case Keys.Left: { if (LastFocusedZone == FocusedZone.Level) try { LDScrollH.Value -= LDScrollH.SmallChange; } catch { LDScrollH.Value = 0; } return true; }
                 case Keys.Right: { if (LastFocusedZone == FocusedZone.Level) LDScrollH.Value = Math.Min(LDScrollH.Value + LDScrollH.SmallChange, LDScrollH.Maximum - LDScrollH.LargeChange + 1); return true; }
@@ -1556,10 +1570,10 @@ void main() {
             ShowLayerPropertiesByOrder(CurrentLayerID);
         }
 
-        private void EventsButton_CheckedChanged(object sender, EventArgs e) { EventDisplayMode = DropdownEvents.Checked = EventsButton.Checked; }
+        private void EventsButton_CheckedChanged(object sender, EventArgs e) { EventDisplayMode = (DropdownEvents.Checked = EventsButton.Checked) ? 1 : 0; }
         private void MaskButton_CheckedChanged(object sender, EventArgs e) { MaskDisplayMode = (DropdownMask.Checked = MaskButton.Checked) ? MaskMode.FullMask : MaskMode.NoMask; DropdownParallax.Enabled = ParallaxButton.Enabled = !MaskButton.Checked; }
         private void ParallaxButton_CheckedChanged(object sender, EventArgs e) { SetParallaxModeTo(DropdownParallax.Checked = ParallaxButton.Checked); }
-        private void DropdownEvents_CheckedChanged(object sender, EventArgs e) { EventDisplayMode = EventsButton.Checked = DropdownEvents.Checked; }
+        private void DropdownEvents_CheckedChanged(object sender, EventArgs e) { EventDisplayMode = (EventsButton.Checked = DropdownEvents.Checked) ? 1 : 0; }
         private void DropdownMask_CheckedChanged(object sender, EventArgs e) { MaskDisplayMode = (MaskButton.Checked = DropdownMask.Checked) ? MaskMode.FullMask : MaskMode.NoMask; DropdownParallax.Enabled = ParallaxButton.Enabled = !MaskButton.Checked; }
         private void DropdownParallax_CheckedChanged(object sender, EventArgs e) { SetParallaxModeTo(ParallaxButton.Checked = DropdownParallax.Checked); }
 
@@ -2279,7 +2293,7 @@ void main() {
                     GL.Ortho(0, DrawingTools.Left, LevelDisplay.Height, 0, -1, 1);
                     GL.Viewport(0, 0, DrawingTools.Left, LevelDisplay.Height);
                     GL.Disable(EnableCap.ScissorTest);
-                    if (EventDisplayMode || ParallaxButton.Checked) GL.Disable(EnableCap.Blend);
+                    if (EventDisplayMode != 0 || ParallaxButton.Checked) GL.Disable(EnableCap.Blend);
                     if (!(
                         (PrevAtlas == AtlasID.Image && CurrentTilesetOverlay != TilesetOverlay.Masks)
                         ||
@@ -2482,19 +2496,19 @@ void main() {
                             {
                                 SetTextureTo(AtlasID.Mask);
                                 NoParallaxReindeer(DrawingLayer);
-                                if (DrawingLayer == J2L.SpriteLayer && ParallaxEventDisplayType == 0 && EventDisplayMode) EventReindeer();
+                                if (DrawingLayer == J2L.SpriteLayer && ParallaxEventDisplayType == 0 && EventDisplayMode != 0) EventReindeer();
                                 SetTextureTo(AtlasID.Image);
                             }
-                            else if (DrawingLayer == J2L.SpriteLayer && ParallaxEventDisplayType == 0 && EventDisplayMode) { EventReindeer(); SetTextureTo(AtlasID.Image); }
+                            else if (DrawingLayer == J2L.SpriteLayer && ParallaxEventDisplayType == 0 && EventDisplayMode != 0) { EventReindeer(); SetTextureTo(AtlasID.Image); }
                             if (ParallaxDisplayMode == ParallaxMode.TemporaryParallax) GL.Color4((byte)255, (byte)255, (byte)255, (byte)64);
                         }
                         else
                         {
                             if (DrawingLayer.HasTiles && !DrawingLayer.Hidden) Reindeer(DrawingLayer);
-                            if (DrawingLayer == J2L.SpriteLayer && ParallaxEventDisplayType == 0 && EventDisplayMode) { EventReindeer(); SetTextureTo(AtlasID.Image); }
+                            if (DrawingLayer == J2L.SpriteLayer && ParallaxEventDisplayType == 0 && EventDisplayMode != 0) { EventReindeer(); SetTextureTo(AtlasID.Image); }
                         }
                     }
-                    if (ParallaxEventDisplayType == 1 && EventDisplayMode) EventReindeer();
+                    if (ParallaxEventDisplayType == 1 && EventDisplayMode != 0) EventReindeer();
                 }
                 else
                 {
@@ -2508,13 +2522,13 @@ void main() {
                         SetTextureTo(AtlasID.Mask);
                         GL.Enable(EnableCap.Blend);
                         NoParallaxReindeer(CurrentLayer);
-                        if (CurrentLayer == J2L.SpriteLayer && EventDisplayMode) EventReindeer();
+                        if (CurrentLayer == J2L.SpriteLayer && EventDisplayMode != 0) EventReindeer();
                     }
                     else
                     {
                         SetTextureTo((MaskDisplayMode == MaskMode.FullMask) ? AtlasID.Mask : AtlasID.Image);
                         NoParallaxReindeer(CurrentLayer);
-                        if (CurrentLayer == J2L.SpriteLayer && EventDisplayMode) { GL.Enable(EnableCap.Blend); EventReindeer(); }
+                        if (CurrentLayer == J2L.SpriteLayer && EventDisplayMode != 0) { GL.Enable(EnableCap.Blend); EventReindeer(); }
                     }
                 }
                 #endregion reindeer
@@ -2866,7 +2880,7 @@ void main() {
                         else if (tempupperlefty >= 0)
                         {
                             if (J2L.VersionType == Version.AGA) { if (J2L.AGA_EventMap[tempupperleftx, tempupperlefty].ID != 0) DrawEvent(tempxorigin, tempyorigin, J2L.AGA_EventMap[tempupperleftx, tempupperlefty].ID, ZoomTileSize); }
-                            else if (J2L.EventMap[tempupperleftx, tempupperlefty] != 0) DrawEvent(tempxorigin, tempyorigin, J2L.EventMap[tempupperleftx, tempupperlefty]/*, J2L.GetRawBitsAtTile(tempupperleftx, tempupperlefty, 0, 2)*/, ZoomTileSize);
+                            else if (J2L.EventMap[tempupperleftx, tempupperlefty] != 0 && (EventDisplayMode == 1 || !EventsDrawnAsStringsInStijnVision[J2L.VersionType][(byte)J2L.EventMap[tempupperleftx, tempupperlefty]])) DrawEvent(tempxorigin, tempyorigin, J2L.EventMap[tempupperleftx, tempupperlefty]/*, J2L.GetRawBitsAtTile(tempupperleftx, tempupperlefty, 0, 2)*/, ZoomTileSize);
                         }
                         tempyorigin += ZoomTileSize; tempupperlefty++;
                     }
