@@ -21,7 +21,7 @@ namespace MLLE
     public enum EnableableTitles { SecretLevelName, BonusLevelName, Lighting, Splitscreen, HideInHCL, Multiplayer, BoolDevelopingForPlus, UseText, SaveAndRun, SaveAndRunArgs, Illuminate, DiffLabel, Diff1, Diff2, Diff3, Diff4 }
     public enum FocusedZone { None, Tileset, Level, AnimationEditing }
     public enum SelectionType { New, Add, Subtract, Rectangle, HollowRectangle }
-    public enum AtlasID { Null, Image, Mask, EventNames, Selection, Generator, TileTypes }
+    public enum AtlasID { Null, Image, Mask, EventNames, Selection, TileTypes, EventSprites }
     public enum TilesetOverlay { None, TileTypes, Events, Masks, SmartTiles }
 
     public partial class Mainframe : Form
@@ -44,7 +44,7 @@ namespace MLLE
         {Version.GorH, null },
         };
         //internal int[] eventtexturenumberlist = new int[256];
-        internal int GeneratorOverlay, SelectionOverlay;
+        internal int SelectionOverlay;
         //internal string[][] EventsFromIni;
         internal List<string[]> TextureTypes = new List<string[]>(4);
         internal string[] CurrentIniLine;
@@ -98,13 +98,21 @@ namespace MLLE
         {Version.AGA, 1},
         {Version.GorH, 2},
         };
-        public static Dictionary<Version, string> ProfileIniFilename = new Dictionary<Version, string> {
-        {Version.BC, "MLLEProfile - Battery Check"},
-        {Version.O, "MLLEProfile - 110o"},
-        {Version.JJ2, "MLLEProfile - JJ2"},
-        {Version.TSF, "MLLEProfile - TSF"},
-        {Version.AGA, "MLLEProfile - AGA"},
-        {Version.GorH, "MLLEProfile - 100gh"},
+        public static Dictionary<Version, string> ProfileName = new Dictionary<Version, string> {
+        {Version.BC, "Battery Check"},
+        {Version.O, "110o"},
+        {Version.JJ2, "JJ2"},
+        {Version.TSF, "TSF"},
+        {Version.AGA, "AGA"},
+        {Version.GorH, "100gh"},
+        };
+        public static Dictionary<Version, bool[]> EventsDrawnAsStringsInStijnVision = new Dictionary<Version, bool[]> {
+        {Version.BC, null},
+        {Version.O, null},
+        {Version.JJ2, null },
+        {Version.TSF, null},
+        //{Version.AGA, null},
+        {Version.GorH, null},
         };
         public static string[] DefaultFileExtensionStrings = new string[] { ".j2l", ".lvl", ".lev" };
         public byte? GeneratorEventID = null, StartPositionEventID = null;
@@ -116,13 +124,15 @@ namespace MLLE
         float ZoomTileFactor = 1;
 
         internal bool LevelDisplayLoaded = false;
-        internal bool EventDisplayMode = true;
+        internal int EventDisplayMode = 1;
         MaskMode MaskDisplayMode;
         ParallaxMode ParallaxDisplayMode;
         internal byte ParallaxEventDisplayType = 0;
         internal bool AllowExtraZooming = false;
         private bool PreviewHelpStringColors = true;
         private bool BDisablesSmartTiles = false;
+        private bool stijnVision = false;
+        private int DifficultyShaderHandle;
         internal uint PlusTriggerZone = 0;
 
         private bool levelHasBeenModified = false;
@@ -175,7 +185,7 @@ namespace MLLE
 
         private void ProcessIni(Version version)
         {
-            IniFile ini = new IniFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ProfileIniFilename[J2L.VersionType] + ".ini"));
+            IniFile ini = new IniFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MLLEProfile - " + ProfileName[J2L.VersionType] + ".ini"));
             if (EnableableStrings[version] == null)
             {
                 Dictionary<EnableableTitles, bool> Bools = EnableableBools[version] = new Dictionary<EnableableTitles, bool>();
@@ -208,24 +218,28 @@ namespace MLLE
             {
                 AmbientSounds[version] = new MemoryStream[512];
             }
-            IniFile baseIni;
+            string baseEventListFilename = ini.IniReadValue("Events", "Base"); //usually "jazz"
+            IniFile baseIni = ini;
+            if (baseEventListFilename != "")
             {
-                string iniFilename = Path.ChangeExtension(Settings.IniReadValue("EventListBases", ini.IniReadValue("Events", "Base")), "ini");
+                string iniFilename = Path.ChangeExtension(Settings.IniReadValue("EventListBases", baseEventListFilename), "ini");
                 string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, iniFilename);
                 if (File.Exists(path))
                     baseIni = new IniFile(path);
-                else
-                    baseIni = ini;
             }
+            else
+                baseEventListFilename = ProfileName[version]; //e.g. "Battery Check"
             TexturedJ2L.ProduceEventStringsFromIni(version, baseIni, ini);
             TexturedJ2L.ProduceTypeIcons(version, ini);
 
-            bool differentEventListFromPreviousLevelInThisVersion = ProduceLevelSpecificEventStringListIfAppropriate(version);
+            bool[] customEvents = ProduceLevelSpecificEventStringListIfAppropriate(version);
+            bool differentEventListFromPreviousLevelInThisVersion = customEvents != null;
             if (!differentEventListFromPreviousLevelInThisVersion)
                 LevelSpecificEventStringList = TexturedJ2L.IniEventListing[version];
-            TexturedJ2L.ProduceEventIcons(version, LevelSpecificEventStringList, differentEventListFromPreviousLevelInThisVersion);
+            TexturedJ2L.ProduceEventIcons(version, LevelSpecificEventStringList, ref customEvents, differentEventListFromPreviousLevelInThisVersion, GeneratorEventID, baseEventListFilename);
             if ((TreeStructure[version] == null) || differentEventListFromPreviousLevelInThisVersion)
             {
+                EventsDrawnAsStringsInStijnVision[version] = customEvents;
                 List<TreeNode>[] TreeNodeLists = TreeStructure[version] = new List<TreeNode>[2];
                 List<StringAndIndex> FlatEventList = FlatEventLists[version] = new List<StringAndIndex>();
                 TreeNodeLists[0] = new List<TreeNode>();
@@ -286,13 +300,22 @@ namespace MLLE
             if (AllTilesetLists[version] == null) PopulateTilesetDropdown(version, ini);
             TilesetSelection.Items.Clear();
             foreach (NameAndFilename foo in AllTilesetLists[version]) TilesetSelection.Items.Add(foo);
+
+            if (!TexturedJ2L.EventSpriteAtlas.ContainsKey(version)) { //AGA
+                stijnVisionToolStripMenuItem.Enabled = false; //too complicated and too little user interest to figure this out
+                stijnVision = false;
+            } else {
+                stijnVisionToolStripMenuItem.Enabled = true;
+                stijnVision = stijnVisionToolStripMenuItem.Checked;
+            }
         }
         string[][] LevelSpecificEventStringList;
-        private bool ProduceLevelSpecificEventStringListIfAppropriate(Version version)
+        private bool[] ProduceLevelSpecificEventStringListIfAppropriate(Version version)
         {
             string[][] defaults = TexturedJ2L.IniEventListing[version];
             if (VersionIsPlusCompatible(version)) //otherwise there won't be any script file/s to worry about at all
             {
+                bool[] whichAreCustom = new bool[256];
                 var scriptFilepaths = new List<string>();
                 scriptFilepaths.Add(Path.ChangeExtension(J2L.FullFilePath, "j2as"));
 
@@ -325,6 +348,7 @@ namespace MLLE
                                     LevelSpecificEventStringList[eventID] = TexturedJ2L.GetDontUseEventListingForEventID((byte)eventID);
                                 else
                                     LevelSpecificEventStringList[eventID] = resultSplitByPipes.Select(original => original.Trim()).ToArray();
+                                whichAreCustom[eventID] = true;
                             }
                         }
                     }
@@ -335,15 +359,15 @@ namespace MLLE
                     for (int i = 0; i < 256; ++i)
                         if (LevelSpecificEventStringList[i] == null)
                             LevelSpecificEventStringList[i] = defaults[i];
-                    return true;
+                    return whichAreCustom;
                 }
                 else if (LevelSpecificEventStringList != null && LevelSpecificEventStringList != defaults) //the previous level (in this version) used custom events, but this one does not
                 {
                     LevelSpecificEventStringList = defaults;
-                    return true; //different from previous level
+                    return whichAreCustom; //different from previous level
                 }
             }
-            return false; //no change
+            return null; //no change
         }
         private void PopulateTilesetDropdown(Version version, IniFile ini)
         {
@@ -481,7 +505,6 @@ namespace MLLE
             for (ushort x = 0; x < IsEachTileSelected.Length; x++) IsEachTileSelected[x] = new bool[1026];
             GL.Disable(EnableCap.DepthTest);
             GL.Disable(EnableCap.CullFace);
-            GeneratorOverlay = TexUtil.CreateTextureFromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Generator.png"));
             SelectionOverlay = TexUtil.CreateTextureFromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SelectionRectangles.png"));
             GL.BindTexture(TextureTarget.Texture2D, J2L.ImageAtlas);
             GL.ClearColor(HotKolors[0]);
@@ -504,6 +527,8 @@ namespace MLLE
             AllowExtraZooming = (Settings.IniReadValue("Miscellaneous", "ZoomingAbove100") == "1"); zoomingAbove100ToolStripMenuItem.Checked = Zoom200.Enabled = Zoom400.Enabled = AllowExtraZooming;
             PreviewHelpStringColors = (Settings.IniReadValue("Miscellaneous", "PreviewHelpStringColors") != "0"); previewHelpStringColorsToolStripMenuItem.Checked = PreviewHelpStringColors;
             BDisablesSmartTiles = (Settings.IniReadValue("Miscellaneous", "BDisablesSmartTiles") == "1"); bDisablesSmartTilesToolStripMenuItem.Checked = BDisablesSmartTiles;
+            stijnVisionToolStripMenuItem.Checked = (Settings.IniReadValue("Miscellaneous", "stijnVision") == "1");
+            stijnVision = stijnVisionToolStripMenuItem.Checked && stijnVisionToolStripMenuItem.Enabled;
 
             ToolStripMenuItem[] recolorableSpriteSubcategories = { pinballToolStripMenuItem, platformsToolStripMenuItem, polesToolStripMenuItem, sceneryToolStripMenuItem };
             for (int i = 0; i < RecolorableSpriteNames.Length; ++i)
@@ -535,6 +560,27 @@ namespace MLLE
                     default:
                         break;
                 }
+
+            DifficultyShaderHandle = GL.CreateProgram();
+            int fragmentShader = GL.CreateShader(ShaderType.FragmentShader);
+            GL.ShaderSource(fragmentShader, @"
+out vec4 outputColor;
+uniform sampler2D texture0;
+
+void main() {
+    vec4 pixel = texture2D(texture0, gl_TexCoord[0].xy);
+    float grayscale = dot(pixel.rgb, vec3(0.299, 0.587, 0.114));
+    outputColor = vec4((gl_Color * grayscale).rgb, pixel.a);
+}
+");
+            GL.CompileShader(fragmentShader);
+            GL.AttachShader(DifficultyShaderHandle, fragmentShader);
+            GL.LinkProgram(DifficultyShaderHandle);
+            //int param;
+            //GL.GetShader(fragmentShader, ShaderParameter.CompileStatus, out param);
+            //MessageBox.Show(GL.GetShaderInfoLog(fragmentShader), param.ToString());
+            GL.DetachShader(DifficultyShaderHandle, fragmentShader);
+            GL.DeleteShader(fragmentShader);
 
             sw.Start();
             DrawThread = new Thread(TimePasses);
@@ -687,7 +733,11 @@ namespace MLLE
 
                 case (Keys.Control | Keys.P): { ParallaxButton.Checked = DropdownParallax.Checked = !ParallaxButton.Checked; return true; }
                 case (Keys.Control | Keys.M): { MaskButton.Checked = DropdownMask.Checked = !MaskButton.Checked; return true; }
-                case (Keys.Control | Keys.V): { EventsButton.Checked = DropdownEvents.Checked = !EventsButton.Checked; return true; }
+                case (Keys.Control | Keys.V): {
+                        if ((stijnVision && EventDisplayMode == 1)) EventDisplayMode = 2;
+                        else EventsButton.Checked = DropdownEvents.Checked = !EventsButton.Checked;
+                        return true;
+                    }
 
                 case Keys.Left: { if (LastFocusedZone == FocusedZone.Level) try { LDScrollH.Value -= LDScrollH.SmallChange; } catch { LDScrollH.Value = 0; } return true; }
                 case Keys.Right: { if (LastFocusedZone == FocusedZone.Level) LDScrollH.Value = Math.Min(LDScrollH.Value + LDScrollH.SmallChange, LDScrollH.Maximum - LDScrollH.LargeChange + 1); return true; }
@@ -1206,7 +1256,10 @@ namespace MLLE
         private void bDisablesSmartTilesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Settings.IniWriteValue("Miscellaneous", "BDisablesSmartTiles", (BDisablesSmartTiles = bDisablesSmartTilesToolStripMenuItem.Checked) ? "1" : "0");
-            
+        }
+        private void stijnVisionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Settings.IniWriteValue("Miscellaneous", "stijnVision", (stijnVision = stijnVisionToolStripMenuItem.Checked) ? "1" : "0");
         }
 
         private void DrawingToolButton_Click(object sender, EventArgs e)
@@ -1517,10 +1570,10 @@ namespace MLLE
             ShowLayerPropertiesByOrder(CurrentLayerID);
         }
 
-        private void EventsButton_CheckedChanged(object sender, EventArgs e) { EventDisplayMode = DropdownEvents.Checked = EventsButton.Checked; }
+        private void EventsButton_CheckedChanged(object sender, EventArgs e) { EventDisplayMode = (DropdownEvents.Checked = EventsButton.Checked) ? 1 : 0; }
         private void MaskButton_CheckedChanged(object sender, EventArgs e) { MaskDisplayMode = (DropdownMask.Checked = MaskButton.Checked) ? MaskMode.FullMask : MaskMode.NoMask; DropdownParallax.Enabled = ParallaxButton.Enabled = !MaskButton.Checked; }
         private void ParallaxButton_CheckedChanged(object sender, EventArgs e) { SetParallaxModeTo(DropdownParallax.Checked = ParallaxButton.Checked); }
-        private void DropdownEvents_CheckedChanged(object sender, EventArgs e) { EventDisplayMode = EventsButton.Checked = DropdownEvents.Checked; }
+        private void DropdownEvents_CheckedChanged(object sender, EventArgs e) { EventDisplayMode = (EventsButton.Checked = DropdownEvents.Checked) ? 1 : 0; }
         private void DropdownMask_CheckedChanged(object sender, EventArgs e) { MaskDisplayMode = (MaskButton.Checked = DropdownMask.Checked) ? MaskMode.FullMask : MaskMode.NoMask; DropdownParallax.Enabled = ParallaxButton.Enabled = !MaskButton.Checked; }
         private void DropdownParallax_CheckedChanged(object sender, EventArgs e) { SetParallaxModeTo(ParallaxButton.Checked = DropdownParallax.Checked); }
 
@@ -1602,7 +1655,7 @@ namespace MLLE
         {
             if (EnableableBools[version] != null)
                 return EnableableBools[version][EnableableTitles.BoolDevelopingForPlus];
-            return new IniFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ProfileIniFilename[J2L.VersionType] + ".ini")).IniReadValue("Enableable", "BoolDevelopingForPlus") != "";
+            return new IniFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MLLEProfile - " + ProfileName[J2L.VersionType] + ".ini")).IniReadValue("Enableable", "BoolDevelopingForPlus") != "";
         }
         private bool EmptyActionStackIfItContainsVerticallyFlippedTiles(Stack<LayerAndSpecificTiles> stack)
         {
@@ -2163,11 +2216,11 @@ namespace MLLE
                     case AtlasID.Image:
                         nuInt = J2L.ImageAtlas;
                         break;
-                    case AtlasID.Generator:
-                        nuInt = GeneratorOverlay;
-                        break;
                     case AtlasID.EventNames:
                         nuInt = TexturedJ2L.EventAtlas[J2L.VersionType];
+                        break;
+                    case AtlasID.EventSprites:
+                        nuInt = TexturedJ2L.EventSpriteAtlas[J2L.VersionType];
                         break;
                     case AtlasID.TileTypes:
                         nuInt = TexturedJ2L.TileTypeAtlas[J2L.VersionType];
@@ -2240,7 +2293,7 @@ namespace MLLE
                     GL.Ortho(0, DrawingTools.Left, LevelDisplay.Height, 0, -1, 1);
                     GL.Viewport(0, 0, DrawingTools.Left, LevelDisplay.Height);
                     GL.Disable(EnableCap.ScissorTest);
-                    if (EventDisplayMode || ParallaxButton.Checked) GL.Disable(EnableCap.Blend);
+                    if (EventDisplayMode != 0 || ParallaxButton.Checked) GL.Disable(EnableCap.Blend);
                     if (!(
                         (PrevAtlas == AtlasID.Image && CurrentTilesetOverlay != TilesetOverlay.Masks)
                         ||
@@ -2443,19 +2496,19 @@ namespace MLLE
                             {
                                 SetTextureTo(AtlasID.Mask);
                                 NoParallaxReindeer(DrawingLayer);
-                                if (DrawingLayer == J2L.SpriteLayer && ParallaxEventDisplayType == 0 && EventDisplayMode) EventReindeer();
+                                if (DrawingLayer == J2L.SpriteLayer && ParallaxEventDisplayType == 0 && EventDisplayMode != 0) EventReindeer();
                                 SetTextureTo(AtlasID.Image);
                             }
-                            else if (DrawingLayer == J2L.SpriteLayer && ParallaxEventDisplayType == 0 && EventDisplayMode) { EventReindeer(); SetTextureTo(AtlasID.Image); }
+                            else if (DrawingLayer == J2L.SpriteLayer && ParallaxEventDisplayType == 0 && EventDisplayMode != 0) { EventReindeer(); SetTextureTo(AtlasID.Image); }
                             if (ParallaxDisplayMode == ParallaxMode.TemporaryParallax) GL.Color4((byte)255, (byte)255, (byte)255, (byte)64);
                         }
                         else
                         {
                             if (DrawingLayer.HasTiles && !DrawingLayer.Hidden) Reindeer(DrawingLayer);
-                            if (DrawingLayer == J2L.SpriteLayer && ParallaxEventDisplayType == 0 && EventDisplayMode) { EventReindeer(); SetTextureTo(AtlasID.Image); }
+                            if (DrawingLayer == J2L.SpriteLayer && ParallaxEventDisplayType == 0 && EventDisplayMode != 0) { EventReindeer(); SetTextureTo(AtlasID.Image); }
                         }
                     }
-                    if (ParallaxEventDisplayType == 1 && EventDisplayMode) EventReindeer();
+                    if (ParallaxEventDisplayType == 1 && EventDisplayMode != 0) EventReindeer();
                 }
                 else
                 {
@@ -2469,13 +2522,13 @@ namespace MLLE
                         SetTextureTo(AtlasID.Mask);
                         GL.Enable(EnableCap.Blend);
                         NoParallaxReindeer(CurrentLayer);
-                        if (CurrentLayer == J2L.SpriteLayer && EventDisplayMode) EventReindeer();
+                        if (CurrentLayer == J2L.SpriteLayer && EventDisplayMode != 0) EventReindeer();
                     }
                     else
                     {
                         SetTextureTo((MaskDisplayMode == MaskMode.FullMask) ? AtlasID.Mask : AtlasID.Image);
                         NoParallaxReindeer(CurrentLayer);
-                        if (CurrentLayer == J2L.SpriteLayer && EventDisplayMode) { GL.Enable(EnableCap.Blend); EventReindeer(); }
+                        if (CurrentLayer == J2L.SpriteLayer && EventDisplayMode != 0) { GL.Enable(EnableCap.Blend); EventReindeer(); }
                     }
                 }
                 #endregion reindeer
@@ -2653,30 +2706,42 @@ namespace MLLE
                 GL.End();
             }
         }
-        internal void DrawEvent(int x, int y, uint id, byte TileSize = 32)
+        internal void DrawEvent(int x, int y, uint id, ushort TileSize = 32)
         {
             uint difficulty = id << 22 >> 30;
             //previd = 40000;
             GL.Color4((byte)255, (difficulty < 2) ? (byte)255 : (byte)0, (difficulty % 3 == 0) ? (byte)255 : (byte)0, (byte)255);
             byte drawid = (byte)(((id & 255) == GeneratorEventID) ? id << 12 >> 24 : id & 255);
             float xFrac = (drawid % 16) * 0.0625F, yFrac = (int)(drawid / 16) * 0.0625F;
+            if (stijnVision && PrevAtlas == AtlasID.EventSprites) //draw 64x64 images centered around the 32x32 tile
+            {
+                x -= TileSize / 2;
+                y -= TileSize / 2;
+                TileSize *= 2;
+                if (difficulty != 0)
+                    GL.UseProgram(DifficultyShaderHandle);
+            }
             GL.Begin(BeginMode.Quads);
             GL.TexCoord2(xFrac, yFrac + 0.0625F); GL.Vertex2(x, y + TileSize);
             GL.TexCoord2(xFrac, yFrac); GL.Vertex2(x, y);
             GL.TexCoord2(xFrac + 0.0625F, yFrac); GL.Vertex2(x + TileSize, y);
             GL.TexCoord2(xFrac + 0.0625F, yFrac + 0.0625F); GL.Vertex2(x + TileSize, y + TileSize);
             GL.End();
-            if (difficulty != 5) GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
+            if (difficulty != 0) {
+                GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
+                if (stijnVision)
+                    GL.UseProgram(0);
+            }
             if ((id & 255) == GeneratorEventID)
             {
-                SetTextureTo(AtlasID.Generator);
+                xFrac = (GeneratorEventID.Value % 16) * 0.0625F;
+                yFrac = (int)(GeneratorEventID.Value / 16) * 0.0625F;
                 GL.Begin(BeginMode.Quads);
-                GL.TexCoord2(0, 1); GL.Vertex2(x, y + TileSize);
-                GL.TexCoord2(0, 0); GL.Vertex2(x, y);
-                GL.TexCoord2(1, 0); GL.Vertex2(x + TileSize, y);
-                GL.TexCoord2(1, 1); GL.Vertex2(x + TileSize, y + TileSize);
+                GL.TexCoord2(xFrac, yFrac + 0.0625F); GL.Vertex2(x, y + TileSize);
+                GL.TexCoord2(xFrac, yFrac); GL.Vertex2(x, y);
+                GL.TexCoord2(xFrac + 0.0625F, yFrac); GL.Vertex2(x + TileSize, y);
+                GL.TexCoord2(xFrac + 0.0625F, yFrac + 0.0625F); GL.Vertex2(x + TileSize, y + TileSize);
                 GL.End();
-                SetTextureTo(AtlasID.EventNames);
             }
         }
         internal void DrawTileType(int x, int y, byte id)
@@ -2796,7 +2861,7 @@ namespace MLLE
         internal void EventReindeer()
         {
             Layer currentlayer = J2L.SpriteLayer;
-            SetTextureTo(AtlasID.EventNames);
+            SetTextureTo(!stijnVision ? AtlasID.EventNames : AtlasID.EventSprites);
             //upperleftx = xspeedparallax - /*widthreduced -*/ ZoomTileSize;
             //upperlefty = yspeedparallax - /*heightreduced -*/ ZoomTileSize;
             //xorigin = -ZoomTileSize - (upperleftx % ZoomTileSize);
@@ -2815,7 +2880,7 @@ namespace MLLE
                         else if (tempupperlefty >= 0)
                         {
                             if (J2L.VersionType == Version.AGA) { if (J2L.AGA_EventMap[tempupperleftx, tempupperlefty].ID != 0) DrawEvent(tempxorigin, tempyorigin, J2L.AGA_EventMap[tempupperleftx, tempupperlefty].ID, ZoomTileSize); }
-                            else if (J2L.EventMap[tempupperleftx, tempupperlefty] != 0) DrawEvent(tempxorigin, tempyorigin, J2L.EventMap[tempupperleftx, tempupperlefty]/*, J2L.GetRawBitsAtTile(tempupperleftx, tempupperlefty, 0, 2)*/, ZoomTileSize);
+                            else if (J2L.EventMap[tempupperleftx, tempupperlefty] != 0 && (EventDisplayMode == 1 || !EventsDrawnAsStringsInStijnVision[J2L.VersionType][(byte)J2L.EventMap[tempupperleftx, tempupperlefty]])) DrawEvent(tempxorigin, tempyorigin, J2L.EventMap[tempupperleftx, tempupperlefty]/*, J2L.GetRawBitsAtTile(tempupperleftx, tempupperlefty, 0, 2)*/, ZoomTileSize);
                         }
                         tempyorigin += ZoomTileSize; tempupperlefty++;
                     }
@@ -3167,7 +3232,7 @@ namespace MLLE
         private void GrabEventAtMouse() { if (J2L.VersionType == Version.AGA) ActiveEvent = MouseAGAEvent; else ActiveEvent.ID = MouseAGAEvent.ID; }
         private void PasteEventAtMouse()
         {
-            if (LastFocusedZone == FocusedZone.Tileset) { J2L.EventTiles[MouseTile] = MouseAGAEvent.ID = ActiveEvent.ID; RedrawTilesetHowManyTimes = 2; }
+            if (LastFocusedZone == FocusedZone.Tileset) { J2L.EventTiles[MouseTile] = MouseAGAEvent.ID = ActiveEvent.ID; LevelHasBeenModified = true; RedrawTilesetHowManyTimes = 2; }
             else if (LastFocusedZone == FocusedZone.Level && CurrentLayer == J2L.SpriteLayer)
             {
                 if (MouseTileX >= 0 && MouseTileY >= 0 && MouseTileX < CurrentLayer.Width && MouseTileY < CurrentLayer.Height) {

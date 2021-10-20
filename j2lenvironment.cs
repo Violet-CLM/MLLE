@@ -54,6 +54,14 @@ class TexturedJ2L : J2LFile
         {Version.AGA, 0 },
         {Version.GorH, 0 },
         };
+    internal static Dictionary<Version, int> EventSpriteAtlas = new Dictionary<Version, int> {
+        {Version.BC, 0 },
+        {Version.O, 0 },
+        {Version.JJ2, 0 },
+        {Version.TSF, 0 },
+        //{Version.AGA, 0 },
+        {Version.GorH, 0 },
+        };
     internal static Dictionary<Version, string[]> TileTypeNames = new Dictionary<Version, string[]> {
         {Version.BC, null },
         {Version.O, null },
@@ -393,34 +401,66 @@ class TexturedJ2L : J2LFile
             TileTypeAtlas[version] = TexUtil.CreateTextureFromBitmap(type_bmp);
         }
     }
-    public static void ProduceEventIcons(Version version, string[][] StringList, bool overwriteOldImage = false)
+    public static void ProduceEventIcons(Version version, string[][] StringList, ref bool[] whichAreDrawnAsText, bool overwriteOldImage = false, byte? GeneratorEventID = null, string spriteFilename = "")
     {
         if (!overwriteOldImage && EventAtlas[version] != 0)
             return;
+        if (whichAreDrawnAsText == null)
+            whichAreDrawnAsText = new bool[256];
 
         RectangleF rectE = new RectangleF(-16, 0, 64, 32);
 
         using (SolidBrush white = new SolidBrush(Color.White))
         using (Font arial = new Font(new FontFamily("Arial"), 8))
         using (Bitmap text_bmp = new Bitmap(512, 512))
+        using (Bitmap text_bmp2 = (spriteFilename != "" && EventSpriteAtlas.ContainsKey(version)) ? new Bitmap(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MLLE Event Sprites - " + spriteFilename + ".png")) : new Bitmap(1, 1))
         using (Graphics totalgfx = Graphics.FromImage(text_bmp))
+        using (Graphics totalgfx2 = Graphics.FromImage(text_bmp2))
         using (StringFormat formatEvent = new StringFormat())
         {
             formatEvent.Alignment = formatEvent.LineAlignment = StringAlignment.Center;
             totalgfx.Clear(Color.FromArgb(128, 0, 0, 0));
             for (int i = 1; i < 256; i++)
-                using (Bitmap single_bmp = new Bitmap(32, 32))
-                using (Graphics gfx = Graphics.FromImage(single_bmp))
+            {
+                if (i != GeneratorEventID)
                 {
-                    if (StringList[i].Length > 4 && StringList[i][4].TrimEnd() != "")
-                        gfx.DrawString(StringList[i][3] + "\n" + StringList[i][4], arial, white, rectE, formatEvent);
-                    else
-                        gfx.DrawString(StringList[i][3], arial, white, rectE, formatEvent);
-                    totalgfx.DrawImage(single_bmp,i%16*32, i/16*32);
+                    using (Bitmap single_bmp = new Bitmap(32, 32))
+                    using (Graphics gfx = Graphics.FromImage(single_bmp))
+                    {
+                        if (StringList[i].Length > 4 && StringList[i][4].TrimEnd() != "")
+                            gfx.DrawString(StringList[i][3] + "\n" + StringList[i][4], arial, white, rectE, formatEvent);
+                        else
+                            gfx.DrawString(StringList[i][3], arial, white, rectE, formatEvent);
+                        totalgfx.DrawImage(single_bmp,i%16*32, i/16*32);
+                        if (text_bmp2.Width == 1024) //not AGA
+                            if (whichAreDrawnAsText[i] || ((text_bmp2.GetPixel(i % 16 * 64 + 32, i / 16 * 64 + 32).A == 0) && (whichAreDrawnAsText[i] = true))) { //a custom event, or else there's no sprite defined for this event, as measured by checking the middle pixel
+                                int x = i % 16 * 64 + 16, y = i / 16 * 64 + 16;
+                                totalgfx2.Clip = new Region(new Rectangle(x-16,y-16, 64, 64));
+                                totalgfx2.Clear(Color.Transparent);
+                                totalgfx2.ResetClip();
+                                totalgfx2.FillRegion(new SolidBrush(Color.FromArgb(128, 0, 0, 0)), new Region(new Rectangle(x, y, 32, 32)));
+                                totalgfx2.DrawImage(single_bmp, x,y,32,32); //use the standard text preview instead
+                            }
+                    }
                 }
+                else
+                {
+                    totalgfx.Clip = new Region(new Rectangle(i % 16 * 32, i / 16 * 32, 32, 32));
+                    totalgfx.Clear(Color.Transparent);
+                    using (Bitmap single_bmp = new Bitmap(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Generator.png")))
+                    totalgfx.DrawImage(single_bmp, i % 16 * 32, i / 16 * 32);
+                    totalgfx.ResetClip();
+                }
+            }
             if (EventAtlas[version] != 0)
                 GL.DeleteTexture(EventAtlas[version]);
             EventAtlas[version] = TexUtil.CreateTextureFromBitmap(text_bmp);
+            if (text_bmp2.Width == 1024) //not AGA
+            {
+                if (EventSpriteAtlas[version] != 0)
+                    GL.DeleteTexture(EventSpriteAtlas[version]);
+                EventSpriteAtlas[version] = TexUtil.CreateTextureFromBitmap(text_bmp2);
+            }
         }
     }
 }
