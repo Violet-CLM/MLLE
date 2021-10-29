@@ -381,7 +381,7 @@ shared interface MLLEWeaponApply { bool Apply(uint, se::WeaponHook@ = null, jjST
                 binwriter.Write(libraryFileAsBytes);
             }
 
-            RequiredFilenames.Add(Path.GetFileName(filepath));
+            RequiredFilenames.Add(Path.ChangeExtension(Path.GetFileName(filepath), ".j2l"));
             for (int i = 1; i < Tilesets.Count; ++i)
                 RequiredFilenames.Add(Tilesets[i].FilenameOnly);
             int extraDataLevelID = 0;
