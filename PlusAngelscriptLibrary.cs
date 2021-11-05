@@ -434,71 +434,93 @@ shared interface MLLEWeaponApply { bool Apply(uint, se::WeaponHook@ = null, jjST
             else if (match.Value != desiredSetupCall)
                 fileContents = setupPattern.Replace(fileContents, desiredSetupCall);
 
-            bool[] hooksNeeded = WeaponHookSpecs.Select(ss => weaponLibrary && customWeapons.Any(cw => cw != null && new Regex("\\b" + ss[1] + "\\b", RegexOptions.IgnoreCase).Match(cw.Hooks).Success)).ToArray();
+            bool[] hooksNeeded = IncludeHookSpecs.Select(ss => weaponLibrary && ss.WeaponhookMethod && customWeapons.Any(cw => cw != null && ss.WeaponIniHookIdentifier.Match(cw.Hooks).Success)).ToArray();
             hooksNeeded[3] = weaponLibrary; //onDrawAmmo is used by ALL custom weapons
             
-            for (int specID = 0; specID < WeaponHookSpecs.Length; ++specID)
+            for (int specID = 0; specID < IncludeHookSpecs.Length; ++specID)
+                IncludeHookSpecs[specID].Process(ref fileContents, hooksNeeded[specID]);
+        }
+
+        internal class Spec
+        {
+            readonly internal bool WeaponhookMethod;
+            readonly bool LastCallFromThisHook;
+
+            internal readonly Regex WeaponIniHookIdentifier;
+
+            readonly string IncludeCall; //e.g. "MLLE::WeaponHook::processMain();"
+            readonly string AddEntireHook; //e.g. "void onMain() { WeaponHook::processMain(); }" (but with newlines instead of some spaces)
+            readonly Regex IncludeCallFind; //e.g. a pattern to match "MLLE::WeaponHook::processMain();"
+            readonly Regex EnclosingFunctionStart; //e.g. a pattern to match "void onMain() {"
+            readonly Regex EnclosingFunctionEmpty; //e.g. a pattern to match "void onMain() {}"
+
+            internal Spec(string[] components, bool w = true, bool l = true)
             {
-                string[] spec = WeaponHookSpecs[specID];
+                WeaponhookMethod = w;
+                LastCallFromThisHook = l;
+                if (WeaponhookMethod)
+                    WeaponIniHookIdentifier = new Regex("\\b" + components[1] + "\\b", RegexOptions.IgnoreCase);
 
-                Regex weaponHookCallFindRegex = new Regex(@"(return\s+)?MLLE\s*::\s*WeaponHook\s*\.\s*" + spec[2] + @"\s*\([^;]*\)(\s*;)?");
+                string returnType = components[0];
+                string hookName = components[1];
+                string includeName = components[2];
+                string[] parameters = components.Skip(3).ToArray();
 
-                string functionPattern = "(" + spec[0] + @"\s+" + spec[1] + @"\s*\(\s*";
-                for (int paramStringID = 3; paramStringID < spec.Length; paramStringID += 2)
+                IncludeCallFind = new Regex(@"(return\s+)?MLLE\s*::\s*" + (WeaponhookMethod ? @"WeaponHook\s*\.\s*" : "") + includeName + @"\s*\([^;]*\)(\s*;)?");
+
+                IncludeCall = "\r\n\t" + (returnType == "void" ? "" : "return ") + "MLLE::" + (WeaponhookMethod ? "WeaponHook." : "") + includeName + "(";
+                for (int paramStringID = 0; paramStringID < parameters.Length; paramStringID += 2)
                 {
-                    functionPattern += spec[paramStringID].Replace(" ", @"\s*") + @"\s*(\S+)\s*";
-                    if (paramStringID + 2 < spec.Length)
+                    IncludeCall += "$" + (paramStringID / 2 + 2).ToString();
+                    if (paramStringID + 2 < parameters.Length)
+                        IncludeCall += ", ";
+                }
+                IncludeCall += ");";
+
+                string includeCallWithDefaultParameterNames = IncludeCall;
+                AddEntireHook = "\r\n" + returnType + " " + hookName + "(";
+                for (int paramStringID = 0; paramStringID < parameters.Length; paramStringID += 2)
+                {
+                    AddEntireHook += parameters[paramStringID].Replace(" ", "") + " " + parameters[paramStringID + 1];
+                    includeCallWithDefaultParameterNames = includeCallWithDefaultParameterNames.Replace("$" + (paramStringID / 2 + 2).ToString(), parameters[paramStringID + 1]);
+                    if (paramStringID + 2 < parameters.Length)
+                        AddEntireHook += ", ";
+                }
+                AddEntireHook += ") {" + includeCallWithDefaultParameterNames + "\r\n}\r\n";
+
+                string functionPattern = "(" + returnType + @"\s+" + hookName + @"\s*\(\s*";
+                for (int paramStringID = 0; paramStringID < parameters.Length; paramStringID += 2)
+                {
+                    functionPattern += parameters[paramStringID].Replace(" ", @"\s*") + @"\s*(\S+)\s*";
+                    if (paramStringID + 2 < parameters.Length)
                         functionPattern += @",\s*";
                 }
-                functionPattern += @"\)[^{]*{)"; //e.g. a pattern to match "void onMain() {"
+                functionPattern += @"\)[^{]*{)";
+                EnclosingFunctionStart = new Regex(functionPattern);
+                EnclosingFunctionEmpty = new Regex(functionPattern + @"[\s;]*}\r?\n?");
 
-                if (hooksNeeded[specID])
-                {
-                    if (!weaponHookCallFindRegex.Match(fileContents).Success) //weaponhook call not being made
-                    {
-                        string weaponhookMethodCall = "\r\n\t" + (spec[0] == "void" ? "" : "return ") + "MLLE::WeaponHook." + spec[2] + "(";
-                        for (int paramStringID = 3; paramStringID < spec.Length; paramStringID += 2)
-                        {
-                            weaponhookMethodCall += "$" + ((paramStringID + 1) / 2).ToString();
-                            if (paramStringID + 2 < spec.Length)
-                                weaponhookMethodCall += ", ";
-                        }
-                        weaponhookMethodCall += ");"; //e.g. "WeaponHook::processMain();"
-
-                        Regex functionRegex = new Regex(functionPattern);
-                        match = functionRegex.Match(fileContents);
-                        if (match.Success) //hook function already exists
-                        {
-                            fileContents = functionRegex.Replace(fileContents, "$1" + weaponhookMethodCall);
-                        }
-                        else
-                        { //add everything from scratch
-                            string functionToAdd = "\r\n" + spec[0] + " " + spec[1] + "(";
-                            for (int paramStringID = 3; paramStringID < spec.Length; paramStringID += 2)
-                            {
-                                functionToAdd += spec[paramStringID].Replace(" ", "") + " " + spec[paramStringID + 1];
-                                weaponhookMethodCall = weaponhookMethodCall.Replace("$" + ((paramStringID + 1) / 2).ToString(), spec[paramStringID + 1]);
-                                if (paramStringID + 2 < spec.Length)
-                                    functionToAdd += ", ";
-                            }
-                            functionToAdd += ") {" + weaponhookMethodCall + "\r\n}\r\n";
-
-                            fileContents += functionToAdd;
-                        }
-                    }
-                }
-                else //hook NOT needed
-                {
-                    fileContents = new Regex(functionPattern + @"[\s;]*}\r?\n?").Replace(weaponHookCallFindRegex.Replace(fileContents, ""), ""); //remove the method call, then remove the hook function it was in if that hook is now totally empty
+                System.Windows.Forms.MessageBox.Show(IncludeCallFind.ToString());
+            }
+            internal void Process(ref string fileContents, bool needed)
+            {
+                if (needed) {
+                    if (!IncludeCallFind.Match(fileContents).Success) { //include library call not being made
+                        if (EnclosingFunctionStart.Match(fileContents).Success) //hook function already exists
+                            fileContents = EnclosingFunctionStart.Replace(fileContents, "$1" + IncludeCall);
+                        else //add everything from scratch
+                            fileContents += AddEntireHook;
+                    } //else it's already being made, the script is fine already, don't change anything
+                } else {
+                    fileContents = EnclosingFunctionEmpty.Replace(IncludeCallFind.Replace(fileContents, ""), ""); //remove the method call, then remove the hook function it was in if that hook is now totally empty
                 }
             }
         }
-        static readonly string[][] WeaponHookSpecs = {
-            new string[]{"void", "onMain", "processMain"},
-            new string[]{"void", "onPlayer", "processPlayer", "jjPLAYER @", "player"},
-            new string[]{"void", "onPlayerInput", "processPlayerInput", "jjPLAYER @", "player"},
-            new string[]{"bool", "onDrawAmmo", "drawAmmo", "jjPLAYER @", "player", "jjCANVAS @", "canvas"},
-            new string[]{"void", "onReceive", "processPacket", "jjSTREAM & in", "packet", "int", "fromClientID" }
+        private static readonly Spec[] IncludeHookSpecs = {
+            new Spec(new string[]{"void", "onMain", "processMain"}),
+            new Spec(new string[]{"void", "onPlayer", "processPlayer", "jjPLAYER @", "player"}),
+            new Spec(new string[]{"void", "onPlayerInput", "processPlayerInput", "jjPLAYER @", "player"}),
+            new Spec(new string[]{"bool", "onDrawAmmo", "drawAmmo", "jjPLAYER @", "player", "jjCANVAS @", "canvas"}),
+            new Spec(new string[]{"void", "onReceive", "processPacket", "jjSTREAM & in", "packet", "int", "fromClientID" })
         };
 
         public static void RemovePriorReferencesToMLLELibrary(ref string fileContents)
