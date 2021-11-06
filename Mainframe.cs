@@ -207,7 +207,9 @@ namespace MLLE
                 Bools.Add(EnableableTitles.BoolDevelopingForPlus, ini.IniReadValue("Enableable", "BoolDevelopingForPlus") != "");
                 Bools.Add(EnableableTitles.UseText, ini.IniReadValue("Enableable", "BoolText") != "");
             }
-            automaskToolStripMenuItem.Enabled = imageToolStripMenuItem.Enabled = maskToolStripMenuItem.Enabled = jJ2PropertiesToolStripMenuItem.Enabled = EnableableBools[version][EnableableTitles.BoolDevelopingForPlus];
+            SnapEventsToGridToggle.Enabled = automaskToolStripMenuItem.Enabled = imageToolStripMenuItem.Enabled = maskToolStripMenuItem.Enabled = jJ2PropertiesToolStripMenuItem.Enabled = EnableableBools[version][EnableableTitles.BoolDevelopingForPlus];
+            if (!EnableableBools[version][EnableableTitles.BoolDevelopingForPlus])
+                SnapEventsToGridToggle.Checked = true;
             textStringsToolStripMenuItem.Enabled = EnableableBools[version][EnableableTitles.UseText];
             saveRunToolStripMenuItem.Enabled = runToolStripMenuItem.Enabled = EnableableStrings[version][EnableableTitles.SaveAndRun] != "";
             soundEffectsToolStripMenuItem.Enabled = (version == Version.AGA);
@@ -807,6 +809,10 @@ void main() {
                 case Keys.Oemcomma:
                 case (Keys.Shift | Keys.Oemcomma):
                     {
+                        if (!SnapEventsToGridToggle.Checked) {
+                            GrabEventAtMouse();
+                            return true;
+                        }
                         uint? ev = 0;
                         ushort tileID = (LastFocusedZone == FocusedZone.Level) ? CurrentLayer.TileMap[MouseTileX, MouseTileY] : (ushort)MouseTile;
                         if (CurrentTilesetOverlay == TilesetOverlay.SmartTiles) {
@@ -847,6 +853,8 @@ void main() {
 
                 case (Keys.Control | Keys.B):
                     {
+                        if (!SnapEventsToGridToggle.Checked && BDisablesSmartTiles)
+                            SnapEventsToGridToggle.Checked = false;
                         if (CurrentTilesetOverlay == TilesetOverlay.SmartTiles) { } //do nothing
                         else if (WhereSelected != FocusedZone.None && HowSelecting == FocusedZone.None) BeginSelection(SelectionType.Subtract);
                         else { EndSelection(); MakeSelectionIntoStamp(); if (WhereSelected == FocusedZone.Level) DeselectAll(); }
@@ -854,6 +862,8 @@ void main() {
                     }
                 case (Keys.Shift | Keys.B):
                     {
+                        if (!SnapEventsToGridToggle.Checked && BDisablesSmartTiles)
+                            SnapEventsToGridToggle.Checked = false;
                         if (CurrentTilesetOverlay == TilesetOverlay.SmartTiles) { } //do nothing
                         else if (LastFocusedZone == WhereSelected && HowSelecting == FocusedZone.None) BeginSelection(SelectionType.Add);
                         else if (HowSelecting != LastFocusedZone) BeginSelection(SelectionType.New);
@@ -862,7 +872,9 @@ void main() {
                     }
                 case Keys.B:
                     {
-                        if (CurrentTilesetOverlay == TilesetOverlay.SmartTiles) {
+                        if (!SnapEventsToGridToggle.Checked && BDisablesSmartTiles)
+                            SnapEventsToGridToggle.Checked = false;
+                        else if (CurrentTilesetOverlay == TilesetOverlay.SmartTiles) {
                             if (BDisablesSmartTiles)
                             {
                                 TilesetOverlaySelection.SelectedIndex = 2;
@@ -1503,6 +1515,7 @@ void main() {
                     CurrentTilesetOverlay = TilesetOverlay.SmartTiles;
                     TilesetScrollbar.Value = 0; //scroll to top
                     TilesetScrollbar.Enabled = false;
+                    UneditAnimation();
                     break;
                 case 0:
                 default:
@@ -2312,7 +2325,7 @@ void main() {
                         {
                             #region draw tileset
                             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-                            if (J2L.HasTiles)
+                            if (J2L.HasTiles && SnapEventsToGridToggle.Checked)
                             {
                                 //uint height = ((prevatlas >= J2L.TileCount / 1030) ? J2L.TileCount % 1030 : 1030) / 10 * 32;
 
@@ -3070,6 +3083,14 @@ void main() {
                 else
                 {
                     LastFocusedZone = FocusedZone.Tileset;
+
+                    if (!SnapEventsToGridToggle.Checked)
+                    {
+                        MouseTilePrintout.Text = MouseEventPrintout.Text = String.Empty;
+                        LevelDisplay.ContextMenuStrip = null;
+                        return;
+                    }
+
                     TilesetScrollbar.Focus();
                     LevelDisplay.ContextMenuStrip = TContextMenu;
 
@@ -3597,7 +3618,11 @@ void main() {
 
         private void LevelDisplay_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
         {
-            if (LastFocusedZone == FocusedZone.Tileset && CurrentTilesetOverlay == TilesetOverlay.SmartTiles)
+            if (!SnapEventsToGridToggle.Checked)
+            {
+                //todo
+            }
+            else if (LastFocusedZone == FocusedZone.Tileset && CurrentTilesetOverlay == TilesetOverlay.SmartTiles)
             {
                 if (MouseTile < SmartTiles.Count && SmartTiles[MouseTile].Available)
                 {
@@ -3819,6 +3844,22 @@ void main() {
         }
 
         static readonly Point[] FillOffsets = { new Point(0,-1), new Point(1, 0), new Point(0, 1), new Point(-1, 0) };
+
+        private void SnapEventsToGridToggle_CheckedChanged(object sender, EventArgs e)
+        {
+            TilesetSelection.Enabled = TilesetOverlaySelection.Enabled = TilesetScrollbar.Enabled = SnapEventsToGridToggle.Checked;
+            RedrawTilesetHowManyTimes = 2;
+
+            if (!SnapEventsToGridToggle.Checked)
+            {
+                if (CurrentTilesetOverlay == TilesetOverlay.SmartTiles)
+                    TilesetOverlaySelection.SelectedIndex = 2;
+                DeselectAll();
+                SetStampDimensions(0, 0);
+                UneditAnimation();
+            }
+        }
+
         private void TakeAction()
         {
             if (CurrentStamp.Length == 0)

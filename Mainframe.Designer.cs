@@ -89,9 +89,9 @@
             this.editScriptToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.preferencesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.eventsForemostToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.stijnVisionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.zoomingAbove100ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.previewHelpStringColorsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.stijnVisionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.bDisablesSmartTilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator19 = new System.Windows.Forms.ToolStripSeparator();
             this.setTransparentColorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -109,6 +109,7 @@
             this.RectangleOutlineButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator17 = new System.Windows.Forms.ToolStripSeparator();
             this.ReplaceEventsToggle = new System.Windows.Forms.ToolStripButton();
+            this.SnapEventsToGridToggle = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator23 = new System.Windows.Forms.ToolStripSeparator();
             this.SelectionButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator18 = new System.Windows.Forms.ToolStripSeparator();
@@ -593,21 +594,21 @@
             // plusLevelPropertiesToolStripMenuItem
             // 
             this.plusLevelPropertiesToolStripMenuItem.Name = "plusLevelPropertiesToolStripMenuItem";
-            this.plusLevelPropertiesToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.plusLevelPropertiesToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.plusLevelPropertiesToolStripMenuItem.Text = "Level Properties...";
             this.plusLevelPropertiesToolStripMenuItem.Click += new System.EventHandler(this.plusLevelPropertiesToolStripMenuItem_Click);
             // 
             // paletteToolStripMenuItem
             // 
             this.paletteToolStripMenuItem.Name = "paletteToolStripMenuItem";
-            this.paletteToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.paletteToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.paletteToolStripMenuItem.Text = "Palette...";
             this.paletteToolStripMenuItem.Click += new System.EventHandler(this.paletteToolStripMenuItem_Click);
             // 
             // layersToolStripMenuItem
             // 
             this.layersToolStripMenuItem.Name = "layersToolStripMenuItem";
-            this.layersToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.layersToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.layersToolStripMenuItem.Text = "Layers...";
             this.layersToolStripMenuItem.Click += new System.EventHandler(this.layersToolStripMenuItem_Click);
             // 
@@ -616,7 +617,7 @@
             this.tilesetsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.addNewToolStripMenuItem});
             this.tilesetsToolStripMenuItem.Name = "tilesetsToolStripMenuItem";
-            this.tilesetsToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.tilesetsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.tilesetsToolStripMenuItem.Text = "Tilesets";
             this.tilesetsToolStripMenuItem.DropDownOpening += new System.EventHandler(this.tilesetsToolStripMenuItem_DropDownOpening);
             // 
@@ -635,7 +636,7 @@
             this.polesToolStripMenuItem,
             this.sceneryToolStripMenuItem});
             this.recolorEventsToolStripMenuItem.Name = "recolorEventsToolStripMenuItem";
-            this.recolorEventsToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.recolorEventsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.recolorEventsToolStripMenuItem.Text = "Recolor Events";
             // 
             // pinballToolStripMenuItem
@@ -665,19 +666,19 @@
             // weaponsToolStripMenuItem
             // 
             this.weaponsToolStripMenuItem.Name = "weaponsToolStripMenuItem";
-            this.weaponsToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.weaponsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.weaponsToolStripMenuItem.Text = "Weapons...";
             this.weaponsToolStripMenuItem.Click += new System.EventHandler(this.weaponsToolStripMenuItem_Click);
             // 
             // toolStripSeparator22
             // 
             this.toolStripSeparator22.Name = "toolStripSeparator22";
-            this.toolStripSeparator22.Size = new System.Drawing.Size(163, 6);
+            this.toolStripSeparator22.Size = new System.Drawing.Size(177, 6);
             // 
             // editScriptToolStripMenuItem
             // 
             this.editScriptToolStripMenuItem.Name = "editScriptToolStripMenuItem";
-            this.editScriptToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.editScriptToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.editScriptToolStripMenuItem.Text = "Edit Script...";
             this.editScriptToolStripMenuItem.Click += new System.EventHandler(this.editScriptToolStripMenuItem_Click);
             // 
@@ -705,6 +706,14 @@
             this.eventsForemostToolStripMenuItem.Text = "Events Foremost";
             this.eventsForemostToolStripMenuItem.CheckedChanged += new System.EventHandler(this.eventsForemostToolStripMenuItem_CheckedChanged);
             // 
+            // stijnVisionToolStripMenuItem
+            // 
+            this.stijnVisionToolStripMenuItem.CheckOnClick = true;
+            this.stijnVisionToolStripMenuItem.Name = "stijnVisionToolStripMenuItem";
+            this.stijnVisionToolStripMenuItem.Size = new System.Drawing.Size(214, 22);
+            this.stijnVisionToolStripMenuItem.Text = "stijn vision";
+            this.stijnVisionToolStripMenuItem.Click += new System.EventHandler(this.stijnVisionToolStripMenuItem_Click);
+            // 
             // zoomingAbove100ToolStripMenuItem
             // 
             this.zoomingAbove100ToolStripMenuItem.CheckOnClick = true;
@@ -720,14 +729,6 @@
             this.previewHelpStringColorsToolStripMenuItem.Size = new System.Drawing.Size(214, 22);
             this.previewHelpStringColorsToolStripMenuItem.Text = "Preview Help String Colors";
             this.previewHelpStringColorsToolStripMenuItem.Click += new System.EventHandler(this.previewHelpStringColorsToolStripMenuItem_Click);
-            // 
-            // stijnVisionToolStripMenuItem
-            // 
-            this.stijnVisionToolStripMenuItem.CheckOnClick = true;
-            this.stijnVisionToolStripMenuItem.Name = "stijnVisionToolStripMenuItem";
-            this.stijnVisionToolStripMenuItem.Size = new System.Drawing.Size(214, 22);
-            this.stijnVisionToolStripMenuItem.Text = "stijn vision";
-            this.stijnVisionToolStripMenuItem.Click += new System.EventHandler(this.stijnVisionToolStripMenuItem_Click);
             // 
             // bDisablesSmartTilesToolStripMenuItem
             // 
@@ -821,6 +822,7 @@
             this.RectangleOutlineButton,
             this.toolStripSeparator17,
             this.ReplaceEventsToggle,
+            this.SnapEventsToGridToggle,
             this.toolStripSeparator23,
             this.SelectionButton,
             this.toolStripSeparator18,
@@ -901,6 +903,20 @@
             this.ReplaceEventsToggle.Tag = "Overwrite Events while Drawing";
             this.ReplaceEventsToggle.MouseEnter += new System.EventHandler(this.DescribableControl_MouseEnter);
             // 
+            // SnapEventsToGridToggle
+            // 
+            this.SnapEventsToGridToggle.Checked = true;
+            this.SnapEventsToGridToggle.CheckOnClick = true;
+            this.SnapEventsToGridToggle.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.SnapEventsToGridToggle.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.SnapEventsToGridToggle.Image = ((System.Drawing.Image)(resources.GetObject("SnapEventsToGridToggle.Image")));
+            this.SnapEventsToGridToggle.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.SnapEventsToGridToggle.Name = "SnapEventsToGridToggle";
+            this.SnapEventsToGridToggle.Size = new System.Drawing.Size(22, 20);
+            this.SnapEventsToGridToggle.Tag = "Events Snap to Tile Grid";
+            this.SnapEventsToGridToggle.CheckedChanged += new System.EventHandler(this.SnapEventsToGridToggle_CheckedChanged);
+            this.SnapEventsToGridToggle.MouseEnter += new System.EventHandler(this.DescribableControl_MouseEnter);
+            // 
             // toolStripSeparator23
             // 
             this.toolStripSeparator23.Name = "toolStripSeparator23";
@@ -941,7 +957,7 @@
             this.RedoButton.Image = ((System.Drawing.Image)(resources.GetObject("RedoButton.Image")));
             this.RedoButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.RedoButton.Name = "RedoButton";
-            this.RedoButton.Size = new System.Drawing.Size(22, 20);
+            this.RedoButton.Size = new System.Drawing.Size(23, 20);
             this.RedoButton.Tag = "Redo (Ctrl+Y)";
             this.RedoButton.Click += new System.EventHandler(this.RedoButton_Click);
             this.RedoButton.MouseEnter += new System.EventHandler(this.DescribableControl_MouseEnter);
@@ -2091,5 +2107,6 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator26;
         private System.Windows.Forms.ToolStripMenuItem resetImagesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem stijnVisionToolStripMenuItem;
+        private System.Windows.Forms.ToolStripButton SnapEventsToGridToggle;
     }
 }
