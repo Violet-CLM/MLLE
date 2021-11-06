@@ -1154,7 +1154,7 @@ void main() {
             if (J2L.HasTiles) //otherwise it's not clear how this would work
             {
                 _suspendEvent.Reset();
-                Palette newPalette = new PaletteForm().ShowForm(J2L.PlusPropertyList.Palette, J2L.Tilesets[0].Palette);
+                Palette newPalette = new PaletteForm().ShowForm(J2L.PlusPropertyList.Palette, J2L.Tilesets[0].Palette, ref J2L.PlusPropertyList.ReapplyPalette);
                 if (newPalette != null && !newPalette.Equals(J2L.PlusPropertyList.Palette))
                 {
                     if (!newPalette.Equals(J2L.Tilesets[0].Palette)) //edited

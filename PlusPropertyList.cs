@@ -234,6 +234,8 @@ namespace MLLE
 
         [Browsable(false)]
         internal Palette Palette;
+        [Browsable(false)]
+        internal bool ReapplyPalette;
 
 
         [Browsable(false)]
@@ -501,8 +503,10 @@ namespace MLLE
                 data5bodywriter.Write(WaterGradientStop.ToArgb());
 
                 data5bodywriter.Write(Palette != null);
-                if (Palette != null)
+                if (Palette != null) {
                     Palette.WriteLEVStyle(data5bodywriter);
+                    data5bodywriter.Write(ReapplyPalette);
+                }
 
                 foreach (byte[] remappings in ColorRemappings)
                 {
@@ -655,8 +659,11 @@ namespace MLLE
                     WaterGradientStart = Color.FromArgb(data5bodyreader.ReadInt32());
                     WaterGradientStop = Color.FromArgb(data5bodyreader.ReadInt32());
 
-                    if (data5bodyreader.ReadBoolean())
+                    if (data5bodyreader.ReadBoolean()) {
                         Palette = new Palette(data5bodyreader, true);
+                        if (data5Version >= 0x106)
+                            ReapplyPalette = data5bodyreader.ReadBoolean();
+                    }
 
                     for (int i = 0; i < Mainframe.RecolorableSpriteNames.Length; ++i)
                         if ((i < 11 || data5Version >= 0x105) && data5bodyreader.ReadBoolean()) //the recolorable sprite list was expanded in MLLE-Include-1.5

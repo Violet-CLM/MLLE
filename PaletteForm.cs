@@ -17,10 +17,11 @@ namespace MLLE
 
         Palette InitialPalette;
         PaletteImage PaletteImage = new PaletteImage(15, 2, false, true);
-        internal Palette ShowForm(Palette plusPalette, Palette defaultPalette)
+        internal Palette ShowForm(Palette plusPalette, Palette defaultPalette, ref bool reapplyPalette)
         {
             DefaultPalette = defaultPalette;
             InitialPalette = (plusPalette ?? DefaultPalette);
+            checkBox1.Checked = reapplyPalette;
 
             for (int i = 0; i < 10; ++i)
                 PaletteImage.ColorDisabled[i] = PaletteImage.ColorDisabled[Palette.PaletteSize - 10 + i] = true; //transparency, and default windows colors
@@ -30,7 +31,8 @@ namespace MLLE
             PaletteImage.MouseLeave += PaletteImageMouseLeave;
             Controls.Add(PaletteImage);
 
-            ShowDialog();
+            if (ShowDialog() == DialogResult.OK)
+                reapplyPalette = checkBox1.Checked;
 
             return (!PaletteImage.Palette.Equals(InitialPalette)) ? PaletteImage.Palette : null;
         }

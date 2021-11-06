@@ -9,10 +9,10 @@ namespace MLLE
 {
     public partial struct PlusPropertyList
     {
-        const uint CurrentMLLEData5Version = 0x105;
+        const uint CurrentMLLEData5Version = 0x106;
         const string MLLEData5MagicString = "MLLE";
-        const string CurrentMLLEData5VersionStringForComparison = "0x105";
-        const string CurrentMLLEData5VersionString = "1.5";
+        const string CurrentMLLEData5VersionStringForComparison = "0x106";
+        const string CurrentMLLEData5VersionString = "1.6";
 
         const string AngelscriptLibrary =
 @"//This is a standard library created by MLLE to read some JJ2+ properties from a level file whose script includes this library. DO NOT MANUALLY MODIFY THIS FILE.
@@ -118,6 +118,7 @@ namespace MLLE {{
                 data5.pop(palette.color[i].blue);
             }}
             palette.apply();
+            data5.pop(pbool);
         }}
 
         _recolorAnimationIf(data5, ANIM::PINBALL, 0, 4);
@@ -281,6 +282,10 @@ namespace MLLE {{
         return handle;
     }}
 
+    void ReapplyPalette() {{
+        Palette.apply();
+    }}
+
     jjPALCOLOR _colorFromArgb(uint Argb) {{
         return jjPALCOLOR(Argb >> 16, Argb >> 8, Argb >> 0);
     }}
@@ -436,7 +441,8 @@ shared interface MLLEWeaponApply { bool Apply(uint, se::WeaponHook@ = null, jjST
 
             bool[] hooksNeeded = IncludeHookSpecs.Select(ss => weaponLibrary && ss.WeaponhookMethod && customWeapons.Any(cw => cw != null && ss.WeaponIniHookIdentifier.Match(cw.Hooks).Success)).ToArray();
             hooksNeeded[3] = weaponLibrary; //onDrawAmmo is used by ALL custom weapons
-            
+            hooksNeeded[5] = ReapplyPalette;
+
             for (int specID = 0; specID < IncludeHookSpecs.Length; ++specID)
                 IncludeHookSpecs[specID].Process(ref fileContents, hooksNeeded[specID]);
         }
@@ -498,8 +504,6 @@ shared interface MLLEWeaponApply { bool Apply(uint, se::WeaponHook@ = null, jjST
                 functionPattern += @"\)[^{]*{)";
                 EnclosingFunctionStart = new Regex(functionPattern);
                 EnclosingFunctionEmpty = new Regex(functionPattern + @"[\s;]*}\r?\n?");
-
-                System.Windows.Forms.MessageBox.Show(IncludeCallFind.ToString());
             }
             internal void Process(ref string fileContents, bool needed)
             {
@@ -520,7 +524,8 @@ shared interface MLLEWeaponApply { bool Apply(uint, se::WeaponHook@ = null, jjST
             new Spec(new string[]{"void", "onPlayer", "processPlayer", "jjPLAYER @", "player"}),
             new Spec(new string[]{"void", "onPlayerInput", "processPlayerInput", "jjPLAYER @", "player"}),
             new Spec(new string[]{"bool", "onDrawAmmo", "drawAmmo", "jjPLAYER @", "player", "jjCANVAS @", "canvas"}),
-            new Spec(new string[]{"void", "onReceive", "processPacket", "jjSTREAM & in", "packet", "int", "fromClientID" })
+            new Spec(new string[]{"void", "onReceive", "processPacket", "jjSTREAM & in", "packet", "int", "fromClientID" }),
+            new Spec(new string[]{"void", "onLevelReload", "ReapplyPalette"}, false)
         };
 
         public static void RemovePriorReferencesToMLLELibrary(ref string fileContents)
