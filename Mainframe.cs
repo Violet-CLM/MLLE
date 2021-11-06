@@ -736,8 +736,11 @@ void main() {
                 case (Keys.Control | Keys.P): { ParallaxButton.Checked = DropdownParallax.Checked = !ParallaxButton.Checked; return true; }
                 case (Keys.Control | Keys.M): { MaskButton.Checked = DropdownMask.Checked = !MaskButton.Checked; return true; }
                 case (Keys.Control | Keys.V): {
-                        if ((stijnVision && EventDisplayMode == 1)) EventDisplayMode = 2;
-                        else EventsButton.Checked = DropdownEvents.Checked = !EventsButton.Checked;
+                        if (SnapEventsToGridToggle.Checked)
+                        {
+                            if ((stijnVision && EventDisplayMode == 1)) EventDisplayMode = 2;
+                            else EventsButton.Checked = DropdownEvents.Checked = !EventsButton.Checked;
+                        }
                         return true;
                     }
 
@@ -872,9 +875,14 @@ void main() {
                     }
                 case Keys.B:
                     {
-                        if (!SnapEventsToGridToggle.Checked && BDisablesSmartTiles)
-                            SnapEventsToGridToggle.Checked = false;
-                        else if (CurrentTilesetOverlay == TilesetOverlay.SmartTiles) {
+                        if (!SnapEventsToGridToggle.Checked) {
+                            if (BDisablesSmartTiles) {
+                                SnapEventsToGridToggle.Checked = true;
+                                if (LastFocusedZone != FocusedZone.Level) //so, tileset
+                                    return true; //too hard to predict what would happen if the normal tileset view reasserted itself before B happened
+                            } else
+                                return true;
+                        } else if (CurrentTilesetOverlay == TilesetOverlay.SmartTiles) {
                             if (BDisablesSmartTiles)
                             {
                                 TilesetOverlaySelection.SelectedIndex = 2;
@@ -2563,18 +2571,25 @@ void main() {
                 {
                     EmborderSelectedTiles(LDScrollH.Value, LDScrollV.Value, ZoomTileSize, LevelDisplayViewportWidth, LevelDisplayViewportHeight);
                 }
-                if (LastFocusedZone == FocusedZone.Level && VisibleEditingTool != SelectionButton && CurrentStamp.Length > 0 && J2L.HasTiles)
+                if (LastFocusedZone == FocusedZone.Level && VisibleEditingTool != SelectionButton && ((CurrentStamp.Length > 0 && J2L.HasTiles) || !SnapEventsToGridToggle.Checked))
                 {
-                    int x = MouseTileX * ZoomTileSize - LDScrollH.Value;
-                    int y = MouseTileY * ZoomTileSize - LDScrollV.Value;
-                    SetTextureTo((MaskDisplayMode == MaskMode.FullMask) ? AtlasID.Mask : AtlasID.Image);
+                    SetTextureTo(SnapEventsToGridToggle.Checked ? (MaskDisplayMode == MaskMode.FullMask) ? AtlasID.Mask : AtlasID.Image : !stijnVision ? AtlasID.EventNames : AtlasID.EventSprites);
                     GL.Enable(EnableCap.Blend);
                     GL.BlendFunc(BlendingFactorSrc.One, BlendingFactorDest.One);
                     GL.Color4((byte)255, (byte)255, (byte)255, (byte)128);
-                    for (int xloop = 0, xoffset = x; xloop < CurrentStamp.Length; xloop++, xoffset += ZoomTileSize) for (int yloop = 0, yoffset = y; yloop < CurrentStamp[0].Length; yloop++, yoffset += ZoomTileSize)
-                        {
-                            if (CurrentStamp[xloop][yloop].Tile != null) DrawTile(ref xoffset, ref yoffset, (ushort)CurrentStamp[xloop][yloop].Tile, ZoomTileSize, (Control.ModifierKeys == Keys.Shift && ActiveForm == this) || ShowBlankTileInStamp);
-                        }
+                    if (SnapEventsToGridToggle.Checked)
+                    {
+                        int x = MouseTileX * ZoomTileSize - LDScrollH.Value;
+                        int y = MouseTileY * ZoomTileSize - LDScrollV.Value;
+                        for (int xloop = 0, xoffset = x; xloop < CurrentStamp.Length; xloop++, xoffset += ZoomTileSize) for (int yloop = 0, yoffset = y; yloop < CurrentStamp[0].Length; yloop++, yoffset += ZoomTileSize)
+                            {
+                                if (CurrentStamp[xloop][yloop].Tile != null) DrawTile(ref xoffset, ref yoffset, (ushort)CurrentStamp[xloop][yloop].Tile, ZoomTileSize, (Control.ModifierKeys == Keys.Shift && ActiveForm == this) || ShowBlankTileInStamp);
+                            }
+                    }
+                    else
+                    {
+                        DrawEvent(MousePixelX - ZoomTileSize / 2 - LDScrollH.Value, MousePixelY - ZoomTileSize / 2 - LDScrollV.Value, ActiveEvent.ID, ZoomTileSize);
+                    }
                     GL.Color4((byte)255, (byte)255, (byte)255, (byte)255);
                     GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
                 }
@@ -3044,11 +3059,7 @@ void main() {
 
         #region Mouse movement
         #region mouse variables
-        internal int MouseTileX = 0;
-        internal int MouseTileY = 0;
-        internal int MouseTile = 0;
-        internal int OldMouseTile = 0;
-        //internal uint MouseEvent = 0;
+        internal int MousePixelX = 0, MousePixelY = 0, MouseTileX = 0, MouseTileY = 0, MouseTile = 0, OldMouseTile = 0;
         internal AGAEvent MouseAGAEvent = new AGAEvent((uint)0);
         internal AGAEvent? SelectReturnAGAEvent = null;
         internal FocusedZone LastFocusedZone = FocusedZone.None;
@@ -3119,9 +3130,9 @@ void main() {
             {
                 LastFocusedZone = FocusedZone.Level;
                 LDScrollV.Focus();
-                LevelDisplay.ContextMenuStrip = LDContextMenu;
-                MouseTileX = Math.Max(0, (e.X - LDScrollH.Location.X + LDScrollH.Value) / ZoomTileSize);
-                MouseTileY = Math.Max(0, (e.Y + LDScrollV.Value) / ZoomTileSize);
+                LevelDisplay.ContextMenuStrip = SnapEventsToGridToggle.Checked ? LDContextMenu : null;
+                MouseTileX = (MousePixelX = Math.Max(0, (e.X - LDScrollH.Location.X + LDScrollH.Value))) / ZoomTileSize;
+                MouseTileY = (MousePixelY = Math.Max(0, (e.Y + LDScrollV.Value))) / ZoomTileSize;
                 if (SafeToDisplay)
                 {
                     MouseTile = MouseTileX + MouseTileY * (int)CurrentLayer.Width;
@@ -3284,7 +3295,11 @@ void main() {
             _suspendEvent.Reset();
             EventForm EF = new EventForm(this, TreeStructure[J2L.VersionType][(J2L.LevelMode == 1) ? 1 : 0].ToArray(), J2L.VersionType, (J2L.VersionType == Version.AGA && MouseAGAEvent.Bits == null) ? new AGAEvent(0) : MouseAGAEvent, LevelSpecificEventStringList);
             EF.ShowDialog();
-            if (SelectReturnAGAEvent != null) { ActiveEvent = (AGAEvent)SelectReturnAGAEvent; PasteEventAtMouse(); }
+            if (SelectReturnAGAEvent != null) {
+                ActiveEvent = (AGAEvent)SelectReturnAGAEvent;
+                if (SnapEventsToGridToggle.Checked)
+                    PasteEventAtMouse();
+            }
             EF.ResetTree();
             _suspendEvent.Set();
         }
@@ -3620,7 +3635,15 @@ void main() {
         {
             if (!SnapEventsToGridToggle.Checked)
             {
-                //todo
+                if (LastFocusedZone == FocusedZone.Level)
+                {
+                    if (e.Button == MouseButtons.Left)
+                        PasteEventAtMouse();
+                    else if (e.Button == MouseButtons.Right)
+                        ;//todo DeleteEventAtMouse();
+                    else if (e.Button == MouseButtons.Middle)
+                        SelectEventAtMouse();
+                }
             }
             else if (LastFocusedZone == FocusedZone.Tileset && CurrentTilesetOverlay == TilesetOverlay.SmartTiles)
             {
@@ -3847,13 +3870,14 @@ void main() {
 
         private void SnapEventsToGridToggle_CheckedChanged(object sender, EventArgs e)
         {
-            TilesetSelection.Enabled = TilesetOverlaySelection.Enabled = TilesetScrollbar.Enabled = SnapEventsToGridToggle.Checked;
+            EventsButton.Enabled = DropdownEvents.Enabled = TilesetSelection.Enabled = TilesetOverlaySelection.Enabled = TilesetScrollbar.Enabled = SnapEventsToGridToggle.Checked;
             RedrawTilesetHowManyTimes = 2;
 
             if (!SnapEventsToGridToggle.Checked)
             {
                 if (CurrentTilesetOverlay == TilesetOverlay.SmartTiles)
                     TilesetOverlaySelection.SelectedIndex = 2;
+                EventDisplayMode = 1;
                 DeselectAll();
                 SetStampDimensions(0, 0);
                 UneditAnimation();

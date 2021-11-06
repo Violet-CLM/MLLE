@@ -734,8 +734,8 @@
             // 
             this.bDisablesSmartTilesToolStripMenuItem.CheckOnClick = true;
             this.bDisablesSmartTilesToolStripMenuItem.Name = "bDisablesSmartTilesToolStripMenuItem";
-            this.bDisablesSmartTilesToolStripMenuItem.Size = new System.Drawing.Size(214, 22);
-            this.bDisablesSmartTilesToolStripMenuItem.Text = "\'B\' disables Smart Tiles";
+            this.bDisablesSmartTilesToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
+            this.bDisablesSmartTilesToolStripMenuItem.Text = "\'B\' returns to normal mode";
             this.bDisablesSmartTilesToolStripMenuItem.Click += new System.EventHandler(this.bDisablesSmartTilesToolStripMenuItem_Click);
             // 
             // toolStripSeparator19
