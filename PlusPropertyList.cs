@@ -634,6 +634,14 @@ namespace MLLE
                     }
                 }
 
+                data5bodywriter.Write((ushort)OffGridObjects.Count);
+                foreach (OffGridObject obj in OffGridObjects)
+                {
+                    data5bodywriter.Write((ushort)obj.location.X);
+                    data5bodywriter.Write((ushort)obj.location.Y);
+                    data5bodywriter.Write(obj.bits);
+                }
+
                 var data5bodycompressed = ZlibStream.CompressBuffer(data5body.ToArray());
                 data5writer.Write((uint)data5bodycompressed.Length);
                 data5writer.Write((uint)data5body.Length);
@@ -815,6 +823,18 @@ namespace MLLE
                                             }
                                     } else if (weaponID == 7)
                                         weapon.Options[Weapon.NumberOfCommonOptions] = data5bodyreader.ReadByte(); //Gun8 style
+                                }
+
+                                if (data5Version >= 0x106) //offgridobjects were added in MLLE-Include-1.5(w)
+                                {
+                                    ushort objects = data5bodyreader.ReadUInt16();
+                                    while (objects-- != 0)
+                                    {
+                                        ushort x = data5bodyreader.ReadUInt16();
+                                        ushort y = data5bodyreader.ReadUInt16();
+                                        uint bits = data5bodyreader.ReadUInt32();
+                                        OffGridObjects.Add(new OffGridObject(new Point(x, y), bits));
+                                    }
                                 }
                             }
                         }
