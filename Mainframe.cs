@@ -2919,6 +2919,10 @@ void main() {
                     }
                 tempxorigin += ZoomTileSize; tempupperleftx++;
             }
+            foreach (PlusPropertyList.OffGridObject obj in J2L.PlusPropertyList.OffGridObjects)
+            {
+                DrawEvent(obj.xPos * ZoomTileSize / 32 - ZoomTileSize / 2 - LDScrollH.Value, obj.yPos * ZoomTileSize / 32 - ZoomTileSize / 2 - LDScrollV.Value, obj.bits, ZoomTileSize);
+            }
         }
 
         /*internal void DrawAnimatedTiles()
@@ -3273,19 +3277,27 @@ void main() {
             else if (LastFocusedZone == FocusedZone.Level && CurrentLayer == J2L.SpriteLayer)
             {
                 if (MouseTileX >= 0 && MouseTileY >= 0 && MouseTileX < CurrentLayer.Width && MouseTileY < CurrentLayer.Height) {
-                    LayerAndSpecificTiles actionCenter = new LayerAndSpecificTiles(J2L.SpriteLayer);
-                    actionCenter.Specifics[new Point(MouseTileX, MouseTileY)] = new TileAndEvent(CurrentLayer.TileMap[MouseTileX, MouseTileY], (J2L.VersionType != Version.AGA) ? new AGAEvent(J2L.EventMap[MouseTileX, MouseTileY]) : J2L.AGA_EventMap[MouseTileX, MouseTileY]);
-                    Undoable.Push(actionCenter);
-                    Redoable.Clear();
-                    LevelHasBeenModified = true;
-                    if (J2L.VersionType == Version.AGA)
+                    if (SnapEventsToGridToggle.Checked)
                     {
-                        J2L.AGA_EventMap[MouseTileX, MouseTileY] = MouseAGAEvent = ActiveEvent;
+                        LayerAndSpecificTiles actionCenter = new LayerAndSpecificTiles(J2L.SpriteLayer);
+                        actionCenter.Specifics[new Point(MouseTileX, MouseTileY)] = new TileAndEvent(CurrentLayer.TileMap[MouseTileX, MouseTileY], (J2L.VersionType != Version.AGA) ? new AGAEvent(J2L.EventMap[MouseTileX, MouseTileY]) : J2L.AGA_EventMap[MouseTileX, MouseTileY]);
+                        Undoable.Push(actionCenter);
+                        if (J2L.VersionType == Version.AGA)
+                        {
+                            J2L.AGA_EventMap[MouseTileX, MouseTileY] = MouseAGAEvent = ActiveEvent;
+                        }
+                        else
+                        {
+                            J2L.EventMap[MouseTileX, MouseTileY] = MouseAGAEvent.ID = ActiveEvent.ID;
+                        }
                     }
                     else
                     {
-                        J2L.EventMap[MouseTileX, MouseTileY] = MouseAGAEvent.ID = ActiveEvent.ID;
+                        Undoable.Clear(); //idk
+                        J2L.PlusPropertyList.OffGridObjects.Add(new PlusPropertyList.OffGridObject(MousePixelX * 32 / ZoomTileSize, MousePixelY * 32 / ZoomTileSize, ActiveEvent.ID));
                     }
+                    LevelHasBeenModified = true;
+                    Redoable.Clear();
                 }
             }
             UpdateMousePrintout();

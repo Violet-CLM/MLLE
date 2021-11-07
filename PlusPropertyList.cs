@@ -247,6 +247,27 @@ namespace MLLE
         [Browsable(false)]
         internal byte[][] TileMasks;
 
+        internal class OffGridObject
+        {
+            internal ushort xPos, yPos;
+            internal uint bits;
+            public OffGridObject(OffGridObject other)
+            {
+                if (other == null)
+                    return;
+                xPos = other.xPos;
+                yPos = other.yPos;
+                bits = other.bits;
+            }
+            public OffGridObject(int x, int y, uint b)
+            {
+                xPos = (ushort)x;
+                yPos = (ushort)y;
+                bits = b;
+            }
+        }
+        internal List<OffGridObject> OffGridObjects;
+
 
         internal class Weapon
         {
@@ -330,6 +351,7 @@ namespace MLLE
                 }
 
                 Weapons = other.Value.Weapons.Select(w => w.Clone()).ToArray();
+                OffGridObjects = other.Value.OffGridObjects.Select(o => new OffGridObject(o)).ToList();
             }
             else
             {
@@ -344,6 +366,7 @@ namespace MLLE
                 Gun7Crate = Gun7Crate = Gun9Crate = 0;
                 Palette = null;
                 Weapons = WeaponDefaults.Select(w => w.Clone()).ToArray();
+                OffGridObjects = new List<OffGridObject>();
             }
         }
 
