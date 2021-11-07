@@ -2921,7 +2921,7 @@ void main() {
             }
             foreach (PlusPropertyList.OffGridObject obj in J2L.PlusPropertyList.OffGridObjects)
             {
-                DrawEvent(obj.xPos * ZoomTileSize / 32 - ZoomTileSize / 2 - LDScrollH.Value, obj.yPos * ZoomTileSize / 32 - ZoomTileSize / 2 - LDScrollV.Value, obj.bits, ZoomTileSize);
+                DrawEvent(obj.location.X * ZoomTileSize / 32 - ZoomTileSize / 2 - LDScrollH.Value, obj.location.Y * ZoomTileSize / 32 - ZoomTileSize / 2 - LDScrollV.Value, obj.bits, ZoomTileSize);
             }
         }
 
@@ -3270,7 +3270,36 @@ void main() {
         byte SelectedAnimationFrame;
 
         #region Event Editing
-        private void GrabEventAtMouse() { if (J2L.VersionType == Version.AGA) ActiveEvent = MouseAGAEvent; else ActiveEvent.ID = MouseAGAEvent.ID; }
+        Point GetLevelPixelCoordinatesAtMouse()
+        {
+            return new Point(MousePixelX * 32 / ZoomTileSize, MousePixelY * 32 / ZoomTileSize);
+        }
+        int FindOffgridObjectAtMouse()
+        {
+            if (J2L.PlusPropertyList.OffGridObjects.Count > 0)
+            {
+                Point location = GetLevelPixelCoordinatesAtMouse();
+                for (int i = J2L.PlusPropertyList.OffGridObjects.Count - 1; i >= 0; --i)
+                {
+                    Point objLocation = J2L.PlusPropertyList.OffGridObjects[i].location;
+                    if (Math.Abs(location.X - objLocation.X) < ZoomTileSize / 2 && Math.Abs(location.Y - objLocation.Y) < ZoomTileSize / 2)
+                        return i;
+                }
+            }
+            return -1;
+        }
+        private void GrabEventAtMouse() {
+            if (J2L.VersionType == Version.AGA)
+                ActiveEvent = MouseAGAEvent;
+            else
+            {
+                int offgridIndex = FindOffgridObjectAtMouse();
+                if (offgridIndex < 0)
+                    ActiveEvent.ID = MouseAGAEvent.ID;
+                else
+                    ActiveEvent.ID = J2L.PlusPropertyList.OffGridObjects[offgridIndex].bits;
+            }
+        }
         private void PasteEventAtMouse()
         {
             if (LastFocusedZone == FocusedZone.Tileset) { J2L.EventTiles[MouseTile] = MouseAGAEvent.ID = ActiveEvent.ID; LevelHasBeenModified = true; RedrawTilesetHowManyTimes = 2; }
@@ -3294,7 +3323,7 @@ void main() {
                     else
                     {
                         Undoable.Clear(); //idk
-                        J2L.PlusPropertyList.OffGridObjects.Add(new PlusPropertyList.OffGridObject(MousePixelX * 32 / ZoomTileSize, MousePixelY * 32 / ZoomTileSize, ActiveEvent.ID));
+                        J2L.PlusPropertyList.OffGridObjects.Add(new PlusPropertyList.OffGridObject(GetLevelPixelCoordinatesAtMouse(), ActiveEvent.ID));
                     }
                     LevelHasBeenModified = true;
                     Redoable.Clear();
@@ -3314,6 +3343,26 @@ void main() {
             }
             EF.ResetTree();
             _suspendEvent.Set();
+        }
+        private void DeleteEventAtMouse() //only can get called when SnapToGrid is unchecked
+        {
+            int offgridIndex = FindOffgridObjectAtMouse();
+            if (offgridIndex >= 0)
+                J2L.PlusPropertyList.OffGridObjects.RemoveAt(offgridIndex);
+            else if (
+                LastFocusedZone == FocusedZone.Level &&
+                CurrentLayer == J2L.SpriteLayer &&
+                MouseTileX >= 0 && MouseTileY >= 0 &&
+                MouseTileX < CurrentLayer.Width && MouseTileY < CurrentLayer.Height &&
+                J2L.EventMap[MouseTileX, MouseTileY] != 0
+            )
+                J2L.EventMap[MouseTileX, MouseTileY] = MouseAGAEvent.ID = 0;
+            else
+                return;
+
+            LevelHasBeenModified = true;
+            Redoable.Clear();
+            Undoable.Clear();
         }
         #endregion Event Editing
 
@@ -3487,6 +3536,11 @@ void main() {
                     {
                         for (ushort x = 0; x < layer.TileMap.GetLength(0); x++) for (ushort y = 0; y < layer.TileMap.GetLength(1); y++) ActOnATile(x, y, 0, 0, ActionCenter, true);
                     }
+                    if (layer == J2L.SpriteLayer && J2L.PlusPropertyList.OffGridObjects.Count > 0)
+                    {
+                        J2L.PlusPropertyList.OffGridObjects.Clear();
+                        LevelHasBeenModified = true;
+                    }
                     _suspendEvent.Set();
                 }
                 CurrentTilesetOverlay = realTilesetOverlay;
@@ -3649,11 +3703,11 @@ void main() {
             {
                 if (LastFocusedZone == FocusedZone.Level)
                 {
-                    if (e.Button == MouseButtons.Left)
+                    if (e.Button == MouseButtons.Left && Control.ModifierKeys != Keys.Control)
                         PasteEventAtMouse();
                     else if (e.Button == MouseButtons.Right)
-                        ;//todo DeleteEventAtMouse();
-                    else if (e.Button == MouseButtons.Middle)
+                        DeleteEventAtMouse();
+                    else
                         SelectEventAtMouse();
                 }
             }

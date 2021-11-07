@@ -249,20 +249,18 @@ namespace MLLE
 
         internal class OffGridObject
         {
-            internal ushort xPos, yPos;
+            internal Point location;
             internal uint bits;
             public OffGridObject(OffGridObject other)
             {
                 if (other == null)
                     return;
-                xPos = other.xPos;
-                yPos = other.yPos;
+                location = new Point(other.location.X, other.location.Y);
                 bits = other.bits;
             }
-            public OffGridObject(int x, int y, uint b)
+            public OffGridObject(Point l, uint b)
             {
-                xPos = (ushort)x;
-                yPos = (ushort)y;
+                location = l;
                 bits = b;
             }
         }
