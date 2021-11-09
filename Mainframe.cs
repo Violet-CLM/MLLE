@@ -1813,7 +1813,7 @@ void main() {
             }
             else if (openResults == OpeningResults.Success || openResults == OpeningResults.SuccessfulButAmbiguous)
             {
-                string readableResult = J2L.PlusPropertyList.LevelIsReadable(Data5, J2L.Tilesets, J2L.AllLayers, filename);
+                string readableResult = J2L.PlusPropertyList.LevelIsReadable(Data5, J2L.Tilesets, J2L.AllLayers, J2L.EventMap, filename);
                 if (readableResult != null)
                 {
                     MessageBox.Show(readableResult, "This level cannot be loaded", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -2065,11 +2065,19 @@ void main() {
 
             byte[] Data5 = null;
             WeaponsForm.ExtendedWeapon[] CustomWeapons = null;
+            uint[,] eventMapBackup = null;
+            if (J2L.PlusPropertyList.OffGridObjects.Count != 0)
+                eventMapBackup = J2L.EventMap.Clone() as uint[,];
             if (EnableableBools[J2L.VersionType][EnableableTitles.BoolDevelopingForPlus] && J2L.LevelNeedsData5)
-                if (!J2L.PlusPropertyList.CreateData5Section(out Data5, out CustomWeapons, J2L.Tilesets, J2L.AllLayers))
+                if (!J2L.PlusPropertyList.CreateData5Section(out Data5, out CustomWeapons, J2L.Tilesets, J2L.AllLayers, J2L.EventMap)) {
+                    if (eventMapBackup != null)
+                        J2L.EventMap = eventMapBackup;
                     return SavingResults.Error;
+                }
 
             SavingResults result = J2L.Save(filename, eraseUndefinedTiles, allowDifferentTilesetVersion, storeGivenFilename, Data5);
+            if (eventMapBackup != null)
+                J2L.EventMap = eventMapBackup;
             if (result == SavingResults.Success)
             {
                 if (storeGivenFilename)

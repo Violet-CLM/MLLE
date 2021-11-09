@@ -25,6 +25,7 @@ namespace MLLE
 namespace MLLE {{
     jjPAL@ Palette;
     dictionary@ _layers;{1}
+    array<_offgridObject>@ _offGridObjects;
 
     bool Setup({2}) {{
         jjPAL palette = jjBackupPalette;
@@ -209,8 +210,8 @@ namespace MLLE {{
         }}
         jjLayerOrderSet(newLayerOrder);
 
-        uint16 numberOfImages; data5.pop(numberOfImages);
-        for (uint16 i = 0; i < numberOfImages; ++i) {{
+        uint16 numberOfObjects; data5.pop(numberOfObjects);
+        while (numberOfObjects-- != 0) {{
             uint16 tileID; data5.pop(tileID);
             jjPIXELMAP tile(32, 32);
             for (int y = 0; y < 32; ++y)
@@ -218,8 +219,8 @@ namespace MLLE {{
                     data5.pop(tile[x,y]);
             tile.save(tileID, true);
         }}
-        data5.pop(numberOfImages);
-        for (uint16 i = 0; i < numberOfImages; ++i) {{
+        data5.pop(numberOfObjects);
+        while (numberOfObjects-- != 0) {{
             uint16 tileID; data5.pop(tileID);
             jjMASKMAP tile;
             for (int y = 0; y < 32; ++y)
@@ -269,6 +270,21 @@ namespace MLLE {{
             }}
         }}
 
+        data5.pop(numberOfObjects);
+        if (numberOfObjects != 0) {{
+            if (jjGameConnection != GAME::LOCAL)
+                jjObjectPresets[254].behavior = _replaceMe;
+            else
+                jjObjectPresets[254].behavior = BEHAVIOR::INACTIVE;
+            @_offGridObjects = array<_offgridObject>();
+            do {{
+                uint16 xPos; data5.pop(xPos);
+                uint16 yPos; data5.pop(yPos);
+                int32 params; data5.pop(params);
+                _offGridObjects.insertLast(_offgridObject(xPos, yPos, params));
+            }} while (--numberOfObjects != 0);
+        }}
+
         if (!data5.isEmpty()) {{
             jjDebug('MLLE::Setup: Warning, Data5 longer than expected');
         }}
@@ -284,6 +300,48 @@ namespace MLLE {{
 
     void ReapplyPalette() {{
         Palette.apply();
+    }}
+
+    void SpawnOffgrids() {{
+        if (jjGameConnection == GAME::LOCAL) {{
+            SpawnOffgridsLocal();
+            for (int y = 0; y < jjLayerHeight[4]; ++y)
+            for (int x = 0; x < jjLayerWidth[4]; ++x) {{
+                const int ev = jjParameterGet(x,y, -12,32);
+                if (ev == 0)
+                    return;
+                else if (ev == int(0xFFFFF3FE))
+                    jjParameterSet(x,y, -12,32, 0);
+            }}
+        }}
+    }}
+    void SpawnOffgridsLocal() {{
+        for (uint i = 0; i < _offGridObjects.length; ++i)
+            _spawnOffgrid(i);
+    }}
+    class _offgridObject {{
+        float xPos, yPos;
+        int32 params;
+        _offgridObject() {{}}
+        _offgridObject(uint16 x, uint16 y, int32 p) {{ xPos = x; yPos = y; params = p; }}
+    }}
+    void _spawnOffgrid(uint i) {{
+        const _offgridObject@ og = _offGridObjects[i];
+        const uint xTile = uint(og.xPos) >> 5, yTile = uint(og.yPos) >> 5;
+        const int realEvent = jjParameterGet(xTile,yTile, -12,32);
+        jjParameterSet(xTile,yTile, -12,32, og.params);
+        jjOBJ@ obj = jjObjects[jjAddObject(og.params, og.xPos, og.yPos, 0, CREATOR::LEVEL)];
+        jjParameterSet(xTile,yTile, -12,32, realEvent);
+        if (jjGameConnection == GAME::LOCAL) {{
+            obj.deactivates = false;
+            obj.creatorID = 1;
+        }}
+    }}
+    uint _replaceMeIndex = 0;
+    void _replaceMe(jjOBJ@ obj) {{
+        jjParameterSet(uint(obj.xOrg)>>5, uint(obj.yOrg)>>5, -12,32, 0);
+        obj.delete();
+        _spawnOffgrid(_replaceMeIndex++);
     }}
 
     jjPALCOLOR _colorFromArgb(uint Argb) {{
@@ -442,6 +500,7 @@ shared interface MLLEWeaponApply { bool Apply(uint, se::WeaponHook@ = null, jjST
             bool[] hooksNeeded = IncludeHookSpecs.Select(ss => weaponLibrary && ss.WeaponhookMethod && customWeapons.Any(cw => cw != null && ss.WeaponIniHookIdentifier.Match(cw.Hooks).Success)).ToArray();
             hooksNeeded[3] = weaponLibrary; //onDrawAmmo is used by ALL custom weapons
             hooksNeeded[5] = ReapplyPalette;
+            hooksNeeded[6] = hooksNeeded[7] = OffGridObjects.Count > 0;
 
             for (int specID = 0; specID < IncludeHookSpecs.Length; ++specID)
                 IncludeHookSpecs[specID].Process(ref fileContents, hooksNeeded[specID]);
@@ -515,7 +574,9 @@ shared interface MLLEWeaponApply { bool Apply(uint, se::WeaponHook@ = null, jjST
                             fileContents += AddEntireHook;
                     } //else it's already being made, the script is fine already, don't change anything
                 } else {
-                    fileContents = EnclosingFunctionEmpty.Replace(IncludeCallFind.Replace(fileContents, ""), ""); //remove the method call, then remove the hook function it was in if that hook is now totally empty
+                    fileContents = IncludeCallFind.Replace(fileContents, ""); //remove the method call
+                    if (LastCallFromThisHook)
+                        fileContents = EnclosingFunctionEmpty.Replace(fileContents, ""); //then remove the hook function it was in if that hook is now totally empty
                 }
             }
         }
@@ -525,7 +586,9 @@ shared interface MLLEWeaponApply { bool Apply(uint, se::WeaponHook@ = null, jjST
             new Spec(new string[]{"void", "onPlayerInput", "processPlayerInput", "jjPLAYER @", "player"}),
             new Spec(new string[]{"bool", "onDrawAmmo", "drawAmmo", "jjPLAYER @", "player", "jjCANVAS @", "canvas"}),
             new Spec(new string[]{"void", "onReceive", "processPacket", "jjSTREAM & in", "packet", "int", "fromClientID" }),
-            new Spec(new string[]{"void", "onLevelReload", "ReapplyPalette"}, false)
+            new Spec(new string[]{"void", "onLevelReload", "ReapplyPalette"}, false, false),
+            new Spec(new string[]{"void", "onLevelBegin", "SpawnOffgrids"}, false),
+            new Spec(new string[]{"void", "onLevelReload", "SpawnOffgridsLocal"}, false)
         };
 
         public static void RemovePriorReferencesToMLLELibrary(ref string fileContents)

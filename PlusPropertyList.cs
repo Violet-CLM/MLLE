@@ -494,7 +494,7 @@ namespace MLLE
                 return false;
             }
         }
-        internal bool CreateData5Section(out byte[] Data5, out WeaponsForm.ExtendedWeapon[] CustomWeapons, List<J2TFile> Tilesets, List<Layer> Layers)
+        internal bool CreateData5Section(out byte[] Data5, out WeaponsForm.ExtendedWeapon[] CustomWeapons, List<J2TFile> Tilesets, List<Layer> Layers, uint[,] EventMap)
         {
             Data5 = null;
             CustomWeapons = new WeaponsForm.ExtendedWeapon[9];
@@ -634,12 +634,30 @@ namespace MLLE
                     }
                 }
 
+                int eventX = 0, eventY = 0;
                 data5bodywriter.Write((ushort)OffGridObjects.Count);
                 foreach (OffGridObject obj in OffGridObjects)
                 {
                     data5bodywriter.Write((ushort)obj.location.X);
                     data5bodywriter.Write((ushort)obj.location.Y);
                     data5bodywriter.Write(obj.bits);
+                    bool addedOffGridEventForServers = false;
+                    do {
+                        if (EventMap[eventX, eventY] == 0)
+                        {
+                            EventMap[eventX, eventY] = 0xFFFFF3FE;
+                            addedOffGridEventForServers = true;
+                        }
+                        if (++eventX == EventMap.GetLength(0))
+                        {
+                            eventX = 0;
+                            if (++eventY == EventMap.GetLength(1))
+                            {
+                                MessageBox.Show("Sorry, there were insufficient empty tiles in the level to save all the off-grid objects. In order to be able to save the level, you will need to make layer 4 larger, remove some off-grid objects, or remove some events.", "Not enough event space", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                return false;
+                            }
+                        }
+                    } while (!addedOffGridEventForServers);
                 }
 
                 var data5bodycompressed = ZlibStream.CompressBuffer(data5body.ToArray());
@@ -650,7 +668,7 @@ namespace MLLE
             Data5 = data5header.ToArray();
             return true;
         }
-        internal string LevelIsReadable(byte[] Data5, List<J2TFile> Tilesets, List<Layer> Layers, string Filepath)
+        internal string LevelIsReadable(byte[] Data5, List<J2TFile> Tilesets, List<Layer> Layers, uint[,] EventMap, string Filepath)
         {
             if (Data5 == null || Data5.Length < 20) //level stops at the end of data4, as is good and proper
             {
@@ -825,15 +843,24 @@ namespace MLLE
                                         weapon.Options[Weapon.NumberOfCommonOptions] = data5bodyreader.ReadByte(); //Gun8 style
                                 }
 
-                                if (data5Version >= 0x106) //offgridobjects were added in MLLE-Include-1.5(w)
+                                if (data5Version >= 0x106) //offgridobjects were added in MLLE-Include-1.6
                                 {
                                     ushort objects = data5bodyreader.ReadUInt16();
-                                    while (objects-- != 0)
+                                    if (objects != 0)
                                     {
-                                        ushort x = data5bodyreader.ReadUInt16();
-                                        ushort y = data5bodyreader.ReadUInt16();
-                                        uint bits = data5bodyreader.ReadUInt32();
-                                        OffGridObjects.Add(new OffGridObject(new Point(x, y), bits));
+                                        for (int y = 0; y < EventMap.GetLength(1); y++)
+                                            for (int x = 0; x < EventMap.GetLength(0); x++)
+                                                if (EventMap[x, y] == 0xFFFFF3FE)
+                                                    EventMap[x, y] = 0;
+                                                else if (EventMap[x, y] == 0)
+                                                    goto doneSearchingFor254;
+                                        doneSearchingFor254:
+                                        do {
+                                            ushort x = data5bodyreader.ReadUInt16();
+                                            ushort y = data5bodyreader.ReadUInt16();
+                                            uint bits = data5bodyreader.ReadUInt32();
+                                            OffGridObjects.Add(new OffGridObject(new Point(x, y), bits));
+                                        } while (--objects != 0);
                                     }
                                 }
                             }
