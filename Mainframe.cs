@@ -1285,8 +1285,9 @@ void main() {
         private void DrawingToolButton_Click(object sender, EventArgs e)
         {
             DeepEditingTool = VisibleEditingTool = (ToolStripButton)sender;
-            for (byte i = 0; i < DrawingTools.Items.Count; i++) if (DrawingTools.Items[i].GetType() == sender.GetType() && DrawingTools.Items[i] != ReplaceEventsToggle)
-                    ((ToolStripButton)DrawingTools.Items[i]).Checked = false;
+            foreach (ToolStripItem item in DrawingTools.Items)
+            if (item.GetType() == sender.GetType() && item != ReplaceEventsToggle && item != SnapEventsToGridToggle)
+                    ((ToolStripButton)item).Checked = false;
             DeepEditingTool.Checked = true;
         }
 
