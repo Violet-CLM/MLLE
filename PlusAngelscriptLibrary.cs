@@ -88,7 +88,7 @@ namespace MLLE {{
             return false;
         }}
 
-        bool pbool; uint8 pbyte; int8 pchar; float pfloat; int pint; uint puint, puint2;
+        bool pbool; uint8 pbyte; int8 pchar; int16 pshort; float pfloat; int pint; uint puint, puint2;
         data5.pop(pbool); jjIsSnowing = pbool;
         data5.pop(pbool); jjIsSnowingOutdoorsOnly = pbool;
         data5.pop(pbyte); jjSnowingIntensity = pbyte;
@@ -229,6 +229,7 @@ namespace MLLE {{
             tile.save(tileID, true);
         }}
 
+        data5.pop(pshort);
         for (uint i = 1; i <= 9; ++i) {{
             jjWEAPON@ weapon = jjWeapons[i];
             data5.pop(pbool);
@@ -390,7 +391,7 @@ namespace MLLE {{
         const string AngelscriptLibraryWeaponsPortion2 = "array<MLLEWeaponApply@> w";
         const string AngelscriptLibraryWeaponsPortion3 = @"if (pbool) {
                 if (WeaponHook is null)
-                    @WeaponHook = se::DefaultWeaponHook();
+                    @WeaponHook = pshort < 0 ? se::DefaultWeaponHook() :  se::DefaultWeaponHook(pshort);
                 _read7BitEncodedStringFromStream(data5);
                 jjSTREAM param;
                 data5.pop(param);
