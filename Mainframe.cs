@@ -1799,6 +1799,31 @@ void main() {
                     NewJ2L(); //dump whatever parts of the level had already been loaded prior to this error
                     return;
                 }
+
+                // Wanted to do this check in J2L.OpenLevel, but can't because LevelIsReadable might add more tilesets.
+                if (J2L.TileCount > J2L.MaxTiles)
+                {
+                    const string maxTilesErrorMessage = "The tileset(s) for this level contain too many tiles for this level. This can happen if the tilesets were edited after this level was saved.";
+                    if (J2L.VersionType == Version.JJ2 && J2L.Tilesets.Count == 1 && J2L.Tilesets[0].VersionType == Version.TSF)
+                    {
+                        // We might be able to get the user out of this mess
+                        DialogResult result = MessageBox.Show(maxTilesErrorMessage + "\r\n\r\nWould you like to convert the level to the newer 1.24 (The Secret Files) format to try to fix this? Older clients that do not have Plus will not be able to play the level after conversion.", "Problem loading level", MessageBoxButtons.YesNo, MessageBoxIcon.Hand);
+                        if (result == DialogResult.Yes)
+                        {
+                            J2L.ChangeVersion(Version.TSF);
+                        }
+                        else
+                        {
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show(maxTilesErrorMessage, "This level cannot be loaded", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+                        return;
+                    }
+                }
+
                 //EventsFromIni = TexturedJ2L.ReadEventIni("MLLEProfile.ini");
                 //TexturedJ2L.GenerateEventNameTextures(ref eventtexturenumberlist, EventsFromIni);
                 //J2L = TentativeJ2L;
