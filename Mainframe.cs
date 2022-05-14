@@ -134,6 +134,8 @@ namespace MLLE
         private bool stijnVision = false;
         private int DifficultyShaderHandle;
         internal uint PlusTriggerZone = 0;
+        private bool KeyXPressed = false;
+        private bool KeyYPressed = false;
 
         private bool levelHasBeenModified = false;
         internal bool LevelHasBeenModified
@@ -743,6 +745,12 @@ void main() {
                         }
                         return true;
                     }
+                case Keys.X:
+                    KeyXPressed = true;
+                    return true;
+                case Keys.Y:
+                    KeyYPressed = true;
+                    return true;
 
                 case Keys.Left: { if (LastFocusedZone == FocusedZone.Level) try { LDScrollH.Value -= LDScrollH.SmallChange; } catch { LDScrollH.Value = 0; } return true; }
                 case Keys.Right: { if (LastFocusedZone == FocusedZone.Level) LDScrollH.Value = Math.Min(LDScrollH.Value + LDScrollH.SmallChange, LDScrollH.Maximum - LDScrollH.LargeChange + 1); return true; }
@@ -930,6 +938,12 @@ void main() {
                     break;
                 case Keys.P:
                     if (ParallaxDisplayMode == ParallaxMode.TemporaryParallax) ParallaxDisplayMode = ParallaxButton.Checked ? ParallaxMode.FullParallax : ParallaxMode.NoParallax;
+                    break;
+                case Keys.X:
+                    KeyXPressed = false;
+                    break;
+                case Keys.Y:
+                    KeyYPressed = false;
                     break;
                 default:
                     break;
@@ -2328,180 +2342,187 @@ void main() {
                     GL.Ortho(0, DrawingTools.Left, LevelDisplay.Height, 0, -1, 1);
                     GL.Viewport(0, 0, DrawingTools.Left, LevelDisplay.Height);
                     GL.Disable(EnableCap.ScissorTest);
-                    if (EventDisplayMode != 0 || ParallaxButton.Checked) GL.Disable(EnableCap.Blend);
-                    if (!(
-                        (PrevAtlas == AtlasID.Image && CurrentTilesetOverlay != TilesetOverlay.Masks)
-                        ||
-                        (PrevAtlas == AtlasID.Mask && CurrentTilesetOverlay == TilesetOverlay.Masks)
-                        ))
-                        SetTextureTo((CurrentTilesetOverlay == TilesetOverlay.Masks) ? AtlasID.Mask : AtlasID.Image);
-                    int tile = TilesetScrollbar.Value / 32 * 10;
-                    if (CurrentTilesetOverlay != TilesetOverlay.SmartTiles)
+                    if (!SnapEventsToGridToggle.Checked) //show nothing in the tileset pane at all
                     {
-                        if (RedrawTilesetHowManyTimes != 0)
+                        GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+                    }
+                    else
+                    {
+                        if (EventDisplayMode != 0 || ParallaxButton.Checked) GL.Disable(EnableCap.Blend);
+                        if (!(
+                            (PrevAtlas == AtlasID.Image && CurrentTilesetOverlay != TilesetOverlay.Masks)
+                            ||
+                            (PrevAtlas == AtlasID.Mask && CurrentTilesetOverlay == TilesetOverlay.Masks)
+                            ))
+                            SetTextureTo((CurrentTilesetOverlay == TilesetOverlay.Masks) ? AtlasID.Mask : AtlasID.Image);
+                        int tile = TilesetScrollbar.Value / 32 * 10;
+                        if (CurrentTilesetOverlay != TilesetOverlay.SmartTiles)
                         {
-                            #region draw tileset
-                            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-                            if (J2L.HasTiles && SnapEventsToGridToggle.Checked)
-                            {
-                                //uint height = ((prevatlas >= J2L.TileCount / 1030) ? J2L.TileCount % 1030 : 1030) / 10 * 32;
-
-                                double yfraction;
-                                double xfraction;
-                                for (int yoffset = -(TilesetScrollbar.Value % 32); yoffset < TilesetScrollbar.Height && tile < J2L.TileCount; tile += 10)
-                                {
-                                    var numberOfTilesToDraw = Math.Min(10, J2L.TileCount - tile); //normally 10, but could be less if TileCount isn't a multiple of 10 because you're working with multiple tilesets
-                                    xfraction = tile % J2L.AtlasLength * J2L.AtlasFraction;
-                                    yfraction = tile / J2L.AtlasLength * J2L.AtlasFraction;
-                                    if (tile % J2L.AtlasLength + numberOfTilesToDraw - 1 < J2L.AtlasLength)
-                                    {
-                                        GL.Begin(BeginMode.Quads);
-                                        GL.TexCoord2(xfraction + J2L.AtlasFraction * numberOfTilesToDraw, yfraction); GL.Vertex2(32 * numberOfTilesToDraw, yoffset);
-                                        GL.TexCoord2(xfraction, yfraction); GL.Vertex2(0, yoffset);
-                                        yfraction += J2L.AtlasFraction; yoffset += 32;
-                                        GL.TexCoord2(xfraction, yfraction); GL.Vertex2(0, yoffset);
-                                        GL.TexCoord2(xfraction + J2L.AtlasFraction * numberOfTilesToDraw, yfraction); GL.Vertex2(32 * numberOfTilesToDraw, yoffset);
-                                        GL.End();
-                                    }
-                                    else
-                                    {
-                                        var width = (J2L.AtlasLength - tile % J2L.AtlasLength);
-                                        GL.Begin(BeginMode.Quads);
-                                        GL.TexCoord2(xfraction + J2L.AtlasFraction * width, yfraction); GL.Vertex2(32 * width, yoffset);
-                                        GL.TexCoord2(xfraction, yfraction); GL.Vertex2(0, yoffset);
-                                        yfraction += J2L.AtlasFraction; yoffset += 32;
-                                        GL.TexCoord2(xfraction, yfraction); GL.Vertex2(0, yoffset);
-                                        GL.TexCoord2(xfraction + J2L.AtlasFraction * width, yfraction); GL.Vertex2(32 * width, yoffset);
-                                        GL.End();
-                                        xfraction = 0; yoffset -= 32;
-                                        GL.Begin(BeginMode.Quads);
-                                        GL.TexCoord2(xfraction + J2L.AtlasFraction * (numberOfTilesToDraw - width), yfraction); GL.Vertex2(32 * numberOfTilesToDraw, yoffset);
-                                        GL.TexCoord2(xfraction, yfraction); GL.Vertex2(32 * width, yoffset);
-                                        yfraction += J2L.AtlasFraction; yoffset += 32;
-                                        GL.TexCoord2(xfraction, yfraction); GL.Vertex2(32 * width, yoffset);
-                                        GL.TexCoord2(xfraction + J2L.AtlasFraction * (numberOfTilesToDraw - width), yfraction); GL.Vertex2(32 * numberOfTilesToDraw, yoffset);
-                                        GL.End();
-                                    }
-                                }
-                            }
-                            #endregion draw tileset
-                            if (CurrentTilesetOverlay == TilesetOverlay.TileTypes)
-                            {
-                                #region draw tile types
-                                GL.Enable(EnableCap.Blend);
-                                SetTextureTo(AtlasID.TileTypes);
-                                for (tile = TilesetScrollbar.Value / 32 * 10; tile / 10 * 32 - TilesetScrollbar.Value < LevelDisplay.Height + 31 && tile < J2L.MaxTiles; tile++)
-                                {
-                                    if (J2L.TileTypes[tile] != 0) DrawTileType(tile % 10 * 32, tile / 10 * 32 - TilesetScrollbar.Value, J2L.TileTypes[tile]);
-                                }
-                                SetTextureTo(AtlasID.Image);
-                                GL.Disable(EnableCap.Blend);
-                                #endregion draw tile types
-                            }
-                        }
-                        if (AnimatedTilesVisibleOnLeft)
-                        {
-                            #region draw animated tiles
-                            var count = Math.Min(J2L.NumberOfAnimations, (TilesetScrollbar.Height - AnimatedTilesDrawHeight + 31) / 32 * 10);
-                            int x = (int)(J2L.TileCount % 10) * 32, y = AnimatedTilesDrawHeight;
-                            for (byte i = 0; i < count; i++)
-                            {
-                                DrawTile(ref x, ref y, (ushort)(J2L.AnimOffset + i), 32, true);
-                                if (x == 288) { x = 0; y += 32; }
-                                else { x += 32; }
-                            }
-                            DrawColorRectangle(ref x, ref y, new Color4(24, 24, 48, 255));
-                            #endregion draw animated tiles
-                        }
-                        if (AnimationSettings.Visible) {
-                            #region draw current animation
-                            int y = AnimationSettings.Bottom - LevelDisplay.Top;
-                            int x = -AnimScrollbar.Value;
-                            DrawTile(ref x, ref y, WorkingAnimation.FrameList.Peek(), 32, true);
-                            x += 32;
-                            DrawColorRectangle(ref x, ref y, HotKolors[0], 32, 16);
-                            x += 16;
-                            for (byte i = 0; i < WorkingAnimation.FrameCount && x < AnimScrollbar.Width; i++, x += 32)
-                            {
-                                DrawTile(ref x, ref y, WorkingAnimation.Sequence[i], 32, true);
-                            }
-                            DrawColorRectangle(ref x, ref y, new Color4(24, 24, 48, 255));
-                            x = SelectedAnimationFrame * 32 + 48 - AnimScrollbar.Value;
-                            DrawColorRectangle(ref x, ref y, new Color4(255, 255, 255, 128));
-                            #endregion draw current animation
-                        }
-                        if (CurrentTilesetOverlay == TilesetOverlay.Events)
-                        {
-                            #region draw event names
                             if (RedrawTilesetHowManyTimes != 0)
                             {
-                                GL.Enable(EnableCap.Blend);
-                                SetTextureTo(AtlasID.EventNames);
-                                for (tile = TilesetScrollbar.Value / 32 * 10; tile / 10 * 32 - TilesetScrollbar.Value < LevelDisplay.Height + 31 && tile < J2L.MaxTiles; tile++)
+                                #region draw tileset
+                                GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+                                if (J2L.HasTiles)
                                 {
-                                    if (J2L.EventTiles[tile] != 0) DrawEvent(tile % 10 * 32, tile / 10 * 32 - TilesetScrollbar.Value, J2L.EventTiles[tile]);
+                                    //uint height = ((prevatlas >= J2L.TileCount / 1030) ? J2L.TileCount % 1030 : 1030) / 10 * 32;
+
+                                    double yfraction;
+                                    double xfraction;
+                                    for (int yoffset = -(TilesetScrollbar.Value % 32); yoffset < TilesetScrollbar.Height && tile < J2L.TileCount; tile += 10)
+                                    {
+                                        var numberOfTilesToDraw = Math.Min(10, J2L.TileCount - tile); //normally 10, but could be less if TileCount isn't a multiple of 10 because you're working with multiple tilesets
+                                        xfraction = tile % J2L.AtlasLength * J2L.AtlasFraction;
+                                        yfraction = tile / J2L.AtlasLength * J2L.AtlasFraction;
+                                        if (tile % J2L.AtlasLength + numberOfTilesToDraw - 1 < J2L.AtlasLength)
+                                        {
+                                            GL.Begin(BeginMode.Quads);
+                                            GL.TexCoord2(xfraction + J2L.AtlasFraction * numberOfTilesToDraw, yfraction); GL.Vertex2(32 * numberOfTilesToDraw, yoffset);
+                                            GL.TexCoord2(xfraction, yfraction); GL.Vertex2(0, yoffset);
+                                            yfraction += J2L.AtlasFraction; yoffset += 32;
+                                            GL.TexCoord2(xfraction, yfraction); GL.Vertex2(0, yoffset);
+                                            GL.TexCoord2(xfraction + J2L.AtlasFraction * numberOfTilesToDraw, yfraction); GL.Vertex2(32 * numberOfTilesToDraw, yoffset);
+                                            GL.End();
+                                        }
+                                        else
+                                        {
+                                            var width = (J2L.AtlasLength - tile % J2L.AtlasLength);
+                                            GL.Begin(BeginMode.Quads);
+                                            GL.TexCoord2(xfraction + J2L.AtlasFraction * width, yfraction); GL.Vertex2(32 * width, yoffset);
+                                            GL.TexCoord2(xfraction, yfraction); GL.Vertex2(0, yoffset);
+                                            yfraction += J2L.AtlasFraction; yoffset += 32;
+                                            GL.TexCoord2(xfraction, yfraction); GL.Vertex2(0, yoffset);
+                                            GL.TexCoord2(xfraction + J2L.AtlasFraction * width, yfraction); GL.Vertex2(32 * width, yoffset);
+                                            GL.End();
+                                            xfraction = 0; yoffset -= 32;
+                                            GL.Begin(BeginMode.Quads);
+                                            GL.TexCoord2(xfraction + J2L.AtlasFraction * (numberOfTilesToDraw - width), yfraction); GL.Vertex2(32 * numberOfTilesToDraw, yoffset);
+                                            GL.TexCoord2(xfraction, yfraction); GL.Vertex2(32 * width, yoffset);
+                                            yfraction += J2L.AtlasFraction; yoffset += 32;
+                                            GL.TexCoord2(xfraction, yfraction); GL.Vertex2(32 * width, yoffset);
+                                            GL.TexCoord2(xfraction + J2L.AtlasFraction * (numberOfTilesToDraw - width), yfraction); GL.Vertex2(32 * numberOfTilesToDraw, yoffset);
+                                            GL.End();
+                                        }
+                                    }
+                                }
+                                #endregion draw tileset
+                                if (CurrentTilesetOverlay == TilesetOverlay.TileTypes)
+                                {
+                                    #region draw tile types
+                                    GL.Enable(EnableCap.Blend);
+                                    SetTextureTo(AtlasID.TileTypes);
+                                    for (tile = TilesetScrollbar.Value / 32 * 10; tile / 10 * 32 - TilesetScrollbar.Value < LevelDisplay.Height + 31 && tile < J2L.MaxTiles; tile++)
+                                    {
+                                        if (J2L.TileTypes[tile] != 0) DrawTileType(tile % 10 * 32, tile / 10 * 32 - TilesetScrollbar.Value, J2L.TileTypes[tile]);
+                                    }
+                                    SetTextureTo(AtlasID.Image);
+                                    GL.Disable(EnableCap.Blend);
+                                    #endregion draw tile types
                                 }
                             }
                             if (AnimatedTilesVisibleOnLeft)
                             {
-                                if (RedrawTilesetHowManyTimes == 0)
+                                #region draw animated tiles
+                                var count = Math.Min(J2L.NumberOfAnimations, (TilesetScrollbar.Height - AnimatedTilesDrawHeight + 31) / 32 * 10);
+                                int x = (int)(J2L.TileCount % 10) * 32, y = AnimatedTilesDrawHeight;
+                                for (byte i = 0; i < count; i++)
                                 {
-                                    GL.Enable(EnableCap.Blend);
-                                    SetTextureTo(AtlasID.EventNames);
-                                }
-                                var count = J2L.AnimOffset + Math.Min(J2L.NumberOfAnimations, (TilesetScrollbar.Height - AnimatedTilesDrawHeight + 31) / 32 * 10);
-                                int x = 0, y = AnimatedTilesDrawHeight;
-                                for (int i = J2L.AnimOffset; i < count; i++)
-                                {
-                                    if (J2L.EventTiles[i] != 0) DrawEvent(x, y, J2L.EventTiles[i]);
+                                    DrawTile(ref x, ref y, (ushort)(J2L.AnimOffset + i), 32, true);
                                     if (x == 288) { x = 0; y += 32; }
                                     else { x += 32; }
                                 }
+                                DrawColorRectangle(ref x, ref y, new Color4(24, 24, 48, 255));
+                                #endregion draw animated tiles
                             }
-                            #endregion draw event names
+                            if (AnimationSettings.Visible) {
+                                #region draw current animation
+                                int y = AnimationSettings.Bottom - LevelDisplay.Top;
+                                int x = -AnimScrollbar.Value;
+                                DrawTile(ref x, ref y, WorkingAnimation.FrameList.Peek(), 32, true);
+                                x += 32;
+                                DrawColorRectangle(ref x, ref y, HotKolors[0], 32, 16);
+                                x += 16;
+                                for (byte i = 0; i < WorkingAnimation.FrameCount && x < AnimScrollbar.Width; i++, x += 32)
+                                {
+                                    DrawTile(ref x, ref y, WorkingAnimation.Sequence[i], 32, true);
+                                }
+                                DrawColorRectangle(ref x, ref y, new Color4(24, 24, 48, 255));
+                                x = SelectedAnimationFrame * 32 + 48 - AnimScrollbar.Value;
+                                DrawColorRectangle(ref x, ref y, new Color4(255, 255, 255, 128));
+                                #endregion draw current animation
+                            }
+                            if (CurrentTilesetOverlay == TilesetOverlay.Events)
+                            {
+                                #region draw event names
+                                if (RedrawTilesetHowManyTimes != 0)
+                                {
+                                    GL.Enable(EnableCap.Blend);
+                                    SetTextureTo(AtlasID.EventNames);
+                                    for (tile = TilesetScrollbar.Value / 32 * 10; tile / 10 * 32 - TilesetScrollbar.Value < LevelDisplay.Height + 31 && tile < J2L.MaxTiles; tile++)
+                                    {
+                                        if (J2L.EventTiles[tile] != 0) DrawEvent(tile % 10 * 32, tile / 10 * 32 - TilesetScrollbar.Value, J2L.EventTiles[tile]);
+                                    }
+                                }
+                                if (AnimatedTilesVisibleOnLeft)
+                                {
+                                    if (RedrawTilesetHowManyTimes == 0)
+                                    {
+                                        GL.Enable(EnableCap.Blend);
+                                        SetTextureTo(AtlasID.EventNames);
+                                    }
+                                    var count = J2L.AnimOffset + Math.Min(J2L.NumberOfAnimations, (TilesetScrollbar.Height - AnimatedTilesDrawHeight + 31) / 32 * 10);
+                                    int x = 0, y = AnimatedTilesDrawHeight;
+                                    for (int i = J2L.AnimOffset; i < count; i++)
+                                    {
+                                        if (J2L.EventTiles[i] != 0) DrawEvent(x, y, J2L.EventTiles[i]);
+                                        if (x == 288) { x = 0; y += 32; }
+                                        else { x += 32; }
+                                    }
+                                }
+                                #endregion draw event names
+                            }
+                            #region selection
+                            if (HowSelecting == FocusedZone.Tileset)
+                            {
+                                GL.Enable(EnableCap.Blend);
+                                int[] Rect = new int[4];
+                                Rect[0] = Math.Min(SelectionBoxCorners[0], SelectionBoxCorners[2]) * 32;
+                                Rect[1] = Math.Min(SelectionBoxCorners[1], SelectionBoxCorners[3]) * 32 - TilesetScrollbar.Value;
+                                Rect[2] = Math.Abs(SelectionBoxCorners[0] - SelectionBoxCorners[2]) * 32 + Rect[0];
+                                Rect[3] = Math.Abs(SelectionBoxCorners[1] - SelectionBoxCorners[3]) * 32 + Rect[1];
+                                DrawSelectionRectangle(Rect, 32);
+                                RedrawTilesetHowManyTimes = 2;
+                            }
+                            if (WhereSelected == FocusedZone.Tileset)
+                            {
+                                EmborderSelectedTiles(0, TilesetScrollbar.Value, 32, 320, LevelDisplay.Height);
+                                RedrawTilesetHowManyTimes = 2;
+                            }
+                            #endregion selection
                         }
-                        #region selection
-                        if (HowSelecting == FocusedZone.Tileset)
+                        else
                         {
-                            GL.Enable(EnableCap.Blend);
-                            int[] Rect = new int[4];
-                            Rect[0] = Math.Min(SelectionBoxCorners[0], SelectionBoxCorners[2]) * 32;
-                            Rect[1] = Math.Min(SelectionBoxCorners[1], SelectionBoxCorners[3]) * 32 - TilesetScrollbar.Value;
-                            Rect[2] = Math.Abs(SelectionBoxCorners[0] - SelectionBoxCorners[2]) * 32 + Rect[0];
-                            Rect[3] = Math.Abs(SelectionBoxCorners[1] - SelectionBoxCorners[3]) * 32 + Rect[1];
-                            DrawSelectionRectangle(Rect, 32);
-                            RedrawTilesetHowManyTimes = 2;
+                            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+                            int x = 7, y = 7;
+                            for (int i = 0; i < SmartTiles.Count; i++)
+                            {
+                                int previewTileID = 0;
+                                for (int yy = y; yy < y+96; yy += 32)
+                                    for (int xx = x; xx < x+96; xx += 32)
+                                        DrawTile(ref xx, ref yy, SmartTiles[i].PreviewTileIDs[previewTileID++], 32, true);
+                                if (x >= 200) { x = 7; y += 105; }
+                                else { x += 105; }
+                            }
+                            if (WhereSelected == FocusedZone.Tileset && CurrentStamp.Length > 0)
+                            {
+                                uint selectedSmartTileID = CurrentStamp[0][0].Event.Value.ID;
+                                GL.Translate(7 + (selectedSmartTileID%3) * 105, 7 + (selectedSmartTileID/3) * 105, 0);
+                                EmborderSelectedTiles(0,0, 32, 96,96);
+                                RedrawTilesetHowManyTimes = 2;
+                            }
                         }
-                        if (WhereSelected == FocusedZone.Tileset)
-                        {
-                            EmborderSelectedTiles(0, TilesetScrollbar.Value, 32, 320, LevelDisplay.Height);
-                            RedrawTilesetHowManyTimes = 2;
-                        }
-                        #endregion selection
+                        if (ParallaxDisplayMode != ParallaxMode.NoParallax) GL.Enable(EnableCap.Blend);
+                        if (RedrawTilesetHowManyTimes != 0) RedrawTilesetHowManyTimes--;
                     }
-                    else
-                    {
-                        GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-                        int x = 7, y = 7;
-                        for (int i = 0; i < SmartTiles.Count; i++)
-                        {
-                            int previewTileID = 0;
-                            for (int yy = y; yy < y+96; yy += 32)
-                                for (int xx = x; xx < x+96; xx += 32)
-                                    DrawTile(ref xx, ref yy, SmartTiles[i].PreviewTileIDs[previewTileID++], 32, true);
-                            if (x >= 200) { x = 7; y += 105; }
-                            else { x += 105; }
-                        }
-                        if (WhereSelected == FocusedZone.Tileset && CurrentStamp.Length > 0)
-                        {
-                            uint selectedSmartTileID = CurrentStamp[0][0].Event.Value.ID;
-                            GL.Translate(7 + (selectedSmartTileID%3) * 105, 7 + (selectedSmartTileID/3) * 105, 0);
-                            EmborderSelectedTiles(0,0, 32, 96,96);
-                            RedrawTilesetHowManyTimes = 2;
-                        }
-                    }
-                    if (ParallaxDisplayMode != ParallaxMode.NoParallax) GL.Enable(EnableCap.Blend);
-                    if (RedrawTilesetHowManyTimes != 0) RedrawTilesetHowManyTimes--;
                     SetupViewport();
                     GL.Enable(EnableCap.ScissorTest);
                 }
@@ -3146,6 +3167,13 @@ void main() {
                 LevelDisplay.ContextMenuStrip = SnapEventsToGridToggle.Checked ? LDContextMenu : null;
                 MouseTileX = (MousePixelX = Math.Max(0, (e.X - LDScrollH.Location.X + LDScrollH.Value))) / ZoomTileSize;
                 MouseTileY = (MousePixelY = Math.Max(0, (e.Y + LDScrollV.Value))) / ZoomTileSize;
+                if (!SnapEventsToGridToggle.Checked)
+                {
+                    if (KeyXPressed)
+                        MousePixelX = (MousePixelX & ~(ZoomTileSize - 1)) | (ZoomTileSize / 2);
+                    if (KeyYPressed)
+                        MousePixelY = (MousePixelY & ~(ZoomTileSize - 1)) | (ZoomTileSize / 2);
+                }
                 if (SafeToDisplay)
                 {
                     MouseTile = MouseTileX + MouseTileY * (int)CurrentLayer.Width;
@@ -3153,7 +3181,16 @@ void main() {
                 if (CurrentLayer == J2L.SpriteLayer && MouseTileX < J2L.SpriteLayer.Width && MouseTileX >= 0 && MouseTileY < J2L.SpriteLayer.Height && MouseTileY >= 0)
                 {
                     if (J2L.VersionType == Version.AGA) { MouseAGAEvent = J2L.AGA_EventMap[MouseTileX, MouseTileY]; }
-                    else MouseAGAEvent.ID = J2L.EventMap[MouseTileX, MouseTileY];
+                    else if (SnapEventsToGridToggle.Checked) MouseAGAEvent.ID = J2L.EventMap[MouseTileX, MouseTileY];
+                    else
+                    {
+                        OldMouseTile = -1; //always update
+                        int offgridIndex = FindOffgridObjectAtMouse();
+                        if (offgridIndex < 0)
+                            MouseAGAEvent.ID = J2L.EventMap[MouseTileX, MouseTileY];
+                        else
+                            MouseAGAEvent.ID = J2L.PlusPropertyList.OffGridObjects[offgridIndex].bits;
+                    }
                 }
                 else MouseAGAEvent.ID = 0;
                 if (HowSelecting == FocusedZone.Level) { SelectionBoxCorners[2] = MouseTileX; SelectionBoxCorners[3] = MouseTileY; }
@@ -3172,7 +3209,7 @@ void main() {
             else
                 MouseTilePrintout.Text = String.Format("({0}, {1})", MouseTileX, MouseTileY);
 
-            if (CurrentTilesetOverlay != TilesetOverlay.SmartTiles)
+            if (LastFocusedZone != FocusedZone.Tileset || CurrentTilesetOverlay != TilesetOverlay.SmartTiles)
                 MouseEventPrintout.Text = NameEvent(MouseAGAEvent.ID, "");
             else
                 MouseEventPrintout.Text = MouseTile < SmartTiles.Count ? SmartTiles[MouseTile].Name : "(none)";
@@ -3301,13 +3338,7 @@ void main() {
             if (J2L.VersionType == Version.AGA)
                 ActiveEvent = MouseAGAEvent;
             else
-            {
-                int offgridIndex = FindOffgridObjectAtMouse();
-                if (offgridIndex < 0)
-                    ActiveEvent.ID = MouseAGAEvent.ID;
-                else
-                    ActiveEvent.ID = J2L.PlusPropertyList.OffGridObjects[offgridIndex].bits;
-            }
+                ActiveEvent.ID = MouseAGAEvent.ID;
         }
         private void PasteEventAtMouse()
         {
@@ -3712,12 +3743,23 @@ void main() {
             {
                 if (LastFocusedZone == FocusedZone.Level)
                 {
-                    if (e.Button == MouseButtons.Left && Control.ModifierKeys != Keys.Control)
-                        PasteEventAtMouse();
-                    else if (e.Button == MouseButtons.Right)
-                        DeleteEventAtMouse();
-                    else
-                        SelectEventAtMouse();
+                    switch (e.Button)
+                    {
+                        case MouseButtons.Left:
+                            if (Control.ModifierKeys == Keys.Control)
+                                GrabEventAtMouse();
+                            else
+                                PasteEventAtMouse();
+                            break;
+                        case MouseButtons.Right:
+                            if (Control.ModifierKeys == Keys.Control)
+                                GrabEventAtMouse();
+                            DeleteEventAtMouse();
+                            break;
+                        default:
+                            SelectEventAtMouse();
+                            break;
+                    }
                 }
             }
             else if (LastFocusedZone == FocusedZone.Tileset && CurrentTilesetOverlay == TilesetOverlay.SmartTiles)
