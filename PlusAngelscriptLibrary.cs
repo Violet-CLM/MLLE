@@ -328,6 +328,19 @@ namespace MLLE {{
     }}
     void _spawnOffgrid(uint i) {{
         const _offgridObject@ og = _offGridObjects[i];
+        const int difficulty = og.params & 0x300;
+        if (difficulty != 0 && (jjGameMode == GAME::SP || jjGameMode == GAME::COOP || jjGameConnection == GAME::LOCAL)) {{
+            if (difficulty == 0x100) {{
+                if (jjDifficulty > 0)
+                    return;
+            }} else if (difficulty == 0x200) {{
+                if (jjDifficulty < 2)
+                    return;
+            }} else {{
+                if (jjGameConnection == GAME::LOCAL && jjLocalPlayerCount == 1)
+                    return;
+            }}
+        }}
         const uint xTile = uint(og.xPos) >> 5, yTile = uint(og.yPos) >> 5;
         const int realEvent = jjParameterGet(xTile,yTile, -12,32);
         jjParameterSet(xTile,yTile, -12,32, og.params);
