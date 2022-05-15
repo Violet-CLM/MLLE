@@ -277,11 +277,99 @@ namespace MLLE {{
             else
                 jjObjectPresets[254].behavior = BEHAVIOR::INACTIVE;
             @_offGridObjects = array<_offgridObject>();
+            array<uint8> animSetsToLoad(256, 0);
+            animSetsToLoad[OBJECT::BONUSPOST] = ANIM::BONUS;
+            animSetsToLoad[OBJECT::SWINGINGVINE] = ANIM::VINE;
+            animSetsToLoad[OBJECT::TUFTURT] = ANIM::TUFTUR;
+            animSetsToLoad[OBJECT::LABRAT] = ANIM::LABRAT;
+            animSetsToLoad[OBJECT::LIZARD] = ANIM::LIZARD;
+            animSetsToLoad[OBJECT::FLOATLIZARD] = ANIM::LIZARD;
+            animSetsToLoad[OBJECT::SUCKER] = ANIM::SUCKER;
+            animSetsToLoad[OBJECT::CATERPILLAR] = ANIM::CATERPIL;
+            animSetsToLoad[OBJECT::SMOKERING] = ANIM::CATERPIL;
+            animSetsToLoad[OBJECT::CHESHIRE1] = ANIM::CAT;
+            animSetsToLoad[OBJECT::CHESHIRE2] = ANIM::CAT2;
+            animSetsToLoad[OBJECT::HATTER] = ANIM::HATTER;
+            animSetsToLoad[OBJECT::SKELETON] = ANIM::SKELETON;
+            animSetsToLoad[OBJECT::DOGGYDOGG] = ANIM::DOG;
+            animSetsToLoad[OBJECT::NORMTURTLE] = ANIM::TURTLE;
+            animSetsToLoad[OBJECT::TURTLESHELL] = ANIM::TURTLE;
+            animSetsToLoad[OBJECT::DEMON] = ANIM::DEMON;
+            animSetsToLoad[OBJECT::STEAM] = ANIM::STEAM;
+            animSetsToLoad[OBJECT::ROTATINGROCK] = ANIM::ROCK;
+            animSetsToLoad[OBJECT::HELMUT] = ANIM::HELMUT;
+            animSetsToLoad[OBJECT::BILSY] = ANIM::BILSBOSS;
+            animSetsToLoad[OBJECT::BAT] = ANIM::BAT;
+            animSetsToLoad[OBJECT::BEE] = ANIM::BUMBEE;
+            animSetsToLoad[OBJECT::DRAGONFLY] = ANIM::DRAGFLY;
+            animSetsToLoad[OBJECT::FATCHICK] = ANIM::FATCHK;
+            animSetsToLoad[OBJECT::FENCER] = ANIM::FENCER;
+            animSetsToLoad[OBJECT::FISH] = ANIM::FISH;
+            animSetsToLoad[OBJECT::MOTH] = ANIM::MOTH;
+            animSetsToLoad[OBJECT::RAPIER] = ANIM::RAPIER;
+            animSetsToLoad[OBJECT::SPARK] = ANIM::SPARK;
+            animSetsToLoad[OBJECT::LEFTPADDLE] = ANIM::PINBALL;
+            animSetsToLoad[OBJECT::RIGHTPADDLE] = ANIM::PINBALL;
+            animSetsToLoad[OBJECT::FIVEHUNDREDBUMP] = ANIM::PINBALL;
+            animSetsToLoad[OBJECT::CARROTBUMP] = ANIM::PINBALL;
+            animSetsToLoad[OBJECT::QUEEN] = ANIM::QUEEN;
+            animSetsToLoad[OBJECT::FLOATSUCKER] = ANIM::SUCKER;
+            animSetsToLoad[OBJECT::BRIDGE] = ANIM::BRIDGE;
+            animSetsToLoad[OBJECT::MONKEY] = ANIM::MONKEY;
+            animSetsToLoad[OBJECT::STANDMONKEY] = ANIM::MONKEY;
+            animSetsToLoad[OBJECT::RAVEN] = ANIM::RAVEN;
+            animSetsToLoad[OBJECT::TUBETURTLE] = ANIM::TUBETURT;
+            animSetsToLoad[OBJECT::SMALLTREE] = ANIM::SMALTREE;
+            animSetsToLoad[OBJECT::DIAMONDUSPOLE] = ANIM::DIAMPOLE;
+            animSetsToLoad[OBJECT::PSYCHPOLE] = ANIM::PSYCHPOLE;
+            animSetsToLoad[OBJECT::CARROTUSPOLE] = ANIM::CARROTPOLE;
+            animSetsToLoad[OBJECT::JUNGLEPOLE] = ANIM::JUNGLEPOLE;
+            animSetsToLoad[OBJECT::UTERUS] = ANIM::UTERUS;
+            animSetsToLoad[OBJECT::UTERUSSPIKEBALL] = ANIM::UTERUS;
+            animSetsToLoad[OBJECT::CRAB] = ANIM::UTERUS;
+            animSetsToLoad[OBJECT::ROBOT] = ANIM::ROBOT;
+            animSetsToLoad[OBJECT::DEVANROBOT] = ANIM::DEVAN;
+            animSetsToLoad[OBJECT::FRUITPLATFORM] = ANIM::FRUITPLAT;
+            animSetsToLoad[OBJECT::BOLLPLATFORM] = ANIM::BOLLPLAT;
+            animSetsToLoad[OBJECT::GRASSPLATFORM] = ANIM::GRASSPLAT;
+            animSetsToLoad[OBJECT::PINKPLATFORM] = ANIM::PINKPLAT;
+            animSetsToLoad[OBJECT::SONICPLATFORM] = ANIM::SONICPLAT;
+            animSetsToLoad[OBJECT::SPIKEPLATFORM] = ANIM::SPIKEPLAT;
+            animSetsToLoad[OBJECT::SPIKEBOLL] = ANIM::SPIKEBOLL;
+            animSetsToLoad[OBJECT::SPIKEBOLL3D] = ANIM::SPIKEBOLL3D;
+            animSetsToLoad[OBJECT::EVA] = ANIM::EVA;
+            animSetsToLoad[OBJECT::WITCH] = ANIM::WITCH;
+            animSetsToLoad[OBJECT::ROCKETTURTLE] = ANIM::ROCKTURT;
+            animSetsToLoad[OBJECT::BUBBA] = ANIM::BUBBA;
+            animSetsToLoad[OBJECT::DEVILDEVAN] = ANIM::DEVILDEVAN;
+            animSetsToLoad[OBJECT::TUFBOSS] = ANIM::TUFBOSS;
+            animSetsToLoad[OBJECT::BIGROCK] = ANIM::BIGROCK;
+            animSetsToLoad[OBJECT::BIGBOX] = ANIM::BIGBOX;
+            animSetsToLoad[OBJECT::BOLLY] = ANIM::SONCSHIP;
+            animSetsToLoad[OBJECT::BUTTERFLY] = ANIM::BUTTERFLY;
+            animSetsToLoad[OBJECT::BEEBOY] = ANIM::BEEBOY;
+            animSetsToLoad[OBJECT::XMASNORMTURTLE] = ANIM::XTURTLE;
+            animSetsToLoad[OBJECT::XMASLIZARD] = ANIM::XLIZARD;
+            animSetsToLoad[OBJECT::XMASFLOATLIZARD] = ANIM::XLIZARD;
+            animSetsToLoad[OBJECT::XMASBILSY] = ANIM::XBILSY;
+            animSetsToLoad[OBJECT::CAT] = ANIM::ZDOG;
+            animSetsToLoad[OBJECT::PACMANGHOST] = ANIM::ZSPARK;
             do {{
                 uint16 xPos; data5.pop(xPos);
                 uint16 yPos; data5.pop(yPos);
                 int32 params; data5.pop(params);
                 _offGridObjects.insertLast(_offgridObject(xPos, yPos, params));
+                uint8 eventID = params;
+                if (eventID == OBJECT::GENERATOR) eventID = params >> 12;
+                if (animSetsToLoad[eventID] != 0) {{
+                    jjOBJ@ preset = jjObjectPresets[eventID];
+                    if (preset.curAnim < 100) {{
+                        preset.curFrame += preset.determineCurAnim(animSetsToLoad[eventID], preset.curAnim);
+                        if (eventID >= OBJECT::FRUITPLATFORM && eventID <= OBJECT::SPIKEBOLL3D)
+                            preset.killAnim = preset.curAnim + 1;
+                    }}
+                    animSetsToLoad[eventID] = 0;
+                }}
             }} while (--numberOfObjects != 0);
         }}
 
