@@ -244,7 +244,7 @@ namespace MLLE {{
                 data5.pop(ammoCrateEventID);
                 if (ammoCrateEventID > 32) {{
                     jjOBJ@ preset = jjObjectPresets[ammoCrateEventID];
-                    preset.behavior = function(obj) {{ if (obj.state == STATE::DEACTIVATE) obj.eventID = obj.counterEnd; obj.behave(BEHAVIOR::AMMO15); }};
+                    preset.behavior = AmmoCrate(ammoCrateEventID);
                     preset.playerHandling = HANDLING::SPECIAL;
                     preset.scriptedCollisions = false;
                     preset.direction = 1;
@@ -252,7 +252,6 @@ namespace MLLE {{
                     preset.curFrame = jjAnimations[preset.curAnim = (i == 7) ? (jjAnimSets[ANIM::PICKUPS] + 59) : (jjAnimSets[ANIM::PLUS_COMMON] + i - 8)] + (preset.frameID = 0);
                     preset.killAnim = jjAnimSets[ANIM::AMMO] + 71;
                     preset.eventID = OBJECT::ICEAMMO15;
-                    preset.counterEnd = ammoCrateEventID;
                     preset.var[2] = 31 + i;
                     preset.var[3] = i - 1;
                     preset.points = 300;
@@ -301,6 +300,17 @@ namespace MLLE {{
 
     void ReapplyPalette() {{
         Palette.apply();
+    }}
+
+    class AmmoCrate : jjBEHAVIORINTERFACE {{
+        uint8 realEventID;
+        AmmoCrate(uint8 r) {{ realEventID = r; }}
+        bool onIsSolid(jjOBJ@) {{ return true; }}
+        void onBehave(jjOBJ@ obj) {{
+            if (obj.state == STATE::DEACTIVATE)
+                obj.eventID = realEventID;
+            obj.behave(BEHAVIOR::AMMO15);
+        }}
     }}
 
     void SpawnOffgrids() {{
