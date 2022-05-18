@@ -401,7 +401,7 @@ class TexturedJ2L : J2LFile
             TileTypeAtlas[version] = TexUtil.CreateTextureFromBitmap(type_bmp);
         }
     }
-    public static void ProduceEventIcons(Version version, string[][] StringList, ref bool[] whichAreDrawnAsText, bool overwriteOldImage = false, byte? GeneratorEventID = null, string spriteFilename = "")
+    public static void ProduceEventIcons(Version version, string[][] StringList, ref bool[] whichAreDrawnAsText, ref System.Windows.Forms.ImageList treeImageList, bool overwriteOldImage = false, byte? GeneratorEventID = null, string spriteFilename = "")
     {
         if (!overwriteOldImage && EventAtlas[version] != 0)
             return;
@@ -420,6 +420,7 @@ class TexturedJ2L : J2LFile
         {
             formatEvent.Alignment = formatEvent.LineAlignment = StringAlignment.Center;
             totalgfx.Clear(Color.FromArgb(128, 0, 0, 0));
+            treeImageList.Images.Add(new Bitmap(1, 1)); //event 0
             for (int i = 1; i < 256; i++)
             {
                 if (i != GeneratorEventID)
@@ -435,11 +436,89 @@ class TexturedJ2L : J2LFile
                         if (text_bmp2.Width == 1024) //not AGA
                             if (whichAreDrawnAsText[i] || ((text_bmp2.GetPixel(i % 16 * 64 + 32, i / 16 * 64 + 32).A == 0) && (whichAreDrawnAsText[i] = true))) { //a custom event, or else there's no sprite defined for this event, as measured by checking the middle pixel
                                 int x = i % 16 * 64 + 16, y = i / 16 * 64 + 16;
-                                totalgfx2.Clip = new Region(new Rectangle(x-16,y-16, 64, 64));
+                                totalgfx2.Clip = new Region(new Rectangle(x - 16, y - 16, 64, 64));
                                 totalgfx2.Clear(Color.Transparent);
                                 totalgfx2.ResetClip();
                                 totalgfx2.FillRegion(new SolidBrush(Color.FromArgb(128, 0, 0, 0)), new Region(new Rectangle(x, y, 32, 32)));
-                                totalgfx2.DrawImage(single_bmp, x,y,32,32); //use the standard text preview instead
+                                totalgfx2.DrawImage(single_bmp, x, y, 32, 32); //use the standard text preview instead
+                                treeImageList.Images.Add(new Bitmap(1,1));
+                            } else {
+                                Bitmap dst = new Bitmap(16,16);
+                                int srcLeft = i % 16 * 64;
+                                int srcTop = i / 16 * 64;
+                                var bottom = 0;
+                                var left = 64;
+                                var right = 0;
+                                var top = 64;
+
+                                var bmpData = text_bmp2.LockBits(new Rectangle(srcLeft, srcTop, 64, 64), System.Drawing.Imaging.ImageLockMode.ReadOnly, text_bmp2.PixelFormat);
+                                unsafe //https://stackoverflow.com/questions/248141/remove-surrounding-whitespace-from-an-image
+                                {
+                                    var dataPtr = (byte*)bmpData.Scan0;
+
+                                    for (var y = 0; y < 64; y++)
+                                    {
+                                        for (var x = 0; x < 64; x++)
+                                        {
+                                            if ((dataPtr + x*4)[3] != 0)
+                                            {
+                                                if (x < left)
+                                                    left = x;
+
+                                                if (x >= right)
+                                                    right = x + 1;
+
+                                                if (y < top)
+                                                    top = y;
+
+                                                if (y >= bottom)
+                                                    bottom = y + 1;
+                                            }
+                                        }
+
+                                        dataPtr += bmpData.Stride;
+                                    }
+                                }
+                                text_bmp2.UnlockBits(bmpData);
+                                if (right != 0)
+                                {
+                                    int width = right - left;
+                                    int height = bottom - top;
+                                    if (width < 16)
+                                    {
+                                        left -= (16 - width) / 2;
+                                        width = 16;
+                                    }
+                                    if (height < 16)
+                                    {
+                                        top -= (16 - height) / 2;
+                                        height = 16;
+                                    }
+                                    if (width > height)
+                                    {
+                                        top -= (width - height) / 2;
+                                        height = width;
+                                    }
+                                    else if (height > width)
+                                    {
+                                        left -= (height - width) / 2;
+                                        width = height;
+                                    }
+                                    using (Graphics g = Graphics.FromImage(dst))
+                                    {
+                                        g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                                        g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
+                                        g.DrawImage(
+                                            text_bmp2,
+                                            new Rectangle(0, 0, dst.Width, dst.Height),
+                                            new Rectangle(srcLeft + left, srcTop + top, width, height),
+                                            GraphicsUnit.Pixel
+                                        );
+                                    }
+                                    treeImageList.Images.Add(dst);
+                                }
+                                else
+                                    treeImageList.Images.Add(new Bitmap(1, 1));
                             }
                     }
                 }
@@ -450,6 +529,7 @@ class TexturedJ2L : J2LFile
                     using (Bitmap single_bmp = new Bitmap(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Generator.png")))
                     totalgfx.DrawImage(single_bmp, i % 16 * 32, i / 16 * 32);
                     totalgfx.ResetClip();
+                    treeImageList.Images.Add(new Bitmap(1, 1));
                 }
             }
             if (EventAtlas[version] != 0)

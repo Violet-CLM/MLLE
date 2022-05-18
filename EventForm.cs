@@ -39,7 +39,7 @@ namespace MLLE
         bool SafeToCalculate = false, SafeToCacheOldParameters = false;
         static List<UInt32> LastUsedEvents = new List<UInt32>(0);
         List<Mainframe.StringAndIndex> FlatEventList;
-        public EventForm(Mainframe parent, TreeNode[] nodes, Version theVersion, AGAEvent inputevent, string[][] eventStrings)
+        public EventForm(Mainframe parent, TreeNode[] nodes, Version theVersion, AGAEvent inputevent, string[][] eventStrings, ImageList treeImageList)
         {
             WorkingEvent = inputevent;
             SourceForm = parent;
@@ -60,7 +60,10 @@ namespace MLLE
             }
             else textBox1.Dispose();
             CombosPointingToCombos = new Dictionary<ComboBox, List<ComboBox>> { { comboBox1, new List<ComboBox>() } };
-            Tree.Nodes.Add("0", "(none)"); //always present
+            Tree.ImageList = treeImageList;
+            Tree.ShowLines = treeImageList == null;
+            Tree.Indent = (treeImageList == null) ? 19 : 8;
+            Tree.Nodes.Add("0", "(none)", 0); //always present
             Tree.Nodes.AddRange(nodes);
             Tree.Sort();
             if (version != Version.AGA)

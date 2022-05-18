@@ -114,6 +114,14 @@ namespace MLLE
         //{Version.AGA, null},
         {Version.GorH, null},
         };
+        public static Dictionary<Version, ImageList> EventsAsImagesForEventFormTreeView = new Dictionary<Version, ImageList> {
+        {Version.BC, null},
+        {Version.O, null},
+        {Version.JJ2, null },
+        {Version.TSF, null},
+        //{Version.AGA, null},
+        {Version.GorH, null},
+        };
         public static string[] DefaultFileExtensionStrings = new string[] { ".j2l", ".lvl", ".lev" };
         public byte? GeneratorEventID = null, StartPositionEventID = null;
 
@@ -237,13 +245,17 @@ namespace MLLE
             TexturedJ2L.ProduceTypeIcons(version, ini);
 
             bool[] customEvents = ProduceLevelSpecificEventStringListIfAppropriate(version);
+            ImageList treeImageList = new ImageList();
             bool differentEventListFromPreviousLevelInThisVersion = customEvents != null;
             if (!differentEventListFromPreviousLevelInThisVersion)
                 LevelSpecificEventStringList = TexturedJ2L.IniEventListing[version];
-            TexturedJ2L.ProduceEventIcons(version, LevelSpecificEventStringList, ref customEvents, differentEventListFromPreviousLevelInThisVersion, GeneratorEventID, baseEventListFilename);
+            TexturedJ2L.ProduceEventIcons(version, LevelSpecificEventStringList, ref customEvents, ref treeImageList, differentEventListFromPreviousLevelInThisVersion, GeneratorEventID, baseEventListFilename);
             if ((TreeStructure[version] == null) || differentEventListFromPreviousLevelInThisVersion)
             {
                 EventsDrawnAsStringsInStijnVision[version] = customEvents;
+                treeImageList.ImageSize = new Size(16, 16);
+                EventsAsImagesForEventFormTreeView[version] = treeImageList;
+                
                 List<TreeNode>[] TreeNodeLists = TreeStructure[version] = new List<TreeNode>[2];
                 List<StringAndIndex> FlatEventList = FlatEventLists[version] = new List<StringAndIndex>();
                 TreeNodeLists[0] = new List<TreeNode>();
@@ -273,8 +285,8 @@ namespace MLLE
                     if (LevelSpecificEventStringList[i][2].Trim() != "")
                     {
                         FlatEventList.Add(new StringAndIndex(LevelSpecificEventStringList[i][0], i));
-                        TreeNodeLists[0].First((TreeNode node) => { return node.Nodes.ContainsKey(LevelSpecificEventStringList[i][2].TrimEnd()); }).Nodes.Find(LevelSpecificEventStringList[i][2].TrimEnd(), false)[0].Nodes.Add(i.ToString(), LevelSpecificEventStringList[i][0].TrimEnd());
-                        if (LevelSpecificEventStringList[i][1] == "+") TreeNodeLists[1].First((TreeNode node) => { return node.Nodes.ContainsKey(LevelSpecificEventStringList[i][2].TrimEnd()); }).Nodes.Find(LevelSpecificEventStringList[i][2].TrimEnd(), false)[0].Nodes.Add(i.ToString(), LevelSpecificEventStringList[i][0].TrimEnd());
+                        TreeNodeLists[0].First((TreeNode node) => { return node.Nodes.ContainsKey(LevelSpecificEventStringList[i][2].TrimEnd()); }).Nodes.Find(LevelSpecificEventStringList[i][2].TrimEnd(), false)[0].Nodes.Add(i.ToString(), LevelSpecificEventStringList[i][0].TrimEnd(), i,i);
+                        if (LevelSpecificEventStringList[i][1] == "+") TreeNodeLists[1].First((TreeNode node) => { return node.Nodes.ContainsKey(LevelSpecificEventStringList[i][2].TrimEnd()); }).Nodes.Find(LevelSpecificEventStringList[i][2].TrimEnd(), false)[0].Nodes.Add(i.ToString(), LevelSpecificEventStringList[i][0].TrimEnd(), i,i);
                     }
                 }
             }
@@ -3374,7 +3386,7 @@ void main() {
         private void SelectEventAtMouse()
         {
             _suspendEvent.Reset();
-            EventForm EF = new EventForm(this, TreeStructure[J2L.VersionType][(J2L.LevelMode == 1) ? 1 : 0].ToArray(), J2L.VersionType, (J2L.VersionType == Version.AGA && MouseAGAEvent.Bits == null) ? new AGAEvent(0) : MouseAGAEvent, LevelSpecificEventStringList);
+            EventForm EF = new EventForm(this, TreeStructure[J2L.VersionType][(J2L.LevelMode == 1) ? 1 : 0].ToArray(), J2L.VersionType, (J2L.VersionType == Version.AGA && MouseAGAEvent.Bits == null) ? new AGAEvent(0) : SnapEventsToGridToggle.Checked ? MouseAGAEvent : ActiveEvent, LevelSpecificEventStringList, stijnVision ? EventsAsImagesForEventFormTreeView[J2L.VersionType] : null);
             EF.ShowDialog();
             if (SelectReturnAGAEvent != null) {
                 ActiveEvent = (AGAEvent)SelectReturnAGAEvent;

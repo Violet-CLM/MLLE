@@ -64,6 +64,7 @@
             // Tree
             // 
             this.Tree.AllowDrop = true;
+            this.Tree.HideSelection = false;
             this.Tree.Location = new System.Drawing.Point(12, 31);
             this.Tree.Name = "Tree";
             this.Tree.Size = new System.Drawing.Size(329, 233);
