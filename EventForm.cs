@@ -62,7 +62,8 @@ namespace MLLE
             CombosPointingToCombos = new Dictionary<ComboBox, List<ComboBox>> { { comboBox1, new List<ComboBox>() } };
             Tree.ImageList = treeImageList;
             Tree.ShowLines = treeImageList == null;
-            Tree.Indent = (treeImageList == null) ? 19 : 8;
+            Tree.Indent = (treeImageList == null) ? 19 : 6;
+            Tree.DrawMode = (treeImageList == null) ? TreeViewDrawMode.Normal : TreeViewDrawMode.OwnerDrawAll;
             Tree.Nodes.Add("0", "(none)", 0); //always present
             Tree.Nodes.AddRange(nodes);
             Tree.Sort();
@@ -74,7 +75,7 @@ namespace MLLE
                     var recentNodes = new TreeNode("[Recent]");
                     foreach (UInt32 lastEvent in LastUsedEvents)
                     {
-                        var node = new TreeNode(SourceForm.NameEvent(lastEvent, "(unknown)"));
+                        var node = new TreeNode(SourceForm.NameEvent(lastEvent, "(unknown)"), (int)lastEvent & 0xFF, (int)lastEvent & 0xFF);
                         node.Tag = lastEvent;
                         recentNodes.Nodes.Add(node);
                     }
@@ -627,6 +628,32 @@ namespace MLLE
                     EventNameInput.Clear();
                     Tree.SelectedNode = results[0];
                 }
+            }
+        }
+
+        private void Tree_DrawNode(object sender, DrawTreeNodeEventArgs e)
+        {
+            if (!(e.DrawDefault = e.Node.Nodes.Count == 0)) //folder node
+            {
+                Rectangle bounds = e.Bounds;
+                if (e.Node.Parent != null) bounds.X += Tree.Indent;
+                ControlPaint.DrawCheckBox(//https://stackoverflow.com/questions/22382471/ownerdrawn-treeview-winforms
+                    e.Graphics,
+                    new Rectangle(
+                        new Point(bounds.X, bounds.Y + 1),
+                        Tree.ImageList.ImageSize
+                    ),
+                    e.Node.IsExpanded ? ButtonState.Checked : ButtonState.Normal
+                );
+                bounds.X += Tree.ImageList.ImageSize.Width + 2;
+                Font font = new Font((sender as TreeView).Font, FontStyle.Bold);
+                if (e.Node.IsSelected)
+                    e.Graphics.FillRectangle(SystemBrushes.Highlight, bounds);
+                StringFormat stringFormat = new StringFormat
+                {
+                    LineAlignment = StringAlignment.Center
+                };
+                e.Graphics.DrawString(e.Node.Text, font, e.Node.IsSelected ? SystemBrushes.HighlightText : SystemBrushes.ControlText, bounds, stringFormat);
             }
         }
 

@@ -246,6 +246,8 @@ namespace MLLE
 
             bool[] customEvents = ProduceLevelSpecificEventStringListIfAppropriate(version);
             ImageList treeImageList = new ImageList();
+            int treeImageSize = (version != Version.BC) ? 16 : 32;
+            treeImageList.ImageSize = new Size(treeImageSize, treeImageSize);
             bool differentEventListFromPreviousLevelInThisVersion = customEvents != null;
             if (!differentEventListFromPreviousLevelInThisVersion)
                 LevelSpecificEventStringList = TexturedJ2L.IniEventListing[version];
@@ -253,7 +255,6 @@ namespace MLLE
             if ((TreeStructure[version] == null) || differentEventListFromPreviousLevelInThisVersion)
             {
                 EventsDrawnAsStringsInStijnVision[version] = customEvents;
-                treeImageList.ImageSize = new Size(16, 16);
                 EventsAsImagesForEventFormTreeView[version] = treeImageList;
                 
                 List<TreeNode>[] TreeNodeLists = TreeStructure[version] = new List<TreeNode>[2];

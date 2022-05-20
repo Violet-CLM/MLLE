@@ -443,7 +443,8 @@ class TexturedJ2L : J2LFile
                                 totalgfx2.DrawImage(single_bmp, x, y, 32, 32); //use the standard text preview instead
                                 treeImageList.Images.Add(new Bitmap(1,1));
                             } else {
-                                Bitmap dst = new Bitmap(16,16);
+                                int size = treeImageList.ImageSize.Height; //same as width
+                                Bitmap dst = new Bitmap(size, size);
                                 int srcLeft = i % 16 * 64;
                                 int srcTop = i / 16 * 64;
                                 var bottom = 0;
@@ -484,15 +485,15 @@ class TexturedJ2L : J2LFile
                                 {
                                     int width = right - left;
                                     int height = bottom - top;
-                                    if (width < 16)
+                                    if (width < size)
                                     {
-                                        left -= (16 - width) / 2;
-                                        width = 16;
+                                        left -= (size - width) / 2;
+                                        width = size;
                                     }
-                                    if (height < 16)
+                                    if (height < size)
                                     {
-                                        top -= (16 - height) / 2;
-                                        height = 16;
+                                        top -= (size - height) / 2;
+                                        height = size;
                                     }
                                     if (width > height)
                                     {
