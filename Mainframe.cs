@@ -488,6 +488,7 @@ namespace MLLE
             ProcessIniColorsIntoHotKolor(0, "Colors", "Deadspace");
             ProcessIniColorsIntoHotKolor(1, "Colors", "Tile0");
             ProcessIniColorsIntoHotKolor(2, "Colors", "Transparent");
+            OffgridInstructions.BackColor = HotKolors[0];
             TexUtil.InitTexturing();
             J2L = new TexturedJ2L();
             TexturedJ2L.DeadspaceColor = HotKolors[0];
@@ -4001,6 +4002,7 @@ void main() {
         private void SnapEventsToGridToggle_CheckedChanged(object sender, EventArgs e)
         {
             EventsButton.Enabled = DropdownEvents.Enabled = TilesetSelection.Enabled = TilesetOverlaySelection.Enabled = TilesetScrollbar.Enabled = SnapEventsToGridToggle.Checked;
+            OffgridInstructions.Visible = !SnapEventsToGridToggle.Checked;
             RedrawTilesetHowManyTimes = 2;
 
             if (!SnapEventsToGridToggle.Checked)

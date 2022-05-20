@@ -211,6 +211,7 @@
             this.AnimScrollbar = new System.Windows.Forms.HScrollBar();
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
+            this.OffgridInstructions = new System.Windows.Forms.Label();
             this.MainMenu.SuspendLayout();
             this.DrawingTools.SuspendLayout();
             this.StatusBar.SuspendLayout();
@@ -1872,12 +1873,27 @@
             // 
             this.folderBrowserDialog1.ShowNewFolderButton = false;
             // 
+            // OffgridInstructions
+            // 
+            this.OffgridInstructions.AutoSize = true;
+            this.OffgridInstructions.Font = new System.Drawing.Font("Microsoft Sans Serif", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.OffgridInstructions.ForeColor = System.Drawing.Color.White;
+            this.OffgridInstructions.Location = new System.Drawing.Point(12, 60);
+            this.OffgridInstructions.Name = "OffgridInstructions";
+            this.OffgridInstructions.Size = new System.Drawing.Size(198, 225);
+            this.OffgridInstructions.TabIndex = 14;
+            this.OffgridInstructions.Text = "Left-click: Place\r\nMiddle-click: Select\r\nRight-click: Delete\r\nCtrl-left-click: Co" +
+    "py\r\nCtrl-right-click: Cut\r\nE: Select\r\nShift+E: Place\r\nCtrl+E: Copy\r\nX/Y: Center";
+            this.OffgridInstructions.Visible = false;
+            // 
             // Mainframe
             // 
             this.AllowDrop = true;
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackColor = System.Drawing.SystemColors.ControlLight;
             this.ClientSize = new System.Drawing.Size(844, 296);
+            this.Controls.Add(this.StatusBar);
+            this.Controls.Add(this.OffgridInstructions);
             this.Controls.Add(this.AnimScrollbar);
             this.Controls.Add(this.AnimationSettings);
             this.Controls.Add(this.button1);
@@ -1887,7 +1903,6 @@
             this.Controls.Add(this.DrawingTools);
             this.Controls.Add(this.TilesetToolstrip);
             this.Controls.Add(this.DisplayToolstrip);
-            this.Controls.Add(this.StatusBar);
             this.Controls.Add(this.MainMenu);
             this.Controls.Add(this.LevelDisplay);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
@@ -2108,5 +2123,6 @@
         private System.Windows.Forms.ToolStripMenuItem resetImagesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem stijnVisionToolStripMenuItem;
         private System.Windows.Forms.ToolStripButton SnapEventsToGridToggle;
+        private System.Windows.Forms.Label OffgridInstructions;
     }
 }
