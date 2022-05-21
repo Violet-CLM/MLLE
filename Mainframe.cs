@@ -1707,15 +1707,22 @@ void main() {
                 return EnableableBools[version][EnableableTitles.BoolDevelopingForPlus];
             return new IniFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MLLEProfile - " + ProfileName[J2L.VersionType] + ".ini")).IniReadValue("Enableable", "BoolDevelopingForPlus") != "";
         }
-        private bool EmptyActionStackIfItContainsVerticallyFlippedTiles(Stack<LayerAndSpecificTiles> stack)
+        private bool EmptyActionStackIfItContainsPlusFeatures(Stack<LayerAndSpecificTiles> stack)
         {
             foreach (var stamp in stack)
+            {
+                if (stamp.Offgrid)
+                {
+                    stack.Clear();
+                    return true;
+                }
                 foreach (var specific in stamp.Specifics)
                     if ((specific.Value.Tile & 0x2000) != 0)
                     {
                         stack.Clear();
                         return true;
                     }
+            }
             return false;
         }
         internal void ChangeVersion(Version nuversion)
@@ -1743,8 +1750,8 @@ void main() {
                             foreach (var axis in CurrentStamp)
                                 for (int i = 0; i < axis.Length; ++i)
                                     axis[i].Tile &= unchecked((ushort)~0x2000);
-                            EmptyActionStackIfItContainsVerticallyFlippedTiles(Undoable);
-                            EmptyActionStackIfItContainsVerticallyFlippedTiles(Redoable);
+                            EmptyActionStackIfItContainsPlusFeatures(Undoable);
+                            EmptyActionStackIfItContainsPlusFeatures(Redoable);
                         }
                         if (J2L.HasTiles)
                             J2L.Generate_Textures(); //in case any tile types are treated differently in this new version
@@ -3318,7 +3325,8 @@ void main() {
         {
             internal Layer Layer;
             internal Dictionary<Point, TileAndEvent> Specifics;
-            public LayerAndSpecificTiles(Layer l) { Layer = l; Specifics = new Dictionary<Point, TileAndEvent>(); }
+            internal bool Offgrid;
+            public LayerAndSpecificTiles(Layer l) { Layer = l; Specifics = new Dictionary<Point, TileAndEvent>(); Offgrid = false; }
         }
         internal Stack<LayerAndSpecificTiles> Undoable = new Stack<LayerAndSpecificTiles>(), Redoable = new Stack<LayerAndSpecificTiles>();
         TileAndEvent[][] CurrentStamp = new TileAndEvent[0][];
@@ -3360,11 +3368,10 @@ void main() {
             else if (LastFocusedZone == FocusedZone.Level && CurrentLayer == J2L.SpriteLayer)
             {
                 if (MouseTileX >= 0 && MouseTileY >= 0 && MouseTileX < CurrentLayer.Width && MouseTileY < CurrentLayer.Height) {
+                    LayerAndSpecificTiles actionCenter = new LayerAndSpecificTiles(J2L.SpriteLayer);
                     if (SnapEventsToGridToggle.Checked)
                     {
-                        LayerAndSpecificTiles actionCenter = new LayerAndSpecificTiles(J2L.SpriteLayer);
                         actionCenter.Specifics[new Point(MouseTileX, MouseTileY)] = new TileAndEvent(CurrentLayer.TileMap[MouseTileX, MouseTileY], (J2L.VersionType != Version.AGA) ? new AGAEvent(J2L.EventMap[MouseTileX, MouseTileY]) : J2L.AGA_EventMap[MouseTileX, MouseTileY]);
-                        Undoable.Push(actionCenter);
                         if (J2L.VersionType == Version.AGA)
                         {
                             J2L.AGA_EventMap[MouseTileX, MouseTileY] = MouseAGAEvent = ActiveEvent;
@@ -3376,10 +3383,13 @@ void main() {
                     }
                     else
                     {
-                        Undoable.Clear(); //idk
-                        J2L.PlusPropertyList.OffGridObjects.Add(new PlusPropertyList.OffGridObject(GetLevelPixelCoordinatesAtMouse(), ActiveEvent.ID));
+                        Point location = GetLevelPixelCoordinatesAtMouse();
+                        actionCenter.Offgrid = true;
+                        actionCenter.Specifics[location] = new TileAndEvent((ushort)J2L.PlusPropertyList.OffGridObjects.Count, 0);
+                        J2L.PlusPropertyList.OffGridObjects.Add(new PlusPropertyList.OffGridObject(location, ActiveEvent.ID));
                     }
                     LevelHasBeenModified = true;
+                    Undoable.Push(actionCenter);
                     Redoable.Clear();
                 }
             }
@@ -3400,23 +3410,31 @@ void main() {
         }
         private void DeleteEventAtMouse() //only can get called when SnapToGrid is unchecked
         {
+            LayerAndSpecificTiles actionCenter = new LayerAndSpecificTiles(J2L.SpriteLayer);
             int offgridIndex = FindOffgridObjectAtMouse();
             if (offgridIndex >= 0)
+            {
+                actionCenter.Offgrid = true;
+                actionCenter.Specifics[J2L.PlusPropertyList.OffGridObjects[offgridIndex].location] = new TileAndEvent((ushort)offgridIndex, J2L.PlusPropertyList.OffGridObjects[offgridIndex].bits);
                 J2L.PlusPropertyList.OffGridObjects.RemoveAt(offgridIndex);
+            }
             else if (
-                LastFocusedZone == FocusedZone.Level &&
-                CurrentLayer == J2L.SpriteLayer &&
-                MouseTileX >= 0 && MouseTileY >= 0 &&
-                MouseTileX < CurrentLayer.Width && MouseTileY < CurrentLayer.Height &&
-                J2L.EventMap[MouseTileX, MouseTileY] != 0
+               LastFocusedZone == FocusedZone.Level &&
+               CurrentLayer == J2L.SpriteLayer &&
+               MouseTileX >= 0 && MouseTileY >= 0 &&
+               MouseTileX < CurrentLayer.Width && MouseTileY < CurrentLayer.Height &&
+               J2L.EventMap[MouseTileX, MouseTileY] != 0
             )
+            {
+                actionCenter.Specifics[new Point(MouseTileX, MouseTileY)] = new TileAndEvent(CurrentLayer.TileMap[MouseTileX, MouseTileY], J2L.EventMap[MouseTileX, MouseTileY]);
                 J2L.EventMap[MouseTileX, MouseTileY] = MouseAGAEvent.ID = 0;
+            }
             else
                 return;
 
             LevelHasBeenModified = true;
+            Undoable.Push(actionCenter);
             Redoable.Clear();
-            Undoable.Clear();
         }
         #endregion Event Editing
 
@@ -4165,18 +4183,39 @@ void main() {
             if (grabFrom.Count > 0)
             {
                 LayerAndSpecificTiles ReplacedActions = grabFrom.Pop(), NewActions = new LayerAndSpecificTiles(ReplacedActions.Layer);
-                var tileMap = ReplacedActions.Layer.TileMap;
-                foreach (Point p in ReplacedActions.Specifics.Keys)
+                if (!ReplacedActions.Offgrid)
                 {
-                    ushort tileID = tileMap[p.X, p.Y];
-                    if (ReplacedActions.Layer != J2L.SpriteLayer) NewActions.Specifics.Add(p, new TileAndEvent(tileID, 0));
-                    else if (J2L.VersionType == Version.AGA) NewActions.Specifics.Add(p, new TileAndEvent(tileID, J2L.AGA_EventMap[p.X, p.Y]));
-                    else NewActions.Specifics.Add(p, new TileAndEvent(tileID, J2L.EventMap[p.X, p.Y]));
-                    tileMap[p.X, p.Y] = ReplacedActions.Specifics[p].Tile;
-                    if (ReplacedActions.Layer == J2L.SpriteLayer)
+                    var tileMap = ReplacedActions.Layer.TileMap;
+                    foreach (Point p in ReplacedActions.Specifics.Keys)
                     {
-                        if (J2L.VersionType == Version.AGA) J2L.AGA_EventMap[p.X, p.Y] = ((AGAEvent)ReplacedActions.Specifics[p].Event);
-                        else J2L.EventMap[p.X, p.Y] = ((AGAEvent)ReplacedActions.Specifics[p].Event).ID;
+                        ushort tileID = tileMap[p.X, p.Y];
+                        if (ReplacedActions.Layer != J2L.SpriteLayer) NewActions.Specifics.Add(p, new TileAndEvent(tileID, 0));
+                        else if (J2L.VersionType == Version.AGA) NewActions.Specifics.Add(p, new TileAndEvent(tileID, J2L.AGA_EventMap[p.X, p.Y]));
+                        else NewActions.Specifics.Add(p, new TileAndEvent(tileID, J2L.EventMap[p.X, p.Y]));
+                        tileMap[p.X, p.Y] = ReplacedActions.Specifics[p].Tile;
+                        if (ReplacedActions.Layer == J2L.SpriteLayer)
+                        {
+                            if (J2L.VersionType == Version.AGA) J2L.AGA_EventMap[p.X, p.Y] = ((AGAEvent)ReplacedActions.Specifics[p].Event);
+                            else J2L.EventMap[p.X, p.Y] = ((AGAEvent)ReplacedActions.Specifics[p].Event).ID;
+                        }
+                    }
+                }
+                else
+                {
+                    NewActions.Offgrid = true;
+                    foreach (Point p in ReplacedActions.Specifics.Keys) //though there will only be one......
+                    {
+                        var effect = ReplacedActions.Specifics[p];
+                        if (effect.Event.Value.ID == 0)
+                        {
+                            NewActions.Specifics.Add(p, new TileAndEvent(effect.Tile, J2L.PlusPropertyList.OffGridObjects[effect.Tile].bits));
+                            J2L.PlusPropertyList.OffGridObjects.RemoveAt(effect.Tile);
+                        }
+                        else
+                        {
+                            NewActions.Specifics.Add(p, new TileAndEvent(effect.Tile, 0));
+                            J2L.PlusPropertyList.OffGridObjects.Insert(effect.Tile, new PlusPropertyList.OffGridObject(p, effect.Event.Value.ID));
+                        }
                     }
                 }
                 putInto.Push(NewActions);
