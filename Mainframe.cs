@@ -3359,7 +3359,7 @@ void main() {
         private void GrabEventAtMouse() {
             if (J2L.VersionType == Version.AGA)
                 ActiveEvent = MouseAGAEvent;
-            else
+            else if (!(!SnapEventsToGridToggle.Checked && (MouseAGAEvent.ID & 0xFF) == 0))
                 ActiveEvent.ID = MouseAGAEvent.ID;
         }
         private void PasteEventAtMouse()
