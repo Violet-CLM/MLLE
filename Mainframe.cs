@@ -3607,11 +3607,11 @@ void main() {
                     if (result == DialogResult.OK)
                     {
                         for (ushort x = 0; x < layer.TileMap.GetLength(0); x++) for (ushort y = 0; y < layer.TileMap.GetLength(1); y++) ActOnATile(x, y, 0, 0, ActionCenter, true);
-                    }
-                    if (layer == J2L.SpriteLayer && J2L.PlusPropertyList.OffGridObjects.Count > 0)
-                    {
-                        J2L.PlusPropertyList.OffGridObjects.Clear();
-                        LevelHasBeenModified = true;
+                        if (layer == J2L.SpriteLayer && J2L.PlusPropertyList.OffGridObjects.Count > 0)
+                        {
+                            J2L.PlusPropertyList.OffGridObjects.Clear();
+                            LevelHasBeenModified = true;
+                        }
                     }
                     _suspendEvent.Set();
                 }
