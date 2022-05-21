@@ -1932,7 +1932,11 @@ void main() {
                 DialogResult result = SaveJ2LDialog.ShowDialog();
                 _suspendEvent.Set();
                 if (result == DialogResult.OK)
+                {
+                    if (Path.GetFileName(SaveJ2LDialog.FileName).Length > 31 && MessageBox.Show("The filename you chose is too long and will crash the game.\r\nDo you want to pick a different filename?", "Filename too long", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+                        return AskUserForJ2LFilenameIfNecessary(alwaysNecessary);
                     return SaveJ2LDialog.FileName;
+                }
                 return null;
             }
             return J2L.FullFilePath;
