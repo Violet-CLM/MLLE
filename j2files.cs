@@ -155,7 +155,7 @@ partial class J2TFile : J2File
     {
         FilenameOnly = Path.GetFileName(FullFilePath = filename);
         Encoding encoding = FileEncoding;
-        using (BinaryReader binreader = new BinaryReader(File.Open(filename, FileMode.Open, FileAccess.Read), encoding))
+        using (BinaryReader binreader = new BinaryReader(File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read), encoding))
         {
             #region header
             Header = (binreader.PeekChar() == 32) ? new string(binreader.ReadChars(180)) : "";
@@ -1348,7 +1348,7 @@ class J2LFile : J2File
     public OpeningResults OpenLevel(string filename, ref byte[] Data5, string password = null, Dictionary<Version, string> defaultDirectories = null, Encoding encoding = null, uint? SecurityStringOverride = null, bool onlyInterestedInData1 = false)
     {
         encoding = encoding ?? FileEncoding;
-        using (BinaryReader binreader = new BinaryReader(File.Open(filename, FileMode.Open, FileAccess.Read), encoding))
+        using (BinaryReader binreader = new BinaryReader(File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read), encoding))
         {
             FilenameOnly = Path.GetFileName(FullFilePath = filename);
             bool[] hasTiles = new bool[DefaultLayers.Length]; //only needed for loading; Layer has its own read-only HasTiles

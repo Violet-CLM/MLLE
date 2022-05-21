@@ -119,7 +119,7 @@ namespace MLLE
                     PaletteImage.Palette = new J2TFile(filepath).Palette;
                 }
                 else
-                    using (BinaryReader binreader = new BinaryReader(File.Open(filepath, FileMode.Open, FileAccess.Read), J2TFile.FileEncoding))
+                    using (BinaryReader binreader = new BinaryReader(File.Open(filepath, FileMode.Open, FileAccess.Read, FileShare.Read), J2TFile.FileEncoding))
                     {
                         if (binreader.BaseStream.Length < 1024)
                             return;

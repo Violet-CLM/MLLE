@@ -664,7 +664,7 @@ namespace MLLE
         {
             if (j2a == null)
             {
-                j2a = new BinaryReader(File.Open(Path.Combine(SourceForm.DefaultDirectories[version], "Anims.j2a"), FileMode.Open, FileAccess.Read), J2File.FileEncoding);
+                j2a = new BinaryReader(File.Open(Path.Combine(SourceForm.DefaultDirectories[version], "Anims.j2a"), FileMode.Open, FileAccess.Read, FileShare.Read), J2File.FileEncoding);
                 j2a.ReadBytes(24);
                 sets = j2a.ReadInt32();
             }

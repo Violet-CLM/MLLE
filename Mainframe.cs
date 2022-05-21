@@ -392,7 +392,7 @@ namespace MLLE
             AllTilesetLists[version] = new NameAndFilename[AllTilesets.Count];
             for (int i = 0; i < AllTilesets.Count; i++)
             {
-                BinaryReader file = new BinaryReader(File.Open(AllTilesets[i], FileMode.Open, FileAccess.Read), J2File.FileEncoding);
+                BinaryReader file = new BinaryReader(File.Open(AllTilesets[i], FileMode.Open, FileAccess.Read, FileShare.Read), J2File.FileEncoding);
                 file.ReadBytes((file.PeekChar() == 32) ? 188 : 8);
                 AllTilesetLists[version][i] = new NameAndFilename(new string(file.ReadChars(32)).TrimEnd('\0'), AllTilesets[i]);
                 file.Close();
