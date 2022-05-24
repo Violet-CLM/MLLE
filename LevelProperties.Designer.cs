@@ -55,6 +55,8 @@
             this.radioButton2 = new System.Windows.Forms.RadioButton();
             this.radioButton1 = new System.Windows.Forms.RadioButton();
             this.OpenMusicDialog = new System.Windows.Forms.OpenFileDialog();
+            this.label8 = new System.Windows.Forms.Label();
+            this.Arguments = new System.Windows.Forms.TextBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.MinLight)).BeginInit();
@@ -85,6 +87,8 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.label8);
+            this.groupBox1.Controls.Add(this.Arguments);
             this.groupBox1.Controls.Add(this.HideHCL);
             this.groupBox1.Controls.Add(this.NextLevel);
             this.groupBox1.Controls.Add(this.IsMultiplayer);
@@ -102,7 +106,7 @@
             this.groupBox1.Controls.Add(this.LevelName);
             this.groupBox1.Location = new System.Drawing.Point(13, 13);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(257, 174);
+            this.groupBox1.Size = new System.Drawing.Size(257, 200);
             this.groupBox1.TabIndex = 2;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "General";
@@ -110,7 +114,7 @@
             // HideHCL
             // 
             this.HideHCL.AutoSize = true;
-            this.HideHCL.Location = new System.Drawing.Point(10, 150);
+            this.HideHCL.Location = new System.Drawing.Point(10, 176);
             this.HideHCL.Name = "HideHCL";
             this.HideHCL.Size = new System.Drawing.Size(164, 17);
             this.HideHCL.TabIndex = 10;
@@ -132,7 +136,7 @@
             // IsMultiplayer
             // 
             this.IsMultiplayer.AutoSize = true;
-            this.IsMultiplayer.Location = new System.Drawing.Point(174, 150);
+            this.IsMultiplayer.Location = new System.Drawing.Point(174, 176);
             this.IsMultiplayer.Name = "IsMultiplayer";
             this.IsMultiplayer.Size = new System.Drawing.Size(76, 17);
             this.IsMultiplayer.TabIndex = 11;
@@ -252,7 +256,7 @@
             this.groupBox2.Controls.Add(this.StartLight);
             this.groupBox2.Controls.Add(this.label7);
             this.groupBox2.Controls.Add(this.label6);
-            this.groupBox2.Location = new System.Drawing.Point(13, 194);
+            this.groupBox2.Location = new System.Drawing.Point(13, 220);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(110, 74);
             this.groupBox2.TabIndex = 3;
@@ -315,7 +319,7 @@
             // 
             this.groupBox3.Controls.Add(this.radioButton2);
             this.groupBox3.Controls.Add(this.radioButton1);
-            this.groupBox3.Location = new System.Drawing.Point(130, 194);
+            this.groupBox3.Location = new System.Drawing.Point(130, 220);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(140, 74);
             this.groupBox3.TabIndex = 4;
@@ -351,13 +355,29 @@
             this.OpenMusicDialog.FilterIndex = 2;
             this.OpenMusicDialog.Title = "Open";
             // 
+            // label8
+            // 
+            this.label8.Location = new System.Drawing.Point(7, 150);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(63, 13);
+            this.label8.TabIndex = 12;
+            this.label8.Text = "CmdLnArgs";
+            // 
+            // Arguments
+            // 
+            this.Arguments.Location = new System.Drawing.Point(75, 150);
+            this.Arguments.MaxLength = 31;
+            this.Arguments.Name = "Arguments";
+            this.Arguments.Size = new System.Drawing.Size(176, 20);
+            this.Arguments.TabIndex = 13;
+            // 
             // LevelProperties
             // 
             this.AcceptButton = this.ButtonOK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
-            this.ClientSize = new System.Drawing.Size(364, 283);
+            this.ClientSize = new System.Drawing.Size(364, 309);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
@@ -412,5 +432,7 @@
         private System.Windows.Forms.RadioButton radioButton1;
         private System.Windows.Forms.CheckBox IsMultiplayer;
         private System.Windows.Forms.OpenFileDialog OpenMusicDialog;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.TextBox Arguments;
     }
 }
