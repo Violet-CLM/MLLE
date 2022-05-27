@@ -514,7 +514,7 @@ namespace MLLE {{
 #pragma require 'SEweapon.asc'
 shared interface MLLEWeaponApply { bool Apply(uint, se::WeaponHook@ = null, jjSTREAM@ = null, uint8 = 0); }";
 
-        static readonly string TagForProgrammaticallyAddedLines = " ///@MLLE-Generated\r\n";
+        static readonly internal string TagForProgrammaticallyAddedLines = " ///@MLLE-Generated\r\n";
         static string GetPragmaInclude(string filename)
         {
             return "#include \"" + filename + "\"";
@@ -709,8 +709,10 @@ shared interface MLLEWeaponApply { bool Apply(uint, se::WeaponHook@ = null, jjST
                 "^[^\\n]*(" +
                     "///@MLLE-Generated" + //get rid of all lines that end in the "///@MLLE-Generated" tag
                     "|" +
+                    "///@SaveAndRunArgs" + //older versions before 2.18
+                    "|" +
                     "#include\\s+['\"]MLLE-Include-\\d+\\.\\d+\\.asc['\"]" + //get rid of existing #include calls to MLLE-Include, especially if they referenced older/newer versions of the file
-                ")[^\\n]*\\r?\\n?", RegexOptions.Multiline).Replace(fileContents, "");
+                ")[^\\n]*\\r?\\n?", RegexOptions.Multiline | RegexOptions.IgnoreCase).Replace(fileContents, "");
         }
     }
 }

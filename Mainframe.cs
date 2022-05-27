@@ -348,7 +348,7 @@ namespace MLLE
                     {
                         var fileContents = System.IO.File.ReadAllText(scriptFilepath, J2LFile.FileEncoding) + "\n";
                         if (scriptID == 0) { //primary script only
-                            System.Text.RegularExpressions.Match match = System.Text.RegularExpressions.Regex.Match(fileContents, @"//[!/][ \t]*[\\@]SaveAndRunArgs[ \t]+([^\r\n]*)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                            System.Text.RegularExpressions.Match match = System.Text.RegularExpressions.Regex.Match(fileContents, @"//[!/][ \t]*[\\@]SaveAndRunArgs[ \t]+(.*?)\s*(//|\r?\n)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
                             if (match.Success)
                                 CommandLineArguments = match.Groups[1].ToString();
                         }
@@ -1996,16 +1996,9 @@ void main() {
                             .ToString()
                             .Replace('/', Path.DirectorySeparatorChar)
                     );
-                    string extraArgs = EnableableStrings[J2L.VersionType][EnableableTitles.SaveAndRunArgs];
-                    string originalScriptFilePath = Path.ChangeExtension(J2L.FullFilePath, ".j2as");
-                    if (File.Exists(originalScriptFilePath))
-                    {
-                        System.Text.RegularExpressions.MatchCollection matches = null;
-                        if (System.IO.File.ReadAllLines(originalScriptFilePath).Any(l => (matches = System.Text.RegularExpressions.Regex.Matches(l, @"//[!/][ \t]*[\\@]SaveAndRunArgs[ \t]+(.+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase)).Count != 0))
-                        {
-                            extraArgs = matches[0].Groups[1].ToString();
-                        }
-                    }
+                    string extraArgs = J2L.PlusPropertyList.CommandLineArguments;
+                    if (extraArgs == string.Empty)
+                        extraArgs = EnableableStrings[J2L.VersionType][EnableableTitles.SaveAndRunArgs];
                     var pro = new System.Diagnostics.Process();
                     pro.StartInfo.WorkingDirectory = DefaultDirectories[J2L.VersionType];
                     pro.StartInfo.FileName = EnableableStrings[J2L.VersionType][EnableableTitles.SaveAndRun];
@@ -2163,6 +2156,8 @@ void main() {
                 string originalFileContents = fileContents;
 
                 PlusPropertyList.RemovePriorReferencesToMLLELibrary(ref fileContents);
+                if (J2L.PlusPropertyList.CommandLineArguments != string.Empty)
+                    fileContents = "///@SaveAndRunArgs " + J2L.PlusPropertyList.CommandLineArguments + PlusPropertyList.TagForProgrammaticallyAddedLines + fileContents;
                 if (Data5 != null)
                     J2L.PlusPropertyList.SaveLibrary(ref fileContents, scriptFilepath, J2L.Tilesets, (J2L.AllLayers.Count(l => !l.isDefault) + 7) / 8, CustomWeapons);
 
