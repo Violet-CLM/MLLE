@@ -144,6 +144,7 @@ namespace MLLE
         internal uint PlusTriggerZone = 0;
         private bool KeyXPressed = false;
         private bool KeyYPressed = false;
+        private bool KeyTabPressed = false;
 
         private bool levelHasBeenModified = false;
         internal bool LevelHasBeenModified
@@ -771,6 +772,9 @@ void main() {
                 case Keys.Y:
                     KeyYPressed = true;
                     return true;
+                case Keys.Tab:
+                    KeyTabPressed = true;
+                    return true;
 
                 case Keys.Left: { if (LastFocusedZone == FocusedZone.Level) try { LDScrollH.Value -= LDScrollH.SmallChange; } catch { LDScrollH.Value = 0; } return true; }
                 case Keys.Right: { if (LastFocusedZone == FocusedZone.Level) LDScrollH.Value = Math.Min(LDScrollH.Value + LDScrollH.SmallChange, LDScrollH.Maximum - LDScrollH.LargeChange + 1); return true; }
@@ -964,6 +968,9 @@ void main() {
                     break;
                 case Keys.Y:
                     KeyYPressed = false;
+                    break;
+                case Keys.Tab:
+                    KeyTabPressed = false;
                     break;
                 default:
                     break;
@@ -3163,7 +3170,13 @@ void main() {
         bool HoveringOverAnimationAreaOfTilesetPane = false;
         private void LevelDisplay_MouseMove(object sender, System.Windows.Forms.MouseEventArgs e)
         {
-            if (e.X <= DrawingTools.Left)
+            if (MouseHeldDownTabDragging != null)
+            {
+                MakeProposedScrollbarValueWork(LDScrollH, LDScrollH.Value + (MouseHeldDownTabDragging.Value.X - e.Location.X));
+                MakeProposedScrollbarValueWork(LDScrollV, LDScrollV.Value + (MouseHeldDownTabDragging.Value.Y - e.Location.Y));
+                MouseHeldDownTabDragging = e.Location;
+            }
+            else if (e.X <= DrawingTools.Left)
             {
                 if (AnimationSettings.Visible && e.Y + LevelDisplay.Top > AnimationSettings.Top)
                 {
@@ -3782,6 +3795,7 @@ void main() {
         }
 
         bool MouseHeldDownSelection = false, MouseHeldDownAction = false;
+        Point? MouseHeldDownTabDragging = null;
         ToolStripButton DeepEditingTool, VisibleEditingTool;
 
         private void CommaPressed(uint eventID) {
@@ -3799,7 +3813,11 @@ void main() {
 
         private void LevelDisplay_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
         {
-            if (!SnapEventsToGridToggle.Checked)
+            if (LastFocusedZone == FocusedZone.Level && KeyTabPressed)
+            {
+                MouseHeldDownTabDragging = e.Location;
+            }
+            else if (!SnapEventsToGridToggle.Checked)
             {
                 if (LastFocusedZone == FocusedZone.Level)
                 {
@@ -3860,6 +3878,7 @@ void main() {
 
         private void LevelDisplay_MouseUp(object sender, System.Windows.Forms.MouseEventArgs e)
         {
+            MouseHeldDownTabDragging = null;
             if (e.Button == MouseButtons.Right) return;
             if (LastFocusedZone == FocusedZone.Tileset && CurrentTilesetOverlay == TilesetOverlay.SmartTiles) return;
             MouseHeldDownAction = false;
