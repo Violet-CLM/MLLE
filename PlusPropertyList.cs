@@ -392,6 +392,7 @@ namespace MLLE
                 WaterGradientStop = Color.Black;
                 Gun7Crate = Gun7Crate = Gun9Crate = 0;
                 Palette = null;
+                ReapplyPalette = true;
                 Weapons = WeaponDefaults.Select(w => w.Clone()).ToArray();
                 weaponHookPrefix = -1;
                 OffGridObjects = new List<OffGridObject>();
@@ -516,6 +517,7 @@ namespace MLLE
                     WaterGradientStop.ToArgb() != comparableBlack ||
                     Gun7Crate != 0 || Gun8Crate != 0 || Gun9Crate != 0 ||
                     Palette != null ||
+                    //ReapplyPalette only is meaningful if Palette != null, so we don't check it separately
                     ColorRemappings.FirstOrDefault(it => it != null) != null ||
                     TileImages.FirstOrDefault(it => it != null) != null ||
                     TileMasks.FirstOrDefault(it => it != null) != null ||
@@ -745,6 +747,8 @@ namespace MLLE
                         Palette = new Palette(data5bodyreader, true);
                         if (data5Version >= 0x106)
                             ReapplyPalette = data5bodyreader.ReadBoolean();
+                        else
+                            ReapplyPalette = false;
                     }
 
                     for (int i = 0; i < Mainframe.RecolorableSpriteNames.Length; ++i)

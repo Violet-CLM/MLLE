@@ -611,7 +611,7 @@ shared interface MLLEWeaponApply { bool Apply(uint, se::WeaponHook@ = null, jjST
 
             bool[] hooksNeeded = IncludeHookSpecs.Select(ss => weaponLibrary && ss.WeaponhookMethod && customWeapons.Any(cw => cw != null && ss.WeaponIniHookIdentifier.Match(cw.Hooks).Success)).ToArray();
             hooksNeeded[3] = weaponLibrary; //onDrawAmmo is used by ALL custom weapons
-            hooksNeeded[5] = ReapplyPalette;
+            hooksNeeded[5] = (Palette != null) && ReapplyPalette;
             hooksNeeded[6] = hooksNeeded[7] = OffGridObjects.Count > 0;
 
             for (int specID = 0; specID < IncludeHookSpecs.Length; ++specID)
