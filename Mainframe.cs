@@ -244,7 +244,7 @@ namespace MLLE
             TexturedJ2L.ProduceEventStringsFromIni(version, baseIni, ini);
             TexturedJ2L.ProduceTypeIcons(version, ini);
 
-            bool[] customEvents = ProduceLevelSpecificEventStringListIfAppropriate(version);
+            bool[] customEvents = ProduceLevelSpecificEventStringListIfAppropriate(version, out J2L.PlusPropertyList.CommandLineArguments);
             ImageList treeImageList = new ImageList();
             int treeImageSize = (version != Version.BC) ? 16 : 32;
             treeImageList.ImageSize = new Size(treeImageSize, treeImageSize);
@@ -327,9 +327,10 @@ namespace MLLE
             }
         }
         string[][] LevelSpecificEventStringList;
-        private bool[] ProduceLevelSpecificEventStringListIfAppropriate(Version version)
+        private bool[] ProduceLevelSpecificEventStringListIfAppropriate(Version version, out string CommandLineArguments)
         {
             string[][] defaults = TexturedJ2L.IniEventListing[version];
+            CommandLineArguments = string.Empty;
             if (VersionIsPlusCompatible(version)) //otherwise there won't be any script file/s to worry about at all
             {
                 bool[] whichAreCustom = new bool[256];
@@ -346,6 +347,11 @@ namespace MLLE
                     if (File.Exists(scriptFilepath))
                     {
                         var fileContents = System.IO.File.ReadAllText(scriptFilepath, J2LFile.FileEncoding) + "\n";
+                        if (scriptID == 0) { //primary script only
+                            System.Text.RegularExpressions.Match match = System.Text.RegularExpressions.Regex.Match(fileContents, @"//[!/][ \t]*[\\@]SaveAndRunArgs[ \t]+([^\r\n]*)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                            if (match.Success)
+                                CommandLineArguments = match.Groups[1].ToString();
+                        }
                         foreach (System.Text.RegularExpressions.Match match in System.Text.RegularExpressions.Regex.Matches(fileContents, "#include\\s+(['\"])(.+?)\\1", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
                             if (allIncludedLibraries.Add(match.Groups[2].Value)) //haven't seen this filename before
                                 scriptFilepaths.Add(Path.Combine(Path.GetDirectoryName(J2L.FullFilePath), match.Groups[2].Value)); //come back to this script later in the loop

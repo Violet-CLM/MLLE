@@ -328,6 +328,9 @@ namespace MLLE
         [Browsable(false)]
         internal Weapon[] Weapons;
 
+        [Browsable(false)]
+        internal string CommandLineArguments;
+
         const float DefaultWaterLevel = 0x7FFF;
         public PlusPropertyList(PlusPropertyList? other) : this()
         {
@@ -375,6 +378,7 @@ namespace MLLE
 
                 Weapons = other.Value.Weapons.Select(w => w.Clone()).ToArray();
                 OffGridObjects = other.Value.OffGridObjects.Select(o => new OffGridObject(o)).ToList();
+                CommandLineArguments = other.Value.CommandLineArguments;
             }
             else
             {
@@ -391,6 +395,7 @@ namespace MLLE
                 Weapons = WeaponDefaults.Select(w => w.Clone()).ToArray();
                 weaponHookPrefix = -1;
                 OffGridObjects = new List<OffGridObject>();
+                CommandLineArguments = string.Empty;
             }
         }
 
@@ -517,6 +522,7 @@ namespace MLLE
                     weaponHookPrefix >= 0 ||
                     !Weapons.SequenceEqual(WeaponDefaults) ||
                     OffGridObjects.Count != 0
+                    //CommandLineArguments is stored in the .j2as, not the .j2l, so it doesn't get checked here
                 )
                     return true;
                 return false;

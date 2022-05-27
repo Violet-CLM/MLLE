@@ -99,6 +99,7 @@ namespace MLLE
             StartLight.Value = (int)(SourceForm.J2L.StartLight * 1.5625);
             MinLight.Value = (int)(SourceForm.J2L.MinLight * 1.5625);
             if (SourceForm.J2L.UsesVerticalSplitscreen == true) radioButton2.Checked = true; else radioButton1.Checked = true;
+            Arguments.Text = SourceForm.J2L.PlusPropertyList.CommandLineArguments;
             DataLoaded = true;
             #endregion values
         }
@@ -126,6 +127,7 @@ namespace MLLE
             SourceForm.J2L.StartLight = (byte)Math.Ceiling(StartLight.Value / (decimal)1.5625);
             SourceForm.J2L.MinLight = (byte)Math.Ceiling(MinLight.Value / (decimal)1.5625);
             SourceForm.J2L.UsesVerticalSplitscreen = radioButton2.Checked;
+            SourceForm.J2L.PlusPropertyList.CommandLineArguments = Arguments.Text;
             SourceForm.LevelHasBeenModified = true;
             Dispose();
         }
