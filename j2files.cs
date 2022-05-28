@@ -828,7 +828,7 @@ class Layer
     public byte XSpeedModel, YSpeedModel;
     public byte TextureSurface;
     public bool Fade;
-    public float XFade, YFade;
+    public float XFade, YFade, InnerX, InnerY, InnerAutoX, InnerAutoY;
 
     public ArrayMap<ushort> TileMap;
 
@@ -900,6 +900,10 @@ class Layer
         Fade = other.Fade;
         XFade = other.XFade;
         YFade = other.YFade;
+        InnerX = other.InnerX;
+        InnerY = other.InnerY;
+        InnerAutoX = other.InnerAutoX;
+        InnerAutoY = other.InnerAutoY;
 
         TileMap = new ArrayMap<ushort>(Width, Height);
         for (ushort x = 0; x < Width; x++)
@@ -1030,6 +1034,8 @@ class Layer
             if (!Fade)
                 return true;
             if (XFade != 0.5f || YFade != 0.5f)
+                return true;
+            if (InnerX != 0 || InnerY != 0 || InnerAutoX != 0 || InnerAutoY != 0)
                 return true;
             return false;
         }

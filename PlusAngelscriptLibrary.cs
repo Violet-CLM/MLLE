@@ -218,6 +218,14 @@ namespace MLLE {{
             layer.fadePositionX = pfloat;
             data5.pop(pfloat);
             layer.fadePositionY = pfloat;
+            data5.pop(pfloat);
+            layer.xInnerSpeed = pfloat;
+            data5.pop(pfloat);
+            layer.yInnerSpeed = pfloat;
+            data5.pop(pfloat);
+            layer.xInnerAutoSpeed = pfloat;
+            data5.pop(pfloat);
+            layer.yInnerAutoSpeed = pfloat;
             newLayerOrder.insertLast(layer);
         }}
         jjLayerOrderSet(newLayerOrder);

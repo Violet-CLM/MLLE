@@ -90,6 +90,15 @@
             this.YFade = new System.Windows.Forms.TextBox();
             this.YFadeLabel = new System.Windows.Forms.Label();
             this.Fade = new System.Windows.Forms.CheckBox();
+            this.groupBoxInner = new System.Windows.Forms.GroupBox();
+            this.InnerXLabel = new System.Windows.Forms.Label();
+            this.InnerX = new System.Windows.Forms.TextBox();
+            this.InnerAutoX = new System.Windows.Forms.TextBox();
+            this.InnerAutoXLabel = new System.Windows.Forms.Label();
+            this.InnerYLabel = new System.Windows.Forms.Label();
+            this.InnerY = new System.Windows.Forms.TextBox();
+            this.InnerAutoYLabel = new System.Windows.Forms.Label();
+            this.InnerAutoY = new System.Windows.Forms.TextBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -103,6 +112,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.SpriteParam)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.RotationAngle)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.RotationRadiusMultiplier)).BeginInit();
+            this.groupBoxInner.SuspendLayout();
             this.SuspendLayout();
             // 
             // OKButton
@@ -531,7 +541,7 @@
             // Copy4
             // 
             this.Copy4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.Copy4.Location = new System.Drawing.Point(547, 274);
+            this.Copy4.Location = new System.Drawing.Point(547, 326);
             this.Copy4.Name = "Copy4";
             this.Copy4.Size = new System.Drawing.Size(75, 23);
             this.Copy4.TabIndex = 3;
@@ -900,13 +910,104 @@
             this.Fade.Text = "Fade";
             this.Fade.UseVisualStyleBackColor = true;
             // 
+            // groupBoxInner
+            // 
+            this.groupBoxInner.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.groupBoxInner.Controls.Add(this.InnerYLabel);
+            this.groupBoxInner.Controls.Add(this.InnerY);
+            this.groupBoxInner.Controls.Add(this.InnerXLabel);
+            this.groupBoxInner.Controls.Add(this.InnerAutoYLabel);
+            this.groupBoxInner.Controls.Add(this.InnerX);
+            this.groupBoxInner.Controls.Add(this.InnerAutoY);
+            this.groupBoxInner.Controls.Add(this.InnerAutoXLabel);
+            this.groupBoxInner.Controls.Add(this.InnerAutoX);
+            this.groupBoxInner.Location = new System.Drawing.Point(13, 303);
+            this.groupBoxInner.Name = "groupBoxInner";
+            this.groupBoxInner.Size = new System.Drawing.Size(524, 52);
+            this.groupBoxInner.TabIndex = 5;
+            this.groupBoxInner.TabStop = false;
+            this.groupBoxInner.Text = "Texture Inner Movement";
+            // 
+            // InnerXLabel
+            // 
+            this.InnerXLabel.AutoSize = true;
+            this.InnerXLabel.Location = new System.Drawing.Point(6, 23);
+            this.InnerXLabel.Name = "InnerXLabel";
+            this.InnerXLabel.Size = new System.Drawing.Size(48, 13);
+            this.InnerXLabel.TabIndex = 10;
+            this.InnerXLabel.Text = "X-Speed";
+            // 
+            // InnerX
+            // 
+            this.InnerX.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.InnerX.Location = new System.Drawing.Point(60, 20);
+            this.InnerX.Name = "InnerX";
+            this.InnerX.Size = new System.Drawing.Size(50, 20);
+            this.InnerX.TabIndex = 11;
+            this.InnerX.Text = "0";
+            // 
+            // InnerAutoX
+            // 
+            this.InnerAutoX.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.InnerAutoX.Location = new System.Drawing.Point(203, 20);
+            this.InnerAutoX.Name = "InnerAutoX";
+            this.InnerAutoX.Size = new System.Drawing.Size(50, 20);
+            this.InnerAutoX.TabIndex = 12;
+            this.InnerAutoX.Text = "0";
+            // 
+            // InnerAutoXLabel
+            // 
+            this.InnerAutoXLabel.AutoSize = true;
+            this.InnerAutoXLabel.Location = new System.Drawing.Point(124, 23);
+            this.InnerAutoXLabel.Name = "InnerAutoXLabel";
+            this.InnerAutoXLabel.Size = new System.Drawing.Size(73, 13);
+            this.InnerAutoXLabel.TabIndex = 9;
+            this.InnerAutoXLabel.Text = "Auto X-Speed";
+            // 
+            // InnerYLabel
+            // 
+            this.InnerYLabel.AutoSize = true;
+            this.InnerYLabel.Location = new System.Drawing.Point(271, 23);
+            this.InnerYLabel.Name = "InnerYLabel";
+            this.InnerYLabel.Size = new System.Drawing.Size(48, 13);
+            this.InnerYLabel.TabIndex = 11;
+            this.InnerYLabel.Text = "Y-Speed";
+            // 
+            // InnerY
+            // 
+            this.InnerY.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.InnerY.Location = new System.Drawing.Point(325, 20);
+            this.InnerY.Name = "InnerY";
+            this.InnerY.Size = new System.Drawing.Size(50, 20);
+            this.InnerY.TabIndex = 10;
+            this.InnerY.Text = "0";
+            // 
+            // InnerAutoYLabel
+            // 
+            this.InnerAutoYLabel.AutoSize = true;
+            this.InnerAutoYLabel.Location = new System.Drawing.Point(389, 23);
+            this.InnerAutoYLabel.Name = "InnerAutoYLabel";
+            this.InnerAutoYLabel.Size = new System.Drawing.Size(73, 13);
+            this.InnerAutoYLabel.TabIndex = 9;
+            this.InnerAutoYLabel.Text = "Auto Y-Speed";
+            // 
+            // InnerAutoY
+            // 
+            this.InnerAutoY.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.InnerAutoY.Location = new System.Drawing.Point(468, 20);
+            this.InnerAutoY.Name = "InnerAutoY";
+            this.InnerAutoY.Size = new System.Drawing.Size(50, 20);
+            this.InnerAutoY.TabIndex = 12;
+            this.InnerAutoY.Text = "0";
+            // 
             // LayerPropertiesForm
             // 
             this.AcceptButton = this.OKButton;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
-            this.ClientSize = new System.Drawing.Size(634, 309);
+            this.ClientSize = new System.Drawing.Size(634, 361);
+            this.Controls.Add(this.groupBoxInner);
             this.Controls.Add(this.ButtonApply);
             this.Controls.Add(this.groupBoxPlus);
             this.Controls.Add(this.Copy4);
@@ -941,6 +1042,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.SpriteParam)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.RotationAngle)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.RotationRadiusMultiplier)).EndInit();
+            this.groupBoxInner.ResumeLayout(false);
+            this.groupBoxInner.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -1009,5 +1112,14 @@
         private System.Windows.Forms.TextBox XFade;
         private System.Windows.Forms.TextBox YFade;
         private System.Windows.Forms.Label YFadeLabel;
+        private System.Windows.Forms.GroupBox groupBoxInner;
+        private System.Windows.Forms.Label InnerYLabel;
+        private System.Windows.Forms.TextBox InnerY;
+        private System.Windows.Forms.Label InnerXLabel;
+        private System.Windows.Forms.Label InnerAutoYLabel;
+        private System.Windows.Forms.TextBox InnerX;
+        private System.Windows.Forms.TextBox InnerAutoY;
+        private System.Windows.Forms.Label InnerAutoXLabel;
+        private System.Windows.Forms.TextBox InnerAutoX;
     }
 }

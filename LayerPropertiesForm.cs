@@ -90,7 +90,7 @@ namespace MLLE
                 LayerSelect.Items.AddRange(SourceForm.J2L.AllLayers.ToArray());
                 LayerSelect.SelectedIndex = CurrentLayer;
             }
-            ClientSize = new Size(ClientSize.Width, Math.Max(groupBoxPlus.Bottom, groupBox4.Bottom) + 12);
+            ClientSize = new Size(ClientSize.Width, Math.Max(groupBoxPlus.Bottom, groupBox4.Bottom) + (groupBoxPlus.Visible ? 62 : 12));
         }
 
         private void ReadLayer(Layer layer)
@@ -137,6 +137,10 @@ namespace MLLE
             Fade.Checked = layer.Fade;
             XFade.Text = layer.XFade.ToString();
             YFade.Text = layer.YFade.ToString();
+            InnerX.Text = layer.InnerX.ToString();
+            InnerY.Text = layer.InnerY.ToString();
+            InnerAutoX.Text = layer.InnerAutoX.ToString();
+            InnerAutoY.Text = layer.InnerAutoY.ToString();
         }
 
         private bool ApplyChanges()
@@ -256,6 +260,10 @@ namespace MLLE
                 DataSource.Fade = Fade.Checked;
                 Single.TryParse(XFade.Text, out DataSource.XFade);
                 Single.TryParse(YFade.Text, out DataSource.YFade);
+                Single.TryParse(InnerX.Text, out DataSource.InnerX);
+                Single.TryParse(InnerY.Text, out DataSource.InnerY);
+                Single.TryParse(InnerAutoX.Text, out DataSource.InnerAutoX);
+                Single.TryParse(InnerAutoY.Text, out DataSource.InnerAutoY);
                 SourceForm.LevelHasBeenModified = true;
             }
 
@@ -368,6 +376,7 @@ namespace MLLE
         private void TextureSurfaceSelect_SelectedIndexChanged(object sender, EventArgs e)
         {
             TextureMode.Checked = TextureSurfaceSelect.SelectedIndex != 0;
+            groupBoxInner.Visible = TextureSurfaceSelect.SelectedIndex == 4 || TextureSurfaceSelect.SelectedIndex == 5;
         }
     }
 }
