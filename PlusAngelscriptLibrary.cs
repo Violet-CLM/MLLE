@@ -210,6 +210,8 @@ namespace MLLE {{
             layer.xSpeedModel = LAYERSPEEDMODEL::LayerSpeedModel(pbyte);
             data5.pop(pbyte);
             layer.ySpeedModel = LAYERSPEEDMODEL::LayerSpeedModel(pbyte);
+            data5.pop(pbyte);
+            layer.textureSurface = SURFACE::Surface(pbyte);
             newLayerOrder.insertLast(layer);
         }}
         jjLayerOrderSet(newLayerOrder);

@@ -84,6 +84,7 @@
             this.LabelYSModel = new System.Windows.Forms.Label();
             this.XSModel = new System.Windows.Forms.ComboBox();
             this.YSModel = new System.Windows.Forms.ComboBox();
+            this.TextureSurfaceSelect = new System.Windows.Forms.ComboBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -348,6 +349,7 @@
             // 
             // groupBox4
             // 
+            this.groupBox4.Controls.Add(this.TextureSurfaceSelect);
             this.groupBox4.Controls.Add(this.Param1);
             this.groupBox4.Controls.Add(this.Param2);
             this.groupBox4.Controls.Add(this.Param3);
@@ -440,9 +442,9 @@
             this.TextureModeSelect.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.TextureModeSelect.Enabled = false;
             this.TextureModeSelect.FormattingEnabled = true;
-            this.TextureModeSelect.Location = new System.Drawing.Point(9, 15);
+            this.TextureModeSelect.Location = new System.Drawing.Point(136, 15);
             this.TextureModeSelect.Name = "TextureModeSelect";
-            this.TextureModeSelect.Size = new System.Drawing.Size(244, 21);
+            this.TextureModeSelect.Size = new System.Drawing.Size(117, 21);
             this.TextureModeSelect.TabIndex = 23;
             this.TextureModeSelect.SelectedIndexChanged += new System.EventHandler(this.TextureModeSelect_SelectedIndexChanged);
             // 
@@ -817,6 +819,23 @@
             this.YSModel.Size = new System.Drawing.Size(51, 21);
             this.YSModel.TabIndex = 20;
             // 
+            // TextureSurfaceSelect
+            // 
+            this.TextureSurfaceSelect.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.TextureSurfaceSelect.FormattingEnabled = true;
+            this.TextureSurfaceSelect.Items.AddRange(new object[] {
+            "Untextured",
+            "Layer 8",
+            "Fullscreen",
+            "Fullscreen Chroma Key",
+            "Inner Window",
+            "Inner Layer"});
+            this.TextureSurfaceSelect.Location = new System.Drawing.Point(9, 15);
+            this.TextureSurfaceSelect.Name = "TextureSurfaceSelect";
+            this.TextureSurfaceSelect.Size = new System.Drawing.Size(117, 21);
+            this.TextureSurfaceSelect.TabIndex = 29;
+            this.TextureSurfaceSelect.SelectedIndexChanged += new System.EventHandler(this.TextureSurfaceSelect_SelectedIndexChanged);
+            // 
             // LayerPropertiesForm
             // 
             this.AcceptButton = this.OKButton;
@@ -920,5 +939,6 @@
         private System.Windows.Forms.Label LabelYSModel;
         private System.Windows.Forms.ComboBox XSModel;
         private System.Windows.Forms.ComboBox YSModel;
+        private System.Windows.Forms.ComboBox TextureSurfaceSelect;
     }
 }

@@ -60,6 +60,14 @@ namespace MLLE
                 groupBox3.Location = new Point(groupBox3.Location.X, groupBox3.Location.Y - amountToShrinkWindow);
                 groupBox4.Location = new Point(groupBox4.Location.X, groupBox4.Location.Y - amountToShrinkWindow);
                 Height -= amountToShrinkWindow;
+                TextureModeSelect.Width += TextureModeSelect.Left - TextureSurfaceSelect.Left;
+                TextureModeSelect.Left = TextureSurfaceSelect.Left;
+                TextureSurfaceSelect.Visible = false;
+            }
+            else //yes developing for plus
+            {
+                TextureMode.Visible = false;
+                groupBox4.Text = "Texture Mode";
             }
             TextureModeSelect.Items.Clear();
             for (ushort i = 0; i < SourceForm.TextureTypes.Count; i++) TextureModeSelect.Items.Add(SourceForm.TextureTypes[i][0].Trim());
@@ -95,7 +103,8 @@ namespace MLLE
             YSpeed.Text = layer.YSpeed.ToString();
             AutoYSpeed.Text = layer.AutoYSpeed.ToString();
             LimitVisibleRegion.Checked = layer.LimitVisibleRegion;
-            TextureMode.Checked = layer.IsTextured;
+            TextureMode.Checked = layer.TextureSurface != 0;
+            TextureSurfaceSelect.SelectedIndex = layer.TextureSurface;
             Stars.Checked = layer.HasStars;
             Param1.Value = layer.TexturParam1;
             Param2.Value = layer.TexturParam2;
@@ -224,7 +233,7 @@ namespace MLLE
                 Single.TryParse(XOffset.Text, out DataSource.WaveX);
                 Single.TryParse(YOffset.Text, out DataSource.WaveY);
                 DataSource.LimitVisibleRegion = LimitVisibleRegion.Checked;
-                DataSource.IsTextured = TextureMode.Checked;
+                DataSource.TextureSurface = (byte)(TextureMode.Visible ? (TextureMode.Checked ? 1 : 0) : TextureSurfaceSelect.SelectedIndex);
                 DataSource.HasStars = Stars.Checked;
                 DataSource.TexturParam1 = (byte)Param1.Value;
                 DataSource.TexturParam2 = (byte)Param2.Value;
@@ -335,6 +344,11 @@ namespace MLLE
                 LayerSelect.Items[LayerSelect.SelectedIndex] = SourceForm.J2L.AllLayers[LayerSelect.SelectedIndex].ToString();
                 ButtonApply.Enabled = false;
             }
+        }
+
+        private void TextureSurfaceSelect_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            TextureMode.Checked = TextureSurfaceSelect.SelectedIndex != 0;
         }
     }
 }

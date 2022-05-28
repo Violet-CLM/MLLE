@@ -797,7 +797,6 @@ class Layer
     public bool TileWidth;
     public bool TileHeight;
     public bool LimitVisibleRegion;
-    public bool IsTextured;
     public bool HasStars;
     public byte unknown1;
     public bool HasTiles
@@ -827,6 +826,7 @@ class Layer
     public byte SpriteMode, SpriteParam;
     public int RotationAngle, RotationRadiusMultiplier;
     public byte XSpeedModel, YSpeedModel;
+    public byte TextureSurface;
 
     public ArrayMap<ushort> TileMap;
 
@@ -839,12 +839,12 @@ class Layer
         {
             //HasTiles = (raw & 4) == 4; //not needed since maintained with TileMap.Count
             LimitVisibleRegion = (raw & 8) == 8;
-            IsTextured = (raw & 16) == 16;
+            TextureSurface = (byte)((raw & 16) == 16 ? 1 : 0);
         }
         else
         {
             LimitVisibleRegion = (raw & 4) == 4;
-            IsTextured = (raw & 8) == 8;
+            TextureSurface = (byte)((raw & 8) == 8 ? 1 : 0);
             HasStars = (raw & 16) == 16;
         }
 
@@ -859,7 +859,7 @@ class Layer
         TileWidth = other.TileWidth;
         TileHeight = other.TileHeight;
         LimitVisibleRegion = other.LimitVisibleRegion;
-        IsTextured = other.IsTextured;
+        TextureSurface = other.TextureSurface;
         HasStars = other.HasStars;
         unknown1 = other.unknown1;
         Width = other.Width;
@@ -921,13 +921,14 @@ class Layer
         AutoXSpeed = AutoYSpeed = 0;
 
         TileWidth = TileHeight = (i == 7);
-        LimitVisibleRegion = IsTextured = HasStars = false;
+        LimitVisibleRegion = HasStars = false;
 
         Name = DefaultNames[i];
         RotationAngle = DefaultRotationAngles[i];
         RotationRadiusMultiplier = DefaultRotationRadiusMultipliers[i];
 
         XSpeedModel = YSpeedModel = (byte)((i == 7) ? 1 : 0);
+        TextureSurface = 0;
 
         TileMap = new ArrayMap<ushort>(Width, Height);
     }
@@ -1014,6 +1015,8 @@ class Layer
             if (Name != DefaultNames[id])
                 return true;
             if (XSpeedModel != 0 || YSpeedModel != 0)
+                return true;
+            if (TextureSurface > 1) //in vanilla this is a bool
                 return true;
             return false;
         }
@@ -2002,7 +2005,7 @@ class J2LFile : J2File
                                     (CurrentLayer.TileHeight ? 2 : 0) |
                                     (CurrentLayer.HasTiles ? 4 : 0) |
                                     (CurrentLayer.LimitVisibleRegion ? 8 : 0) |
-                                    (CurrentLayer.IsTextured ? 16 : 0)
+                                    (CurrentLayer.TextureSurface != 0 ? 16 : 0)
                                     );
                         LINFO.Write((ushort)CurrentLayer.Width);
                         LINFO.Write((ushort)CurrentLayer.Height);
@@ -2091,7 +2094,7 @@ class J2LFile : J2File
                     for (uint i = 0; i < EventMap.Length; i++) EVNT.Write(EventMap[i % EventMap.GetLength(0), i / EventMap.GetLength(0)]);
 
                     TMAP.Write((ushort)(257));
-                    if (DefaultLayers[7].IsTextured)
+                    if (DefaultLayers[7].TextureSurface != 0)
                     {
                         TMAP.Write(1);
                         TMAP.Write(7);
@@ -2236,7 +2239,7 @@ class J2LFile : J2File
                             if (AGA_SoundPointer[i] == null) for (byte j = 0; j < 16; j++) data1writer.Write(0); //16 longs = 64 bytes
                             else data1writer.Write(getBytes(encoding, (AGA_SoundPointer[i][0] + "\\" + AGA_SoundPointer[i][1]), 64));
                         }
-                    foreach (Layer layer in layersToSave) data1writer.Write((layer.TileWidth ? 1 : 0) + (layer.TileHeight ? 2 : 0) + (layer.LimitVisibleRegion ? 4 : 0) + (layer.IsTextured ? 8 : 0) + (layer.HasStars ? 16 : 0));
+                    foreach (Layer layer in layersToSave) data1writer.Write((layer.TileWidth ? 1 : 0) + (layer.TileHeight ? 2 : 0) + (layer.LimitVisibleRegion ? 4 : 0) + (layer.TextureSurface != 0 ? 8 : 0) + (layer.HasStars ? 16 : 0));
                     foreach (Layer layer in layersToSave) data1writer.Write(layer.unknown1);
                     foreach (Layer layer in layersToSave) data1writer.Write(layer.HasTiles);
                     foreach (Layer layer in layersToSave) data1writer.Write(layer.Width);

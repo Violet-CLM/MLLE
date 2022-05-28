@@ -603,6 +603,7 @@ namespace MLLE
                     data5bodywriter.Write(layer.RotationRadiusMultiplier);
                     data5bodywriter.Write(layer.XSpeedModel);
                     data5bodywriter.Write(layer.YSpeedModel);
+                    data5bodywriter.Write(layer.TextureSurface);
                 }
 
                 int levelTileCount = Tilesets.Sum(ts => (int)ts.TileCount);
@@ -830,6 +831,7 @@ namespace MLLE
                             {
                                 layer.XSpeedModel = data5bodyreader.ReadByte();
                                 layer.YSpeedModel = data5bodyreader.ReadByte();
+                                layer.TextureSurface = data5bodyreader.ReadByte();
                             }
                             Layers.Add(layer);
                         }
