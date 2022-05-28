@@ -827,6 +827,8 @@ class Layer
     public int RotationAngle, RotationRadiusMultiplier;
     public byte XSpeedModel, YSpeedModel;
     public byte TextureSurface;
+    public bool Fade;
+    public float XFade, YFade;
 
     public ArrayMap<ushort> TileMap;
 
@@ -851,6 +853,8 @@ class Layer
         Name = DefaultNames[i];
         RotationAngle = DefaultRotationAngles[i];
         RotationRadiusMultiplier = DefaultRotationRadiusMultipliers[i];
+        Fade = true;
+        XFade = YFade = 0.5f;
     }
 
     public Layer(Layer other)
@@ -893,6 +897,9 @@ class Layer
             XSpeedModel = other.XSpeedModel;
             YSpeedModel = other.YSpeedModel;
         }
+        Fade = other.Fade;
+        XFade = other.XFade;
+        YFade = other.YFade;
 
         TileMap = new ArrayMap<ushort>(Width, Height);
         for (ushort x = 0; x < Width; x++)
@@ -929,6 +936,8 @@ class Layer
 
         XSpeedModel = YSpeedModel = (byte)((i == 7) ? 1 : 0);
         TextureSurface = 0;
+        Fade = true;
+        XFade = YFade = 0.5f;
 
         TileMap = new ArrayMap<ushort>(Width, Height);
     }
@@ -1017,6 +1026,10 @@ class Layer
             if (XSpeedModel != 0 || YSpeedModel != 0)
                 return true;
             if (TextureSurface > 1) //in vanilla this is a bool
+                return true;
+            if (!Fade)
+                return true;
+            if (XFade != 0.5f || YFade != 0.5f)
                 return true;
             return false;
         }

@@ -50,6 +50,7 @@
             this.TileWidth = new System.Windows.Forms.CheckBox();
             this.HeightLabel = new System.Windows.Forms.Label();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.TextureSurfaceSelect = new System.Windows.Forms.ComboBox();
             this.Param1 = new System.Windows.Forms.NumericUpDown();
             this.Param2 = new System.Windows.Forms.NumericUpDown();
             this.Param3 = new System.Windows.Forms.NumericUpDown();
@@ -64,6 +65,10 @@
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.Copy4 = new System.Windows.Forms.Button();
             this.groupBoxPlus = new System.Windows.Forms.GroupBox();
+            this.YSModel = new System.Windows.Forms.ComboBox();
+            this.XSModel = new System.Windows.Forms.ComboBox();
+            this.OffsetXSModel = new System.Windows.Forms.Label();
+            this.LabelYSModel = new System.Windows.Forms.Label();
             this.SpriteParam = new System.Windows.Forms.NumericUpDown();
             this.RotationAngle = new System.Windows.Forms.NumericUpDown();
             this.RotationRadiusMultiplier = new System.Windows.Forms.NumericUpDown();
@@ -80,11 +85,11 @@
             this.YOffset = new System.Windows.Forms.TextBox();
             this.OffsetYLabel = new System.Windows.Forms.Label();
             this.ButtonApply = new System.Windows.Forms.Button();
-            this.OffsetXSModel = new System.Windows.Forms.Label();
-            this.LabelYSModel = new System.Windows.Forms.Label();
-            this.XSModel = new System.Windows.Forms.ComboBox();
-            this.YSModel = new System.Windows.Forms.ComboBox();
-            this.TextureSurfaceSelect = new System.Windows.Forms.ComboBox();
+            this.XFadeLabel = new System.Windows.Forms.Label();
+            this.XFade = new System.Windows.Forms.TextBox();
+            this.YFade = new System.Windows.Forms.TextBox();
+            this.YFadeLabel = new System.Windows.Forms.Label();
+            this.Fade = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -349,9 +354,14 @@
             // 
             // groupBox4
             // 
+            this.groupBox4.Controls.Add(this.Fade);
+            this.groupBox4.Controls.Add(this.XFadeLabel);
             this.groupBox4.Controls.Add(this.TextureSurfaceSelect);
+            this.groupBox4.Controls.Add(this.XFade);
             this.groupBox4.Controls.Add(this.Param1);
+            this.groupBox4.Controls.Add(this.YFade);
             this.groupBox4.Controls.Add(this.Param2);
+            this.groupBox4.Controls.Add(this.YFadeLabel);
             this.groupBox4.Controls.Add(this.Param3);
             this.groupBox4.Controls.Add(this.RedLabel);
             this.groupBox4.Controls.Add(this.GreenLabel);
@@ -363,14 +373,31 @@
             this.groupBox4.Controls.Add(this.TextureMode);
             this.groupBox4.Location = new System.Drawing.Point(13, 403);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(259, 93);
+            this.groupBox4.Size = new System.Drawing.Size(259, 148);
             this.groupBox4.TabIndex = 9;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "                    ";
             // 
+            // TextureSurfaceSelect
+            // 
+            this.TextureSurfaceSelect.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.TextureSurfaceSelect.FormattingEnabled = true;
+            this.TextureSurfaceSelect.Items.AddRange(new object[] {
+            "Untextured",
+            "Layer 8",
+            "Fullscreen",
+            "Fullscreen Chroma Key",
+            "Inner Window",
+            "Inner Layer"});
+            this.TextureSurfaceSelect.Location = new System.Drawing.Point(9, 15);
+            this.TextureSurfaceSelect.Name = "TextureSurfaceSelect";
+            this.TextureSurfaceSelect.Size = new System.Drawing.Size(117, 21);
+            this.TextureSurfaceSelect.TabIndex = 29;
+            this.TextureSurfaceSelect.SelectedIndexChanged += new System.EventHandler(this.TextureSurfaceSelect_SelectedIndexChanged);
+            // 
             // Param1
             // 
-            this.Param1.Location = new System.Drawing.Point(203, 41);
+            this.Param1.Location = new System.Drawing.Point(203, 67);
             this.Param1.Maximum = new decimal(new int[] {
             255,
             0,
@@ -383,7 +410,7 @@
             // 
             // Param2
             // 
-            this.Param2.Location = new System.Drawing.Point(86, 66);
+            this.Param2.Location = new System.Drawing.Point(86, 92);
             this.Param2.Maximum = new decimal(new int[] {
             255,
             0,
@@ -396,7 +423,7 @@
             // 
             // Param3
             // 
-            this.Param3.Location = new System.Drawing.Point(203, 65);
+            this.Param3.Location = new System.Drawing.Point(203, 91);
             this.Param3.Maximum = new decimal(new int[] {
             255,
             0,
@@ -411,7 +438,7 @@
             // 
             this.RedLabel.AutoSize = true;
             this.RedLabel.Enabled = false;
-            this.RedLabel.Location = new System.Drawing.Point(143, 43);
+            this.RedLabel.Location = new System.Drawing.Point(143, 69);
             this.RedLabel.Name = "RedLabel";
             this.RedLabel.Size = new System.Drawing.Size(54, 13);
             this.RedLabel.TabIndex = 13;
@@ -421,7 +448,7 @@
             // 
             this.GreenLabel.AutoSize = true;
             this.GreenLabel.Enabled = false;
-            this.GreenLabel.Location = new System.Drawing.Point(6, 68);
+            this.GreenLabel.Location = new System.Drawing.Point(6, 94);
             this.GreenLabel.Name = "GreenLabel";
             this.GreenLabel.Size = new System.Drawing.Size(63, 13);
             this.GreenLabel.TabIndex = 11;
@@ -431,7 +458,7 @@
             // 
             this.BlueLabel.AutoSize = true;
             this.BlueLabel.Enabled = false;
-            this.BlueLabel.Location = new System.Drawing.Point(142, 68);
+            this.BlueLabel.Location = new System.Drawing.Point(142, 94);
             this.BlueLabel.Name = "BlueLabel";
             this.BlueLabel.Size = new System.Drawing.Size(55, 13);
             this.BlueLabel.TabIndex = 9;
@@ -452,7 +479,7 @@
             // 
             this.ColorLabel.AutoSize = true;
             this.ColorLabel.Enabled = false;
-            this.ColorLabel.Location = new System.Drawing.Point(171, 46);
+            this.ColorLabel.Location = new System.Drawing.Point(171, 72);
             this.ColorLabel.Name = "ColorLabel";
             this.ColorLabel.Size = new System.Drawing.Size(58, 13);
             this.ColorLabel.TabIndex = 3;
@@ -463,7 +490,7 @@
             // 
             this.Stars.AutoSize = true;
             this.Stars.Enabled = false;
-            this.Stars.Location = new System.Drawing.Point(9, 42);
+            this.Stars.Location = new System.Drawing.Point(9, 68);
             this.Stars.Name = "Stars";
             this.Stars.Size = new System.Drawing.Size(102, 17);
             this.Stars.TabIndex = 24;
@@ -476,7 +503,7 @@
             this.ColorBox.BackColor = System.Drawing.Color.Black;
             this.ColorBox.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.ColorBox.Enabled = false;
-            this.ColorBox.Location = new System.Drawing.Point(145, 42);
+            this.ColorBox.Location = new System.Drawing.Point(145, 68);
             this.ColorBox.Name = "ColorBox";
             this.ColorBox.Size = new System.Drawing.Size(20, 20);
             this.ColorBox.TabIndex = 25;
@@ -502,7 +529,7 @@
             // Copy4
             // 
             this.Copy4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.Copy4.Location = new System.Drawing.Point(278, 473);
+            this.Copy4.Location = new System.Drawing.Point(278, 525);
             this.Copy4.Name = "Copy4";
             this.Copy4.Size = new System.Drawing.Size(75, 23);
             this.Copy4.TabIndex = 3;
@@ -537,6 +564,60 @@
             this.groupBoxPlus.TabIndex = 8;
             this.groupBoxPlus.TabStop = false;
             this.groupBoxPlus.Text = "JJ2+ Properties";
+            // 
+            // YSModel
+            // 
+            this.YSModel.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.YSModel.DropDownWidth = 175;
+            this.YSModel.FormattingEnabled = true;
+            this.YSModel.Items.AddRange(new object[] {
+            "Normal",
+            "Layer 8",
+            "Both Speeds",
+            "From Start",
+            "Fit Level",
+            "Speed Multipliers"});
+            this.YSModel.Location = new System.Drawing.Point(203, 46);
+            this.YSModel.MaxDropDownItems = 10;
+            this.YSModel.Name = "YSModel";
+            this.YSModel.Size = new System.Drawing.Size(51, 21);
+            this.YSModel.TabIndex = 20;
+            // 
+            // XSModel
+            // 
+            this.XSModel.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.XSModel.DropDownWidth = 175;
+            this.XSModel.FormattingEnabled = true;
+            this.XSModel.Items.AddRange(new object[] {
+            "Normal",
+            "Layer 8",
+            "Both Speeds",
+            "From Start",
+            "Fit Level",
+            "Speed Multipliers"});
+            this.XSModel.Location = new System.Drawing.Point(60, 46);
+            this.XSModel.MaxDropDownItems = 10;
+            this.XSModel.Name = "XSModel";
+            this.XSModel.Size = new System.Drawing.Size(51, 21);
+            this.XSModel.TabIndex = 19;
+            // 
+            // OffsetXSModel
+            // 
+            this.OffsetXSModel.AutoSize = true;
+            this.OffsetXSModel.Location = new System.Drawing.Point(6, 49);
+            this.OffsetXSModel.Name = "OffsetXSModel";
+            this.OffsetXSModel.Size = new System.Drawing.Size(56, 13);
+            this.OffsetXSModel.TabIndex = 18;
+            this.OffsetXSModel.Text = "X-S.Model";
+            // 
+            // LabelYSModel
+            // 
+            this.LabelYSModel.AutoSize = true;
+            this.LabelYSModel.Location = new System.Drawing.Point(124, 49);
+            this.LabelYSModel.Name = "LabelYSModel";
+            this.LabelYSModel.Size = new System.Drawing.Size(56, 13);
+            this.LabelYSModel.TabIndex = 17;
+            this.LabelYSModel.Text = "Y-S.Model";
             // 
             // SpriteParam
             // 
@@ -765,76 +846,56 @@
             this.ButtonApply.UseVisualStyleBackColor = true;
             this.ButtonApply.Click += new System.EventHandler(this.ButtonApply_Click);
             // 
-            // OffsetXSModel
+            // XFadeLabel
             // 
-            this.OffsetXSModel.AutoSize = true;
-            this.OffsetXSModel.Location = new System.Drawing.Point(6, 49);
-            this.OffsetXSModel.Name = "OffsetXSModel";
-            this.OffsetXSModel.Size = new System.Drawing.Size(56, 13);
-            this.OffsetXSModel.TabIndex = 18;
-            this.OffsetXSModel.Text = "X-S.Model";
+            this.XFadeLabel.AutoSize = true;
+            this.XFadeLabel.Enabled = false;
+            this.XFadeLabel.Location = new System.Drawing.Point(6, 122);
+            this.XFadeLabel.Name = "XFadeLabel";
+            this.XFadeLabel.Size = new System.Drawing.Size(41, 13);
+            this.XFadeLabel.TabIndex = 22;
+            this.XFadeLabel.Text = "X-Fade";
             // 
-            // LabelYSModel
+            // XFade
             // 
-            this.LabelYSModel.AutoSize = true;
-            this.LabelYSModel.Location = new System.Drawing.Point(124, 49);
-            this.LabelYSModel.Name = "LabelYSModel";
-            this.LabelYSModel.Size = new System.Drawing.Size(56, 13);
-            this.LabelYSModel.TabIndex = 17;
-            this.LabelYSModel.Text = "Y-S.Model";
+            this.XFade.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.XFade.Enabled = false;
+            this.XFade.Location = new System.Drawing.Point(86, 119);
+            this.XFade.Name = "XFade";
+            this.XFade.Size = new System.Drawing.Size(50, 20);
+            this.XFade.TabIndex = 23;
+            this.XFade.Text = "0";
             // 
-            // XSModel
+            // YFade
             // 
-            this.XSModel.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.XSModel.DropDownWidth = 175;
-            this.XSModel.FormattingEnabled = true;
-            this.XSModel.Items.AddRange(new object[] {
-            "Normal",
-            "Layer 8",
-            "Both Speeds",
-            "From Start",
-            "Fit Level",
-            "Speed Multipliers"});
-            this.XSModel.Location = new System.Drawing.Point(60, 46);
-            this.XSModel.MaxDropDownItems = 10;
-            this.XSModel.Name = "XSModel";
-            this.XSModel.Size = new System.Drawing.Size(51, 21);
-            this.XSModel.TabIndex = 19;
+            this.YFade.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.YFade.Enabled = false;
+            this.YFade.Location = new System.Drawing.Point(203, 119);
+            this.YFade.Name = "YFade";
+            this.YFade.Size = new System.Drawing.Size(50, 20);
+            this.YFade.TabIndex = 24;
+            this.YFade.Text = "0";
             // 
-            // YSModel
+            // YFadeLabel
             // 
-            this.YSModel.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.YSModel.DropDownWidth = 175;
-            this.YSModel.FormattingEnabled = true;
-            this.YSModel.Items.AddRange(new object[] {
-            "Normal",
-            "Layer 8",
-            "Both Speeds",
-            "From Start",
-            "Fit Level",
-            "Speed Multipliers"});
-            this.YSModel.Location = new System.Drawing.Point(203, 46);
-            this.YSModel.MaxDropDownItems = 10;
-            this.YSModel.Name = "YSModel";
-            this.YSModel.Size = new System.Drawing.Size(51, 21);
-            this.YSModel.TabIndex = 20;
+            this.YFadeLabel.AutoSize = true;
+            this.YFadeLabel.Enabled = false;
+            this.YFadeLabel.Location = new System.Drawing.Point(143, 122);
+            this.YFadeLabel.Name = "YFadeLabel";
+            this.YFadeLabel.Size = new System.Drawing.Size(41, 13);
+            this.YFadeLabel.TabIndex = 21;
+            this.YFadeLabel.Text = "Y-Fade";
             // 
-            // TextureSurfaceSelect
+            // Fade
             // 
-            this.TextureSurfaceSelect.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.TextureSurfaceSelect.FormattingEnabled = true;
-            this.TextureSurfaceSelect.Items.AddRange(new object[] {
-            "Untextured",
-            "Layer 8",
-            "Fullscreen",
-            "Fullscreen Chroma Key",
-            "Inner Window",
-            "Inner Layer"});
-            this.TextureSurfaceSelect.Location = new System.Drawing.Point(9, 15);
-            this.TextureSurfaceSelect.Name = "TextureSurfaceSelect";
-            this.TextureSurfaceSelect.Size = new System.Drawing.Size(117, 21);
-            this.TextureSurfaceSelect.TabIndex = 29;
-            this.TextureSurfaceSelect.SelectedIndexChanged += new System.EventHandler(this.TextureSurfaceSelect_SelectedIndexChanged);
+            this.Fade.AutoSize = true;
+            this.Fade.Enabled = false;
+            this.Fade.Location = new System.Drawing.Point(145, 44);
+            this.Fade.Name = "Fade";
+            this.Fade.Size = new System.Drawing.Size(50, 17);
+            this.Fade.TabIndex = 30;
+            this.Fade.Text = "Fade";
+            this.Fade.UseVisualStyleBackColor = true;
             // 
             // LayerPropertiesForm
             // 
@@ -842,7 +903,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
-            this.ClientSize = new System.Drawing.Size(365, 508);
+            this.ClientSize = new System.Drawing.Size(365, 560);
             this.Controls.Add(this.ButtonApply);
             this.Controls.Add(this.groupBoxPlus);
             this.Controls.Add(this.Copy4);
@@ -940,5 +1001,10 @@
         private System.Windows.Forms.ComboBox XSModel;
         private System.Windows.Forms.ComboBox YSModel;
         private System.Windows.Forms.ComboBox TextureSurfaceSelect;
+        private System.Windows.Forms.CheckBox Fade;
+        private System.Windows.Forms.Label XFadeLabel;
+        private System.Windows.Forms.TextBox XFade;
+        private System.Windows.Forms.TextBox YFade;
+        private System.Windows.Forms.Label YFadeLabel;
     }
 }

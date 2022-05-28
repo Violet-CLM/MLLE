@@ -131,6 +131,9 @@ namespace MLLE
             RotationRadiusMultiplier.Value = layer.RotationRadiusMultiplier;
             XSModel.SelectedIndex = layer.XSpeedModel;
             YSModel.SelectedIndex = layer.YSpeedModel;
+            Fade.Checked = layer.Fade;
+            XFade.Text = layer.XFade.ToString();
+            YFade.Text = layer.YFade.ToString();
         }
 
         private bool ApplyChanges()
@@ -247,6 +250,9 @@ namespace MLLE
                 DataSource.RotationRadiusMultiplier = (int)RotationRadiusMultiplier.Value;
                 DataSource.XSpeedModel = (byte)XSModel.SelectedIndex;
                 DataSource.YSpeedModel = (byte)YSModel.SelectedIndex;
+                DataSource.Fade = Fade.Checked;
+                Single.TryParse(XFade.Text, out DataSource.XFade);
+                Single.TryParse(YFade.Text, out DataSource.YFade);
                 SourceForm.LevelHasBeenModified = true;
             }
 
@@ -276,6 +282,15 @@ namespace MLLE
                 if (properties.Length >= 6) { Param3.Visible = BlueLabel.Visible = true; BlueLabel.Text = properties[5].Trim(); }
                 ColorLabel.Visible = ColorBox.Visible = false;
             }
+
+            Fade.Enabled = TextureMode.Checked && (TextureModeSelect.SelectedIndex <= 1 || TextureModeSelect.SelectedIndex == 5); //warp horizon, tunnel, cylinder
+            string fadeSuffix = "Fade";
+            if (TextureModeSelect.SelectedIndex == 2 || TextureModeSelect.SelectedIndex == 3)
+                fadeSuffix = "Rot.Point";
+            else if (TextureModeSelect.SelectedIndex == 4)
+                fadeSuffix = "Amplitude";
+            XFadeLabel.Text = "X-" + fadeSuffix;
+            YFadeLabel.Text = "Y-" + fadeSuffix;
             GenericInputChanged(sender, e);
         }
 
@@ -308,8 +323,9 @@ namespace MLLE
 
         private void TextureMode_CheckedChanged(object sender, EventArgs e)
         {
-            TextureModeSelect.Enabled = Stars.Enabled = ColorBox.Enabled = ColorLabel.Enabled = Param1.Enabled = Param2.Enabled = Param3.Enabled = RedLabel.Enabled = GreenLabel.Enabled = BlueLabel.Enabled = TextureMode.Checked;
+            XFade.Enabled = YFade.Enabled = XFadeLabel.Enabled = YFadeLabel.Enabled = TextureModeSelect.Enabled = Stars.Enabled = ColorBox.Enabled = ColorLabel.Enabled = Param1.Enabled = Param2.Enabled = Param3.Enabled = RedLabel.Enabled = GreenLabel.Enabled = BlueLabel.Enabled = TextureMode.Checked;
             WidthBox.Enabled = HeightBox.Enabled = WidthLabel.Enabled = HeightLabel.Enabled = !TextureMode.Checked;
+            Fade.Enabled = TextureMode.Checked && (TextureModeSelect.SelectedIndex <= 1 || TextureModeSelect.SelectedIndex == 5); //warp horizon, tunnel, cylinder
             if (TextureMode.Checked) WidthBox.Value = HeightBox.Value = 8;
             else { WidthBox.Value = DataSource.Width; HeightBox.Value = DataSource.Height; }
             TileHeight_CheckedChanged(sender, e);

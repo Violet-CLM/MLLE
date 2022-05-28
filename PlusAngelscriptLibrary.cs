@@ -212,6 +212,12 @@ namespace MLLE {{
             layer.ySpeedModel = LAYERSPEEDMODEL::LayerSpeedModel(pbyte);
             data5.pop(pbyte);
             layer.textureSurface = SURFACE::Surface(pbyte);
+            data5.pop(pbool);
+            layer.fade = pbool;
+            data5.pop(pfloat);
+            layer.fadePositionX = pfloat;
+            data5.pop(pfloat);
+            layer.fadePositionY = pfloat;
             newLayerOrder.insertLast(layer);
         }}
         jjLayerOrderSet(newLayerOrder);

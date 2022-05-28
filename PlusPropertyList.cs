@@ -604,6 +604,9 @@ namespace MLLE
                     data5bodywriter.Write(layer.XSpeedModel);
                     data5bodywriter.Write(layer.YSpeedModel);
                     data5bodywriter.Write(layer.TextureSurface);
+                    data5bodywriter.Write(layer.Fade);
+                    data5bodywriter.Write(layer.XFade);
+                    data5bodywriter.Write(layer.YFade);
                 }
 
                 int levelTileCount = Tilesets.Sum(ts => (int)ts.TileCount);
@@ -832,6 +835,9 @@ namespace MLLE
                                 layer.XSpeedModel = data5bodyreader.ReadByte();
                                 layer.YSpeedModel = data5bodyreader.ReadByte();
                                 layer.TextureSurface = data5bodyreader.ReadByte();
+                                layer.Fade = data5bodyreader.ReadBoolean();
+                                layer.XFade = data5bodyreader.ReadSingle();
+                                layer.YFade = data5bodyreader.ReadSingle();
                             }
                             Layers.Add(layer);
                         }
