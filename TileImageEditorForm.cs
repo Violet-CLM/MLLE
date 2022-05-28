@@ -228,13 +228,25 @@ namespace MLLE
             }
         }
 
-        private void pasteImage(bool over)
+        private void pasteImage(bool over, bool recolor)
         {
             Bitmap pastedBitmap = BitmapStuff.GetBitmapFromClipboard(new Size(32, 32));
             if (pastedBitmap != null) //no errors, everything about the header looks right
             {
-                MakeEntireImageUndoable();
                 var clipboard = BitmapStuff.BitmapToByteArray(pastedBitmap);
+
+                if (recolor) {
+                    byte[] colorRemappings = null;
+                    if (new SpriteRecolorForm().ShowForm(originalPalette.Palette, pastedBitmap.Clone() as Bitmap, ref colorRemappings, Color.Black))
+                    {
+                        for (int i = 0; i < 32 * 32; ++i)
+                            clipboard[i] = colorRemappings[clipboard[i]];
+                    }
+                    else //user hit Cancel button
+                        return;
+                }
+
+                MakeEntireImageUndoable();
                 if (over)
                 {
                     for (int i = 0; i < 32 * 32; ++i)
@@ -254,7 +266,7 @@ namespace MLLE
         private void pasteToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (EditingImage)
-                pasteImage(true);
+                pasteImage(true, false);
             else
             {
                 MakeEntireImageUndoable();
@@ -267,7 +279,11 @@ namespace MLLE
 
         private void pasteUnderToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            pasteImage(false);
+            pasteImage(false, false);
+        }
+        private void pasteAndRecolorToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            pasteImage(true, true);
         }
 
         private void TileImageEditorForm_KeyDown(object sender, KeyEventArgs e)
@@ -389,6 +405,7 @@ namespace MLLE
 
             pasteToolStripMenuItem.Enabled = EditingImage || ClipboardMask != null;
             pasteUnderToolStripMenuItem.Enabled = EditingImage; //no use in pasting under a mask
+            pasteAndRecolorToolStripMenuItem.Enabled = EditingImage;
 
             ShowDialog();
 
