@@ -58,7 +58,7 @@ namespace MLLE
                     groupBox4.Height -= heightBetweenRows;
                 }
                 TextureSurfaceSelect.Visible = false;
-                Fade.Visible = XFade.Visible = XFadeLabel.Visible = YFade.Visible = YFadeLabel.Visible = false;
+                TextureSource.Visible = TextureSourceDraw.Visible = Fade.Visible = XFade.Visible = XFadeLabel.Visible = YFade.Visible = YFadeLabel.Visible = false;
                 foreach (Control foo in new Control[] { Param1, Param2, Param3, RedLabel, GreenLabel, BlueLabel, Stars, ColorBox, ColorLabel })
                     foo.Top -= heightBetweenRows * 2;
                 groupBox4.Height -= heightBetweenRows * 2;
@@ -141,6 +141,14 @@ namespace MLLE
             InnerY.Text = layer.InnerY.ToString();
             InnerAutoX.Text = layer.InnerAutoX.ToString();
             InnerAutoY.Text = layer.InnerAutoY.ToString();
+            if (layer.Texture >= 0)
+                TextureSource.SelectedIndex = layer.Texture;
+            else
+            {
+                if (TextureSource.Items.Count == 16)
+                    TextureSource.Items.Add("[Custom]");
+                TextureSource.SelectedIndex = 16;
+            }
         }
 
         private bool ApplyChanges()
@@ -264,6 +272,7 @@ namespace MLLE
                 Single.TryParse(InnerY.Text, out DataSource.InnerY);
                 Single.TryParse(InnerAutoX.Text, out DataSource.InnerAutoX);
                 Single.TryParse(InnerAutoY.Text, out DataSource.InnerAutoY);
+                DataSource.Texture = TextureSource.SelectedIndex < 16 ? (sbyte)TextureSource.SelectedIndex : (sbyte)-1;
                 SourceForm.LevelHasBeenModified = true;
             }
 
@@ -334,7 +343,7 @@ namespace MLLE
 
         private void TextureMode_CheckedChanged(object sender, EventArgs e)
         {
-            XFade.Enabled = YFade.Enabled = XFadeLabel.Enabled = YFadeLabel.Enabled = TextureModeSelect.Enabled = Stars.Enabled = ColorBox.Enabled = ColorLabel.Enabled = Param1.Enabled = Param2.Enabled = Param3.Enabled = RedLabel.Enabled = GreenLabel.Enabled = BlueLabel.Enabled = TextureMode.Checked;
+            TextureSource.Enabled = TextureSourceDraw.Enabled = XFade.Enabled = YFade.Enabled = XFadeLabel.Enabled = YFadeLabel.Enabled = TextureModeSelect.Enabled = Stars.Enabled = ColorBox.Enabled = ColorLabel.Enabled = Param1.Enabled = Param2.Enabled = Param3.Enabled = RedLabel.Enabled = GreenLabel.Enabled = BlueLabel.Enabled = TextureMode.Checked;
             WidthBox.Enabled = HeightBox.Enabled = WidthLabel.Enabled = HeightLabel.Enabled = !TextureMode.Checked;
             Fade.Enabled = TextureMode.Checked && (TextureModeSelect.SelectedIndex <= 1 || TextureModeSelect.SelectedIndex == 5); //warp horizon, tunnel, cylinder
             if (TextureMode.Checked) WidthBox.Value = HeightBox.Value = 8;
@@ -377,6 +386,14 @@ namespace MLLE
         {
             TextureMode.Checked = TextureSurfaceSelect.SelectedIndex != 0;
             groupBoxInner.Visible = TextureSurfaceSelect.SelectedIndex == 4 || TextureSurfaceSelect.SelectedIndex == 5;
+            TextureSource.Visible = TextureSourceDraw.Visible = TextureModeSelect.SelectedIndex != 3;
+        }
+
+        private void TextureSource_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (TextureSource.SelectedIndex < 16)
+                while (TextureSource.Items.Count > 16) //includes [Custom]
+                    TextureSource.Items.RemoveAt(16);
         }
     }
 }

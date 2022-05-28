@@ -226,6 +226,16 @@ namespace MLLE {{
             layer.xInnerAutoSpeed = pfloat;
             data5.pop(pfloat);
             layer.yInnerAutoSpeed = pfloat;
+            data5.pop(pchar);
+            if (pchar >= 0)
+                layer.texture = TEXTURE::Texture(pchar);
+            else {{
+                jjPIXELMAP texture(256, 256);
+                for (uint y = 0; y < 256; ++y)
+                    for (uint x = 0; x < 256; ++x)
+                        data5.pop(texture[x,y]);
+                texture.makeTexture(layer);
+            }}
             newLayerOrder.insertLast(layer);
         }}
         jjLayerOrderSet(newLayerOrder);

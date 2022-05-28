@@ -829,6 +829,8 @@ class Layer
     public byte TextureSurface;
     public bool Fade;
     public float XFade, YFade, InnerX, InnerY, InnerAutoX, InnerAutoY;
+    public sbyte Texture;
+    public byte[] TextureImage;
 
     public ArrayMap<ushort> TileMap;
 
@@ -855,6 +857,7 @@ class Layer
         RotationRadiusMultiplier = DefaultRotationRadiusMultipliers[i];
         Fade = true;
         XFade = YFade = 0.5f;
+        XSpeedModel = YSpeedModel = (byte)((i == 7) ? 1 : 0);
     }
 
     public Layer(Layer other)
@@ -904,6 +907,11 @@ class Layer
         InnerY = other.InnerY;
         InnerAutoX = other.InnerAutoX;
         InnerAutoY = other.InnerAutoY;
+        Texture = other.Texture;
+        if (Texture >= 0)
+            TextureImage = null;
+        else
+            TextureImage = other.TextureImage.Clone() as byte[];
 
         TileMap = new ArrayMap<ushort>(Width, Height);
         for (ushort x = 0; x < Width; x++)
@@ -1036,6 +1044,8 @@ class Layer
             if (XFade != 0.5f || YFade != 0.5f)
                 return true;
             if (InnerX != 0 || InnerY != 0 || InnerAutoX != 0 || InnerAutoY != 0)
+                return true;
+            if (Texture != 0)
                 return true;
             return false;
         }

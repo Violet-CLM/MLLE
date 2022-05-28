@@ -99,6 +99,8 @@
             this.InnerY = new System.Windows.Forms.TextBox();
             this.InnerAutoYLabel = new System.Windows.Forms.Label();
             this.InnerAutoY = new System.Windows.Forms.TextBox();
+            this.TextureSource = new System.Windows.Forms.ComboBox();
+            this.TextureSourceDraw = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -366,6 +368,8 @@
             // 
             // groupBox4
             // 
+            this.groupBox4.Controls.Add(this.TextureSourceDraw);
+            this.groupBox4.Controls.Add(this.TextureSource);
             this.groupBox4.Controls.Add(this.Fade);
             this.groupBox4.Controls.Add(this.XFadeLabel);
             this.groupBox4.Controls.Add(this.TextureSurfaceSelect);
@@ -903,7 +907,7 @@
             // 
             this.Fade.AutoSize = true;
             this.Fade.Enabled = false;
-            this.Fade.Location = new System.Drawing.Point(145, 41);
+            this.Fade.Location = new System.Drawing.Point(203, 41);
             this.Fade.Name = "Fade";
             this.Fade.Size = new System.Drawing.Size(50, 17);
             this.Fade.TabIndex = 30;
@@ -999,6 +1003,44 @@
             this.InnerAutoY.Size = new System.Drawing.Size(50, 20);
             this.InnerAutoY.TabIndex = 12;
             this.InnerAutoY.Text = "0";
+            // 
+            // TextureSource
+            // 
+            this.TextureSource.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.TextureSource.Enabled = false;
+            this.TextureSource.FormattingEnabled = true;
+            this.TextureSource.Items.AddRange(new object[] {
+            "[From Tiles]",
+            "Normal",
+            "Psych",
+            "Medivo",
+            "Diamondus Beta",
+            "Wisetyness",
+            "Blade",
+            "Mez02",
+            "Windstorm Fortress",
+            "Raneforus V",
+            "Corrupted Sanctuary",
+            "Xargon",
+            "IC Tubelectric",
+            "WTF",
+            "Muckamok Night",
+            "Desolation"});
+            this.TextureSource.Location = new System.Drawing.Point(9, 41);
+            this.TextureSource.Name = "TextureSource";
+            this.TextureSource.Size = new System.Drawing.Size(142, 21);
+            this.TextureSource.TabIndex = 31;
+            this.TextureSource.SelectedIndexChanged += new System.EventHandler(this.TextureSource_SelectedIndexChanged);
+            // 
+            // TextureSourceDraw
+            // 
+            this.TextureSourceDraw.Enabled = false;
+            this.TextureSourceDraw.Location = new System.Drawing.Point(157, 41);
+            this.TextureSourceDraw.Name = "TextureSourceDraw";
+            this.TextureSourceDraw.Size = new System.Drawing.Size(40, 21);
+            this.TextureSourceDraw.TabIndex = 32;
+            this.TextureSourceDraw.Text = "Draw";
+            this.TextureSourceDraw.UseVisualStyleBackColor = true;
             // 
             // LayerPropertiesForm
             // 
@@ -1121,5 +1163,7 @@
         private System.Windows.Forms.TextBox InnerAutoY;
         private System.Windows.Forms.Label InnerAutoXLabel;
         private System.Windows.Forms.TextBox InnerAutoX;
+        private System.Windows.Forms.Button TextureSourceDraw;
+        private System.Windows.Forms.ComboBox TextureSource;
     }
 }

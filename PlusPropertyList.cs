@@ -611,6 +611,9 @@ namespace MLLE
                     data5bodywriter.Write(layer.InnerY);
                     data5bodywriter.Write(layer.InnerAutoX);
                     data5bodywriter.Write(layer.InnerAutoY);
+                    data5bodywriter.Write(layer.Texture);
+                    if (layer.Texture < 0)
+                        data5bodywriter.Write(layer.TextureImage);
                 }
 
                 int levelTileCount = Tilesets.Sum(ts => (int)ts.TileCount);
@@ -846,6 +849,9 @@ namespace MLLE
                                 layer.InnerY = data5bodyreader.ReadSingle();
                                 layer.InnerAutoX = data5bodyreader.ReadSingle();
                                 layer.InnerAutoY = data5bodyreader.ReadSingle();
+                                layer.Texture = data5bodyreader.ReadSByte();
+                                if (layer.Texture < 0)
+                                    layer.TextureImage = data5bodyreader.ReadBytes(256 * 256);
                             }
                             Layers.Add(layer);
                         }
