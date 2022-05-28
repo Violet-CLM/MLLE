@@ -1013,6 +1013,8 @@ class Layer
                 return true;
             if (Name != DefaultNames[id])
                 return true;
+            if (XSpeedModel != 0 || YSpeedModel != 0)
+                return true;
             return false;
         }
     }
@@ -1278,6 +1280,8 @@ class J2LFile : J2File
     internal bool LevelNeedsData5 { get
         {
             if (Tilesets.Count > 1 || !AllLayers.SequenceEqual(DefaultLayers) || PlusPropertyList.LevelNeedsData5)
+                return true;
+            if (DefaultLayers.FirstOrDefault(layer => layer.PlusOnly) != null)
                 return true;
             return false;
         }
