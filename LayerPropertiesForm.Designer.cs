@@ -80,6 +80,10 @@
             this.YOffset = new System.Windows.Forms.TextBox();
             this.OffsetYLabel = new System.Windows.Forms.Label();
             this.ButtonApply = new System.Windows.Forms.Button();
+            this.OffsetXSModel = new System.Windows.Forms.Label();
+            this.LabelYSModel = new System.Windows.Forms.Label();
+            this.XSModel = new System.Windows.Forms.ComboBox();
+            this.YSModel = new System.Windows.Forms.ComboBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -247,7 +251,7 @@
             this.groupBox3.Controls.Add(this.TileWidth);
             this.groupBox3.Controls.Add(this.WidthLabel);
             this.groupBox3.Controls.Add(this.HeightLabel);
-            this.groupBox3.Location = new System.Drawing.Point(13, 277);
+            this.groupBox3.Location = new System.Drawing.Point(13, 303);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(259, 93);
             this.groupBox3.TabIndex = 8;
@@ -355,7 +359,7 @@
             this.groupBox4.Controls.Add(this.Stars);
             this.groupBox4.Controls.Add(this.ColorBox);
             this.groupBox4.Controls.Add(this.TextureMode);
-            this.groupBox4.Location = new System.Drawing.Point(13, 377);
+            this.groupBox4.Location = new System.Drawing.Point(13, 403);
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.Size = new System.Drawing.Size(259, 93);
             this.groupBox4.TabIndex = 9;
@@ -496,7 +500,7 @@
             // Copy4
             // 
             this.Copy4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.Copy4.Location = new System.Drawing.Point(278, 447);
+            this.Copy4.Location = new System.Drawing.Point(278, 473);
             this.Copy4.Name = "Copy4";
             this.Copy4.Size = new System.Drawing.Size(75, 23);
             this.Copy4.TabIndex = 3;
@@ -506,6 +510,10 @@
             // 
             // groupBoxPlus
             // 
+            this.groupBoxPlus.Controls.Add(this.YSModel);
+            this.groupBoxPlus.Controls.Add(this.XSModel);
+            this.groupBoxPlus.Controls.Add(this.OffsetXSModel);
+            this.groupBoxPlus.Controls.Add(this.LabelYSModel);
             this.groupBoxPlus.Controls.Add(this.SpriteParam);
             this.groupBoxPlus.Controls.Add(this.RotationAngle);
             this.groupBoxPlus.Controls.Add(this.RotationRadiusMultiplier);
@@ -523,14 +531,14 @@
             this.groupBoxPlus.Controls.Add(this.OffsetYLabel);
             this.groupBoxPlus.Location = new System.Drawing.Point(13, 149);
             this.groupBoxPlus.Name = "groupBoxPlus";
-            this.groupBoxPlus.Size = new System.Drawing.Size(259, 122);
+            this.groupBoxPlus.Size = new System.Drawing.Size(259, 148);
             this.groupBoxPlus.TabIndex = 8;
             this.groupBoxPlus.TabStop = false;
             this.groupBoxPlus.Text = "JJ2+ Properties";
             // 
             // SpriteParam
             // 
-            this.SpriteParam.Location = new System.Drawing.Point(204, 69);
+            this.SpriteParam.Location = new System.Drawing.Point(204, 95);
             this.SpriteParam.Maximum = new decimal(new int[] {
             255,
             0,
@@ -548,7 +556,7 @@
             0,
             0,
             0});
-            this.RotationAngle.Location = new System.Drawing.Point(61, 94);
+            this.RotationAngle.Location = new System.Drawing.Point(61, 120);
             this.RotationAngle.Maximum = new decimal(new int[] {
             1024,
             0,
@@ -566,7 +574,7 @@
             // 
             // RotationRadiusMultiplier
             // 
-            this.RotationRadiusMultiplier.Location = new System.Drawing.Point(204, 95);
+            this.RotationRadiusMultiplier.Location = new System.Drawing.Point(204, 121);
             this.RotationRadiusMultiplier.Maximum = new decimal(new int[] {
             10,
             0,
@@ -635,7 +643,7 @@
             "Blend Burn",
             "Blend Exclusion",
             "Translucent Tile"});
-            this.SpriteMode.Location = new System.Drawing.Point(60, 69);
+            this.SpriteMode.Location = new System.Drawing.Point(60, 95);
             this.SpriteMode.MaxDropDownItems = 10;
             this.SpriteMode.Name = "SpriteMode";
             this.SpriteMode.Size = new System.Drawing.Size(51, 21);
@@ -645,7 +653,7 @@
             // LabelRotationAngle
             // 
             this.LabelRotationAngle.AutoSize = true;
-            this.LabelRotationAngle.Location = new System.Drawing.Point(6, 98);
+            this.LabelRotationAngle.Location = new System.Drawing.Point(6, 124);
             this.LabelRotationAngle.Name = "LabelRotationAngle";
             this.LabelRotationAngle.Size = new System.Drawing.Size(54, 13);
             this.LabelRotationAngle.TabIndex = 14;
@@ -654,7 +662,7 @@
             // Hidden
             // 
             this.Hidden.AutoSize = true;
-            this.Hidden.Location = new System.Drawing.Point(203, 46);
+            this.Hidden.Location = new System.Drawing.Point(203, 72);
             this.Hidden.Name = "Hidden";
             this.Hidden.Size = new System.Drawing.Size(48, 17);
             this.Hidden.TabIndex = 12;
@@ -665,7 +673,7 @@
             // NameBox
             // 
             this.NameBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.NameBox.Location = new System.Drawing.Point(60, 44);
+            this.NameBox.Location = new System.Drawing.Point(60, 70);
             this.NameBox.Name = "NameBox";
             this.NameBox.Size = new System.Drawing.Size(137, 20);
             this.NameBox.TabIndex = 11;
@@ -674,7 +682,7 @@
             // LabelRotationRadiusMultiplier
             // 
             this.LabelRotationRadiusMultiplier.AutoSize = true;
-            this.LabelRotationRadiusMultiplier.Location = new System.Drawing.Point(124, 98);
+            this.LabelRotationRadiusMultiplier.Location = new System.Drawing.Point(124, 124);
             this.LabelRotationRadiusMultiplier.Name = "LabelRotationRadiusMultiplier";
             this.LabelRotationRadiusMultiplier.Size = new System.Drawing.Size(72, 13);
             this.LabelRotationRadiusMultiplier.TabIndex = 12;
@@ -683,7 +691,7 @@
             // NameLabel
             // 
             this.NameLabel.AutoSize = true;
-            this.NameLabel.Location = new System.Drawing.Point(6, 47);
+            this.NameLabel.Location = new System.Drawing.Point(6, 73);
             this.NameLabel.Name = "NameLabel";
             this.NameLabel.Size = new System.Drawing.Size(35, 13);
             this.NameLabel.TabIndex = 4;
@@ -701,7 +709,7 @@
             // LabelSpriteMode
             // 
             this.LabelSpriteMode.AutoSize = true;
-            this.LabelSpriteMode.Location = new System.Drawing.Point(6, 72);
+            this.LabelSpriteMode.Location = new System.Drawing.Point(6, 98);
             this.LabelSpriteMode.Name = "LabelSpriteMode";
             this.LabelSpriteMode.Size = new System.Drawing.Size(44, 13);
             this.LabelSpriteMode.TabIndex = 10;
@@ -720,7 +728,7 @@
             // LabelSpriteParam
             // 
             this.LabelSpriteParam.AutoSize = true;
-            this.LabelSpriteParam.Location = new System.Drawing.Point(124, 72);
+            this.LabelSpriteParam.Location = new System.Drawing.Point(124, 98);
             this.LabelSpriteParam.Name = "LabelSpriteParam";
             this.LabelSpriteParam.Size = new System.Drawing.Size(65, 13);
             this.LabelSpriteParam.TabIndex = 9;
@@ -755,13 +763,67 @@
             this.ButtonApply.UseVisualStyleBackColor = true;
             this.ButtonApply.Click += new System.EventHandler(this.ButtonApply_Click);
             // 
+            // OffsetXSModel
+            // 
+            this.OffsetXSModel.AutoSize = true;
+            this.OffsetXSModel.Location = new System.Drawing.Point(6, 49);
+            this.OffsetXSModel.Name = "OffsetXSModel";
+            this.OffsetXSModel.Size = new System.Drawing.Size(56, 13);
+            this.OffsetXSModel.TabIndex = 18;
+            this.OffsetXSModel.Text = "X-S.Model";
+            // 
+            // LabelYSModel
+            // 
+            this.LabelYSModel.AutoSize = true;
+            this.LabelYSModel.Location = new System.Drawing.Point(124, 49);
+            this.LabelYSModel.Name = "LabelYSModel";
+            this.LabelYSModel.Size = new System.Drawing.Size(56, 13);
+            this.LabelYSModel.TabIndex = 17;
+            this.LabelYSModel.Text = "Y-S.Model";
+            // 
+            // XSModel
+            // 
+            this.XSModel.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.XSModel.DropDownWidth = 175;
+            this.XSModel.FormattingEnabled = true;
+            this.XSModel.Items.AddRange(new object[] {
+            "Normal",
+            "Layer 8",
+            "Both Speeds",
+            "From Start",
+            "Fit Level",
+            "Speed Multipliers"});
+            this.XSModel.Location = new System.Drawing.Point(60, 46);
+            this.XSModel.MaxDropDownItems = 10;
+            this.XSModel.Name = "XSModel";
+            this.XSModel.Size = new System.Drawing.Size(51, 21);
+            this.XSModel.TabIndex = 19;
+            // 
+            // YSModel
+            // 
+            this.YSModel.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.YSModel.DropDownWidth = 175;
+            this.YSModel.FormattingEnabled = true;
+            this.YSModel.Items.AddRange(new object[] {
+            "Normal",
+            "Layer 8",
+            "Both Speeds",
+            "From Start",
+            "Fit Level",
+            "Speed Multipliers"});
+            this.YSModel.Location = new System.Drawing.Point(203, 46);
+            this.YSModel.MaxDropDownItems = 10;
+            this.YSModel.Name = "YSModel";
+            this.YSModel.Size = new System.Drawing.Size(51, 21);
+            this.YSModel.TabIndex = 20;
+            // 
             // LayerPropertiesForm
             // 
             this.AcceptButton = this.OKButton;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
-            this.ClientSize = new System.Drawing.Size(365, 482);
+            this.ClientSize = new System.Drawing.Size(365, 508);
             this.Controls.Add(this.ButtonApply);
             this.Controls.Add(this.groupBoxPlus);
             this.Controls.Add(this.Copy4);
@@ -854,5 +916,9 @@
         private System.Windows.Forms.NumericUpDown SpriteParam;
         private System.Windows.Forms.NumericUpDown RotationAngle;
         private System.Windows.Forms.NumericUpDown RotationRadiusMultiplier;
+        private System.Windows.Forms.Label OffsetXSModel;
+        private System.Windows.Forms.Label LabelYSModel;
+        private System.Windows.Forms.ComboBox XSModel;
+        private System.Windows.Forms.ComboBox YSModel;
     }
 }

@@ -120,6 +120,8 @@ namespace MLLE
             SpriteParam.Value = layer.SpriteParam;
             RotationAngle.Value = layer.RotationAngle;
             RotationRadiusMultiplier.Value = layer.RotationRadiusMultiplier;
+            XSModel.SelectedIndex = layer.XSpeedModel;
+            YSModel.SelectedIndex = layer.YSpeedModel;
         }
 
         private bool ApplyChanges()
@@ -234,6 +236,8 @@ namespace MLLE
                 DataSource.SpriteParam = (byte)SpriteParam.Value;
                 DataSource.RotationAngle = (int)RotationAngle.Value;
                 DataSource.RotationRadiusMultiplier = (int)RotationRadiusMultiplier.Value;
+                DataSource.XSpeedModel = (byte)XSModel.SelectedIndex;
+                DataSource.YSpeedModel = (byte)YSModel.SelectedIndex;
                 SourceForm.LevelHasBeenModified = true;
             }
 

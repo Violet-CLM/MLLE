@@ -601,6 +601,8 @@ namespace MLLE
                     data5bodywriter.Write(layer.SpriteParam);
                     data5bodywriter.Write(layer.RotationAngle);
                     data5bodywriter.Write(layer.RotationRadiusMultiplier);
+                    data5bodywriter.Write(layer.XSpeedModel);
+                    data5bodywriter.Write(layer.YSpeedModel);
                 }
 
                 int levelTileCount = Tilesets.Sum(ts => (int)ts.TileCount);
@@ -824,6 +826,11 @@ namespace MLLE
                             layer.SpriteParam = data5bodyreader.ReadByte();
                             layer.RotationAngle = data5bodyreader.ReadInt32();
                             layer.RotationRadiusMultiplier = data5bodyreader.ReadInt32();
+                            if (data5Version >= 0x106) //MLLE-Include-1.6 adds a bunch of layer properties from JJ2+ 5.10
+                            {
+                                layer.XSpeedModel = data5bodyreader.ReadByte();
+                                layer.YSpeedModel = data5bodyreader.ReadByte();
+                            }
                             Layers.Add(layer);
                         }
 

@@ -206,6 +206,10 @@ namespace MLLE {{
             layer.rotationAngle = pint;
             data5.pop(pint);
             layer.rotationRadiusMultiplier = pint;
+            data5.pop(pbyte);
+            layer.xSpeedModel = LAYERSPEEDMODEL::LayerSpeedModel(pbyte);
+            data5.pop(pbyte);
+            layer.ySpeedModel = LAYERSPEEDMODEL::LayerSpeedModel(pbyte);
             newLayerOrder.insertLast(layer);
         }}
         jjLayerOrderSet(newLayerOrder);

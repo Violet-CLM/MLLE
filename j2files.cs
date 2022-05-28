@@ -826,6 +826,7 @@ class Layer
     public bool Hidden;
     public byte SpriteMode, SpriteParam;
     public int RotationAngle, RotationRadiusMultiplier;
+    public byte XSpeedModel, YSpeedModel;
 
     public ArrayMap<ushort> TileMap;
 
@@ -883,6 +884,15 @@ class Layer
         SpriteParam = other.SpriteParam;
         RotationAngle = other.RotationAngle;
         RotationRadiusMultiplier = other.RotationRadiusMultiplier;
+        if (other.id == 7 && other.XSpeedModel == 1 && other.YSpeedModel == 1) //layer 8 using "Layer 8" models
+        {
+            XSpeedModel = YSpeedModel = 0; //"Normal" instead. This is how JJ2+'s jjLAYER constructor does it, might as well follow suit.
+        }
+        else
+        {
+            XSpeedModel = other.XSpeedModel;
+            YSpeedModel = other.YSpeedModel;
+        }
 
         TileMap = new ArrayMap<ushort>(Width, Height);
         for (ushort x = 0; x < Width; x++)
@@ -916,6 +926,8 @@ class Layer
         Name = DefaultNames[i];
         RotationAngle = DefaultRotationAngles[i];
         RotationRadiusMultiplier = DefaultRotationRadiusMultipliers[i];
+
+        XSpeedModel = YSpeedModel = (byte)((i == 7) ? 1 : 0);
 
         TileMap = new ArrayMap<ushort>(Width, Height);
     }
