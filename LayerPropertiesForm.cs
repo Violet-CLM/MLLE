@@ -27,47 +27,50 @@ namespace MLLE
         }
         private void LayerPropertiesForm_Load(object sender, EventArgs e)
         {
-            if (SourceForm.TextureTypes.Count == 0) { TextureMode.Parent = groupBox3; TextureMode.Location = new Point(TileHeight.Location.X, LimitVisibleRegion.Location.Y); ClientSize = new Size(ClientSize.Width, ClientSize.Height - (groupBox4.Bottom - groupBox3.Bottom)); }
+            int heightBetweenRows = 26;
+            if (SourceForm.TextureTypes.Count == 0)
+            {
+                TextureMode.Parent = groupBox3;
+                TextureMode.Location = new Point(TileHeight.Location.X, LimitVisibleRegion.Location.Y);
+                groupBox4.Hide();
+                groupBox4.Height = 0;
+            }
             else if (SourceForm.TextureTypes.Count == 1)
             {
                 TextureModeSelect.Visible = false;
-                foreach (Control foo in new Control[] { Param1, Param2, Param3, RedLabel, GreenLabel, BlueLabel, Stars, ColorBox, ColorLabel })
-                { foo.Location = new Point(foo.Location.X, foo.Location.Y - TextureModeSelect.Height); }
-                /*Param1.Location = new Point(Param1.Location.X, Param1.Location.Y - TextureModeSelect.Height);
-                Param2.Location = new Point(Param2.Location.X, Param2.Location.Y - TextureModeSelect.Height);
-                Param3.Location = new Point(Param3.Location.X, Param3.Location.Y - TextureModeSelect.Height);
-                RedLabel.Location = new Point(RedLabel.Location.X, RedLabel.Location.Y - TextureModeSelect.Height);
-                GreenLabel.Location = new Point(GreenLabel.Location.X, GreenLabel.Location.Y - TextureModeSelect.Height);
-                BlueLabel.Location = new Point(BlueLabel.Location.X, BlueLabel.Location.Y - TextureModeSelect.Height);
-                Stars.Location = new Point(Stars.Location.X, Stars.Location.Y - TextureModeSelect.Height);
-                ColorBox.Location = new Point(ColorBox.Location.X, ColorBox.Location.Y - TextureModeSelect.Height);
-                ColorLabel.Location = new Point(ColorLabel.Location.X, ColorLabel.Location.Y - TextureModeSelect.Height);*/
-                if (SourceForm.TextureTypes[0][1] == "+")
-                {
-                    groupBox4.Height -= TextureModeSelect.Height + (Param3.Location.Y - Param1.Location.Y);
-                    Height -= TextureModeSelect.Height + (Param3.Location.Y - Param1.Location.Y);
-                }
-                else
-                {
-                    groupBox4.Height -= TextureModeSelect.Height;
-                    Height -= TextureModeSelect.Height;
-                }
+                if (SourceForm.TextureTypes[0][1] == "+") //color, not three number boxes
+                    groupBox4.Height -= heightBetweenRows;
             }
             if (!SourceForm.EnableableBools[SourceForm.J2L.VersionType][EnableableTitles.BoolDevelopingForPlus])
             {
                 groupBoxPlus.Hide();
-                var amountToShrinkWindow = groupBox3.Location.Y - groupBoxPlus.Location.Y;
-                groupBox3.Location = new Point(groupBox3.Location.X, groupBox3.Location.Y - amountToShrinkWindow);
-                groupBox4.Location = new Point(groupBox4.Location.X, groupBox4.Location.Y - amountToShrinkWindow);
-                Height -= amountToShrinkWindow;
-                TextureModeSelect.Width += TextureModeSelect.Left - TextureSurfaceSelect.Left;
-                TextureModeSelect.Left = TextureSurfaceSelect.Left;
+                groupBoxPlus.Height = 0;
+                groupBox4.Left = groupBoxPlus.Left;
+                if (TextureModeSelect.Visible)
+                {
+                    TextureModeSelect.Width += TextureModeSelect.Left - TextureSurfaceSelect.Left;
+                    TextureModeSelect.Left = TextureSurfaceSelect.Left;
+                }
+                else
+                {
+                    foreach (Control foo in new Control[] { Param1, Param2, Param3, RedLabel, GreenLabel, BlueLabel, Stars, ColorBox, ColorLabel })
+                        foo.Top -= heightBetweenRows;
+                    groupBox4.Height -= heightBetweenRows;
+                }
                 TextureSurfaceSelect.Visible = false;
+                Fade.Visible = XFade.Visible = XFadeLabel.Visible = YFade.Visible = YFadeLabel.Visible = false;
+                foreach (Control foo in new Control[] { Param1, Param2, Param3, RedLabel, GreenLabel, BlueLabel, Stars, ColorBox, ColorLabel })
+                    foo.Top -= heightBetweenRows * 2;
+                groupBox4.Height -= heightBetweenRows * 2;
             }
             else //yes developing for plus
             {
                 TextureMode.Visible = false;
                 groupBox4.Text = "Texture Mode";
+                if (!TextureModeSelect.Visible) //only if you're doing weird stuff to your ini
+                {
+                    TextureSurfaceSelect.Width += TextureModeSelect.Right - TextureSurfaceSelect.Right;
+                }
             }
             TextureModeSelect.Items.Clear();
             for (ushort i = 0; i < SourceForm.TextureTypes.Count; i++) TextureModeSelect.Items.Add(SourceForm.TextureTypes[i][0].Trim());
@@ -76,9 +79,8 @@ namespace MLLE
                 ButtonApply.Hide();
                 groupBox1.Hide();
                 var amountToShrinkWindow = groupBox2.Location.Y - groupBox1.Location.Y;
-                foreach (GroupBox foo in new GroupBox[] { groupBox2, groupBox3, groupBox4, groupBoxPlus })
+                foreach (GroupBox foo in new GroupBox[] { groupBox2, groupBoxPlus })
                 { foo.Location = new Point(foo.Location.X, foo.Location.Y - amountToShrinkWindow); }
-                Height -= amountToShrinkWindow;
                 if (DataSource.id == J2LFile.SpriteLayerID || DataSource.id == 7)
                     Copy4.Hide();
                 ReadLayer(DataSource);
@@ -88,6 +90,7 @@ namespace MLLE
                 LayerSelect.Items.AddRange(SourceForm.J2L.AllLayers.ToArray());
                 LayerSelect.SelectedIndex = CurrentLayer;
             }
+            ClientSize = new Size(ClientSize.Width, Math.Max(groupBoxPlus.Bottom, groupBox4.Bottom) + 12);
         }
 
         private void ReadLayer(Layer layer)

@@ -107,7 +107,8 @@
             // 
             // OKButton
             // 
-            this.OKButton.Location = new System.Drawing.Point(278, 12);
+            this.OKButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.OKButton.Location = new System.Drawing.Point(547, 12);
             this.OKButton.Name = "OKButton";
             this.OKButton.Size = new System.Drawing.Size(75, 23);
             this.OKButton.TabIndex = 0;
@@ -117,8 +118,9 @@
             // 
             // ButtonCancel
             // 
+            this.ButtonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.ButtonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.ButtonCancel.Location = new System.Drawing.Point(278, 41);
+            this.ButtonCancel.Location = new System.Drawing.Point(547, 41);
             this.ButtonCancel.Name = "ButtonCancel";
             this.ButtonCancel.Size = new System.Drawing.Size(75, 23);
             this.ButtonCancel.TabIndex = 1;
@@ -257,7 +259,7 @@
             this.groupBox3.Controls.Add(this.TileWidth);
             this.groupBox3.Controls.Add(this.WidthLabel);
             this.groupBox3.Controls.Add(this.HeightLabel);
-            this.groupBox3.Location = new System.Drawing.Point(13, 303);
+            this.groupBox3.Location = new System.Drawing.Point(278, 17);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(259, 93);
             this.groupBox3.TabIndex = 8;
@@ -371,7 +373,7 @@
             this.groupBox4.Controls.Add(this.Stars);
             this.groupBox4.Controls.Add(this.ColorBox);
             this.groupBox4.Controls.Add(this.TextureMode);
-            this.groupBox4.Location = new System.Drawing.Point(13, 403);
+            this.groupBox4.Location = new System.Drawing.Point(278, 149);
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.Size = new System.Drawing.Size(259, 148);
             this.groupBox4.TabIndex = 9;
@@ -397,7 +399,7 @@
             // 
             // Param1
             // 
-            this.Param1.Location = new System.Drawing.Point(203, 67);
+            this.Param1.Location = new System.Drawing.Point(203, 93);
             this.Param1.Maximum = new decimal(new int[] {
             255,
             0,
@@ -410,7 +412,7 @@
             // 
             // Param2
             // 
-            this.Param2.Location = new System.Drawing.Point(86, 92);
+            this.Param2.Location = new System.Drawing.Point(86, 119);
             this.Param2.Maximum = new decimal(new int[] {
             255,
             0,
@@ -423,7 +425,7 @@
             // 
             // Param3
             // 
-            this.Param3.Location = new System.Drawing.Point(203, 91);
+            this.Param3.Location = new System.Drawing.Point(203, 119);
             this.Param3.Maximum = new decimal(new int[] {
             255,
             0,
@@ -438,7 +440,7 @@
             // 
             this.RedLabel.AutoSize = true;
             this.RedLabel.Enabled = false;
-            this.RedLabel.Location = new System.Drawing.Point(143, 69);
+            this.RedLabel.Location = new System.Drawing.Point(143, 95);
             this.RedLabel.Name = "RedLabel";
             this.RedLabel.Size = new System.Drawing.Size(54, 13);
             this.RedLabel.TabIndex = 13;
@@ -448,7 +450,7 @@
             // 
             this.GreenLabel.AutoSize = true;
             this.GreenLabel.Enabled = false;
-            this.GreenLabel.Location = new System.Drawing.Point(6, 94);
+            this.GreenLabel.Location = new System.Drawing.Point(6, 122);
             this.GreenLabel.Name = "GreenLabel";
             this.GreenLabel.Size = new System.Drawing.Size(63, 13);
             this.GreenLabel.TabIndex = 11;
@@ -458,7 +460,7 @@
             // 
             this.BlueLabel.AutoSize = true;
             this.BlueLabel.Enabled = false;
-            this.BlueLabel.Location = new System.Drawing.Point(142, 94);
+            this.BlueLabel.Location = new System.Drawing.Point(142, 122);
             this.BlueLabel.Name = "BlueLabel";
             this.BlueLabel.Size = new System.Drawing.Size(55, 13);
             this.BlueLabel.TabIndex = 9;
@@ -479,7 +481,7 @@
             // 
             this.ColorLabel.AutoSize = true;
             this.ColorLabel.Enabled = false;
-            this.ColorLabel.Location = new System.Drawing.Point(171, 72);
+            this.ColorLabel.Location = new System.Drawing.Point(169, 97);
             this.ColorLabel.Name = "ColorLabel";
             this.ColorLabel.Size = new System.Drawing.Size(58, 13);
             this.ColorLabel.TabIndex = 3;
@@ -490,7 +492,7 @@
             // 
             this.Stars.AutoSize = true;
             this.Stars.Enabled = false;
-            this.Stars.Location = new System.Drawing.Point(9, 68);
+            this.Stars.Location = new System.Drawing.Point(9, 94);
             this.Stars.Name = "Stars";
             this.Stars.Size = new System.Drawing.Size(102, 17);
             this.Stars.TabIndex = 24;
@@ -503,7 +505,7 @@
             this.ColorBox.BackColor = System.Drawing.Color.Black;
             this.ColorBox.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.ColorBox.Enabled = false;
-            this.ColorBox.Location = new System.Drawing.Point(145, 68);
+            this.ColorBox.Location = new System.Drawing.Point(145, 94);
             this.ColorBox.Name = "ColorBox";
             this.ColorBox.Size = new System.Drawing.Size(20, 20);
             this.ColorBox.TabIndex = 25;
@@ -529,7 +531,7 @@
             // Copy4
             // 
             this.Copy4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.Copy4.Location = new System.Drawing.Point(278, 525);
+            this.Copy4.Location = new System.Drawing.Point(547, 274);
             this.Copy4.Name = "Copy4";
             this.Copy4.Size = new System.Drawing.Size(75, 23);
             this.Copy4.TabIndex = 3;
@@ -838,7 +840,8 @@
             // 
             // ButtonApply
             // 
-            this.ButtonApply.Location = new System.Drawing.Point(278, 70);
+            this.ButtonApply.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.ButtonApply.Location = new System.Drawing.Point(547, 70);
             this.ButtonApply.Name = "ButtonApply";
             this.ButtonApply.Size = new System.Drawing.Size(75, 23);
             this.ButtonApply.TabIndex = 2;
@@ -850,7 +853,7 @@
             // 
             this.XFadeLabel.AutoSize = true;
             this.XFadeLabel.Enabled = false;
-            this.XFadeLabel.Location = new System.Drawing.Point(6, 122);
+            this.XFadeLabel.Location = new System.Drawing.Point(6, 70);
             this.XFadeLabel.Name = "XFadeLabel";
             this.XFadeLabel.Size = new System.Drawing.Size(41, 13);
             this.XFadeLabel.TabIndex = 22;
@@ -860,7 +863,7 @@
             // 
             this.XFade.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.XFade.Enabled = false;
-            this.XFade.Location = new System.Drawing.Point(86, 119);
+            this.XFade.Location = new System.Drawing.Point(86, 67);
             this.XFade.Name = "XFade";
             this.XFade.Size = new System.Drawing.Size(50, 20);
             this.XFade.TabIndex = 23;
@@ -870,7 +873,7 @@
             // 
             this.YFade.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.YFade.Enabled = false;
-            this.YFade.Location = new System.Drawing.Point(203, 119);
+            this.YFade.Location = new System.Drawing.Point(203, 67);
             this.YFade.Name = "YFade";
             this.YFade.Size = new System.Drawing.Size(50, 20);
             this.YFade.TabIndex = 24;
@@ -880,7 +883,7 @@
             // 
             this.YFadeLabel.AutoSize = true;
             this.YFadeLabel.Enabled = false;
-            this.YFadeLabel.Location = new System.Drawing.Point(143, 122);
+            this.YFadeLabel.Location = new System.Drawing.Point(143, 70);
             this.YFadeLabel.Name = "YFadeLabel";
             this.YFadeLabel.Size = new System.Drawing.Size(41, 13);
             this.YFadeLabel.TabIndex = 21;
@@ -890,7 +893,7 @@
             // 
             this.Fade.AutoSize = true;
             this.Fade.Enabled = false;
-            this.Fade.Location = new System.Drawing.Point(145, 44);
+            this.Fade.Location = new System.Drawing.Point(145, 41);
             this.Fade.Name = "Fade";
             this.Fade.Size = new System.Drawing.Size(50, 17);
             this.Fade.TabIndex = 30;
@@ -903,7 +906,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
-            this.ClientSize = new System.Drawing.Size(365, 560);
+            this.ClientSize = new System.Drawing.Size(634, 309);
             this.Controls.Add(this.ButtonApply);
             this.Controls.Add(this.groupBoxPlus);
             this.Controls.Add(this.Copy4);
