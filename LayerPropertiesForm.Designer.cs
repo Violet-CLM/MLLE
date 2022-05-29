@@ -1041,6 +1041,7 @@
             this.TextureSourceDraw.TabIndex = 32;
             this.TextureSourceDraw.Text = "Draw";
             this.TextureSourceDraw.UseVisualStyleBackColor = true;
+            this.TextureSourceDraw.Click += new System.EventHandler(this.TextureSourceDraw_Click);
             // 
             // LayerPropertiesForm
             // 

@@ -184,7 +184,52 @@
   <data name="SwingingVine" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\SwingingVine.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="_10_corruptedsanctuary" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\10-corruptedsanctuary.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="_11_xargon" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\11-xargon.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="_12_tubelectric" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\12-tubelectric.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="_13_wtf" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\13-wtf.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="_14_muckamoknight" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\14-muckamoknight.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="_15_desolation" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\15-desolation.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="_1_normal" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\1-normal.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="_2_psych" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\2-psych.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="_3_medivo" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\3-medivo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="_4_diamb" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\4-diamb.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="_500Bumper" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Images\500Bumper.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="_5_wisetyness" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\5-wisetyness.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="_6_blade" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\6-blade.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="_7_mez02" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\7-mez02.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="_8_windstormfortress" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\8-windstormfortress.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="_9_raneforusv" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Images\9-raneforusv.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

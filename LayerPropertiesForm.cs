@@ -148,6 +148,7 @@ namespace MLLE
                 if (TextureSource.Items.Count == 16)
                     TextureSource.Items.Add("[Custom]");
                 TextureSource.SelectedIndex = 16;
+                Texture = layer.TextureImage;
             }
         }
 
@@ -273,6 +274,7 @@ namespace MLLE
                 Single.TryParse(InnerAutoX.Text, out DataSource.InnerAutoX);
                 Single.TryParse(InnerAutoY.Text, out DataSource.InnerAutoY);
                 DataSource.Texture = TextureSource.SelectedIndex < 16 ? (sbyte)TextureSource.SelectedIndex : (sbyte)-1;
+                DataSource.TextureImage = Texture;
                 SourceForm.LevelHasBeenModified = true;
             }
 
@@ -394,6 +396,60 @@ namespace MLLE
             if (TextureSource.SelectedIndex < 16)
                 while (TextureSource.Items.Count > 16) //includes [Custom]
                     TextureSource.Items.RemoveAt(16);
+        }
+
+        byte[] Texture = null;
+        private static readonly Bitmap[] TextureImages = { Properties.Resources._1_normal, Properties.Resources._2_psych, Properties.Resources._3_medivo, Properties.Resources._4_diamb, Properties.Resources._5_wisetyness, Properties.Resources._6_blade, Properties.Resources._7_mez02, Properties.Resources._8_windstormfortress, Properties.Resources._9_raneforusv, Properties.Resources._10_corruptedsanctuary, Properties.Resources._11_xargon, Properties.Resources._12_tubelectric, Properties.Resources._13_wtf, Properties.Resources._14_muckamoknight, Properties.Resources._15_desolation };
+        private void TextureSourceDraw_Click(object sender, EventArgs e)
+        {
+            if (!SourceForm.J2L.HasTiles)
+                return; //no palette, can't do any editing
+            byte[] texture;
+            if (TextureSource.SelectedIndex == 0) //from tiles
+            {
+                texture = new byte[256 * 256];
+                if (DataSource.Width * DataSource.Height >= 8*8)
+                {
+                    for (int i = 0; i < 8 * 8; ++i)
+                    {
+                        uint tileID = DataSource.TileMap[i % DataSource.Width, i / DataSource.Width];
+                        if (tileID < SourceForm.J2L.TileCount)
+                        {
+                            byte[] tileImageAsBytes = SourceForm.J2L.PlusPropertyList.TileImages[tileID];
+                            if (tileImageAsBytes == null)
+                            {
+                                J2TFile J2T;
+                                uint tileInTilesetID = SourceForm.J2L.getTileInTilesetID(tileID, out J2T);
+                                tileImageAsBytes = J2T.Images[J2T.ImageAddress[tileInTilesetID]];
+                                if (J2T.ColorRemapping != null)
+                                    tileImageAsBytes = tileImageAsBytes.Select(c => J2T.ColorRemapping[c]).ToArray();
+                            }
+                            int firstResultByteIndex = (i & 7) * 32 + (i / 8) * 32 * 256;
+                            for (int b = 0; b < 32 * 32; ++b)
+                                texture[firstResultByteIndex + (b & 31) + (b >> 5) * 256] = tileImageAsBytes[b];
+                        }
+                    }
+                }
+            }
+            else if (TextureSource.SelectedIndex >= 16) //custom
+            {
+                texture = DataSource.TextureImage.Clone() as byte[];
+            }
+            else
+            {
+                texture = BitmapStuff.BitmapToByteArray(TextureImages[TextureSource.SelectedIndex - 1]);
+            }
+            if (new TileImageEditorForm().ShowForm(
+                ref texture,
+                texture,
+                SourceForm.J2L.Palette
+            ))
+            {
+                if (TextureSource.Items.Count == 16)
+                    TextureSource.Items.Add("[Custom]");
+                TextureSource.SelectedIndex = 16;
+                Texture = texture;
+            }
         }
     }
 }
