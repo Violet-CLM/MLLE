@@ -801,7 +801,7 @@ class Layer
     public byte unknown1;
     public bool HasTiles
     {
-        get { return id == J2LFile.SpriteLayerID || TileMap.Count != 0; }
+        get { return id == J2LFile.SpriteLayerID || TextureSurface > 1 || TileMap.Count != 0; }
     }
     public bool isDefault { get { return id >= 0; } }
 
@@ -960,6 +960,8 @@ class Layer
         Name = "New Layer";
         id = -1;
         TileMap = new ArrayMap<ushort>(Width, Height);
+        Fade = true;
+        XFade = YFade = 0.5f;
     }
 
     public uint GetSize()
@@ -1035,7 +1037,8 @@ class Layer
                 return true;
             if (Name != DefaultNames[id])
                 return true;
-            if (XSpeedModel != 0 || YSpeedModel != 0)
+            int defaultSpeedModel = (id != 7) ? 0 : 1;
+            if (XSpeedModel != defaultSpeedModel || YSpeedModel != defaultSpeedModel)
                 return true;
             if (TextureSurface > 1) //in vanilla this is a bool
                 return true;

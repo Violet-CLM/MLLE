@@ -157,6 +157,24 @@ namespace MLLE
             newrectangle = null;
             lock (DataSource)
             {
+                if (SourceForm.EnableableBools[SourceForm.J2L.VersionType][EnableableTitles.BoolDevelopingForPlus]) //any width/height allowed for textured layers, in principle
+                {
+                    if (TextureSurfaceSelect.SelectedIndex != 0 && TextureSource.SelectedIndex == 0)
+                    {
+                        int layerSize = (((int)WidthBox.Value + 3) & ~3) * (int)HeightBox.Value;
+                        if (layerSize < 8 * 8)
+                        {
+                            switch (MessageBox.Show("You are trying to save a textured layer using [From Tiles] as its texture image, but the layer is too small. Would you like to resize the layer to 8x8?", "Layer too small", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning))
+                            {
+                                case DialogResult.Yes:
+                                    WidthBox.Value = HeightBox.Value = 8;
+                                    break;
+                                case DialogResult.Cancel:
+                                    return false;
+                            }
+                        }
+                    }
+                }
                 if (DataSource.Width != WidthBox.Value || DataSource.Height != HeightBox.Value)
                 {
                     if (DataSource.HasTiles)
@@ -349,11 +367,19 @@ namespace MLLE
         {
             XFade.Enabled = YFade.Enabled = XFadeLabel.Enabled = YFadeLabel.Enabled = TextureModeSelect.Enabled = Stars.Enabled = ColorBox.Enabled = ColorLabel.Enabled = Param1.Enabled = Param2.Enabled = Param3.Enabled = RedLabel.Enabled = GreenLabel.Enabled = BlueLabel.Enabled = TextureMode.Checked;
             TextureSource.Enabled = TextureSourceDraw.Enabled = TextureMode.Checked && TextureModeSelect.SelectedIndex != 2;
-            WidthBox.Enabled = HeightBox.Enabled = WidthLabel.Enabled = HeightLabel.Enabled = !TextureMode.Checked;
             Fade.Enabled = TextureMode.Checked && (TextureModeSelect.SelectedIndex <= 1 || TextureModeSelect.SelectedIndex == 5); //warp horizon, tunnel, cylinder
             SpriteMode.Enabled = !TextureMode.Checked || (TextureSurfaceSelect.SelectedIndex != 3 && TextureModeSelect.SelectedIndex != 6);
-            if (TextureMode.Checked) WidthBox.Value = HeightBox.Value = 8;
-            else { WidthBox.Value = DataSource.Width; HeightBox.Value = DataSource.Height; }
+            if (!SourceForm.EnableableBools[SourceForm.J2L.VersionType][EnableableTitles.BoolDevelopingForPlus])
+            {
+                if (TextureMode.Checked) {
+                    WidthBox.Value = HeightBox.Value = 8;
+                    WidthBox.Enabled = HeightBox.Enabled = WidthLabel.Enabled = HeightLabel.Enabled = false;
+                } else {
+                    WidthBox.Value = DataSource.Width;
+                    HeightBox.Value = DataSource.Height;
+                    WidthBox.Enabled = HeightBox.Enabled = WidthLabel.Enabled = HeightLabel.Enabled = true;
+                }
+            } //else, in a JJ2+ level, the texture might take its image from plus.j2d or a pixelmap, so the layer size no longer needs to be 8x8 (or otherwise 64+ tiles)
             TileHeight_CheckedChanged(sender, e);
         }
         private void TileHeight_CheckedChanged(object sender, EventArgs e) {

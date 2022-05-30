@@ -2616,7 +2616,7 @@ void main() {
                         }
                         else
                         {
-                            if (DrawingLayer.HasTiles && !DrawingLayer.Hidden) Reindeer(DrawingLayer);
+                            if (DrawingLayer.HasTiles && !DrawingLayer.Hidden && (DrawingLayer.TextureSurface == 0 || l == J2L.AllLayers.Count - 1)) Reindeer(DrawingLayer);
                             if (DrawingLayer == J2L.SpriteLayer && ParallaxEventDisplayType == 0 && EventDisplayMode != 0) { EventReindeer(); SetTextureTo(AtlasID.Image); }
                         }
                     }
