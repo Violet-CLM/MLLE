@@ -306,6 +306,8 @@ namespace MLLE
             }
 
             Fade.Enabled = TextureMode.Checked && (TextureModeSelect.SelectedIndex <= 1 || TextureModeSelect.SelectedIndex == 5); //warp horizon, tunnel, cylinder
+            TextureSource.Enabled = TextureSourceDraw.Enabled = TextureMode.Checked && TextureModeSelect.SelectedIndex != 2;
+            SpriteMode.Enabled = !TextureMode.Checked || (TextureSurfaceSelect.SelectedIndex != 3 && TextureModeSelect.SelectedIndex != 6);
             string fadeSuffix = "Fade";
             if (TextureModeSelect.SelectedIndex == 2 || TextureModeSelect.SelectedIndex == 3)
                 fadeSuffix = "Rot.Point";
@@ -335,7 +337,7 @@ namespace MLLE
             ReadLayer(DataSource = SourceForm.J2L.AllLayers[CurrentLayer]);
             TileWidth.Enabled = TileHeight.Enabled = (
                 (
-                    XOffset.Enabled = YOffset.Enabled = groupBox2.Enabled = TextureMode.Enabled = (DataSource.id != J2LFile.SpriteLayerID)
+                    XSModel.Enabled = YSModel.Enabled = XOffset.Enabled = YOffset.Enabled = TextureMode.Enabled = groupBox2.Enabled = groupBox4.Enabled = (DataSource.id != J2LFile.SpriteLayerID)
                 ) ||
                 SourceForm.EnableableBools[SourceForm.J2L.VersionType][EnableableTitles.BoolDevelopingForPlus]
             );
@@ -345,9 +347,11 @@ namespace MLLE
 
         private void TextureMode_CheckedChanged(object sender, EventArgs e)
         {
-            TextureSource.Enabled = TextureSourceDraw.Enabled = XFade.Enabled = YFade.Enabled = XFadeLabel.Enabled = YFadeLabel.Enabled = TextureModeSelect.Enabled = Stars.Enabled = ColorBox.Enabled = ColorLabel.Enabled = Param1.Enabled = Param2.Enabled = Param3.Enabled = RedLabel.Enabled = GreenLabel.Enabled = BlueLabel.Enabled = TextureMode.Checked;
+            XFade.Enabled = YFade.Enabled = XFadeLabel.Enabled = YFadeLabel.Enabled = TextureModeSelect.Enabled = Stars.Enabled = ColorBox.Enabled = ColorLabel.Enabled = Param1.Enabled = Param2.Enabled = Param3.Enabled = RedLabel.Enabled = GreenLabel.Enabled = BlueLabel.Enabled = TextureMode.Checked;
+            TextureSource.Enabled = TextureSourceDraw.Enabled = TextureMode.Checked && TextureModeSelect.SelectedIndex != 2;
             WidthBox.Enabled = HeightBox.Enabled = WidthLabel.Enabled = HeightLabel.Enabled = !TextureMode.Checked;
             Fade.Enabled = TextureMode.Checked && (TextureModeSelect.SelectedIndex <= 1 || TextureModeSelect.SelectedIndex == 5); //warp horizon, tunnel, cylinder
+            SpriteMode.Enabled = !TextureMode.Checked || (TextureSurfaceSelect.SelectedIndex != 3 && TextureModeSelect.SelectedIndex != 6);
             if (TextureMode.Checked) WidthBox.Value = HeightBox.Value = 8;
             else { WidthBox.Value = DataSource.Width; HeightBox.Value = DataSource.Height; }
             TileHeight_CheckedChanged(sender, e);
@@ -388,7 +392,8 @@ namespace MLLE
         {
             TextureMode.Checked = TextureSurfaceSelect.SelectedIndex != 0;
             groupBoxInner.Visible = TextureSurfaceSelect.SelectedIndex == 4 || TextureSurfaceSelect.SelectedIndex == 5;
-            TextureSource.Visible = TextureSourceDraw.Visible = TextureModeSelect.SelectedIndex != 3;
+            SpriteMode.Enabled = !TextureMode.Checked || (TextureSurfaceSelect.SelectedIndex != 3 && TextureModeSelect.SelectedIndex != 6);
+            GenericInputChanged(sender, e);
         }
 
         private void TextureSource_SelectedIndexChanged(object sender, EventArgs e)
@@ -396,6 +401,7 @@ namespace MLLE
             if (TextureSource.SelectedIndex < 16)
                 while (TextureSource.Items.Count > 16) //includes [Custom]
                     TextureSource.Items.RemoveAt(16);
+            GenericInputChanged(sender, e);
         }
 
         byte[] Texture = null;
@@ -449,7 +455,33 @@ namespace MLLE
                     TextureSource.Items.Add("[Custom]");
                 TextureSource.SelectedIndex = 16;
                 Texture = texture;
+                GenericInputChanged(sender, e);
             }
+        }
+
+        private void SetSpeedNames(int selectedIndex, Label normalL, TextBox normal, Label autoL, TextBox auto, char prefix, string start, string end)
+        {
+            normalL.Enabled = normal.Enabled = autoL.Enabled = auto.Enabled = selectedIndex != 4; //not Fit Level
+            if (selectedIndex != 5) //not Speed Multipliers
+            {
+                normalL.Text = prefix + "-Speed";
+                autoL.Text = "Auto " + prefix + "-Speed";
+            }
+            else
+            {
+                normalL.Text = start;
+                autoL.Text = end;
+            }
+            GenericInputChanged(null, null);
+        }
+        private void YSModel_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            LimitVisibleRegion.Enabled = (YSModel.SelectedIndex == 0 || YSModel.SelectedIndex == 2) && DataSource.id != J2LFile.SpriteLayerID; //either Normal or Both Speeds
+            SetSpeedNames(YSModel.SelectedIndex, YLabel, YSpeed, AutoYLabel, AutoYSpeed, 'Y', "Top Pos", "Bottom Pos");
+        }
+        private void XSModel_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            SetSpeedNames(XSModel.SelectedIndex, XLabel, XSpeed, AutoXLabel, AutoXSpeed, 'X', "Left Pos", "Right Pos");
         }
     }
 }
