@@ -212,12 +212,12 @@ namespace MLLE {{
             layer.ySpeedModel = LAYERSPEEDMODEL::LayerSpeedModel(pbyte);
             data5.pop(pbyte);
             layer.textureSurface = SURFACE::Surface(pbyte);
-            data5.pop(pbool);
-            layer.fade = pbool;
+            data5.pop(pbyte);
+            layer.reflection.tintColor = pbyte;
             data5.pop(pfloat);
-            layer.fadePositionX = pfloat;
+            layer.reflection.fadePositionX = pfloat;
             data5.pop(pfloat);
-            layer.fadePositionY = pfloat;
+            layer.reflection.top = pfloat;
             data5.pop(pfloat);
             layer.xInnerSpeed = pfloat;
             data5.pop(pfloat);

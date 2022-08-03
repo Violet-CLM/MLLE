@@ -842,7 +842,7 @@ namespace MLLE
                                 layer.XSpeedModel = data5bodyreader.ReadByte();
                                 layer.YSpeedModel = data5bodyreader.ReadByte();
                                 layer.TextureSurface = data5bodyreader.ReadByte();
-                                layer.Fade = data5bodyreader.ReadBoolean();
+                                layer.Fade = data5bodyreader.ReadByte();
                                 layer.XFade = data5bodyreader.ReadSingle();
                                 layer.YFade = data5bodyreader.ReadSingle();
                                 layer.InnerX = data5bodyreader.ReadSingle();

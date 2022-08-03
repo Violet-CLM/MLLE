@@ -58,7 +58,7 @@ namespace MLLE
                     groupBox4.Height -= heightBetweenRows;
                 }
                 TextureSurfaceSelect.Visible = false;
-                TextureSource.Visible = TextureSourceDraw.Visible = Fade.Visible = XFade.Visible = XFadeLabel.Visible = YFade.Visible = YFadeLabel.Visible = false;
+                TintColor.Visible = TintColorLabel.Visible = TextureSource.Visible = TextureSourceDraw.Visible = Fade.Visible = XFade.Visible = XFadeLabel.Visible = YFade.Visible = YFadeLabel.Visible = false;
                 foreach (Control foo in new Control[] { Param1, Param2, Param3, RedLabel, GreenLabel, BlueLabel, Stars, ColorBox, ColorLabel })
                     foo.Top -= heightBetweenRows * 2;
                 groupBox4.Height -= heightBetweenRows * 2;
@@ -134,7 +134,8 @@ namespace MLLE
             RotationRadiusMultiplier.Value = layer.RotationRadiusMultiplier;
             XSModel.SelectedIndex = layer.XSpeedModel;
             YSModel.SelectedIndex = layer.YSpeedModel;
-            Fade.Checked = layer.Fade;
+            Fade.Checked = layer.Fade != 0;
+            TintColor.Value = layer.Fade;
             XFade.Text = layer.XFade.ToString();
             YFade.Text = layer.YFade.ToString();
             InnerX.Text = layer.InnerX.ToString();
@@ -284,7 +285,7 @@ namespace MLLE
                 DataSource.RotationRadiusMultiplier = (int)RotationRadiusMultiplier.Value;
                 DataSource.XSpeedModel = (byte)XSModel.SelectedIndex;
                 DataSource.YSpeedModel = (byte)YSModel.SelectedIndex;
-                DataSource.Fade = Fade.Checked;
+                DataSource.Fade = !(TextureModeSelect.SelectedIndex == 6 && TextureSurfaceSelect.SelectedIndex != 0) ? (byte)(Fade.Checked ? 192 : 0) : (byte)TintColor.Value;
                 Single.TryParse(XFade.Text, out DataSource.XFade);
                 Single.TryParse(YFade.Text, out DataSource.YFade);
                 Single.TryParse(InnerX.Text, out DataSource.InnerX);
@@ -319,20 +320,39 @@ namespace MLLE
             {
                 if (properties.Length >= 4) { Param1.Visible = RedLabel.Visible = true; RedLabel.Text = properties[3].Trim(); }
                 if (properties.Length >= 5) { Param2.Visible = GreenLabel.Visible = true; GreenLabel.Text = properties[4].Trim(); }
-                if (properties.Length >= 6) { Param3.Visible = BlueLabel.Visible = true; BlueLabel.Text = properties[5].Trim(); }
+                if (properties.Length >= 6) {
+                    Param3.Visible = BlueLabel.Visible = true; BlueLabel.Text = properties[5].Trim();
+                    if (TextureModeSelect.SelectedIndex != 4)
+                    {
+                        Param3.Minimum = 0;
+                        Param3.Maximum = 255;
+                    }
+                    else
+                    {
+                        Param3.Minimum = -128;
+                        Param3.Maximum = 127;
+                    }
+                }
                 ColorLabel.Visible = ColorBox.Visible = false;
             }
 
-            Fade.Enabled = TextureMode.Checked && (TextureModeSelect.SelectedIndex <= 1 || TextureModeSelect.SelectedIndex == 5); //warp horizon, tunnel, cylinder
-            TextureSource.Enabled = TextureSourceDraw.Enabled = TextureMode.Checked && TextureModeSelect.SelectedIndex != 2;
+            if (TextureSurfaceSelect.Visible)
+            {
+                Fade.Visible = (TextureModeSelect.SelectedIndex <= 1 || TextureModeSelect.SelectedIndex == 5); //warp horizon, tunnel, cylinder
+                Fade.Enabled = TextureMode.Checked && Fade.Visible;
+                TintColor.Visible = TintColorLabel.Visible = TextureMode.Checked && TextureModeSelect.SelectedIndex == 6; //reflection
+                TintColor.Enabled = TextureMode.Checked && TintColor.Visible;
+            }
+            TextureSource.Enabled = TextureMode.Checked && TextureModeSelect.SelectedIndex != 2;
+            TextureSourceDraw.Enabled = TextureSource.Enabled && SourceForm.J2L.HasTiles;
             SpriteMode.Enabled = !TextureMode.Checked || (TextureSurfaceSelect.SelectedIndex != 3 && TextureModeSelect.SelectedIndex != 6);
             string fadeSuffix = "Fade";
             if (TextureModeSelect.SelectedIndex == 2 || TextureModeSelect.SelectedIndex == 3)
-                fadeSuffix = "Rot.Point";
+                fadeSuffix = "Pivot";
             else if (TextureModeSelect.SelectedIndex == 4)
                 fadeSuffix = "Amplitude";
             XFadeLabel.Text = "X-" + fadeSuffix;
-            YFadeLabel.Text = "Y-" + fadeSuffix;
+            YFadeLabel.Text = (TextureModeSelect.SelectedIndex != 6) ? "Y-" + fadeSuffix : "Top";
             GenericInputChanged(sender, e);
         }
 
@@ -366,8 +386,15 @@ namespace MLLE
         private void TextureMode_CheckedChanged(object sender, EventArgs e)
         {
             XFade.Enabled = YFade.Enabled = XFadeLabel.Enabled = YFadeLabel.Enabled = TextureModeSelect.Enabled = Stars.Enabled = ColorBox.Enabled = ColorLabel.Enabled = Param1.Enabled = Param2.Enabled = Param3.Enabled = RedLabel.Enabled = GreenLabel.Enabled = BlueLabel.Enabled = TextureMode.Checked;
-            TextureSource.Enabled = TextureSourceDraw.Enabled = TextureMode.Checked && TextureModeSelect.SelectedIndex != 2;
-            Fade.Enabled = TextureMode.Checked && (TextureModeSelect.SelectedIndex <= 1 || TextureModeSelect.SelectedIndex == 5); //warp horizon, tunnel, cylinder
+            TextureSource.Enabled = TextureMode.Checked && TextureModeSelect.SelectedIndex != 2;
+            TextureSourceDraw.Enabled = TextureSource.Enabled && SourceForm.J2L.HasTiles;
+            if (TextureSurfaceSelect.Visible)
+            {
+                Fade.Visible = (TextureModeSelect.SelectedIndex <= 1 || TextureModeSelect.SelectedIndex == 5); //warp horizon, tunnel, cylinder
+                Fade.Enabled = TextureMode.Checked && Fade.Visible;
+                TintColor.Visible = TintColorLabel.Visible = TextureMode.Checked && TextureModeSelect.SelectedIndex == 6; //reflection
+                TintColor.Enabled = TextureMode.Checked && TintColor.Visible;
+            }
             SpriteMode.Enabled = !TextureMode.Checked || (TextureSurfaceSelect.SelectedIndex != 3 && TextureModeSelect.SelectedIndex != 6);
             if (!SourceForm.EnableableBools[SourceForm.J2L.VersionType][EnableableTitles.BoolDevelopingForPlus])
             {

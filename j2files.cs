@@ -827,7 +827,7 @@ class Layer
     public int RotationAngle, RotationRadiusMultiplier;
     public byte XSpeedModel, YSpeedModel;
     public byte TextureSurface;
-    public bool Fade;
+    public byte Fade;
     public float XFade, YFade, InnerX, InnerY, InnerAutoX, InnerAutoY;
     public sbyte Texture;
     public byte[] TextureImage;
@@ -855,7 +855,7 @@ class Layer
         Name = DefaultNames[i];
         RotationAngle = DefaultRotationAngles[i];
         RotationRadiusMultiplier = DefaultRotationRadiusMultipliers[i];
-        Fade = true;
+        Fade = 192;
         XFade = YFade = 0.5f;
         XSpeedModel = YSpeedModel = (byte)((i == 7) ? 1 : 0);
     }
@@ -948,7 +948,7 @@ class Layer
 
         XSpeedModel = YSpeedModel = (byte)((i == 7) ? 1 : 0);
         TextureSurface = 0;
-        Fade = true;
+        Fade = 192;
         XFade = YFade = 0.5f;
 
         TileMap = new ArrayMap<ushort>(Width, Height);
@@ -960,7 +960,7 @@ class Layer
         Name = "New Layer";
         id = -1;
         TileMap = new ArrayMap<ushort>(Width, Height);
-        Fade = true;
+        Fade = 192;
         XFade = YFade = 0.5f;
     }
 
@@ -1042,7 +1042,7 @@ class Layer
                 return true;
             if (TextureSurface > 1) //in vanilla this is a bool
                 return true;
-            if (!Fade)
+            if (Fade != 192)
                 return true;
             if (XFade != 0.5f || YFade != 0.5f)
                 return true;
