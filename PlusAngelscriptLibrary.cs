@@ -367,6 +367,8 @@ namespace MLLE {{
                         preset.curFrame = jjAnimations[preset.determineCurAnim(animSetsToLoad[eventID], preset.curAnim)] + preset.frameID;
                         if ((eventID >= OBJECT::FRUITPLATFORM && eventID <= OBJECT::SPIKEBOLL3D) || eventID == OBJECT::WITCH)
                             preset.killAnim += jjAnimSets[animSetsToLoad[eventID]];
+                        else if (eventID == OBJECT::CATERPILLAR && jjObjectPresets[OBJECT::SMOKERING].curAnim < 100)
+                            jjObjectPresets[OBJECT::SMOKERING].determineCurAnim(ANIM::CATERPIL, jjObjectPresets[OBJECT::SMOKERING].curAnim);
                     }}
                     animSetsToLoad[eventID] = 0;
                 }}
