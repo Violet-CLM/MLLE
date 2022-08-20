@@ -366,7 +366,7 @@
             // Arguments
             // 
             this.Arguments.Location = new System.Drawing.Point(75, 150);
-            this.Arguments.MaxLength = 31;
+            this.Arguments.MaxLength = 250;
             this.Arguments.Name = "Arguments";
             this.Arguments.Size = new System.Drawing.Size(176, 20);
             this.Arguments.TabIndex = 13;
