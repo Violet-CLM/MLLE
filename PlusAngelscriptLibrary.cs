@@ -477,7 +477,7 @@ namespace MLLE {{
         return jjPALCOLOR(Argb >> 16, Argb >> 8, Argb >> 0);
     }}
 
-    void _readPalette(jjSTREAM@ stream, jjPAL@ palette) {{
+    void _readPalette(jjSTREAM& stream, jjPAL& palette) {{
         for (uint i = 0; i < 256; ++i) {{
             stream.pop(palette.color[i].red);
             stream.pop(palette.color[i].green);
@@ -485,7 +485,7 @@ namespace MLLE {{
         }}
     }}
 
-    uint _read7BitEncodedUintFromStream(jjSTREAM@ stream) {{
+    uint _read7BitEncodedUintFromStream(jjSTREAM& stream) {{
         uint result = 0;
         while (true) {{
             uint8 byteRead; stream.pop(byteRead);
@@ -497,13 +497,13 @@ namespace MLLE {{
         }}
         return result;
     }}
-    string _read7BitEncodedStringFromStream(jjSTREAM@ stream) {{
+    string _read7BitEncodedStringFromStream(jjSTREAM& stream) {{
         string result;
         stream.get(result, _read7BitEncodedUintFromStream(stream));
         return result;
     }}
 
-    void _recolorAnimationIf(jjSTREAM@ stream, ANIM::Set set, uint animID, uint frameCount) {{
+    void _recolorAnimationIf(jjSTREAM& stream, ANIM::Set set, uint animID, uint frameCount) {{
         bool pbool; stream.pop(pbool); if (!pbool) return;
 
         if (jjAnimSets[set] == 0)

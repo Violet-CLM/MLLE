@@ -1212,23 +1212,41 @@ void main() {
 
         private void paletteToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (J2L.HasTiles) //otherwise it's not clear how this would work
+            _suspendEvent.Reset();
+            Palette newPalette = new PaletteForm().ShowForm(J2L.PlusPropertyList.Palette, J2L.Tilesets[0].Palette, ref J2L.PlusPropertyList.ReapplyPalette);
+            if (newPalette != null && !newPalette.Equals(J2L.PlusPropertyList.Palette))
             {
-                _suspendEvent.Reset();
-                Palette newPalette = new PaletteForm().ShowForm(J2L.PlusPropertyList.Palette, J2L.Tilesets[0].Palette, ref J2L.PlusPropertyList.ReapplyPalette);
-                if (newPalette != null && !newPalette.Equals(J2L.PlusPropertyList.Palette))
-                {
-                    if (!newPalette.Equals(J2L.Tilesets[0].Palette)) //edited
-                        J2L.PlusPropertyList.Palette = newPalette;
-                    else //reset
-                        J2L.PlusPropertyList.Palette = null;
-                    LevelHasBeenModified = true;
-                    if (J2L.TexturesHaveBeenGenerated)
-                        J2L.Generate_Textures();
-                    RedrawTilesetHowManyTimes = 2;
-                }
-                _suspendEvent.Set();
+                if (!newPalette.Equals(J2L.Tilesets[0].Palette)) //edited
+                    J2L.PlusPropertyList.Palette = newPalette;
+                else //reset
+                    J2L.PlusPropertyList.Palette = null;
+                LevelHasBeenModified = true;
+                if (J2L.TexturesHaveBeenGenerated)
+                    J2L.Generate_Textures();
+                RedrawTilesetHowManyTimes = 2;
             }
+            _suspendEvent.Set();
+        }
+        private void palettesToolStripMenuItemPalette_Click(object sender, EventArgs e)
+        {
+            //todo
+        }
+        private void addNewPaletteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //todo
+        }
+        private void paletteToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
+        {
+            paletteToolStripMenuItem.DropDownItems.Clear();
+            paletteToolStripMenuItem.DropDownItems.Add(levelPaletteToolStripMenuItem);
+            foreach (PlusPropertyList.NamedPalette extraPalette in J2L.PlusPropertyList.NamedPalettes)
+            {
+                var toolstripItem = new ToolStripMenuItem(extraPalette.Name);
+                toolstripItem.Tag = extraPalette;
+                toolstripItem.Click += palettesToolStripMenuItemPalette_Click;
+                paletteToolStripMenuItem.DropDownItems.Add(toolstripItem);
+            }
+            paletteToolStripMenuItem.DropDownItems.Add(addNewPaletteToolStripMenuItem);
         }
 
         private void layersToolStripMenuItem_Click(object sender, EventArgs e)
@@ -3978,7 +3996,6 @@ void main() {
             }
             defineSmartTilesToolStripMenuItem.DropDownItems.Add(addNewToolStripMenuItem1);
         }
-
 
         private bool ActOnATile(int x, int y, ushort? tile, uint ev, LayerAndSpecificTiles actionCenter, bool blankTilesOkay, bool DirectAction = true) { return ActOnATile(x, y, tile, new AGAEvent(ev), actionCenter, blankTilesOkay, DirectAction); }
         private bool ActOnATile(int x, int y, ushort? tile, AGAEvent? ev, LayerAndSpecificTiles actionCenter, bool blankTilesOkay, bool DirectAction = true)
