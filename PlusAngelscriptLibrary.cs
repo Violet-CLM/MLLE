@@ -524,11 +524,7 @@ namespace MLLE {{
             stream.pop(colors[i]);
         for (uint i = 0; i < frameCount; ++i) {{
             jjANIMFRAME@ frame = jjAnimFrames[firstFrameID + i];
-            jjPIXELMAP image(frame);
-            for (uint x = 0; x < image.width; ++x)
-                for (uint y = 0; y < image.height; ++y)
-                    image[x,y] = colors[image[x,y]];
-            image.save(frame);
+            jjPIXELMAP(frame).recolor(colors).save(frame);
         }}
     }}
 }}{4}";
