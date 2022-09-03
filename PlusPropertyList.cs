@@ -528,6 +528,7 @@ namespace MLLE
                     WaterGradientStop.ToArgb() != comparableBlack ||
                     Gun7Crate != 0 || Gun8Crate != 0 || Gun9Crate != 0 ||
                     Palette != null ||
+                    NamedPalettes.Count != 0 ||
                     //ReapplyPalette only is meaningful if Palette != null, so we don't check it separately
                     ColorRemappings.FirstOrDefault(it => it != null) != null ||
                     TileImages.FirstOrDefault(it => it != null) != null ||

@@ -402,6 +402,16 @@ namespace MLLE {{
         _layers.get(name, @handle);
         return handle;
     }}
+    uint8 GetPaletteMappingID(const string &in name) {{
+        uint8 mappingID;
+        _palettes.get(name, mappingID);
+        return mappingID;
+    }}
+    jjPAL@ GetPalette(const string &in name) {{
+        if (name == 'Level Palette')
+            return Palette;
+        return jjSpriteModeGetColorMapping(GetPaletteMappingID(name));
+    }}
 
     void ReapplyPalette() {{
         Palette.apply();

@@ -50,6 +50,8 @@
             this.SaveButton = new System.Windows.Forms.Button();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.ButtonDelete = new System.Windows.Forms.Button();
+            this.NameLabel = new System.Windows.Forms.Label();
+            this.NameBox = new System.Windows.Forms.TextBox();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -235,7 +237,7 @@
             this.checkBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.checkBox1.AutoSize = true;
             this.checkBox1.Location = new System.Drawing.Point(4, 344);
-            this.checkBox1.Margin = new System.Windows.Forms.Padding(1, 1, 1, 1);
+            this.checkBox1.Margin = new System.Windows.Forms.Padding(1);
             this.checkBox1.Name = "checkBox1";
             this.checkBox1.Size = new System.Drawing.Size(227, 17);
             this.checkBox1.TabIndex = 7;
@@ -253,6 +255,22 @@
             this.ButtonDelete.Text = "Delete";
             this.ButtonDelete.UseVisualStyleBackColor = true;
             // 
+            // NameLabel
+            // 
+            this.NameLabel.AutoSize = true;
+            this.NameLabel.Location = new System.Drawing.Point(4, 344);
+            this.NameLabel.Name = "NameLabel";
+            this.NameLabel.Size = new System.Drawing.Size(35, 13);
+            this.NameLabel.TabIndex = 9;
+            this.NameLabel.Text = "Name";
+            // 
+            // NameBox
+            // 
+            this.NameBox.Location = new System.Drawing.Point(46, 344);
+            this.NameBox.Name = "NameBox";
+            this.NameBox.Size = new System.Drawing.Size(185, 20);
+            this.NameBox.TabIndex = 10;
+            // 
             // PaletteForm
             // 
             this.AcceptButton = this.OKButton;
@@ -260,6 +278,8 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
             this.ClientSize = new System.Drawing.Size(414, 367);
+            this.Controls.Add(this.NameBox);
+            this.Controls.Add(this.NameLabel);
             this.Controls.Add(this.ButtonDelete);
             this.Controls.Add(this.checkBox1);
             this.Controls.Add(this.SaveButton);
@@ -308,5 +328,7 @@
         private System.Windows.Forms.Button SaveButton;
         private System.Windows.Forms.CheckBox checkBox1;
         private System.Windows.Forms.Button ButtonDelete;
+        private System.Windows.Forms.Label NameLabel;
+        private System.Windows.Forms.TextBox NameBox;
     }
 }
