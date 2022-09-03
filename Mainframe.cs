@@ -1229,11 +1229,34 @@ void main() {
         }
         private void palettesToolStripMenuItemPalette_Click(object sender, EventArgs e)
         {
-            //todo
+            _suspendEvent.Reset();
+            PlusPropertyList.NamedPalette paletteForEditing = (sender as ToolStripItem).Tag as PlusPropertyList.NamedPalette;
+            switch (new PaletteForm().ShowForm(paletteForEditing, J2L.Tilesets[0].Palette, false))
+            {
+                case DialogResult.OK:
+                    LevelHasBeenModified = true;
+                    break;
+                case DialogResult.Cancel:
+                    break; //do nothing
+                case DialogResult.Abort: //Delete
+                    J2L.PlusPropertyList.NamedPalettes.Remove(paletteForEditing);
+                    LevelHasBeenModified = true;
+                    break;
+            }
+            _suspendEvent.Set();
         }
         private void addNewPaletteToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            //todo
+            _suspendEvent.Reset();
+            PlusPropertyList.NamedPalette newPalette = new PlusPropertyList.NamedPalette();
+            newPalette.Name = "New Palette";
+            newPalette.Palette.CopyFrom(J2L.PlusPropertyList.Palette ?? J2L.Tilesets[0].Palette);
+            if (new PaletteForm().ShowForm(newPalette, J2L.Tilesets[0].Palette, true) == DialogResult.OK)
+            {
+                J2L.PlusPropertyList.NamedPalettes.Add(newPalette);
+                LevelHasBeenModified = true;
+            }
+            _suspendEvent.Set();
         }
         private void paletteToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
         {

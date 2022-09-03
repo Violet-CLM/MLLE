@@ -49,6 +49,7 @@
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.SaveButton = new System.Windows.Forms.Button();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
+            this.ButtonDelete = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -56,10 +57,9 @@
             // 
             this.ButtonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.ButtonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.ButtonCancel.Location = new System.Drawing.Point(872, 141);
-            this.ButtonCancel.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.ButtonCancel.Location = new System.Drawing.Point(327, 59);
             this.ButtonCancel.Name = "ButtonCancel";
-            this.ButtonCancel.Size = new System.Drawing.Size(200, 55);
+            this.ButtonCancel.Size = new System.Drawing.Size(75, 23);
             this.ButtonCancel.TabIndex = 1;
             this.ButtonCancel.Text = "Cancel";
             this.ButtonCancel.UseVisualStyleBackColor = true;
@@ -69,10 +69,9 @@
             // 
             this.OKButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.OKButton.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.OKButton.Location = new System.Drawing.Point(872, 72);
-            this.OKButton.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.OKButton.Location = new System.Drawing.Point(327, 30);
             this.OKButton.Name = "OKButton";
-            this.OKButton.Size = new System.Drawing.Size(200, 55);
+            this.OKButton.Size = new System.Drawing.Size(75, 23);
             this.OKButton.TabIndex = 0;
             this.OKButton.Text = "OK";
             this.OKButton.UseVisualStyleBackColor = true;
@@ -81,10 +80,9 @@
             // ResetButton
             // 
             this.ResetButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.ResetButton.Location = new System.Drawing.Point(872, 791);
-            this.ResetButton.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.ResetButton.Location = new System.Drawing.Point(327, 332);
             this.ResetButton.Name = "ResetButton";
-            this.ResetButton.Size = new System.Drawing.Size(200, 55);
+            this.ResetButton.Size = new System.Drawing.Size(75, 23);
             this.ResetButton.TabIndex = 4;
             this.ResetButton.Text = "Reset";
             this.ResetButton.UseVisualStyleBackColor = true;
@@ -93,10 +91,9 @@
             // LoadButton
             // 
             this.LoadButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.LoadButton.Location = new System.Drawing.Point(872, 583);
-            this.LoadButton.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.LoadButton.Location = new System.Drawing.Point(327, 244);
             this.LoadButton.Name = "LoadButton";
-            this.LoadButton.Size = new System.Drawing.Size(200, 55);
+            this.LoadButton.Size = new System.Drawing.Size(75, 23);
             this.LoadButton.TabIndex = 2;
             this.LoadButton.Text = "Load...";
             this.LoadButton.UseVisualStyleBackColor = true;
@@ -108,15 +105,13 @@
             // 
             // menuStrip1
             // 
-            this.menuStrip1.GripMargin = new System.Windows.Forms.Padding(2, 2, 0, 2);
             this.menuStrip1.ImageScalingSize = new System.Drawing.Size(40, 40);
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.selectionToolStripMenuItem,
             this.toolsToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Padding = new System.Windows.Forms.Padding(16, 5, 0, 5);
-            this.menuStrip1.Size = new System.Drawing.Size(1104, 60);
+            this.menuStrip1.Size = new System.Drawing.Size(414, 24);
             this.menuStrip1.TabIndex = 6;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -129,21 +124,21 @@
             this.select8ToolStripMenuItem,
             this.select16ToolStripMenuItem});
             this.selectionToolStripMenuItem.Name = "selectionToolStripMenuItem";
-            this.selectionToolStripMenuItem.Size = new System.Drawing.Size(163, 50);
+            this.selectionToolStripMenuItem.Size = new System.Drawing.Size(67, 20);
             this.selectionToolStripMenuItem.Text = "Selection";
             // 
             // selectNoneToolStripMenuItem
             // 
             this.selectNoneToolStripMenuItem.Name = "selectNoneToolStripMenuItem";
             this.selectNoneToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.D)));
-            this.selectNoneToolStripMenuItem.Size = new System.Drawing.Size(450, 54);
+            this.selectNoneToolStripMenuItem.Size = new System.Drawing.Size(179, 22);
             this.selectNoneToolStripMenuItem.Text = "Select None";
             this.selectNoneToolStripMenuItem.Click += new System.EventHandler(this.selectNoneToolStripMenuItem_Click);
             // 
             // toolStripSeparator1
             // 
             this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(447, 6);
+            this.toolStripSeparator1.Size = new System.Drawing.Size(176, 6);
             // 
             // select1ToolStripMenuItem
             // 
@@ -151,7 +146,7 @@
             this.select1ToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
             this.select1ToolStripMenuItem.Name = "select1ToolStripMenuItem";
             this.select1ToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.D1)));
-            this.select1ToolStripMenuItem.Size = new System.Drawing.Size(450, 54);
+            this.select1ToolStripMenuItem.Size = new System.Drawing.Size(179, 22);
             this.select1ToolStripMenuItem.Text = "Select 1";
             this.select1ToolStripMenuItem.Click += new System.EventHandler(this.select1ToolStripMenuItem_Click);
             // 
@@ -159,7 +154,7 @@
             // 
             this.select8ToolStripMenuItem.Name = "select8ToolStripMenuItem";
             this.select8ToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.D8)));
-            this.select8ToolStripMenuItem.Size = new System.Drawing.Size(450, 54);
+            this.select8ToolStripMenuItem.Size = new System.Drawing.Size(179, 22);
             this.select8ToolStripMenuItem.Text = "Select 8";
             this.select8ToolStripMenuItem.Click += new System.EventHandler(this.select8ToolStripMenuItem_Click);
             // 
@@ -167,7 +162,7 @@
             // 
             this.select16ToolStripMenuItem.Name = "select16ToolStripMenuItem";
             this.select16ToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.D6)));
-            this.select16ToolStripMenuItem.Size = new System.Drawing.Size(450, 54);
+            this.select16ToolStripMenuItem.Size = new System.Drawing.Size(179, 22);
             this.select16ToolStripMenuItem.Text = "Select 16";
             this.select16ToolStripMenuItem.Click += new System.EventHandler(this.select16ToolStripMenuItem_Click);
             // 
@@ -180,7 +175,7 @@
             this.swapGreenBlueToolStripMenuItem,
             this.swapBlueRedToolStripMenuItem});
             this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
-            this.toolsToolStripMenuItem.Size = new System.Drawing.Size(111, 50);
+            this.toolsToolStripMenuItem.Size = new System.Drawing.Size(46, 20);
             this.toolsToolStripMenuItem.Text = "Tools";
             this.toolsToolStripMenuItem.DropDownClosed += new System.EventHandler(this.toolsToolStripMenuItem_DropDownClosed);
             this.toolsToolStripMenuItem.DropDownOpening += new System.EventHandler(this.toolsToolStripMenuItem_DropDownOpening);
@@ -189,33 +184,33 @@
             // 
             this.gradientToolStripMenuItem.Name = "gradientToolStripMenuItem";
             this.gradientToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.G)));
-            this.gradientToolStripMenuItem.Size = new System.Drawing.Size(412, 54);
+            this.gradientToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
             this.gradientToolStripMenuItem.Text = "Gradient";
             this.gradientToolStripMenuItem.Click += new System.EventHandler(this.gradientToolStripMenuItem_Click);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(409, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(161, 6);
             // 
             // swapRedGreenToolStripMenuItem
             // 
             this.swapRedGreenToolStripMenuItem.Name = "swapRedGreenToolStripMenuItem";
-            this.swapRedGreenToolStripMenuItem.Size = new System.Drawing.Size(412, 54);
+            this.swapRedGreenToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
             this.swapRedGreenToolStripMenuItem.Text = "Swap Red/Green";
             this.swapRedGreenToolStripMenuItem.Click += new System.EventHandler(this.swapRedGreenToolStripMenuItem_Click);
             // 
             // swapGreenBlueToolStripMenuItem
             // 
             this.swapGreenBlueToolStripMenuItem.Name = "swapGreenBlueToolStripMenuItem";
-            this.swapGreenBlueToolStripMenuItem.Size = new System.Drawing.Size(412, 54);
+            this.swapGreenBlueToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
             this.swapGreenBlueToolStripMenuItem.Text = "Swap Green/Blue";
             this.swapGreenBlueToolStripMenuItem.Click += new System.EventHandler(this.swapGreenBlueToolStripMenuItem_Click);
             // 
             // swapBlueRedToolStripMenuItem
             // 
             this.swapBlueRedToolStripMenuItem.Name = "swapBlueRedToolStripMenuItem";
-            this.swapBlueRedToolStripMenuItem.Size = new System.Drawing.Size(412, 54);
+            this.swapBlueRedToolStripMenuItem.Size = new System.Drawing.Size(164, 22);
             this.swapBlueRedToolStripMenuItem.Text = "Swap Blue/Red";
             this.swapBlueRedToolStripMenuItem.Click += new System.EventHandler(this.swapBlueRedToolStripMenuItem_Click);
             // 
@@ -227,10 +222,9 @@
             // SaveButton
             // 
             this.SaveButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.SaveButton.Location = new System.Drawing.Point(872, 652);
-            this.SaveButton.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.SaveButton.Location = new System.Drawing.Point(327, 273);
             this.SaveButton.Name = "SaveButton";
-            this.SaveButton.Size = new System.Drawing.Size(200, 55);
+            this.SaveButton.Size = new System.Drawing.Size(75, 23);
             this.SaveButton.TabIndex = 3;
             this.SaveButton.Text = "Save...";
             this.SaveButton.UseVisualStyleBackColor = true;
@@ -240,20 +234,33 @@
             // 
             this.checkBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.checkBox1.AutoSize = true;
-            this.checkBox1.Location = new System.Drawing.Point(12, 826);
+            this.checkBox1.Location = new System.Drawing.Point(4, 344);
+            this.checkBox1.Margin = new System.Windows.Forms.Padding(1, 1, 1, 1);
             this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(598, 36);
+            this.checkBox1.Size = new System.Drawing.Size(227, 17);
             this.checkBox1.TabIndex = 7;
             this.checkBox1.Text = "Reapply palette after dying in Single Player";
             this.checkBox1.UseVisualStyleBackColor = true;
             // 
+            // ButtonDelete
+            // 
+            this.ButtonDelete.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.ButtonDelete.DialogResult = System.Windows.Forms.DialogResult.Abort;
+            this.ButtonDelete.Location = new System.Drawing.Point(327, 88);
+            this.ButtonDelete.Name = "ButtonDelete";
+            this.ButtonDelete.Size = new System.Drawing.Size(75, 23);
+            this.ButtonDelete.TabIndex = 8;
+            this.ButtonDelete.Text = "Delete";
+            this.ButtonDelete.UseVisualStyleBackColor = true;
+            // 
             // PaletteForm
             // 
             this.AcceptButton = this.OKButton;
-            this.AutoScaleDimensions = new System.Drawing.SizeF(16F, 31F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
-            this.ClientSize = new System.Drawing.Size(1104, 874);
+            this.ClientSize = new System.Drawing.Size(414, 367);
+            this.Controls.Add(this.ButtonDelete);
             this.Controls.Add(this.checkBox1);
             this.Controls.Add(this.SaveButton);
             this.Controls.Add(this.LoadButton);
@@ -263,7 +270,6 @@
             this.Controls.Add(this.menuStrip1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MainMenuStrip = this.menuStrip1;
-            this.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "PaletteForm";
@@ -301,5 +307,6 @@
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
         private System.Windows.Forms.Button SaveButton;
         private System.Windows.Forms.CheckBox checkBox1;
+        private System.Windows.Forms.Button ButtonDelete;
     }
 }

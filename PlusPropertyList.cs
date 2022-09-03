@@ -265,7 +265,7 @@ namespace MLLE
 
         public class NamedPalette
         {
-            internal Palette Palette;
+            internal Palette Palette = new Palette();
             internal string Name;
         }
         [Browsable(false)]

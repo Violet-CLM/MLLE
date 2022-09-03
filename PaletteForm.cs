@@ -17,12 +17,8 @@ namespace MLLE
 
         Palette InitialPalette;
         PaletteImage PaletteImage = new PaletteImage(15, 2, false, true);
-        internal Palette ShowForm(Palette plusPalette, Palette defaultPalette, ref bool reapplyPalette)
+        private void SetupPaletteImage()
         {
-            DefaultPalette = defaultPalette;
-            InitialPalette = (plusPalette ?? DefaultPalette);
-            checkBox1.Checked = reapplyPalette;
-
             for (int i = 0; i < 10; ++i)
                 PaletteImage.ColorDisabled[i] = PaletteImage.ColorDisabled[Palette.PaletteSize - 10 + i] = true; //transparency, and default windows colors
             PaletteImage.Location = new Point(12, OKButton.Location.Y);
@@ -30,13 +26,35 @@ namespace MLLE
             PaletteImage.MouseMove += PaletteImageMouseMove;
             PaletteImage.MouseLeave += PaletteImageMouseLeave;
             Controls.Add(PaletteImage);
+        }
+        internal Palette ShowForm(Palette plusPalette, Palette defaultPalette, ref bool reapplyPalette)
+        {
+            DefaultPalette = defaultPalette;
+            InitialPalette = (plusPalette ?? DefaultPalette);
+            checkBox1.Checked = reapplyPalette;
+
+            SetupPaletteImage();
 
             if (ShowDialog() == DialogResult.OK)
                 reapplyPalette = checkBox1.Checked;
+            ButtonDelete.Visible = false;
 
             return (!PaletteImage.Palette.Equals(InitialPalette)) ? PaletteImage.Palette : null;
         }
+        internal DialogResult ShowForm(PlusPropertyList.NamedPalette namedPalette, Palette defaultPalette, bool addNew)
+        {
+            DefaultPalette = defaultPalette;
+            InitialPalette = namedPalette.Palette;
+            checkBox1.Visible = false;
+            ButtonDelete.Visible = !addNew;
 
+            SetupPaletteImage();
+
+            DialogResult result = ShowDialog();
+            if (result == DialogResult.OK)
+                namedPalette.Palette.CopyFrom(PaletteImage.Palette);
+            return result;
+        }
 
         private void ResetButton_Click(object sender, System.EventArgs e)
         {
