@@ -71,6 +71,7 @@ namespace MLLE
                 {
                     TextureSurfaceSelect.Width += TextureModeSelect.Right - TextureSurfaceSelect.Right;
                 }
+                SpriteParamMapping.Items.AddRange(SourceForm.J2L.PlusPropertyList.NamedPalettes.Select(np => np.Name).ToArray());
             }
             TextureModeSelect.Items.Clear();
             for (ushort i = 0; i < SourceForm.TextureTypes.Count; i++) TextureModeSelect.Items.Add(SourceForm.TextureTypes[i][0].Trim());
@@ -130,6 +131,11 @@ namespace MLLE
             Hidden.Checked = layer.Hidden;
             SpriteMode.SelectedIndex = layer.SpriteMode;
             SpriteParam.Value = layer.SpriteParam;
+            try {
+                SpriteParamMapping.SelectedIndex = layer.SpriteParam;
+            } catch {
+                //oh well
+            }
             RotationAngle.Value = layer.RotationAngle;
             RotationRadiusMultiplier.Value = layer.RotationRadiusMultiplier;
             XSModel.SelectedIndex = layer.XSpeedModel;
@@ -280,7 +286,10 @@ namespace MLLE
                 DataSource.Name = NameBox.Text;
                 DataSource.Hidden = Hidden.Checked;
                 DataSource.SpriteMode = (byte)SpriteMode.SelectedIndex;
-                DataSource.SpriteParam = (byte)SpriteParam.Value;
+                if (SpriteMode.SelectedIndex < 48) //not MAPPING or TRANSLUCENTMAPPING
+                    DataSource.SpriteParam = (byte)SpriteParam.Value;
+                else
+                    DataSource.SpriteParam = (byte)SpriteParamMapping.SelectedIndex;
                 DataSource.RotationAngle = (int)RotationAngle.Value;
                 DataSource.RotationRadiusMultiplier = (int)RotationRadiusMultiplier.Value;
                 DataSource.XSpeedModel = (byte)XSModel.SelectedIndex;
@@ -535,6 +544,12 @@ namespace MLLE
         private void XSModel_SelectedIndexChanged(object sender, EventArgs e)
         {
             SetSpeedNames(XSModel.SelectedIndex, XLabel, XSpeed, AutoXLabel, AutoXSpeed, 'X', "Left Pos", "Right Pos");
+        }
+
+        private void SpriteMode_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            GenericInputChanged(sender, e);
+            SpriteParam.Visible = !(SpriteParamMapping.Visible = (SpriteMode.SelectedIndex >= 48)); //48 and 49 = MAPPING and TRANSLUCENTMAPPING
         }
     }
 }

@@ -50,7 +50,9 @@
             this.TileWidth = new System.Windows.Forms.CheckBox();
             this.HeightLabel = new System.Windows.Forms.Label();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.TintColor = new System.Windows.Forms.NumericUpDown();
             this.TextureSourceDraw = new System.Windows.Forms.Button();
+            this.TintColorLabel = new System.Windows.Forms.Label();
             this.TextureSource = new System.Windows.Forms.ComboBox();
             this.Fade = new System.Windows.Forms.CheckBox();
             this.XFadeLabel = new System.Windows.Forms.Label();
@@ -101,14 +103,14 @@
             this.InnerAutoY = new System.Windows.Forms.TextBox();
             this.InnerAutoXLabel = new System.Windows.Forms.Label();
             this.InnerAutoX = new System.Windows.Forms.TextBox();
-            this.TintColorLabel = new System.Windows.Forms.Label();
-            this.TintColor = new System.Windows.Forms.NumericUpDown();
+            this.SpriteParamMapping = new System.Windows.Forms.ComboBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.WidthBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.HeightBox)).BeginInit();
             this.groupBox4.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.TintColor)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.Param1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.Param2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.Param3)).BeginInit();
@@ -117,7 +119,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.RotationAngle)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.RotationRadiusMultiplier)).BeginInit();
             this.groupBoxInner.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.TintColor)).BeginInit();
             this.SuspendLayout();
             // 
             // OKButton
@@ -399,6 +400,18 @@
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "                    ";
             // 
+            // TintColor
+            // 
+            this.TintColor.Location = new System.Drawing.Point(203, 41);
+            this.TintColor.Maximum = new decimal(new int[] {
+            255,
+            0,
+            0,
+            0});
+            this.TintColor.Name = "TintColor";
+            this.TintColor.Size = new System.Drawing.Size(50, 20);
+            this.TintColor.TabIndex = 34;
+            // 
             // TextureSourceDraw
             // 
             this.TextureSourceDraw.Enabled = false;
@@ -409,6 +422,15 @@
             this.TextureSourceDraw.Text = "Draw";
             this.TextureSourceDraw.UseVisualStyleBackColor = true;
             this.TextureSourceDraw.Click += new System.EventHandler(this.TextureSourceDraw_Click);
+            // 
+            // TintColorLabel
+            // 
+            this.TintColorLabel.AutoSize = true;
+            this.TintColorLabel.Location = new System.Drawing.Point(159, 44);
+            this.TintColorLabel.Name = "TintColorLabel";
+            this.TintColorLabel.Size = new System.Drawing.Size(38, 13);
+            this.TintColorLabel.TabIndex = 33;
+            this.TintColorLabel.Text = "TColor";
             // 
             // TextureSource
             // 
@@ -650,6 +672,7 @@
             // 
             // groupBoxPlus
             // 
+            this.groupBoxPlus.Controls.Add(this.SpriteParamMapping);
             this.groupBoxPlus.Controls.Add(this.YSModel);
             this.groupBoxPlus.Controls.Add(this.XSModel);
             this.groupBoxPlus.Controls.Add(this.OffsetXSModel);
@@ -847,7 +870,7 @@
             this.SpriteMode.Name = "SpriteMode";
             this.SpriteMode.Size = new System.Drawing.Size(51, 21);
             this.SpriteMode.TabIndex = 13;
-            this.SpriteMode.SelectedIndexChanged += new System.EventHandler(this.GenericInputChanged);
+            this.SpriteMode.SelectedIndexChanged += new System.EventHandler(this.SpriteMode_SelectedIndexChanged);
             // 
             // LabelRotationAngle
             // 
@@ -1053,26 +1076,16 @@
             this.InnerAutoX.TabIndex = 12;
             this.InnerAutoX.Text = "0";
             // 
-            // TintColorLabel
+            // SpriteParamMapping
             // 
-            this.TintColorLabel.AutoSize = true;
-            this.TintColorLabel.Location = new System.Drawing.Point(159, 44);
-            this.TintColorLabel.Name = "TintColorLabel";
-            this.TintColorLabel.Size = new System.Drawing.Size(38, 13);
-            this.TintColorLabel.TabIndex = 33;
-            this.TintColorLabel.Text = "TColor";
-            // 
-            // TintColor
-            // 
-            this.TintColor.Location = new System.Drawing.Point(203, 41);
-            this.TintColor.Maximum = new decimal(new int[] {
-            255,
-            0,
-            0,
-            0});
-            this.TintColor.Name = "TintColor";
-            this.TintColor.Size = new System.Drawing.Size(50, 20);
-            this.TintColor.TabIndex = 34;
+            this.SpriteParamMapping.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.SpriteParamMapping.DropDownWidth = 175;
+            this.SpriteParamMapping.FormattingEnabled = true;
+            this.SpriteParamMapping.Location = new System.Drawing.Point(203, 95);
+            this.SpriteParamMapping.MaxDropDownItems = 10;
+            this.SpriteParamMapping.Name = "SpriteParamMapping";
+            this.SpriteParamMapping.Size = new System.Drawing.Size(51, 21);
+            this.SpriteParamMapping.TabIndex = 21;
             // 
             // LayerPropertiesForm
             // 
@@ -1108,6 +1121,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.HeightBox)).EndInit();
             this.groupBox4.ResumeLayout(false);
             this.groupBox4.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.TintColor)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.Param1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.Param2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.Param3)).EndInit();
@@ -1118,7 +1132,6 @@
             ((System.ComponentModel.ISupportInitialize)(this.RotationRadiusMultiplier)).EndInit();
             this.groupBoxInner.ResumeLayout(false);
             this.groupBoxInner.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.TintColor)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -1200,5 +1213,6 @@
         private System.Windows.Forms.ComboBox TextureSource;
         private System.Windows.Forms.NumericUpDown TintColor;
         private System.Windows.Forms.Label TintColorLabel;
+        private System.Windows.Forms.ComboBox SpriteParamMapping;
     }
 }

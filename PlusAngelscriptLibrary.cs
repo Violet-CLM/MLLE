@@ -121,6 +121,8 @@ namespace MLLE {{
         }}
 
         data5.pop(pbyte);
+        array<uint8> mappingIndices(pbyte);
+        puint = 0;
         while (pbyte-- != 0) {{
             jjPAL extra;
             string paletteName = _read7BitEncodedStringFromStream(data5);
@@ -129,6 +131,7 @@ namespace MLLE {{
             if (index < 0) {{
                 jjDebug('MLLE::Setup: Not enough room for additional palette ' + paletteName);
             }} else {{
+                mappingIndices[puint++] = uint8(index);
                 _palettes.set(paletteName, uint8(index));
                 array<uint8> indexMapping(256);
                 for (uint i = 0; i < 256; ++i)
@@ -216,7 +219,7 @@ namespace MLLE {{
             data5.pop(pbyte);
             layer.spriteMode = SPRITE::Mode(pbyte);
             data5.pop(pbyte);
-            layer.spriteParam = pbyte;
+            layer.spriteParam = (layer.spriteMode == SPRITE::MAPPING || layer.spriteMode == SPRITE::TRANSLUCENTMAPPING) ? mappingIndices[pbyte] : pbyte;
             data5.pop(pint);
             layer.rotationAngle = pint;
             data5.pop(pint);
