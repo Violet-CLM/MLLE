@@ -24,7 +24,7 @@ namespace MLLE
 #pragma require '{0}'
 namespace MLLE {{
     jjPAL@ Palette;
-    dictionary@ _layers;{1}
+    dictionary@ _layers, _palettes;{1}
     array<_offgridObject>@ _offGridObjects;
 
     bool Setup({2}) {{
@@ -32,6 +32,8 @@ namespace MLLE {{
         @Palette = @palette;
         dictionary layers;
         @_layers = @layers;
+        dictionary palettes;
+        @_palettes = @palettes;
 
         jjSTREAM crcCheck('{0}');
         string crcLine;
@@ -113,13 +115,26 @@ namespace MLLE {{
         data5.pop(puint); data5.pop(puint2); jjSetWaterGradient(_colorFromArgb(puint), _colorFromArgb(puint2));
 
         data5.pop(pbool); if (pbool) {{
-            for (uint i = 0; i < 256; ++i) {{
-                data5.pop(palette.color[i].red);
-                data5.pop(palette.color[i].green);
-                data5.pop(palette.color[i].blue);
-            }}
+            _readPalette(data5, palette);
             palette.apply();
             data5.pop(pbool);
+        }}
+
+        data5.pop(pbyte);
+        while (pbyte-- != 0) {{
+            jjPAL extra;
+            string paletteName = _read7BitEncodedStringFromStream(data5);
+            _readPalette(data5, extra);
+            int index = jjSpriteModeFirstFreeMapping();
+            if (index < 0) {{
+                jjDebug('MLLE::Setup: Not enough room for additional palette ' + paletteName);
+            }} else {{
+                _palettes.set(paletteName, uint8(index));
+                array<uint8> indexMapping(256);
+                for (uint i = 0; i < 256; ++i)
+                    indexMapping[i] = jjPalette.findNearestColor(extra.color[i]);
+                jjSpriteModeSetMapping(index, indexMapping, extra);
+            }}
         }}
 
         _recolorAnimationIf(data5, ANIM::PINBALL, 0, 4);
@@ -397,6 +412,8 @@ namespace MLLE {{
                         preset.curFrame = jjAnimations[preset.determineCurAnim(animSetsToLoad[eventID], preset.curAnim)] + preset.frameID;
                         if ((eventID >= OBJECT::FRUITPLATFORM && eventID <= OBJECT::SPIKEBOLL3D) || eventID == OBJECT::WITCH)
                             preset.killAnim += jjAnimSets[animSetsToLoad[eventID]];
+                        else if (eventID == OBJECT::CATERPILLAR && jjObjectPresets[OBJECT::SMOKERING].curAnim < 100)
+                            jjObjectPresets[OBJECT::SMOKERING].determineCurAnim(ANIM::CATERPIL, jjObjectPresets[OBJECT::SMOKERING].curAnim);
                     }}
                     animSetsToLoad[eventID] = 0;
                 }}
@@ -414,6 +431,16 @@ namespace MLLE {{
         jjLAYER@ handle = null;
         _layers.get(name, @handle);
         return handle;
+    }}
+    uint8 GetPaletteMappingID(const string &in name) {{
+        uint8 mappingID;
+        _palettes.get(name, mappingID);
+        return mappingID;
+    }}
+    jjPAL@ GetPalette(const string &in name) {{
+        if (name == 'Level Palette')
+            return Palette;
+        return jjSpriteModeGetColorMapping(GetPaletteMappingID(name));
     }}
 
     void ReapplyPalette() {{
@@ -490,7 +517,15 @@ namespace MLLE {{
         return jjPALCOLOR(Argb >> 16, Argb >> 8, Argb >> 0);
     }}
 
-    uint _read7BitEncodedUintFromStream(jjSTREAM@ stream) {{
+    void _readPalette(jjSTREAM& stream, jjPAL& palette) {{
+        for (uint i = 0; i < 256; ++i) {{
+            stream.pop(palette.color[i].red);
+            stream.pop(palette.color[i].green);
+            stream.pop(palette.color[i].blue);
+        }}
+    }}
+
+    uint _read7BitEncodedUintFromStream(jjSTREAM& stream) {{
         uint result = 0;
         while (true) {{
             uint8 byteRead; stream.pop(byteRead);
@@ -502,13 +537,13 @@ namespace MLLE {{
         }}
         return result;
     }}
-    string _read7BitEncodedStringFromStream(jjSTREAM@ stream) {{
+    string _read7BitEncodedStringFromStream(jjSTREAM& stream) {{
         string result;
         stream.get(result, _read7BitEncodedUintFromStream(stream));
         return result;
     }}
 
-    void _recolorAnimationIf(jjSTREAM@ stream, ANIM::Set set, uint animID, uint frameCount) {{
+    void _recolorAnimationIf(jjSTREAM& stream, ANIM::Set set, uint animID, uint frameCount) {{
         bool pbool; stream.pop(pbool); if (!pbool) return;
 
         if (jjAnimSets[set] == 0)
@@ -519,11 +554,7 @@ namespace MLLE {{
             stream.pop(colors[i]);
         for (uint i = 0; i < frameCount; ++i) {{
             jjANIMFRAME@ frame = jjAnimFrames[firstFrameID + i];
-            jjPIXELMAP image(frame);
-            for (uint x = 0; x < image.width; ++x)
-                for (uint y = 0; y < image.height; ++y)
-                    image[x,y] = colors[image[x,y]];
-            image.save(frame);
+            jjPIXELMAP(frame).recolor(colors).save(frame);
         }}
     }}
 }}{4}";

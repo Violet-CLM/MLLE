@@ -76,6 +76,8 @@
             this.jJ2PropertiesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.plusLevelPropertiesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.paletteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.levelPaletteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.addNewPaletteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.layersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tilesetsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.addNewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -601,10 +603,27 @@
             // 
             // paletteToolStripMenuItem
             // 
+            this.paletteToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.levelPaletteToolStripMenuItem,
+            this.addNewPaletteToolStripMenuItem});
             this.paletteToolStripMenuItem.Name = "paletteToolStripMenuItem";
             this.paletteToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.paletteToolStripMenuItem.Text = "Palette...";
-            this.paletteToolStripMenuItem.Click += new System.EventHandler(this.paletteToolStripMenuItem_Click);
+            this.paletteToolStripMenuItem.Text = "Palettes";
+            this.paletteToolStripMenuItem.DropDownOpening += new System.EventHandler(this.paletteToolStripMenuItem_DropDownOpening);
+            // 
+            // levelPaletteToolStripMenuItem
+            // 
+            this.levelPaletteToolStripMenuItem.Name = "levelPaletteToolStripMenuItem";
+            this.levelPaletteToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.levelPaletteToolStripMenuItem.Text = "Level Palette";
+            this.levelPaletteToolStripMenuItem.Click += new System.EventHandler(this.paletteToolStripMenuItem_Click);
+            // 
+            // addNewPaletteToolStripMenuItem
+            // 
+            this.addNewPaletteToolStripMenuItem.Name = "addNewPaletteToolStripMenuItem";
+            this.addNewPaletteToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.addNewPaletteToolStripMenuItem.Text = "Add New...";
+            this.addNewPaletteToolStripMenuItem.Click += new System.EventHandler(this.addNewPaletteToolStripMenuItem_Click);
             // 
             // layersToolStripMenuItem
             // 
@@ -703,7 +722,7 @@
             // 
             this.eventsForemostToolStripMenuItem.CheckOnClick = true;
             this.eventsForemostToolStripMenuItem.Name = "eventsForemostToolStripMenuItem";
-            this.eventsForemostToolStripMenuItem.Size = new System.Drawing.Size(214, 22);
+            this.eventsForemostToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
             this.eventsForemostToolStripMenuItem.Text = "Events Foremost";
             this.eventsForemostToolStripMenuItem.CheckedChanged += new System.EventHandler(this.eventsForemostToolStripMenuItem_CheckedChanged);
             // 
@@ -711,7 +730,7 @@
             // 
             this.stijnVisionToolStripMenuItem.CheckOnClick = true;
             this.stijnVisionToolStripMenuItem.Name = "stijnVisionToolStripMenuItem";
-            this.stijnVisionToolStripMenuItem.Size = new System.Drawing.Size(214, 22);
+            this.stijnVisionToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
             this.stijnVisionToolStripMenuItem.Text = "stijn vision";
             this.stijnVisionToolStripMenuItem.Click += new System.EventHandler(this.stijnVisionToolStripMenuItem_Click);
             // 
@@ -719,7 +738,7 @@
             // 
             this.zoomingAbove100ToolStripMenuItem.CheckOnClick = true;
             this.zoomingAbove100ToolStripMenuItem.Name = "zoomingAbove100ToolStripMenuItem";
-            this.zoomingAbove100ToolStripMenuItem.Size = new System.Drawing.Size(214, 22);
+            this.zoomingAbove100ToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
             this.zoomingAbove100ToolStripMenuItem.Text = "Zooming Above 100%";
             this.zoomingAbove100ToolStripMenuItem.Click += new System.EventHandler(this.zoomingAbove100ToolStripMenuItem_Click);
             // 
@@ -727,7 +746,7 @@
             // 
             this.previewHelpStringColorsToolStripMenuItem.CheckOnClick = true;
             this.previewHelpStringColorsToolStripMenuItem.Name = "previewHelpStringColorsToolStripMenuItem";
-            this.previewHelpStringColorsToolStripMenuItem.Size = new System.Drawing.Size(214, 22);
+            this.previewHelpStringColorsToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
             this.previewHelpStringColorsToolStripMenuItem.Text = "Preview Help String Colors";
             this.previewHelpStringColorsToolStripMenuItem.Click += new System.EventHandler(this.previewHelpStringColorsToolStripMenuItem_Click);
             // 
@@ -742,26 +761,26 @@
             // toolStripSeparator19
             // 
             this.toolStripSeparator19.Name = "toolStripSeparator19";
-            this.toolStripSeparator19.Size = new System.Drawing.Size(211, 6);
+            this.toolStripSeparator19.Size = new System.Drawing.Size(213, 6);
             // 
             // setTransparentColorToolStripMenuItem
             // 
             this.setTransparentColorToolStripMenuItem.Name = "setTransparentColorToolStripMenuItem";
-            this.setTransparentColorToolStripMenuItem.Size = new System.Drawing.Size(214, 22);
+            this.setTransparentColorToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
             this.setTransparentColorToolStripMenuItem.Text = "Set Transparent Color...";
             this.setTransparentColorToolStripMenuItem.Click += new System.EventHandler(this.setTransparentColorToolStripMenuItem_Click);
             // 
             // setTile0ColorToolStripMenuItem
             // 
             this.setTile0ColorToolStripMenuItem.Name = "setTile0ColorToolStripMenuItem";
-            this.setTile0ColorToolStripMenuItem.Size = new System.Drawing.Size(214, 22);
+            this.setTile0ColorToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
             this.setTile0ColorToolStripMenuItem.Text = "Set Tile 0 Color...";
             this.setTile0ColorToolStripMenuItem.Click += new System.EventHandler(this.setTile0ColorToolStripMenuItem_Click);
             // 
             // setDeadspaceColorToolStripMenuItem
             // 
             this.setDeadspaceColorToolStripMenuItem.Name = "setDeadspaceColorToolStripMenuItem";
-            this.setDeadspaceColorToolStripMenuItem.Size = new System.Drawing.Size(214, 22);
+            this.setDeadspaceColorToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
             this.setDeadspaceColorToolStripMenuItem.Text = "Set Deadspace Color...";
             this.setDeadspaceColorToolStripMenuItem.Click += new System.EventHandler(this.setDeadspaceColorToolStripMenuItem_Click);
             // 
@@ -958,7 +977,7 @@
             this.RedoButton.Image = ((System.Drawing.Image)(resources.GetObject("RedoButton.Image")));
             this.RedoButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.RedoButton.Name = "RedoButton";
-            this.RedoButton.Size = new System.Drawing.Size(23, 20);
+            this.RedoButton.Size = new System.Drawing.Size(22, 20);
             this.RedoButton.Tag = "Redo (Ctrl+Y)";
             this.RedoButton.Click += new System.EventHandler(this.RedoButton_Click);
             this.RedoButton.MouseEnter += new System.EventHandler(this.DescribableControl_MouseEnter);
@@ -2124,5 +2143,7 @@
         private System.Windows.Forms.ToolStripMenuItem stijnVisionToolStripMenuItem;
         private System.Windows.Forms.ToolStripButton SnapEventsToGridToggle;
         private System.Windows.Forms.Label OffgridInstructions;
+        private System.Windows.Forms.ToolStripMenuItem levelPaletteToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem addNewPaletteToolStripMenuItem;
     }
 }

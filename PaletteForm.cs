@@ -9,6 +9,7 @@ namespace MLLE
     public partial class PaletteForm : Form
     {
         Palette DefaultPalette;
+        string PaletteName = "Level Palette";
 
         public PaletteForm()
         {
@@ -17,12 +18,8 @@ namespace MLLE
 
         Palette InitialPalette;
         PaletteImage PaletteImage = new PaletteImage(15, 2, false, true);
-        internal Palette ShowForm(Palette plusPalette, Palette defaultPalette, ref bool reapplyPalette)
+        private void SetupPaletteImage()
         {
-            DefaultPalette = defaultPalette;
-            InitialPalette = (plusPalette ?? DefaultPalette);
-            checkBox1.Checked = reapplyPalette;
-
             for (int i = 0; i < 10; ++i)
                 PaletteImage.ColorDisabled[i] = PaletteImage.ColorDisabled[Palette.PaletteSize - 10 + i] = true; //transparency, and default windows colors
             PaletteImage.Location = new Point(12, OKButton.Location.Y);
@@ -30,13 +27,40 @@ namespace MLLE
             PaletteImage.MouseMove += PaletteImageMouseMove;
             PaletteImage.MouseLeave += PaletteImageMouseLeave;
             Controls.Add(PaletteImage);
+        }
+        internal Palette ShowForm(Palette plusPalette, Palette defaultPalette, ref bool reapplyPalette)
+        {
+            DefaultPalette = defaultPalette;
+            InitialPalette = (plusPalette ?? DefaultPalette);
+            checkBox1.Checked = reapplyPalette;
+            ButtonDelete.Visible = false;
+            NameBox.Visible = NameLabel.Visible = false;
+
+            SetupPaletteImage();
 
             if (ShowDialog() == DialogResult.OK)
                 reapplyPalette = checkBox1.Checked;
 
             return (!PaletteImage.Palette.Equals(InitialPalette)) ? PaletteImage.Palette : null;
         }
+        internal DialogResult ShowForm(PlusPropertyList.NamedPalette namedPalette, Palette defaultPalette, bool addNew)
+        {
+            DefaultPalette = defaultPalette;
+            InitialPalette = namedPalette.Palette;
+            checkBox1.Visible = false;
+            ButtonDelete.Visible = !addNew;
+            Text = PaletteName = NameBox.Text = namedPalette.Name;
 
+            SetupPaletteImage();
+
+            DialogResult result = ShowDialog();
+            if (result == DialogResult.OK)
+            {
+                namedPalette.Palette.CopyFrom(PaletteImage.Palette);
+                namedPalette.Name = NameBox.Text;
+            }
+            return result;
+        }
 
         private void ResetButton_Click(object sender, System.EventArgs e)
         {
@@ -147,12 +171,12 @@ namespace MLLE
         {
             if (!(sender as Control).ClientRectangle.Contains(e.Location))
                 return;
-            Text = "Level Palette \u2013 " + PaletteImage.getSelectedColor(e);
+            Text = PaletteName + " \u2013 " + PaletteImage.getSelectedColor(e);
         }
         
         private void PaletteImageMouseLeave(object sender, EventArgs e)
         {
-            Text = "Level Palette";
+            Text = PaletteName;
         }
 
         private void SaveButton_Click(object sender, EventArgs e)

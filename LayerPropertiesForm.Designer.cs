@@ -838,7 +838,10 @@
             "Blend Dodge",
             "Blend Burn",
             "Blend Exclusion",
-            "Translucent Tile"});
+            "Translucent Tile",
+            "Chroma Key",
+            "Mapping",
+            "Translucent Mapping"});
             this.SpriteMode.Location = new System.Drawing.Point(60, 95);
             this.SpriteMode.MaxDropDownItems = 10;
             this.SpriteMode.Name = "SpriteMode";
