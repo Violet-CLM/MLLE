@@ -487,7 +487,7 @@
             this.TextureSurfaceSelect.FormattingEnabled = true;
             this.TextureSurfaceSelect.Items.AddRange(new object[] {
             "Untextured",
-            "Layer 8",
+            "Legacy",
             "Fullscreen",
             "Fullscreen Chroma Key",
             "Inner Window",
