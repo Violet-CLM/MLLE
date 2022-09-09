@@ -1040,8 +1040,18 @@ class Layer
             int defaultSpeedModel = (id != 7) ? 0 : 1;
             if (XSpeedModel != defaultSpeedModel || YSpeedModel != defaultSpeedModel)
                 return true;
-            if (TextureSurface > 1) //in vanilla this is a bool
-                return true;
+            if (TextureSurface != 0) { //in vanilla this is a bool
+                if (TextureMode == 0) //warp horizon
+                {
+                    if (TextureSurface != 1) //not Legacy
+                        return true;
+                }
+                else //anything other than warp horizon
+                {
+                    if (TextureSurface != 2) //not Full Screen
+                        return true;
+                }
+            }
             if (Fade != 192)
                 return true;
             if (XFade != 0.5f || YFade != 0.5f)
@@ -1541,7 +1551,12 @@ class J2LFile : J2File
                     foreach (Layer layer in DefaultLayers) layer.YSpeed = data1reader.ReadInt32() / 65536.0F;
                     foreach (Layer layer in DefaultLayers) layer.AutoXSpeed = data1reader.ReadInt32() / 65536.0F;
                     foreach (Layer layer in DefaultLayers) layer.AutoYSpeed = data1reader.ReadInt32() / 65536.0F;
-                    foreach (Layer layer in DefaultLayers) layer.TextureMode = data1reader.ReadByte();
+                    foreach (Layer layer in DefaultLayers)
+                    {
+                        layer.TextureMode = data1reader.ReadByte();
+                        if (layer.TextureMode != 0 && layer.TextureSurface == 1) //legacy but not warp horizon
+                            layer.TextureSurface = 2; //full screen instead of legacy
+                    }
                     foreach (Layer layer in DefaultLayers) { layer.TexturParam1 = data1reader.ReadByte(); layer.TexturParam2 = data1reader.ReadByte(); layer.TexturParam3 = data1reader.ReadByte(); }
                     AnimOffset = data1reader.ReadUInt16();
                     for (ushort i = 0; i < MaxTiles; i++) EventTiles[i] = data1reader.ReadUInt32();
