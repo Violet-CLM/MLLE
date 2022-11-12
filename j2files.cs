@@ -968,6 +968,10 @@ class Layer
     {
         return (RealWidth+3)/4*4 * Height;
     }
+    public Size GetSizeTimes32()
+    {
+        return new Size((int)Width * 32, (int)Height * 32);
+    }
     /*public ushort GetTileAt(int x, int y)
     {
         if (x < RealWidth && y < Height && x >= 0 && y >= 0) return TileMap[x, y];
@@ -990,37 +994,84 @@ class Layer
         yOrigin = -32 - (upperLeftY % 32);
         upperLeftY /= 32;
     }
-    public void GetFixedCornerOriginNumbers(int xPosition, int yPosition, int widthReduced, int heightReduced, ref int xOrigin, ref int yOrigin, ref int upperLeftX, ref int upperLeftY, byte tileSize, bool applyWaveAsOffsets, bool useLayer8Speeds)
+    public void GetFixedCornerOriginNumbers(Point position, Size viewport, Size levelSize, ref Point origin, ref Point upperLeft, byte tileSize, bool applyWaveAsOffsets)
     {
-        /*if (id == 7)
+        switch (XSpeedModel) //JJ2+ v5.10 stuff
         {
-            upperLeftX = -tileSize;
-            upperLeftY = -tileSize - (LimitVisibleRegion ? heightReduced * 2 : 0);
+            case 1: //layer 8
+                upperLeft.X = 0;
+                break;
+            case 3: //from start
+                upperLeft.X = (int)Math.Floor(XSpeed * position.X);
+                break;
+            case 4: //fit level
+                {
+                    int layerWidth = (int)Width * 32;
+                    if (layerWidth == levelSize.Width)
+                        upperLeft.X = 0;
+                    else
+                        upperLeft.X = position.X * (layerWidth - viewport.Width) / (levelSize.Width - viewport.Width);
+                }
+                break;
+            case 5: //speed multipliers
+                if (levelSize.Width == viewport.Width)
+                    upperLeft.X = -(int)(XSpeed * viewport.Width);
+                else
+                    upperLeft.X = -(int)((XSpeed + position.X * (AutoXSpeed - XSpeed) / (levelSize.Width - viewport.Width)) * viewport.Width);
+                break;
+            case 0: //normal
+            case 2: //both speeds... treat the same as "normal," because MLLE isn't going to display autospeeds for you
+            default:
+                {
+                    int widthReduced = (viewport.Width - 320) / 2;
+                    upperLeft.X = (int)Math.Floor(XSpeed * (position.X + widthReduced)) - widthReduced;
+                    break;
+                }
         }
-        else
+        switch (YSpeedModel)
         {
-            upperLeftX = (int)Math.Floor(xPosition * XSpeed) - tileSize;
-            upperLeftY = (int)(yPosition * YSpeed - (LimitVisibleRegion ? heightReduced * 2 : 0)) - tileSize;
-        }*/
-        if (id == 7 && !useLayer8Speeds)
-        {
-            upperLeftX = -32;
-            upperLeftY = -32;
+            case 1: //layer 8
+                upperLeft.Y = 0;
+                break;
+            case 3: //from start
+                upperLeft.Y = (int)Math.Floor(YSpeed * position.Y);
+                break;
+            case 4: //fit level
+                {
+                    int layerHeight = (int)Height * 32;
+                    if (layerHeight == levelSize.Height)
+                        upperLeft.Y = 0;
+                    else
+                        upperLeft.Y = position.Y * (layerHeight - viewport.Height) / (levelSize.Height - viewport.Height);
+                }
+                break;
+            case 5: //speed multipliers
+                if (levelSize.Height == viewport.Height)
+                    upperLeft.Y = -(int)(YSpeed * viewport.Height);
+                else
+                    upperLeft.Y = -(int)((YSpeed + position.Y * (AutoYSpeed - YSpeed) / (levelSize.Height - viewport.Height)) * viewport.Height);
+                break;
+            case 0: //normal
+            case 2: //both speeds... treat the same as "normal," because MLLE isn't going to display autospeeds for you
+            default:
+                {
+                    int heightReduced = (viewport.Height - 200) / 2;
+                    upperLeft.Y = (int)Math.Floor(YSpeed * (position.Y + heightReduced)) - ((LimitVisibleRegion && !TileHeight) ? heightReduced * 2 : heightReduced);
+                    break;
+                }
         }
-        else
-        {
-            upperLeftX = (int)Math.Floor(xPosition * XSpeed - widthReduced) - tileSize;
-            upperLeftY = (int)(yPosition * YSpeed - ((LimitVisibleRegion && !TileHeight) ? heightReduced * 2 : heightReduced)) - tileSize;
-        }
+
         if (applyWaveAsOffsets)
         {
-            upperLeftX += (int)(WaveX * tileSize / 32);
-            upperLeftY += (int)(WaveY * tileSize / 32);
+            upperLeft.X += (int)WaveX;// (int)(WaveX * tileSize / 32);
+            upperLeft.Y += (int)WaveY;// (int)(WaveY * tileSize / 32);
         }
-        xOrigin = -tileSize - (upperLeftX % tileSize);
-        upperLeftX /= tileSize;
-        yOrigin = -tileSize - (upperLeftY % tileSize);
-        upperLeftY /= tileSize;
+        upperLeft.X -= tileSize;
+        origin.X = -tileSize - (upperLeft.X % tileSize);
+        upperLeft.X /= tileSize;
+        upperLeft.Y -= tileSize;
+        origin.Y = -tileSize - (upperLeft.Y % tileSize);
+        upperLeft.Y /= tileSize;
     }
 
     internal bool PlusOnly
@@ -1566,7 +1617,11 @@ class J2LFile : J2File
                     //Console.WriteLine("break");
                     for (ushort i = 0; i < MaxTiles; i++) IsEachTileUsed[i] = data1reader.ReadBoolean();
                     //for (ushort i = 0; i < MaxTiles; i++) if (unknownsection3[i] != 0) Console.WriteLine(i.ToString() + ": " + unknownsection3[i].ToString());
-                    if (VersionNumber == 256) AGA_unknownsection = data1reader.ReadBytes(32768); //wtf??
+                    if (VersionNumber == 256)
+                    {
+                        AGA_unknownsection = data1reader.ReadBytes(32768); //wtf??
+                        DefaultLayers[7].XSpeedModel = DefaultLayers[7].YSpeedModel = 0; //AGA levels don't give layer 8 special speed treatment
+                    }
                     //for (int i = 0; i < 32768; i++) Console.Write(AGA_unknownsection[i]);
                     Animations = new AnimatedTile[256];
                     for (ushort i = 0; i < 256; i++)
@@ -1898,6 +1953,8 @@ class J2LFile : J2File
 
         for (int i = 0; i < DefaultLayers.Length; i++)
             DefaultLayers[i] = new Layer(i);
+        if (VersionType == Version.AGA)
+            DefaultLayers[7].XSpeedModel = DefaultLayers[7].YSpeedModel = 0; //AGA levels don't give layer 8 special speed treatment
         AllLayers = new List<Layer>(DefaultLayers);
 
         unknownsection = new byte[64];
