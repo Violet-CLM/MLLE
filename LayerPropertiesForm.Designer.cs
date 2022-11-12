@@ -489,7 +489,6 @@
             "Untextured",
             "Legacy",
             "Fullscreen",
-            "Fullscreen Chroma Key",
             "Inner Window",
             "Inner Layer"});
             this.TextureSurfaceSelect.Location = new System.Drawing.Point(9, 15);

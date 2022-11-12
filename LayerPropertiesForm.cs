@@ -354,7 +354,7 @@ namespace MLLE
             }
             TextureSource.Enabled = TextureMode.Checked && TextureModeSelect.SelectedIndex != 2;
             TextureSourceDraw.Enabled = TextureSource.Enabled && SourceForm.J2L.HasTiles;
-            SpriteMode.Enabled = !TextureMode.Checked || (TextureSurfaceSelect.SelectedIndex != 3 && TextureModeSelect.SelectedIndex != 6);
+            SpriteMode.Enabled = !TextureMode.Checked || TextureModeSelect.SelectedIndex != 6;
             string fadeSuffix = "Fade";
             if (TextureModeSelect.SelectedIndex == 2 || TextureModeSelect.SelectedIndex == 3)
                 fadeSuffix = "Pivot";
@@ -404,7 +404,7 @@ namespace MLLE
                 TintColor.Visible = TintColorLabel.Visible = TextureMode.Checked && TextureModeSelect.SelectedIndex == 6; //reflection
                 TintColor.Enabled = TextureMode.Checked && TintColor.Visible;
             }
-            SpriteMode.Enabled = !TextureMode.Checked || (TextureSurfaceSelect.SelectedIndex != 3 && TextureModeSelect.SelectedIndex != 6);
+            SpriteMode.Enabled = !TextureMode.Checked || TextureModeSelect.SelectedIndex != 6;
             if (!SourceForm.EnableableBools[SourceForm.J2L.VersionType][EnableableTitles.BoolDevelopingForPlus])
             {
                 if (TextureMode.Checked) {
@@ -453,8 +453,8 @@ namespace MLLE
         private void TextureSurfaceSelect_SelectedIndexChanged(object sender, EventArgs e)
         {
             TextureMode.Checked = TextureSurfaceSelect.SelectedIndex != 0;
-            groupBoxInner.Visible = TextureSurfaceSelect.SelectedIndex == 4 || TextureSurfaceSelect.SelectedIndex == 5;
-            SpriteMode.Enabled = !TextureMode.Checked || (TextureSurfaceSelect.SelectedIndex != 3 && TextureModeSelect.SelectedIndex != 6);
+            groupBoxInner.Visible = TextureSurfaceSelect.SelectedIndex == 3 || TextureSurfaceSelect.SelectedIndex == 4;
+            SpriteMode.Enabled = !TextureMode.Checked || TextureModeSelect.SelectedIndex != 6;
             GenericInputChanged(sender, e);
         }
 
