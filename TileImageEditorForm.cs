@@ -20,6 +20,8 @@ namespace MLLE
         }
 
         byte[] Image, OriginalImage;
+        int Dimension, AnDimension;
+        int Scale;
         static byte[] ClipboardMask = null;
         SolidBrush[] Colors = new SolidBrush[Palette.PaletteSize];
         Bitmap ImageImage;
@@ -60,8 +62,8 @@ namespace MLLE
 
         void DrawImage()
         {
-            for (int x = 0; x < 32; ++x)
-                for (int y = 0; y < 32; ++y)
+            for (int x = 0; x < Dimension; ++x)
+                for (int y = 0; y < Dimension; ++y)
                     DrawColor(x, y);
         }
 
@@ -77,10 +79,10 @@ namespace MLLE
                 return;
 
             bool isImage = picture == pictureBox1;
-            int imageDimensions = isImage ? 8 : 5;
+            int imageDimensions = isImage ? Scale : 5;
             int x = (e.X - picture.AutoScrollOffset.X) / imageDimensions;
             int y = (e.Y - picture.AutoScrollOffset.Y) / imageDimensions;
-            int xy = y * (isImage ? 32 : 16) + x;
+            int xy = y * (isImage ? Dimension : 16) + x;
             byte color = isImage ? Image[xy] : (byte)xy;
 
             if (e.Button != MouseButtons.None)
@@ -121,12 +123,12 @@ namespace MLLE
         {
             RedoBuffer.Clear();
             var PixelsBeingChanged = new List<ChangedPixel>();
-            for (int i = 0; i < 32 * 32; ++i)
+            for (int i = 0; i < Image.Length; ++i)
                 if (Image[i] == src)
                 {
                     PixelsBeingChanged.Add(new ChangedPixel(Image[i], i));
                     Image[i] = dst;
-                    DrawColor(i & 31, i >> 5);
+                    DrawColor(i & AnDimension, i / Dimension);
                 }
             UndoBuffer.Push(PixelsBeingChanged);
         }
@@ -138,20 +140,20 @@ namespace MLLE
                 for (int i = 0; i < Points.Count; ++i)
                 {
                     Point point = Points[i];
-                    int xy = point.X | (point.Y << 5);
+                    int xy = point.X | (point.Y * Dimension);
                     if (Image[xy] == colorToFill) //hasn't already been drawn to
                     {
                         if (point.X > 0 && Image[xy - 1] == colorToFill)
                             Points.Add(new Point(point.X - 1, point.Y));
-                        if (point.X < 31 && Image[xy + 1] == colorToFill)
+                        if (point.X < AnDimension && Image[xy + 1] == colorToFill)
                             Points.Add(new Point(point.X + 1, point.Y));
-                        if (point.Y > 0 && Image[xy - 32] == colorToFill)
+                        if (point.Y > 0 && Image[xy - Dimension] == colorToFill)
                             Points.Add(new Point(point.X, point.Y - 1));
-                        if (point.Y < 31 && Image[xy + 32] == colorToFill)
+                        if (point.Y < AnDimension && Image[xy + Dimension] == colorToFill)
                             Points.Add(new Point(point.X, point.Y + 1));
                         PixelsBeingChanged.Add(new ChangedPixel(Image[xy], xy));
                         Image[xy] = color;
-                        g.FillRectangle(DrawColor, new Rectangle(point.X * 8, point.Y * 8, 8, 8));
+                        g.FillRectangle(DrawColor, new Rectangle(point.X * Scale, point.Y * Scale, Scale, Scale));
                     }
                 }
             pictureBox1.Image = ImageImage;
@@ -194,21 +196,21 @@ namespace MLLE
         private void flipHorizontallyFToolStripMenuItem_Click(object sender, EventArgs e)
         {
             MakeEntireImageUndoable();
-            Image = Enumerable.Range(0, 32*32).Select(val => Image[(val & ~31) | (31 - (val & 31))]).ToArray();
+            Image = Enumerable.Range(0, Image.Length).Select(val => Image[(val & ~AnDimension) | (AnDimension - (val & AnDimension))]).ToArray();
             DrawImage();
         }
 
         private void flipVerticallyIToolStripMenuItem_Click(object sender, EventArgs e)
         {
             MakeEntireImageUndoable();
-            Image = Enumerable.Range(0, 32 * 32).Select(val => Image[(val & 31) | (32*31 - (val & ~31))]).ToArray();
+            Image = Enumerable.Range(0, Image.Length).Select(val => Image[(val & AnDimension) | (Dimension* AnDimension - (val & ~AnDimension))]).ToArray();
             DrawImage();
         }
 
         private void rotateToolStripMenuItem_Click(object sender, EventArgs e)
         {
             MakeEntireImageUndoable();
-            Image = Enumerable.Range(0, 32 * 32).Select(val => Image[(32*31 - ((val & 31) << 5)) | (val >> 5)]).ToArray();
+            Image = Enumerable.Range(0, Image.Length).Select(val => Image[(Dimension*AnDimension - ((val & AnDimension) * Dimension)) | (val / Dimension)]).ToArray();
             DrawImage();
         }
 
@@ -216,7 +218,7 @@ namespace MLLE
         {
             if (EditingImage)
             {
-                Bitmap bitmap = new Bitmap(32, 32, PixelFormat.Format8bppIndexed);
+                Bitmap bitmap = new Bitmap(Dimension, Dimension, PixelFormat.Format8bppIndexed);
                 originalPalette.Palette.Apply(bitmap);
                 BitmapStuff.ByteArrayToBitmap(Image, bitmap, true);
                 BitmapStuff.CopyBitmapToClipboard(bitmap);
@@ -228,22 +230,34 @@ namespace MLLE
             }
         }
 
-        private void pasteImage(bool over)
+        private void pasteImage(bool over, bool recolor)
         {
-            Bitmap pastedBitmap = BitmapStuff.GetBitmapFromClipboard(new Size(32, 32));
+            Bitmap pastedBitmap = BitmapStuff.GetBitmapFromClipboard(new Size(Dimension, Dimension));
             if (pastedBitmap != null) //no errors, everything about the header looks right
             {
-                MakeEntireImageUndoable();
                 var clipboard = BitmapStuff.BitmapToByteArray(pastedBitmap);
+
+                if (recolor) {
+                    byte[] colorRemappings = null;
+                    if (new SpriteRecolorForm().ShowForm(originalPalette.Palette, pastedBitmap.Clone() as Bitmap, ref colorRemappings, Color.Black))
+                    {
+                        for (int i = 0; i < clipboard.Length; ++i)
+                            clipboard[i] = colorRemappings[clipboard[i]];
+                    }
+                    else //user hit Cancel button
+                        return;
+                }
+
+                MakeEntireImageUndoable();
                 if (over)
                 {
-                    for (int i = 0; i < 32 * 32; ++i)
+                    for (int i = 0; i < clipboard.Length; ++i)
                         if (clipboard[i] > 1)
                             Image[i] = clipboard[i];
                 }
                 else //under
                 {
-                    for (int i = 0; i < 32 * 32; ++i)
+                    for (int i = 0; i < clipboard.Length; ++i)
                         if (Image[i] == 0)
                             Image[i] = clipboard[i];
                 }
@@ -254,11 +268,11 @@ namespace MLLE
         private void pasteToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (EditingImage)
-                pasteImage(true);
+                pasteImage(true, false);
             else
             {
                 MakeEntireImageUndoable();
-                for (int i = 0; i < 32 * 32; ++i)
+                for (int i = 0; i < ClipboardMask.Length; ++i)
                     if (ClipboardMask[i] != 0)
                         Image[i] = ClipboardMask[i];
                 DrawImage();
@@ -267,7 +281,11 @@ namespace MLLE
 
         private void pasteUnderToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            pasteImage(false);
+            pasteImage(false, false);
+        }
+        private void pasteAndRecolorToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            pasteImage(true, true);
         }
 
         private void TileImageEditorForm_KeyDown(object sender, KeyEventArgs e)
@@ -341,7 +359,7 @@ namespace MLLE
         void DrawColor(int x, int y)
         {
             using (Graphics g = Graphics.FromImage(ImageImage))
-                g.FillRectangle(Colors[Image[x + y * 32]], new Rectangle(x * 8, y * 8, 8, 8));
+                g.FillRectangle(Colors[Image[x + y * Dimension]], new Rectangle(x * Scale, y * Scale, Scale, Scale));
             pictureBox1.Image = ImageImage;
         }
 
@@ -363,6 +381,9 @@ namespace MLLE
                 for (uint i = 0; i < Palette.PaletteSize; ++i)
                     Colors[i] = new SolidBrush(Palette.Convert(palette.Colors[i]));
 
+                Dimension = (int)Math.Sqrt(originalImage.Length); //currently Length will only ever be 32*32 or 256*256, so this should be okay
+                Scale = 256 / Dimension; //8 or 1
+
                 PrimaryColor = SecondaryColor = 0;
 
                 FormTitle = "Edit Tile Image";
@@ -371,6 +392,9 @@ namespace MLLE
             {
                 Colors[0] = new SolidBrush(BackColor);
                 Colors[1] = new SolidBrush(Color.Black);
+
+                Dimension = 32; //all tile masks are the same size
+                Scale = 8;
 
                 PrimaryColor = 1;
                 SecondaryColor = 0;
@@ -382,6 +406,7 @@ namespace MLLE
             if (image != null)
                 Text = (FormTitle += "*");
 
+            AnDimension = Dimension - 1;
             Image = (image ?? originalImage).Clone() as byte[];
             OriginalImage = originalImage;
             ImageImage = new Bitmap(pictureBox1.Width, pictureBox1.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
@@ -389,6 +414,7 @@ namespace MLLE
 
             pasteToolStripMenuItem.Enabled = EditingImage || ClipboardMask != null;
             pasteUnderToolStripMenuItem.Enabled = EditingImage; //no use in pasting under a mask
+            pasteAndRecolorToolStripMenuItem.Enabled = EditingImage;
 
             ShowDialog();
 
@@ -442,7 +468,7 @@ namespace MLLE
                     int xy = pixels.Location;
                     newRecord.Add(new ChangedPixel(Image[xy], xy));
                     Image[xy] = pixels.Color;
-                    DrawColor(xy & 31, xy >> 5);
+                    DrawColor(xy & AnDimension, xy / Dimension);
                 }
                 b.Push(newRecord);
             }
@@ -452,7 +478,7 @@ namespace MLLE
         {
             RedoBuffer.Clear();
             var PixelsBeingChanged = new List<ChangedPixel>();
-            for (int i = 0; i < 32*32; ++i)
+            for (int i = 0; i < Image.Length; ++i)
                 PixelsBeingChanged.Add(new ChangedPixel(Image[i], i));
             UndoBuffer.Push(PixelsBeingChanged);
         }

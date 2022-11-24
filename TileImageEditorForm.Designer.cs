@@ -53,6 +53,7 @@
             this.PaintbrushButton = new System.Windows.Forms.ToolStripButton();
             this.FillButton = new System.Windows.Forms.ToolStripButton();
             this.ReplaceColorButton = new System.Windows.Forms.ToolStripButton();
+            this.pasteAndRecolorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.menuStrip1.SuspendLayout();
             this.toolStrip1.SuspendLayout();
@@ -182,51 +183,52 @@
             this.copyToolStripMenuItem,
             this.pasteToolStripMenuItem,
             this.pasteUnderToolStripMenuItem,
+            this.pasteAndRecolorToolStripMenuItem,
             this.toolStripSeparator2,
             this.undoToolStripMenuItem,
             this.redoToolStripMenuItem});
             this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
-            this.toolsToolStripMenuItem.Size = new System.Drawing.Size(47, 20);
+            this.toolsToolStripMenuItem.Size = new System.Drawing.Size(46, 20);
             this.toolsToolStripMenuItem.Text = "Tools";
             this.toolsToolStripMenuItem.DropDownOpening += new System.EventHandler(this.toolsToolStripMenuItem_DropDownOpening);
             // 
             // copyToolStripMenuItem
             // 
             this.copyToolStripMenuItem.Name = "copyToolStripMenuItem";
-            this.copyToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.copyToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.copyToolStripMenuItem.Text = "Copy";
             this.copyToolStripMenuItem.Click += new System.EventHandler(this.copyToolStripMenuItem_Click);
             // 
             // pasteToolStripMenuItem
             // 
             this.pasteToolStripMenuItem.Name = "pasteToolStripMenuItem";
-            this.pasteToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.pasteToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.pasteToolStripMenuItem.Text = "Paste";
             this.pasteToolStripMenuItem.Click += new System.EventHandler(this.pasteToolStripMenuItem_Click);
             // 
             // pasteUnderToolStripMenuItem
             // 
             this.pasteUnderToolStripMenuItem.Name = "pasteUnderToolStripMenuItem";
-            this.pasteUnderToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.pasteUnderToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.pasteUnderToolStripMenuItem.Text = "Paste Under";
             this.pasteUnderToolStripMenuItem.Click += new System.EventHandler(this.pasteUnderToolStripMenuItem_Click);
             // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(149, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(177, 6);
             // 
             // undoToolStripMenuItem
             // 
             this.undoToolStripMenuItem.Name = "undoToolStripMenuItem";
-            this.undoToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.undoToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.undoToolStripMenuItem.Text = "Undo";
             this.undoToolStripMenuItem.Click += new System.EventHandler(this.undoToolStripMenuItem_Click);
             // 
             // redoToolStripMenuItem
             // 
             this.redoToolStripMenuItem.Name = "redoToolStripMenuItem";
-            this.redoToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.redoToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.redoToolStripMenuItem.Text = "Redo";
             this.redoToolStripMenuItem.Click += new System.EventHandler(this.redoToolStripMenuItem_Click);
             // 
@@ -278,6 +280,13 @@
             this.ReplaceColorButton.Size = new System.Drawing.Size(23, 22);
             this.ReplaceColorButton.Text = "Replace Color";
             this.ReplaceColorButton.Click += new System.EventHandler(this.ReplaceColorButton_Click);
+            // 
+            // pasteAndRecolorToolStripMenuItem
+            // 
+            this.pasteAndRecolorToolStripMenuItem.Name = "pasteAndRecolorToolStripMenuItem";
+            this.pasteAndRecolorToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.pasteAndRecolorToolStripMenuItem.Text = "Paste and Recolor";
+            this.pasteAndRecolorToolStripMenuItem.Click += new System.EventHandler(this.pasteAndRecolorToolStripMenuItem_Click);
             // 
             // TileImageEditorForm
             // 
@@ -340,5 +349,6 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripMenuItem undoToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem redoToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem pasteAndRecolorToolStripMenuItem;
     }
 }

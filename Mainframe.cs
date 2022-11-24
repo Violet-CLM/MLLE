@@ -1506,8 +1506,8 @@ void main() {
             ZoomTileSize = newTileSize;
             ZoomTileFactor *= Factor;
             ResizeDisplay();
-            MakeProposedScrollbarValueWork(LDScrollH, (int)((x + LevelDisplayViewportWidth / 2) * Factor) - LevelDisplayViewportWidth / 2);
-            MakeProposedScrollbarValueWork(LDScrollV, (int)((y + LevelDisplayViewportHeight / 2) * Factor) - LevelDisplayViewportHeight / 2);
+            MakeProposedScrollbarValueWork(LDScrollH, (int)((x + LevelDisplayViewport.Width / 2) * Factor) - LevelDisplayViewport.Width / 2);
+            MakeProposedScrollbarValueWork(LDScrollV, (int)((y + LevelDisplayViewport.Height / 2) * Factor) - LevelDisplayViewport.Height / 2);
             Zoom100.Checked = newTileSize == 32;
             Zoom50.Checked = newTileSize == 16;
             Zoom25.Checked = newTileSize == 8;
@@ -2280,14 +2280,10 @@ void main() {
         internal bool AnimatedTilesVisibleOnLeft = false;
         internal int AnimatedTilesDrawHeight = 0;
         internal bool ShowBlankTileInStamp = false;
-        internal int LevelDisplayViewportWidth, LevelDisplayViewportHeight;
+        internal Size LevelDisplayViewport;
         internal byte RedrawTilesetHowManyTimes = 0;
-        internal int xspeedparallax, yspeedparallax;
         internal int xloop = 0, yloop = 0;
-        internal int xorigin = 0, tempxorigin = 0;
-        internal int yorigin = 0, tempyorigin = 0;
-        internal int upperleftx = 0, tempupperleftx = 0;
-        internal int upperlefty = 0, tempupperlefty = 0;
+        internal Point speedParallax, origin, tempOrigin, upperLeft, tempUpperLeft;
         internal int drawxloopsize, drawyloopsize;
         internal int eventpointer = 0;
         internal int xpos = 460;//
@@ -2308,20 +2304,20 @@ void main() {
 
         internal void ResizeDisplay()
         {
-            LevelDisplayViewportWidth = LevelDisplay.Width - LDScrollH.Location.X;
-            LevelDisplayViewportHeight = LevelDisplay.Height - LDScrollH.Height;
+            LevelDisplayViewport.Width = LevelDisplay.Width - LDScrollH.Location.X;
+            LevelDisplayViewport.Height = LevelDisplay.Height - LDScrollH.Height;
             SetupViewport();
-            GL.Scissor(LDScrollH.Location.X, LDScrollH.Height, LevelDisplayViewportWidth, LevelDisplayViewportHeight);
-            widthreduced = (LevelDisplayViewportWidth - 320) / 2;
-            heightreduced = (LevelDisplayViewportHeight - 200) / 2;
-            drawxloopsize = (int)Math.Ceiling(LevelDisplayViewportWidth / (float)ZoomTileSize) + 2;
-            drawyloopsize = (int)Math.Ceiling(LevelDisplayViewportHeight / (float)ZoomTileSize) + 2;
+            GL.Scissor(LDScrollH.Location.X, LDScrollH.Height, LevelDisplayViewport.Width, LevelDisplayViewport.Height);
+            widthreduced = (LevelDisplayViewport.Width - 320) / 2;
+            heightreduced = (LevelDisplayViewport.Height - 200) / 2;
+            drawxloopsize = (int)Math.Ceiling(LevelDisplayViewport.Width / (float)ZoomTileSize) + 2;
+            drawyloopsize = (int)Math.Ceiling(LevelDisplayViewport.Height / (float)ZoomTileSize) + 2;
             int smallChange = ZoomTileSize;
             int largeChange = smallChange * 8;
             if (SafeToDisplay)
             {
-                LDScrollH.Maximum = Math.Max(0, (int)CurrentLayer.Width * ZoomTileSize - LevelDisplayViewportWidth + largeChange);
-                LDScrollV.Maximum = Math.Max(0, (int)CurrentLayer.Height * ZoomTileSize - LevelDisplayViewportHeight + largeChange);
+                LDScrollH.Maximum = Math.Max(0, (int)CurrentLayer.Width * ZoomTileSize - LevelDisplayViewport.Width + largeChange);
+                LDScrollV.Maximum = Math.Max(0, (int)CurrentLayer.Height * ZoomTileSize - LevelDisplayViewport.Height + largeChange);
                 TilesetScrollbar.Maximum = Math.Max(0, (!J2L.HasTiles) ? 0 : ((int)J2L.TileCount + J2L.NumberOfAnimations + 10) / 10 * 32 - TilesetScrollbar.Height + 256);
                 //TilesetScrollbar.Maximum += TilesetScrollbar.LargeChange;
                 TilesetScrollbar.Refresh();
@@ -2344,8 +2340,8 @@ void main() {
         {
             GL.MatrixMode(MatrixMode.Projection);
             GL.LoadIdentity();
-            GL.Ortho(0, LevelDisplayViewportWidth, LevelDisplayViewportHeight, 0, -1, 1);
-            GL.Viewport(LDScrollH.Location.X, LDScrollH.Height, LevelDisplayViewportWidth, LevelDisplayViewportHeight);
+            GL.Ortho(0, LevelDisplayViewport.Width, LevelDisplayViewport.Height, 0, -1, 1);
+            GL.Viewport(LDScrollH.Location.X, LDScrollH.Height, LevelDisplayViewport.Width, LevelDisplayViewport.Height);
         }
         private void LevelDisplay_Resize(object sender, EventArgs e) { ResizeDisplay(); }
 
@@ -2523,7 +2519,7 @@ void main() {
                                 int x = (int)(J2L.TileCount % 10) * 32, y = AnimatedTilesDrawHeight;
                                 for (byte i = 0; i < count; i++)
                                 {
-                                    DrawTile(ref x, ref y, (ushort)(J2L.AnimOffset + i), 32, true);
+                                    DrawTile(x, y, (ushort)(J2L.AnimOffset + i), 32, true);
                                     if (x == 288) { x = 0; y += 32; }
                                     else { x += 32; }
                                 }
@@ -2534,13 +2530,13 @@ void main() {
                                 #region draw current animation
                                 int y = AnimationSettings.Bottom - LevelDisplay.Top;
                                 int x = -AnimScrollbar.Value;
-                                DrawTile(ref x, ref y, WorkingAnimation.FrameList.Peek(), 32, true);
+                                DrawTile(x, y, WorkingAnimation.FrameList.Peek(), 32, true);
                                 x += 32;
                                 DrawColorRectangle(ref x, ref y, HotKolors[0], 32, 16);
                                 x += 16;
                                 for (byte i = 0; i < WorkingAnimation.FrameCount && x < AnimScrollbar.Width; i++, x += 32)
                                 {
-                                    DrawTile(ref x, ref y, WorkingAnimation.Sequence[i], 32, true);
+                                    DrawTile(x, y, WorkingAnimation.Sequence[i], 32, true);
                                 }
                                 DrawColorRectangle(ref x, ref y, new Color4(24, 24, 48, 255));
                                 x = SelectedAnimationFrame * 32 + 48 - AnimScrollbar.Value;
@@ -2605,7 +2601,7 @@ void main() {
                                 int previewTileID = 0;
                                 for (int yy = y; yy < y+96; yy += 32)
                                     for (int xx = x; xx < x+96; xx += 32)
-                                        DrawTile(ref xx, ref yy, SmartTiles[i].PreviewTileIDs[previewTileID++], 32, true);
+                                        DrawTile(xx, yy, SmartTiles[i].PreviewTileIDs[previewTileID++], 32, true);
                                 if (x >= 200) { x = 7; y += 105; }
                                 else { x += 105; }
                             }
@@ -2633,8 +2629,9 @@ void main() {
                 if (ParallaxDisplayMode != ParallaxMode.NoParallax && MaskDisplayMode != MaskMode.FullMask)
                 {
                     bool applyWavePropertiesAsOffsets = EnableableBools[J2L.VersionType][EnableableTitles.BoolDevelopingForPlus];
-                    xspeedparallax = (CurrentLayer.XSpeed == 0) ? 0 : (int)((LDScrollH.Value + widthreduced - (applyWavePropertiesAsOffsets ? (int)CurrentLayer.WaveX : 0)) / CurrentLayer.XSpeed);
-                    yspeedparallax = (CurrentLayer.YSpeed == 0) ? 0 : (int)((LDScrollV.Value + (CurrentLayer.LimitVisibleRegion ? heightreduced * 2 : heightreduced) - (applyWavePropertiesAsOffsets ? (int)CurrentLayer.WaveY : 0)) / CurrentLayer.YSpeed);
+                    speedParallax.X = (CurrentLayer.XSpeed == 0) ? 0 : (int)((LDScrollH.Value + widthreduced - (applyWavePropertiesAsOffsets ? (int)CurrentLayer.WaveX : 0)) / CurrentLayer.XSpeed) - widthreduced;
+                    speedParallax.Y = (CurrentLayer.YSpeed == 0) ? 0 : (int)((LDScrollV.Value + (CurrentLayer.LimitVisibleRegion ? heightreduced * 2 : heightreduced) - (applyWavePropertiesAsOffsets ? (int)CurrentLayer.WaveY : 0)) / CurrentLayer.YSpeed) - heightreduced;
+                    Size levelSize = J2L.SpriteLayer.GetSizeTimes32();
                     SetTextureTo(AtlasID.Image);
                     GL.Enable(EnableCap.Blend);
                     if (ParallaxDisplayMode == ParallaxMode.TemporaryParallax) GL.Color4((byte)255, (byte)255, (byte)255, (byte)64);
@@ -2644,7 +2641,7 @@ void main() {
                         if (l == CurrentLayerID)
                         {
                             GL.Color4((byte)255, (byte)255, (byte)255, (byte)255);
-                            if (DrawingLayer.HasTiles) Reindeer(DrawingLayer);
+                            if (DrawingLayer.HasTiles) Reindeer(DrawingLayer, levelSize);
                             if (MaskDisplayMode == MaskMode.TemporaryMask)
                             {
                                 SetTextureTo(AtlasID.Mask);
@@ -2657,7 +2654,7 @@ void main() {
                         }
                         else
                         {
-                            if (DrawingLayer.HasTiles && !DrawingLayer.Hidden) Reindeer(DrawingLayer);
+                            if (DrawingLayer.HasTiles && !DrawingLayer.Hidden && (DrawingLayer.TextureSurface == 0 || l == J2L.AllLayers.Count - 1)) Reindeer(DrawingLayer, levelSize);
                             if (DrawingLayer == J2L.SpriteLayer && ParallaxEventDisplayType == 0 && EventDisplayMode != 0) { EventReindeer(); SetTextureTo(AtlasID.Image); }
                         }
                     }
@@ -2665,8 +2662,8 @@ void main() {
                 }
                 else
                 {
-                    xspeedparallax = LDScrollH.Value + widthreduced;
-                    yspeedparallax = LDScrollV.Value + heightreduced;
+                    speedParallax.X = LDScrollH.Value;
+                    speedParallax.Y = LDScrollV.Value;
                     GL.Disable(EnableCap.Blend);
                     if (MaskDisplayMode == MaskMode.TemporaryMask)
                     {
@@ -2696,7 +2693,7 @@ void main() {
                 }
                 if (WhereSelected == FocusedZone.Level)
                 {
-                    EmborderSelectedTiles(LDScrollH.Value, LDScrollV.Value, ZoomTileSize, LevelDisplayViewportWidth, LevelDisplayViewportHeight);
+                    EmborderSelectedTiles(LDScrollH.Value, LDScrollV.Value, ZoomTileSize, LevelDisplayViewport.Width, LevelDisplayViewport.Height);
                 }
                 if (LastFocusedZone == FocusedZone.Level && VisibleEditingTool != SelectionButton && ((CurrentStamp.Length > 0 && J2L.HasTiles) || !SnapEventsToGridToggle.Checked))
                 {
@@ -2710,7 +2707,7 @@ void main() {
                         int y = MouseTileY * ZoomTileSize - LDScrollV.Value;
                         for (int xloop = 0, xoffset = x; xloop < CurrentStamp.Length; xloop++, xoffset += ZoomTileSize) for (int yloop = 0, yoffset = y; yloop < CurrentStamp[0].Length; yloop++, yoffset += ZoomTileSize)
                             {
-                                if (CurrentStamp[xloop][yloop].Tile != null) DrawTile(ref xoffset, ref yoffset, (ushort)CurrentStamp[xloop][yloop].Tile, ZoomTileSize, (Control.ModifierKeys == Keys.Shift && ActiveForm == this) || ShowBlankTileInStamp);
+                                if (CurrentStamp[xloop][yloop].Tile != null) DrawTile(xoffset, yoffset, (ushort)CurrentStamp[xloop][yloop].Tile, ZoomTileSize, (Control.ModifierKeys == Keys.Shift && ActiveForm == this) || ShowBlankTileInStamp);
                             }
                     }
                     else
@@ -2824,7 +2821,7 @@ void main() {
             GL.Color4(1.0f, 1.0f, 1.0f, 1.0f);
             GL.Enable(EnableCap.Texture2D);
         }
-        internal void DrawTile(ref int x, ref int y, ushort id, byte tileSize, bool DrawTileZero = false)
+        internal void DrawTile(int x, int y, ushort id, byte tileSize, bool DrawTileZero = false)
         {
             if (id != 0 || DrawTileZero)
             {
@@ -2915,42 +2912,42 @@ void main() {
             GL.End();
         }
 
-        internal void Reindeer(Layer currentlayer)
+        internal void Reindeer(Layer currentlayer, Size levelSize)
         {
-            currentlayer.GetFixedCornerOriginNumbers(xspeedparallax, yspeedparallax, widthreduced, heightreduced, ref xorigin, ref yorigin, ref upperleftx, ref upperlefty, ZoomTileSize, EnableableBools[J2L.VersionType][EnableableTitles.BoolDevelopingForPlus], J2L.VersionType == Version.AGA);
-            tempxorigin = xorigin; tempupperleftx = upperleftx;
+            currentlayer.GetFixedCornerOriginNumbers(speedParallax, LevelDisplayViewport, levelSize, ref origin, ref upperLeft, ZoomTileSize, EnableableBools[J2L.VersionType][EnableableTitles.BoolDevelopingForPlus]);
+            tempOrigin.X = origin.X; tempUpperLeft.X = upperLeft.X;
             if (currentlayer.TileWidth)
             {
-                if (tempupperleftx < 0) tempupperleftx += (int)currentlayer.Width * 1024;
+                if (tempUpperLeft.X < 0) tempUpperLeft.X += (int)currentlayer.Width * 1024;
                 if (currentlayer.TileHeight)
                 {
-                    if (upperlefty < 0) upperlefty += (int)currentlayer.Height * 1024;
+                    if (upperLeft.Y < 0) upperLeft.Y += (int)currentlayer.Height * 1024;
                     for (xloop = 0; xloop < drawxloopsize; xloop++)
                     {
-                        if (tempupperleftx >= currentlayer.Width) tempupperleftx %= (int)currentlayer.Width;
-                        tempyorigin = yorigin; tempupperlefty = upperlefty;
+                        if (tempUpperLeft.X >= currentlayer.Width) tempUpperLeft.X %= (int)currentlayer.Width;
+                        tempOrigin.Y = origin.Y; tempUpperLeft.Y = upperLeft.Y;
                         for (yloop = 0; yloop < drawyloopsize; yloop++)
                         {
-                            if (tempupperlefty >= currentlayer.Height) tempupperlefty %= (int)currentlayer.Height;
-                            DrawTile(ref tempxorigin, ref tempyorigin, currentlayer.TileMap[tempupperleftx, tempupperlefty], ZoomTileSize);
-                            tempyorigin += ZoomTileSize; tempupperlefty++;
+                            if (tempUpperLeft.Y >= currentlayer.Height) tempUpperLeft.Y %= (int)currentlayer.Height;
+                            DrawTile(tempOrigin.X, tempOrigin.Y, currentlayer.TileMap[tempUpperLeft.X, tempUpperLeft.Y], ZoomTileSize);
+                            tempOrigin.Y += ZoomTileSize; tempUpperLeft.Y++;
                         }
-                        tempxorigin += ZoomTileSize; tempupperleftx++;
+                        tempOrigin.X += ZoomTileSize; tempUpperLeft.X++;
                     }
                 }
                 else
                 {
                     for (xloop = 0; xloop < drawxloopsize; xloop++)
                     {
-                        if (tempupperleftx >= currentlayer.Width) tempupperleftx %= (int)currentlayer.Width;
-                        tempyorigin = yorigin; tempupperlefty = upperlefty;
+                        if (tempUpperLeft.X >= currentlayer.Width) tempUpperLeft.X %= (int)currentlayer.Width;
+                        tempOrigin.Y = origin.Y; tempUpperLeft.Y = upperLeft.Y;
                         for (yloop = 0; yloop < drawyloopsize; yloop++)
                         {
-                            if (tempupperlefty >= currentlayer.Height) break;
-                            else if (tempupperlefty >= 0) DrawTile(ref tempxorigin, ref tempyorigin, currentlayer.TileMap[tempupperleftx, tempupperlefty], ZoomTileSize);
-                            tempyorigin += ZoomTileSize; tempupperlefty++;
+                            if (tempUpperLeft.Y >= currentlayer.Height) break;
+                            else if (tempUpperLeft.Y >= 0) DrawTile(tempOrigin.X, tempOrigin.Y, currentlayer.TileMap[tempUpperLeft.X, tempUpperLeft.Y], ZoomTileSize);
+                            tempOrigin.Y += ZoomTileSize; tempUpperLeft.Y++;
                         }
-                        tempxorigin += ZoomTileSize; tempupperleftx++;
+                        tempOrigin.X += ZoomTileSize; tempUpperLeft.X++;
                     }
                 }
             }
@@ -2958,93 +2955,93 @@ void main() {
             {
                 if (currentlayer.TileHeight)
                 {
-                    if (upperlefty < 0) upperlefty += (int)currentlayer.Height * 1024;
+                    if (upperLeft.Y < 0) upperLeft.Y += (int)currentlayer.Height * 1024;
                     for (xloop = 0; xloop < drawxloopsize; xloop++)
                     {
-                        tempyorigin = yorigin; tempupperlefty = upperlefty;
-                        if (tempupperleftx >= currentlayer.Width) break;
-                        else if (tempupperleftx >= 0) for (yloop = 0; yloop < drawyloopsize; yloop++)
+                        tempOrigin.Y = origin.Y; tempUpperLeft.Y = upperLeft.Y;
+                        if (tempUpperLeft.X >= currentlayer.Width) break;
+                        else if (tempUpperLeft.X >= 0) for (yloop = 0; yloop < drawyloopsize; yloop++)
                             {
-                                if (tempupperlefty >= currentlayer.Height) tempupperlefty %= (int)currentlayer.Height;
-                                DrawTile(ref tempxorigin, ref tempyorigin, currentlayer.TileMap[tempupperleftx, tempupperlefty], ZoomTileSize);
-                                tempyorigin += ZoomTileSize; tempupperlefty++;
+                                if (tempUpperLeft.Y >= currentlayer.Height) tempUpperLeft.Y %= (int)currentlayer.Height;
+                                DrawTile(tempOrigin.X, tempOrigin.Y, currentlayer.TileMap[tempUpperLeft.X, tempUpperLeft.Y], ZoomTileSize);
+                                tempOrigin.Y += ZoomTileSize; tempUpperLeft.Y++;
                             }
-                        tempxorigin += ZoomTileSize; tempupperleftx++;
+                        tempOrigin.X += ZoomTileSize; tempUpperLeft.X++;
                     }
                 }
                 else
                 {
                     for (xloop = 0; xloop < drawxloopsize; xloop++)
                     {
-                        tempyorigin = yorigin; tempupperlefty = upperlefty;
-                        if (tempupperleftx >= 0) for (yloop = 0; yloop < drawyloopsize; yloop++)
+                        tempOrigin.Y = origin.Y; tempUpperLeft.Y = upperLeft.Y;
+                        if (tempUpperLeft.X >= 0) for (yloop = 0; yloop < drawyloopsize; yloop++)
                             {
-                                if (tempupperleftx >= currentlayer.Width || tempupperlefty >= currentlayer.Height) break;
-                                else if (tempupperlefty >= 0)
+                                if (tempUpperLeft.X >= currentlayer.Width || tempUpperLeft.Y >= currentlayer.Height) break;
+                                else if (tempUpperLeft.Y >= 0)
                                 {
-                                    DrawTile(ref tempxorigin, ref tempyorigin, currentlayer.TileMap[tempupperleftx, tempupperlefty], ZoomTileSize);
-                                    //if (EventDisplayMode && currentlayer.id == 3 && J2L.EventMap[tempupperleftx, tempupperlefty] != 0) DrawEvent(ref tempxorigin, ref tempyorigin, ref J2L.EventMap[tempupperleftx, tempupperlefty], J2L.GetRawBitsAtTile(tempupperleftx, tempupperlefty, 0, 2));
+                                    DrawTile(tempOrigin.X, tempOrigin.Y, currentlayer.TileMap[tempUpperLeft.X, tempUpperLeft.Y], ZoomTileSize);
+                                    //if (EventDisplayMode && currentlayer.id == 3 && J2L.EventMap[tempUpperLeft.X, tempUpperLeft.Y] != 0) DrawEvent(ref tempOrigin.X, ref tempOrigin.Y, ref J2L.EventMap[tempUpperLeft.X, tempUpperLeft.Y], J2L.GetRawBitsAtTile(tempUpperLeft.X, tempUpperLeft.Y, 0, 2));
                                 }
-                                tempyorigin += ZoomTileSize; tempupperlefty++;
+                                tempOrigin.Y += ZoomTileSize; tempUpperLeft.Y++;
                             }
-                        tempxorigin += ZoomTileSize; tempupperleftx++;
+                        tempOrigin.X += ZoomTileSize; tempUpperLeft.X++;
                     }
                 }
             }
         }
         internal void NoParallaxReindeer(Layer currentlayer)
         {
-            //currentlayer.GetOriginNumbers(LDScrollH.Value, LDScrollV.Value, ref widthreduced, ref heightreduced, ref xorigin, ref yorigin, ref upperleftx, ref upperlefty);
-            upperleftx = LDScrollH.Value /*- widthreduced*/ - ZoomTileSize;
-            upperlefty = LDScrollV.Value /*- heightreduced*/ - ZoomTileSize;
-            xorigin = -ZoomTileSize - (upperleftx % ZoomTileSize);
-            upperleftx /= ZoomTileSize;
-            yorigin = -ZoomTileSize - (upperlefty % ZoomTileSize);
-            upperlefty /= ZoomTileSize;
-            tempxorigin = xorigin; tempupperleftx = upperleftx;
+            //currentlayer.GetOriginNumbers(LDScrollH.Value, LDScrollV.Value, ref widthreduced, ref heightreduced, ref origin.X, ref origin.Y, ref upperLeft.X, ref upperLeft.Y);
+            upperLeft.X = LDScrollH.Value /*- widthreduced*/ - ZoomTileSize;
+            upperLeft.Y = LDScrollV.Value /*- heightreduced*/ - ZoomTileSize;
+            origin.X = -ZoomTileSize - (upperLeft.X % ZoomTileSize);
+            upperLeft.X /= ZoomTileSize;
+            origin.Y = -ZoomTileSize - (upperLeft.Y % ZoomTileSize);
+            upperLeft.Y /= ZoomTileSize;
+            tempOrigin.X = origin.X; tempUpperLeft.X = upperLeft.X;
             for (xloop = 0; xloop < drawxloopsize; xloop++)
             {
-                tempyorigin = yorigin; tempupperlefty = upperlefty;
-                if (tempupperleftx >= 0) for (yloop = 0; yloop < drawyloopsize; yloop++)
+                tempOrigin.Y = origin.Y; tempUpperLeft.Y = upperLeft.Y;
+                if (tempUpperLeft.X >= 0) for (yloop = 0; yloop < drawyloopsize; yloop++)
                     {
-                        if (tempupperleftx >= currentlayer.Width || tempupperlefty >= currentlayer.Height) break;
-                        else if (tempupperlefty >= 0)
+                        if (tempUpperLeft.X >= currentlayer.Width || tempUpperLeft.Y >= currentlayer.Height) break;
+                        else if (tempUpperLeft.Y >= 0)
                         {
-                            DrawTile(ref tempxorigin, ref tempyorigin, currentlayer.TileMap[tempupperleftx, tempupperlefty], ZoomTileSize, true);
-                            //if (EventDisplayMode && currentlayer.id == 3 && J2L.EventMap[tempupperleftx, tempupperlefty] != 0) DrawEvent(ref tempxorigin, ref tempyorigin, ref J2L.EventMap[tempupperleftx, tempupperlefty], J2L.GetRawBitsAtTile(tempupperleftx, tempupperlefty, 0, 2));
+                            DrawTile(tempOrigin.X, tempOrigin.Y, currentlayer.TileMap[tempUpperLeft.X, tempUpperLeft.Y], ZoomTileSize, true);
+                            //if (EventDisplayMode && currentlayer.id == 3 && J2L.EventMap[tempUpperLeft.X, tempUpperLeft.Y] != 0) DrawEvent(ref tempOrigin.X, ref tempOrigin.Y, ref J2L.EventMap[tempUpperLeft.X, tempUpperLeft.Y], J2L.GetRawBitsAtTile(tempUpperLeft.X, tempUpperLeft.Y, 0, 2));
                         }
-                        tempyorigin += ZoomTileSize; tempupperlefty++;
+                        tempOrigin.Y += ZoomTileSize; tempUpperLeft.Y++;
                     }
-                tempxorigin += ZoomTileSize; tempupperleftx++;
+                tempOrigin.X += ZoomTileSize; tempUpperLeft.X++;
             }
         }
         internal void EventReindeer()
         {
             Layer currentlayer = J2L.SpriteLayer;
             SetTextureTo(!stijnVision ? AtlasID.EventNames : AtlasID.EventSprites);
-            //upperleftx = xspeedparallax - /*widthreduced -*/ ZoomTileSize;
-            //upperlefty = yspeedparallax - /*heightreduced -*/ ZoomTileSize;
-            //xorigin = -ZoomTileSize - (upperleftx % ZoomTileSize);
-            //upperleftx /= ZoomTileSize;
-            //yorigin = -ZoomTileSize - (upperlefty % ZoomTileSize);
-            //upperlefty /= ZoomTileSize;
-            //tempxorigin = xorigin; tempupperleftx = upperleftx;
-            currentlayer.GetFixedCornerOriginNumbers(xspeedparallax, yspeedparallax, widthreduced, heightreduced, ref xorigin, ref yorigin, ref upperleftx, ref upperlefty, ZoomTileSize, false, false);
-            tempxorigin = xorigin; tempupperleftx = upperleftx;
+            //upperLeft.X = speedParallax.X - /*widthreduced -*/ ZoomTileSize;
+            //upperLeft.Y = speedParallax.Y - /*heightreduced -*/ ZoomTileSize;
+            //origin.X = -ZoomTileSize - (upperLeft.X % ZoomTileSize);
+            //upperLeft.X /= ZoomTileSize;
+            //origin.Y = -ZoomTileSize - (upperLeft.Y % ZoomTileSize);
+            //upperLeft.Y /= ZoomTileSize;
+            //tempOrigin.X = origin.X; tempUpperLeft.X = upperLeft.X;
+            currentlayer.GetFixedCornerOriginNumbers(speedParallax, LevelDisplayViewport, currentlayer.GetSizeTimes32(), ref origin, ref upperLeft, ZoomTileSize, false);
+            tempOrigin.X = origin.X; tempUpperLeft.X = upperLeft.X;
             for (xloop = 0; xloop < drawxloopsize; xloop++)
             {
-                tempyorigin = yorigin; tempupperlefty = upperlefty;
-                if (tempupperleftx >= 0) for (yloop = 0; yloop < drawyloopsize; yloop++)
+                tempOrigin.Y = origin.Y; tempUpperLeft.Y = upperLeft.Y;
+                if (tempUpperLeft.X >= 0) for (yloop = 0; yloop < drawyloopsize; yloop++)
                     {
-                        if (tempupperleftx >= currentlayer.Width || tempupperlefty >= currentlayer.Height) break;
-                        else if (tempupperlefty >= 0)
+                        if (tempUpperLeft.X >= currentlayer.Width || tempUpperLeft.Y >= currentlayer.Height) break;
+                        else if (tempUpperLeft.Y >= 0)
                         {
-                            if (J2L.VersionType == Version.AGA) { if (J2L.AGA_EventMap[tempupperleftx, tempupperlefty].ID != 0) DrawEvent(tempxorigin, tempyorigin, J2L.AGA_EventMap[tempupperleftx, tempupperlefty].ID, ZoomTileSize); }
-                            else if (J2L.EventMap[tempupperleftx, tempupperlefty] != 0 && (EventDisplayMode == 1 || !EventsDrawnAsStringsInStijnVision[J2L.VersionType][(byte)J2L.EventMap[tempupperleftx, tempupperlefty]])) DrawEvent(tempxorigin, tempyorigin, J2L.EventMap[tempupperleftx, tempupperlefty]/*, J2L.GetRawBitsAtTile(tempupperleftx, tempupperlefty, 0, 2)*/, ZoomTileSize);
+                            if (J2L.VersionType == Version.AGA) { if (J2L.AGA_EventMap[tempUpperLeft.X, tempUpperLeft.Y].ID != 0) DrawEvent(tempOrigin.X, tempOrigin.Y, J2L.AGA_EventMap[tempUpperLeft.X, tempUpperLeft.Y].ID, ZoomTileSize); }
+                            else if (J2L.EventMap[tempUpperLeft.X, tempUpperLeft.Y] != 0 && (EventDisplayMode == 1 || !EventsDrawnAsStringsInStijnVision[J2L.VersionType][(byte)J2L.EventMap[tempUpperLeft.X, tempUpperLeft.Y]])) DrawEvent(tempOrigin.X, tempOrigin.Y, J2L.EventMap[tempUpperLeft.X, tempUpperLeft.Y]/*, J2L.GetRawBitsAtTile(tempUpperLeft.X, tempUpperLeft.Y, 0, 2)*/, ZoomTileSize);
                         }
-                        tempyorigin += ZoomTileSize; tempupperlefty++;
+                        tempOrigin.Y += ZoomTileSize; tempUpperLeft.Y++;
                     }
-                tempxorigin += ZoomTileSize; tempupperleftx++;
+                tempOrigin.X += ZoomTileSize; tempUpperLeft.X++;
             }
             foreach (PlusPropertyList.OffGridObject obj in J2L.PlusPropertyList.OffGridObjects)
             {
@@ -3058,7 +3055,7 @@ void main() {
             int x = 0, y = AnimatedTilesDrawHeight;
             for (byte i = 0; i < count; i++)
             {
-                DrawTile(ref x, ref y, (ushort)(J2L.AnimOffset + i), 32, true);
+                DrawTile(x, y, (ushort)(J2L.AnimOffset + i), 32, true);
                 if (x == 288) { x = 0; y += 32; }
                 else { x += 32; }
             }
@@ -3080,11 +3077,11 @@ void main() {
         {
             int y = AnimationSettings.Bottom - LevelDisplay.Top;
             int x = 0;
-            DrawTile(ref x, ref y, WorkingAnimation.FrameList.Peek(), 32, true);
+            DrawTile(x, y, WorkingAnimation.FrameList.Peek(), 32, true);
             x = 48;
             for (byte i = 0; i < WorkingAnimation.FrameCount && i < 10; i++, x+=32)
             {
-                DrawTile(ref x, ref y, WorkingAnimation.Sequence[i], 32, true);
+                DrawTile(x, y, WorkingAnimation.Sequence[i], 32, true);
             }
             DrawColorTile(ref x, ref y, new Color4(24, 24, 48, 255));
             x = SelectedAnimationFrame*32 + 48 - AnimScrollbar.Value;

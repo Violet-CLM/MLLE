@@ -620,6 +620,19 @@ namespace MLLE
                     data5bodywriter.Write(layer.SpriteParam);
                     data5bodywriter.Write(layer.RotationAngle);
                     data5bodywriter.Write(layer.RotationRadiusMultiplier);
+                    data5bodywriter.Write(layer.XSpeedModel);
+                    data5bodywriter.Write(layer.YSpeedModel);
+                    data5bodywriter.Write(layer.TextureSurface);
+                    data5bodywriter.Write(layer.Fade);
+                    data5bodywriter.Write(layer.XFade);
+                    data5bodywriter.Write(layer.YFade);
+                    data5bodywriter.Write(layer.InnerX);
+                    data5bodywriter.Write(layer.InnerY);
+                    data5bodywriter.Write(layer.InnerAutoX);
+                    data5bodywriter.Write(layer.InnerAutoY);
+                    data5bodywriter.Write(layer.Texture);
+                    if (layer.Texture < 0)
+                        data5bodywriter.Write(layer.TextureImage);
                 }
 
                 int levelTileCount = Tilesets.Sum(ts => (int)ts.TileCount);
@@ -855,6 +868,22 @@ namespace MLLE
                             layer.SpriteParam = data5bodyreader.ReadByte();
                             layer.RotationAngle = data5bodyreader.ReadInt32();
                             layer.RotationRadiusMultiplier = data5bodyreader.ReadInt32();
+                            if (data5Version >= 0x106) //MLLE-Include-1.6 adds a bunch of layer properties from JJ2+ 5.10
+                            {
+                                layer.XSpeedModel = data5bodyreader.ReadByte();
+                                layer.YSpeedModel = data5bodyreader.ReadByte();
+                                layer.TextureSurface = data5bodyreader.ReadByte();
+                                layer.Fade = data5bodyreader.ReadByte();
+                                layer.XFade = data5bodyreader.ReadSingle();
+                                layer.YFade = data5bodyreader.ReadSingle();
+                                layer.InnerX = data5bodyreader.ReadSingle();
+                                layer.InnerY = data5bodyreader.ReadSingle();
+                                layer.InnerAutoX = data5bodyreader.ReadSingle();
+                                layer.InnerAutoY = data5bodyreader.ReadSingle();
+                                layer.Texture = data5bodyreader.ReadSByte();
+                                if (layer.Texture < 0)
+                                    layer.TextureImage = data5bodyreader.ReadBytes(256 * 256);
+                            }
                             Layers.Add(layer);
                         }
 

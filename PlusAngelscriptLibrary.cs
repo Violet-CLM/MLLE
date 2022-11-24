@@ -121,6 +121,8 @@ namespace MLLE {{
         }}
 
         data5.pop(pbyte);
+        array<uint8> mappingIndices(pbyte);
+        puint = 0;
         while (pbyte-- != 0) {{
             jjPAL extra;
             string paletteName = _read7BitEncodedStringFromStream(data5);
@@ -129,6 +131,7 @@ namespace MLLE {{
             if (index < 0) {{
                 jjDebug('MLLE::Setup: Not enough room for additional palette ' + paletteName);
             }} else {{
+                mappingIndices[puint++] = uint8(index);
                 _palettes.set(paletteName, uint8(index));
                 array<uint8> indexMapping(256);
                 for (uint i = 0; i < 256; ++i)
@@ -216,11 +219,41 @@ namespace MLLE {{
             data5.pop(pbyte);
             layer.spriteMode = SPRITE::Mode(pbyte);
             data5.pop(pbyte);
-            layer.spriteParam = pbyte;
+            layer.spriteParam = (layer.spriteMode == SPRITE::MAPPING || layer.spriteMode == SPRITE::TRANSLUCENTMAPPING) ? mappingIndices[pbyte] : pbyte;
             data5.pop(pint);
             layer.rotationAngle = pint;
             data5.pop(pint);
             layer.rotationRadiusMultiplier = pint;
+            data5.pop(pbyte);
+            layer.xSpeedModel = LAYERSPEEDMODEL::LayerSpeedModel(pbyte);
+            data5.pop(pbyte);
+            layer.ySpeedModel = LAYERSPEEDMODEL::LayerSpeedModel(pbyte);
+            data5.pop(pbyte);
+            layer.textureSurface = SURFACE::Surface(pbyte);
+            data5.pop(pbyte);
+            layer.reflection.tintColor = pbyte;
+            data5.pop(pfloat);
+            layer.reflection.fadePositionX = pfloat;
+            data5.pop(pfloat);
+            layer.reflection.top = pfloat;
+            data5.pop(pfloat);
+            layer.xInnerSpeed = pfloat;
+            data5.pop(pfloat);
+            layer.yInnerSpeed = pfloat;
+            data5.pop(pfloat);
+            layer.xInnerAutoSpeed = pfloat;
+            data5.pop(pfloat);
+            layer.yInnerAutoSpeed = pfloat;
+            data5.pop(pchar);
+            if (pchar >= 0)
+                layer.texture = TEXTURE::Texture(pchar);
+            else {{
+                jjPIXELMAP texture(256, 256);
+                for (uint y = 0; y < 256; ++y)
+                    for (uint x = 0; x < 256; ++x)
+                        data5.pop(texture[x,y]);
+                texture.makeTexture(layer);
+            }}
             newLayerOrder.insertLast(layer);
         }}
         jjLayerOrderSet(newLayerOrder);
