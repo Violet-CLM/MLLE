@@ -263,6 +263,15 @@ namespace MLLE
         internal bool ReapplyPalette;
 
 
+        public class NamedPalette
+        {
+            internal Palette Palette = new Palette();
+            internal string Name;
+        }
+        [Browsable(false)]
+        internal List<NamedPalette> NamedPalettes;
+
+
         [Browsable(false)]
         internal byte[][] ColorRemappings;
 
@@ -351,6 +360,7 @@ namespace MLLE
                     Palette = new Palette();
                     Palette.CopyFrom(other.Value.Palette);
                 }
+                NamedPalettes = other.Value.NamedPalettes.Select(o => new NamedPalette{ Name = o.Name, Palette = o.Palette }).ToList();
 
                 for (int i = 0; i < other.Value.ColorRemappings.Length; ++i)
                     if (other.Value.ColorRemappings[i] != null)
@@ -392,6 +402,7 @@ namespace MLLE
                 WaterGradientStop = Color.Black;
                 Gun7Crate = Gun7Crate = Gun9Crate = 0;
                 Palette = null;
+                NamedPalettes = new List<NamedPalette>();
                 ReapplyPalette = true;
                 Weapons = WeaponDefaults.Select(w => w.Clone()).ToArray();
                 weaponHookPrefix = -1;
@@ -517,6 +528,7 @@ namespace MLLE
                     WaterGradientStop.ToArgb() != comparableBlack ||
                     Gun7Crate != 0 || Gun8Crate != 0 || Gun9Crate != 0 ||
                     Palette != null ||
+                    NamedPalettes.Count != 0 ||
                     //ReapplyPalette only is meaningful if Palette != null, so we don't check it separately
                     ColorRemappings.FirstOrDefault(it => it != null) != null ||
                     TileImages.FirstOrDefault(it => it != null) != null ||
@@ -565,6 +577,13 @@ namespace MLLE
                     data5bodywriter.Write(ReapplyPalette);
                 }
 
+                data5bodywriter.Write((byte)NamedPalettes.Count);
+                foreach (NamedPalette namedPalette in NamedPalettes)
+                {
+                    data5bodywriter.Write(namedPalette.Name);
+                    namedPalette.Palette.WriteLEVStyle(data5bodywriter);
+                }
+
                 foreach (byte[] remappings in ColorRemappings)
                 {
                     if (remappings == null)
@@ -601,6 +620,19 @@ namespace MLLE
                     data5bodywriter.Write(layer.SpriteParam);
                     data5bodywriter.Write(layer.RotationAngle);
                     data5bodywriter.Write(layer.RotationRadiusMultiplier);
+                    data5bodywriter.Write(layer.XSpeedModel);
+                    data5bodywriter.Write(layer.YSpeedModel);
+                    data5bodywriter.Write(layer.TextureSurface);
+                    data5bodywriter.Write(layer.Fade);
+                    data5bodywriter.Write(layer.XFade);
+                    data5bodywriter.Write(layer.YFade);
+                    data5bodywriter.Write(layer.InnerX);
+                    data5bodywriter.Write(layer.InnerY);
+                    data5bodywriter.Write(layer.InnerAutoX);
+                    data5bodywriter.Write(layer.InnerAutoY);
+                    data5bodywriter.Write(layer.Texture);
+                    if (layer.Texture < 0)
+                        data5bodywriter.Write(layer.TextureImage);
                 }
 
                 int levelTileCount = Tilesets.Sum(ts => (int)ts.TileCount);
@@ -751,6 +783,18 @@ namespace MLLE
                             ReapplyPalette = false;
                     }
 
+                    if (data5Version >= 0x106) //additional palettes (for SPRITE::MAPPING) were added in MLLE-Include-1.6
+                    {
+                        var extraPaletteCount = data5bodyreader.ReadByte();
+                        while (extraPaletteCount-- != 0)
+                        {
+                            NamedPalettes.Add(new NamedPalette {
+                                Name = data5bodyreader.ReadString(),
+                                Palette = new Palette(data5bodyreader, true)
+                            });
+                        }
+                    }
+
                     for (int i = 0; i < Mainframe.RecolorableSpriteNames.Length; ++i)
                         if ((i < 11 || data5Version >= 0x105) && data5bodyreader.ReadBoolean()) //the recolorable sprite list was expanded in MLLE-Include-1.5
                         {
@@ -824,6 +868,22 @@ namespace MLLE
                             layer.SpriteParam = data5bodyreader.ReadByte();
                             layer.RotationAngle = data5bodyreader.ReadInt32();
                             layer.RotationRadiusMultiplier = data5bodyreader.ReadInt32();
+                            if (data5Version >= 0x106) //MLLE-Include-1.6 adds a bunch of layer properties from JJ2+ 5.10
+                            {
+                                layer.XSpeedModel = data5bodyreader.ReadByte();
+                                layer.YSpeedModel = data5bodyreader.ReadByte();
+                                layer.TextureSurface = data5bodyreader.ReadByte();
+                                layer.Fade = data5bodyreader.ReadByte();
+                                layer.XFade = data5bodyreader.ReadSingle();
+                                layer.YFade = data5bodyreader.ReadSingle();
+                                layer.InnerX = data5bodyreader.ReadSingle();
+                                layer.InnerY = data5bodyreader.ReadSingle();
+                                layer.InnerAutoX = data5bodyreader.ReadSingle();
+                                layer.InnerAutoY = data5bodyreader.ReadSingle();
+                                layer.Texture = data5bodyreader.ReadSByte();
+                                if (layer.Texture < 0)
+                                    layer.TextureImage = data5bodyreader.ReadBytes(256 * 256);
+                            }
                             Layers.Add(layer);
                         }
 
