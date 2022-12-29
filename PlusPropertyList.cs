@@ -616,8 +616,24 @@ namespace MLLE
                     data5bodywriter.Write((sbyte)layer.id);
                     data5bodywriter.Write(layer.Name);
                     data5bodywriter.Write(layer.Hidden);
-                    data5bodywriter.Write(layer.SpriteMode);
-                    data5bodywriter.Write(layer.SpriteParam);
+                    if (layer.SpriteMode != 48 && layer.SpriteMode != 49) //48 and 49 = MAPPING and TRANSLUCENTMAPPING
+                    { //cool, very straightforward, just write the properties normally
+                        data5bodywriter.Write(layer.SpriteMode);
+                        data5bodywriter.Write(layer.SpriteParam);
+                    }
+                    else
+                    { //anticipate the results of choosing "Ok" on the SavingResults.NoExtraPalettes message box... if the user chooses "Cancel" this entire Data5 will be discarded so who cares.
+                        if (NamedPalettes.Count == 0) //impossible to have a (TRANSLUCENT)MAPPING layer at all, there'd be nothing in the mapping array for it to use
+                        {
+                            data5bodywriter.Write((byte)(layer.SpriteMode == 48 ? 0 : 1)); //NORMAL or TRANSLUCENT
+                            data5bodywriter.Write((byte)0);
+                        }
+                        else
+                        {
+                            data5bodywriter.Write(layer.SpriteMode);
+                            data5bodywriter.Write((byte)(layer.SpriteParam % NamedPalettes.Count));
+                        }
+                    }
                     data5bodywriter.Write(layer.RotationAngle);
                     data5bodywriter.Write(layer.RotationRadiusMultiplier);
                     data5bodywriter.Write(layer.XSpeedModel);

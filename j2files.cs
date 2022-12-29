@@ -12,7 +12,7 @@ using Extra.Collections;
 
 public enum Version { JJ2, TSF, O, GorH, BC, AGA, AmbiguousBCO };
 public enum VersionChangeResults { Success, TilesetTooBig, TooManyAnimatedTiles, UnsupportedConversion };
-public enum SavingResults { Success, UndefinedTiles, NoTilesetSelected, TilesetIsDifferentVersion, Error };
+public enum SavingResults { Success, UndefinedTiles, NoTilesetSelected, TilesetIsDifferentVersion, NoExtraPalettes, Error };
 public enum OpeningResults { Success, SuccessfulButAmbiguous, PasswordNeeded, WrongPassword, UnexpectedFourCC, IncorrectEncoding, SecurityEnvelopeDamaged, Error };
 public enum InsertFrameResults { Success, Full, StackOverflow };
 public enum BuildResults { Success, DifferentDimensions, BadDimensions, ImageWrongFormat, MaskWrongFormat, TooBigForVersion };
@@ -2007,8 +2007,8 @@ class J2LFile : J2File
             }
         }
     }
-    public SavingResults Save(bool eraseUndefinedTiles = false, bool allowDifferentTilesetVersion = false, byte[] Data5 = null) { return Save(FullFilePath, eraseUndefinedTiles, allowDifferentTilesetVersion, false, Data5); }
-    public SavingResults Save(string filename, bool eraseUndefinedTiles = false, bool allowDifferentTilesetVersion = false, bool storeGivenFilename = true, byte[] Data5 = null)
+    public SavingResults Save(bool eraseUndefinedTiles = false, bool allowDifferentTilesetVersion = false, bool removeImpossibleMappingSpriteModes = false, byte[] Data5 = null) { return Save(FullFilePath, eraseUndefinedTiles, allowDifferentTilesetVersion, false, removeImpossibleMappingSpriteModes, Data5); }
+    public SavingResults Save(string filename, bool eraseUndefinedTiles = false, bool allowDifferentTilesetVersion = false, bool storeGivenFilename = true, bool removeImpossibleMappingSpriteModes = false, byte[] Data5 = null)
     {
         if (!HasTiles)
         {
@@ -2022,6 +2022,14 @@ class J2LFile : J2File
         {
             /*first non-Open/New reference to DefaultLayers in this file*/ foreach (Layer CurrentLayer in DefaultLayers) foreach (ushort tile in CurrentLayer.TileMap) if (IsAnUndefinedTile(tile)) return SavingResults.UndefinedTiles;
             for (ushort i = 0; i < NumberOfAnimations; i++) foreach (ushort tile in Animations[i].Sequence) if (IsAnUndefinedTile(tile)) return SavingResults.UndefinedTiles;
+        }
+        if (!removeImpossibleMappingSpriteModes)
+        {
+            if (PlusPropertyList.NamedPalettes.Count == 0 && AllLayers.Any(layer =>
+            {
+                return layer.SpriteMode >= 48; //48 and 49 = MAPPING and TRANSLUCENTMAPPING
+            }))
+                return SavingResults.NoExtraPalettes;
         }
         if (storeGivenFilename) FilenameOnly = Path.GetFileName(FullFilePath = filename);
         Encoding encoding = FileEncoding;
