@@ -884,6 +884,10 @@ namespace MLLE
                                 if (layer.Texture < 0)
                                     layer.TextureImage = data5bodyreader.ReadBytes(256 * 256);
                             }
+                            else if (layerID < 0) //don't assume that every eighth layer from a mlle-data level has layer 8 speed models (but the other default values are fine)
+                            {
+                                layer.XSpeedModel = layer.YSpeedModel = 0;
+                            }
                             Layers.Add(layer);
                         }
 
