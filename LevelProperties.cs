@@ -32,7 +32,7 @@ namespace MLLE
             if (label4.Text == "")
             {
                 label4.Visible = SecretLevel.Visible = BrowseSecret.Visible = false;
-                foreach (Control foo in new Control[] { label5, BonusLevel, label8, Arguments, IsMultiplayer, HideHCL, groupBox2, groupBox3 }) foo.Location = new Point(foo.Location.X, foo.Location.Y - heightdiff);
+                foreach (Control foo in new Control[] { label5, BonusLevel, label8, Arguments, argumentsGenerate, IsMultiplayer, HideHCL, groupBox2, groupBox3 }) foo.Location = new Point(foo.Location.X, foo.Location.Y - heightdiff);
                 groupBox1.Height -= heightdiff;
                 Height -= heightdiff;
             }
@@ -40,13 +40,13 @@ namespace MLLE
             if (label5.Text == "")
             {
                 label5.Visible = BonusLevel.Visible = false;
-                foreach (Control foo in new Control[] { label8, Arguments, IsMultiplayer, HideHCL, groupBox2, groupBox3 }) foo.Location = new Point(foo.Location.X, foo.Location.Y - heightdiff);
+                foreach (Control foo in new Control[] { label8, Arguments, argumentsGenerate, IsMultiplayer, HideHCL, groupBox2, groupBox3 }) foo.Location = new Point(foo.Location.X, foo.Location.Y - heightdiff);
                 groupBox1.Height -= heightdiff;
                 Height -= heightdiff;
             }
             if (!SourceForm.EnableableBools[SourceForm.J2L.VersionType][EnableableTitles.BoolDevelopingForPlus])
             {
-                label8.Visible = Arguments.Visible = false;
+                label8.Visible = Arguments.Visible = argumentsGenerate.Visible = false;
                 foreach (Control foo in new Control[] { IsMultiplayer, HideHCL, groupBox2, groupBox3 }) foo.Location = new Point(foo.Location.X, foo.Location.Y - heightdiff);
                 groupBox1.Height -= heightdiff;
                 Height -= heightdiff;
@@ -153,6 +153,11 @@ namespace MLLE
         private void MusicFile_TextChanged(object sender, EventArgs e)
         {
             if (DataLoaded) MusicChanged = true;
+        }
+
+        private void argumentsGenerate_Click(object sender, EventArgs e)
+        {
+            new Arguments(Arguments).ShowDialog();
         }
     }
 }

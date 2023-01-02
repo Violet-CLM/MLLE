@@ -91,6 +91,12 @@
     <Compile Include="FindParameterValues.Designer.cs">
       <DependentUpon>FindParameterValues.cs</DependentUpon>
     </Compile>
+    <Compile Include="Arguments.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Arguments.Designer.cs">
+      <DependentUpon>Arguments.cs</DependentUpon>
+    </Compile>
     <Compile Include="LayerOrderForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -263,6 +269,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="FindParameterValues.resx">
       <DependentUpon>FindParameterValues.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Arguments.resx">
+      <DependentUpon>Arguments.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="LayerOrderForm.resx">
       <DependentUpon>LayerOrderForm.cs</DependentUpon>
