@@ -218,7 +218,7 @@ namespace MLLE
                 Bools.Add(EnableableTitles.BoolDevelopingForPlus, ini.IniReadValue("Enableable", "BoolDevelopingForPlus") != "");
                 Bools.Add(EnableableTitles.UseText, ini.IniReadValue("Enableable", "BoolText") != "");
             }
-            SnapEventsToGridToggle.Enabled = automaskToolStripMenuItem.Enabled = imageToolStripMenuItem.Enabled = maskToolStripMenuItem.Enabled = jJ2PropertiesToolStripMenuItem.Enabled = EnableableBools[version][EnableableTitles.BoolDevelopingForPlus];
+            SnapEventsToGridToggle.Enabled = automaskToolStripMenuItem.Enabled = imageToolStripMenuItem.Enabled = maskToolStripMenuItem.Enabled = jJ2PropertiesToolStripMenuItem.Enabled = angelScriptAPIToolStripMenuItem.Enabled = angelScriptSyntaxToolStripMenuItem.Enabled = EnableableBools[version][EnableableTitles.BoolDevelopingForPlus];
             if (!EnableableBools[version][EnableableTitles.BoolDevelopingForPlus])
                 SnapEventsToGridToggle.Checked = true;
             textStringsToolStripMenuItem.Enabled = EnableableBools[version][EnableableTitles.UseText];
@@ -1173,7 +1173,20 @@ void main() {
 
         private void aboutMLLEToolStripMenuItem_Click(object sender, EventArgs e) { _suspendEvent.Reset(); new AboutBox1().ShowDialog(); _suspendEvent.Set(); }
 
+        private void levelmakingTipsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.Start("https://www.ninjadodo.net/htjcs/");
+        }
 
+        private void angelScriptAPIToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.Start("https://docs.jj2.plus/plus-angelscript.html");
+        }
+
+        private void angelScriptSyntaxToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.Start("http://www.angelcode.com/angelscript/sdk/docs/manual/doc_script.html");
+        }
         private void batteryCheckToolStripMenuItem_Click(object sender, EventArgs e) { ChangeVersion(Version.BC); }
         private void jazz2V110oToolStripMenuItem_Click(object sender, EventArgs e) { ChangeVersion(Version.O); }
         private void jazz2V123ToolStripMenuItem_Click(object sender, EventArgs e) { ChangeVersion(Version.JJ2); }
@@ -2166,7 +2179,7 @@ void main() {
             if (AllBackupFiles.Length > 100) //more than a hundred backup files in this folder
                 File.Delete(AllBackupFiles.OrderBy(f => f.CreationTime).First().FullName); //delete the oldest one
         }
-        internal SavingResults SaveJ2L(string filename, bool eraseUndefinedTiles = false, bool allowDifferentTilesetVersion = false, bool storeGivenFilename = true)
+        internal SavingResults SaveJ2L(string filename, bool eraseUndefinedTiles = false, bool allowDifferentTilesetVersion = false, bool storeGivenFilename = true, bool removeImpossibleMappingSpriteModes = false)
         {
             _suspendEvent.Reset();
             J2L.JCSFocusedLayer = CurrentLayerID;
@@ -2185,7 +2198,7 @@ void main() {
                     return SavingResults.Error;
                 }
 
-            SavingResults result = J2L.Save(filename, eraseUndefinedTiles, allowDifferentTilesetVersion, storeGivenFilename, Data5);
+            SavingResults result = J2L.Save(filename, eraseUndefinedTiles, allowDifferentTilesetVersion, storeGivenFilename, removeImpossibleMappingSpriteModes, Data5);
             if (eventMapBackup != null)
                 J2L.EventMap = eventMapBackup;
             if (result == SavingResults.Success)
@@ -2233,7 +2246,7 @@ void main() {
                     DialogResult dialogResult = MessageBox.Show(String.Format("You are saving this level as a {0} level, but {2} is only compatible with {1}. In order for the level to be playable, you will need to have and make available a {0}-compatible version of {2}. MLLE will not do this for you. Press 'OK' to continue saving or 'Cancel' to choose a different tileset.", J2File.FullVersionNames[J2L.VersionType], J2File.FullVersionNames[J2L.Tilesets[0].VersionType], J2L.MainTilesetFilename), "Version Difference", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
                     if (dialogResult == DialogResult.OK)
                     {
-                        result = SaveJ2L(filename, eraseUndefinedTiles, true, storeGivenFilename);
+                        result = SaveJ2L(filename, eraseUndefinedTiles, true, storeGivenFilename, removeImpossibleMappingSpriteModes);
                     }
                 }
             }
@@ -2242,7 +2255,15 @@ void main() {
                 DialogResult dialogResult = MessageBox.Show("References were found to unknown tiles. These references must be deleted in order to save this level.", "Undefined Tiles", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
                 if (dialogResult == DialogResult.OK)
                 {
-                    result = SaveJ2L(filename, true, allowDifferentTilesetVersion, storeGivenFilename);
+                    result = SaveJ2L(filename, true, allowDifferentTilesetVersion, storeGivenFilename, removeImpossibleMappingSpriteModes);
+                }
+            }
+            else if (result == SavingResults.NoExtraPalettes)
+            {
+                DialogResult dialogResult = MessageBox.Show("One or more layers use \"Mapping\" and/or \"Translucent Mapping\" as their sprite modes, but the level does not define any extra palettes for them to use. These sprite modes must be replaced in order to save this level.", "Insufficient Palettes", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+                if (dialogResult == DialogResult.OK)
+                {
+                    result = SaveJ2L(filename, true, allowDifferentTilesetVersion, storeGivenFilename, true);
                 }
             }
             else
