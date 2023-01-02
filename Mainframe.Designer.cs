@@ -102,6 +102,10 @@
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.readmeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            this.levelmakingTipsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.angelScriptAPIToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.angelScriptSyntaxToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator27 = new System.Windows.Forms.ToolStripSeparator();
             this.aboutMLLEToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.TilesetScrollbar = new System.Windows.Forms.VScrollBar();
             this.DrawingTools = new System.Windows.Forms.ToolStrip();
@@ -789,6 +793,10 @@
             this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.readmeToolStripMenuItem,
             this.toolStripSeparator4,
+            this.levelmakingTipsToolStripMenuItem,
+            this.angelScriptAPIToolStripMenuItem,
+            this.angelScriptSyntaxToolStripMenuItem,
+            this.toolStripSeparator27,
             this.aboutMLLEToolStripMenuItem});
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
             this.helpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
@@ -806,6 +814,32 @@
             this.toolStripSeparator4.Name = "toolStripSeparator4";
             this.toolStripSeparator4.Size = new System.Drawing.Size(136, 6);
             // 
+            // levelmakingTipsToolStripMenuItem
+            // 
+            this.levelmakingTipsToolStripMenuItem.Name = "levelmakingTipsToolStripMenuItem";
+            this.levelmakingTipsToolStripMenuItem.Size = new System.Drawing.Size(448, 54);
+            this.levelmakingTipsToolStripMenuItem.Text = "Levelmaking Tips";
+            this.levelmakingTipsToolStripMenuItem.Click += new System.EventHandler(this.levelmakingTipsToolStripMenuItem_Click);
+            // 
+            // angelScriptAPIToolStripMenuItem
+            // 
+            this.angelScriptAPIToolStripMenuItem.Name = "angelScriptAPIToolStripMenuItem";
+            this.angelScriptAPIToolStripMenuItem.Size = new System.Drawing.Size(448, 54);
+            this.angelScriptAPIToolStripMenuItem.Text = "AngelScript API";
+            this.angelScriptAPIToolStripMenuItem.Click += new System.EventHandler(this.angelScriptAPIToolStripMenuItem_Click);
+            // 
+            // angelScriptSyntaxToolStripMenuItem
+            // 
+            this.angelScriptSyntaxToolStripMenuItem.Name = "angelScriptSyntaxToolStripMenuItem";
+            this.angelScriptSyntaxToolStripMenuItem.Size = new System.Drawing.Size(448, 54);
+            this.angelScriptSyntaxToolStripMenuItem.Text = "AngelScript Syntax";
+            this.angelScriptSyntaxToolStripMenuItem.Click += new System.EventHandler(this.angelScriptSyntaxToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator27
+            // 
+            this.toolStripSeparator27.Name = "toolStripSeparator27";
+            this.toolStripSeparator27.Size = new System.Drawing.Size(445, 6);
+            // 
             // aboutMLLEToolStripMenuItem
             // 
             this.aboutMLLEToolStripMenuItem.Name = "aboutMLLEToolStripMenuItem";
@@ -815,7 +849,7 @@
             // 
             // TilesetScrollbar
             // 
-            this.TilesetScrollbar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.TilesetScrollbar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
             | System.Windows.Forms.AnchorStyles.Left)));
             this.TilesetScrollbar.LargeChange = 256;
             this.TilesetScrollbar.Location = new System.Drawing.Point(320, 49);
@@ -829,7 +863,7 @@
             // DrawingTools
             // 
             this.DrawingTools.AllowItemReorder = true;
-            this.DrawingTools.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.DrawingTools.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
             | System.Windows.Forms.AnchorStyles.Left)));
             this.DrawingTools.AutoSize = false;
             this.DrawingTools.BackColor = System.Drawing.SystemColors.ControlLightLight;
@@ -1037,7 +1071,7 @@
             // 
             // DisplayToolstrip
             // 
-            this.DisplayToolstrip.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.DisplayToolstrip.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.DisplayToolstrip.AutoSize = false;
             this.DisplayToolstrip.BackColor = System.Drawing.SystemColors.ControlLightLight;
@@ -1274,7 +1308,7 @@
             // 
             // LDScrollV
             // 
-            this.LDScrollV.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.LDScrollV.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.LDScrollV.LargeChange = 256;
             this.LDScrollV.Location = new System.Drawing.Point(827, 49);
@@ -1287,7 +1321,7 @@
             // 
             // LDScrollH
             // 
-            this.LDScrollH.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            this.LDScrollH.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.LDScrollH.LargeChange = 256;
             this.LDScrollH.Location = new System.Drawing.Point(361, 257);
@@ -1301,8 +1335,8 @@
             // 
             // LevelDisplay
             // 
-            this.LevelDisplay.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            this.LevelDisplay.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.LevelDisplay.AutoScrollMargin = new System.Drawing.Size(17, 17);
             this.LevelDisplay.BackColor = System.Drawing.Color.Black;
@@ -2145,5 +2179,9 @@
         private System.Windows.Forms.Label OffgridInstructions;
         private System.Windows.Forms.ToolStripMenuItem levelPaletteToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem addNewPaletteToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem levelmakingTipsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem angelScriptAPIToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem angelScriptSyntaxToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator27;
     }
 }

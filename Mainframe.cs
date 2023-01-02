@@ -218,7 +218,7 @@ namespace MLLE
                 Bools.Add(EnableableTitles.BoolDevelopingForPlus, ini.IniReadValue("Enableable", "BoolDevelopingForPlus") != "");
                 Bools.Add(EnableableTitles.UseText, ini.IniReadValue("Enableable", "BoolText") != "");
             }
-            SnapEventsToGridToggle.Enabled = automaskToolStripMenuItem.Enabled = imageToolStripMenuItem.Enabled = maskToolStripMenuItem.Enabled = jJ2PropertiesToolStripMenuItem.Enabled = EnableableBools[version][EnableableTitles.BoolDevelopingForPlus];
+            SnapEventsToGridToggle.Enabled = automaskToolStripMenuItem.Enabled = imageToolStripMenuItem.Enabled = maskToolStripMenuItem.Enabled = jJ2PropertiesToolStripMenuItem.Enabled = angelScriptAPIToolStripMenuItem.Enabled = angelScriptSyntaxToolStripMenuItem.Enabled = EnableableBools[version][EnableableTitles.BoolDevelopingForPlus];
             if (!EnableableBools[version][EnableableTitles.BoolDevelopingForPlus])
                 SnapEventsToGridToggle.Checked = true;
             textStringsToolStripMenuItem.Enabled = EnableableBools[version][EnableableTitles.UseText];
@@ -1173,7 +1173,20 @@ void main() {
 
         private void aboutMLLEToolStripMenuItem_Click(object sender, EventArgs e) { _suspendEvent.Reset(); new AboutBox1().ShowDialog(); _suspendEvent.Set(); }
 
+        private void levelmakingTipsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.Start("https://www.ninjadodo.net/htjcs/");
+        }
 
+        private void angelScriptAPIToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.Start("https://docs.jj2.plus/plus-angelscript.html");
+        }
+
+        private void angelScriptSyntaxToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Process.Start("http://www.angelcode.com/angelscript/sdk/docs/manual/doc_script.html");
+        }
         private void batteryCheckToolStripMenuItem_Click(object sender, EventArgs e) { ChangeVersion(Version.BC); }
         private void jazz2V110oToolStripMenuItem_Click(object sender, EventArgs e) { ChangeVersion(Version.O); }
         private void jazz2V123ToolStripMenuItem_Click(object sender, EventArgs e) { ChangeVersion(Version.JJ2); }
