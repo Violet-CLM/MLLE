@@ -2198,6 +2198,7 @@ void main() {
                     return SavingResults.Error;
                 }
 
+            string originalFilepath = J2L.FullFilePath;
             SavingResults result = J2L.Save(filename, eraseUndefinedTiles, allowDifferentTilesetVersion, storeGivenFilename, removeImpossibleMappingSpriteModes, Data5);
             if (eventMapBackup != null)
                 J2L.EventMap = eventMapBackup;
@@ -2210,10 +2211,11 @@ void main() {
                     AddFilepathToRecentLevels(filename); //usually will already be there from opening the level, but what if this is a NEW level?
                 }
 
+                string oldScriptFilepath = Path.ChangeExtension(originalFilepath, ".j2as"); //different if using Save As
                 string scriptFilepath = Path.ChangeExtension(filename, ".j2as");
                 string fileContents = "";
-                if (File.Exists(scriptFilepath))
-                    fileContents = System.IO.File.ReadAllText(scriptFilepath, J2LFile.FileEncoding);
+                if (File.Exists(oldScriptFilepath))
+                    fileContents = System.IO.File.ReadAllText(oldScriptFilepath, J2LFile.FileEncoding);
                 string originalFileContents = fileContents;
 
                 PlusPropertyList.RemovePriorReferencesToMLLELibrary(ref fileContents);
