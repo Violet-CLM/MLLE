@@ -95,6 +95,7 @@
             // 
             // panel1
             // 
+            this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.panel1.Location = new System.Drawing.Point(280, 173);
             this.panel1.Name = "panel1";
@@ -105,6 +106,7 @@
             // 
             // panel2
             // 
+            this.panel2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.panel2.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.panel2.Location = new System.Drawing.Point(323, 173);
             this.panel2.Name = "panel2";
@@ -213,6 +215,13 @@
             this.pasteUnderToolStripMenuItem.Text = "Paste Under";
             this.pasteUnderToolStripMenuItem.Click += new System.EventHandler(this.pasteUnderToolStripMenuItem_Click);
             // 
+            // pasteAndRecolorToolStripMenuItem
+            // 
+            this.pasteAndRecolorToolStripMenuItem.Name = "pasteAndRecolorToolStripMenuItem";
+            this.pasteAndRecolorToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
+            this.pasteAndRecolorToolStripMenuItem.Text = "Paste and Recolor";
+            this.pasteAndRecolorToolStripMenuItem.Click += new System.EventHandler(this.pasteAndRecolorToolStripMenuItem_Click);
+            // 
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
@@ -234,6 +243,7 @@
             // 
             // toolStrip1
             // 
+            this.toolStrip1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.toolStrip1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
             this.toolStrip1.Dock = System.Windows.Forms.DockStyle.None;
             this.toolStrip1.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
@@ -280,13 +290,6 @@
             this.ReplaceColorButton.Size = new System.Drawing.Size(23, 22);
             this.ReplaceColorButton.Text = "Replace Color";
             this.ReplaceColorButton.Click += new System.EventHandler(this.ReplaceColorButton_Click);
-            // 
-            // pasteAndRecolorToolStripMenuItem
-            // 
-            this.pasteAndRecolorToolStripMenuItem.Name = "pasteAndRecolorToolStripMenuItem";
-            this.pasteAndRecolorToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.pasteAndRecolorToolStripMenuItem.Text = "Paste and Recolor";
-            this.pasteAndRecolorToolStripMenuItem.Click += new System.EventHandler(this.pasteAndRecolorToolStripMenuItem_Click);
             // 
             // TileImageEditorForm
             // 

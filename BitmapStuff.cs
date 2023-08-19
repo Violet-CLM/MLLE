@@ -48,7 +48,7 @@ namespace MLLE
                 if (biWidth != intendedSize.Value.Width || biHeight != intendedSize.Value.Height)
                     return false;
             }
-            if (biSizeImage != biWidth * biHeight) //don't support negative biHeight values... they're easier to handle but seemingly less common.
+            if (biSizeImage != ((biWidth + 3) & ~3) * biHeight) //don't support negative biHeight values... they're easier to handle but seemingly less common.
                 return false;
             if (biPlanes != 1 || biBitCount != 8 || biCompression != 0)
                 return false;
@@ -127,7 +127,21 @@ namespace MLLE
                                     entries[i] = Color.FromArgb(byte.MaxValue, BGRA[2], BGRA[1], BGRA[0]);
                                 }
                                 result.Palette = palette;
-                                ByteArrayToBitmap(reader.ReadBytes(header.biSizeImage), result, true);
+                                byte[] imageData;
+                                if ((header.biWidth & 3) == 0) //image width is a multiple of 4, which is nice and easy to read
+                                {
+                                    imageData = reader.ReadBytes(header.biSizeImage);
+                                }
+                                else //there's padding on every row :(
+                                {
+                                    imageData = new byte[0];
+                                    for (int y = 0; y < header.biHeight; ++y)
+                                    {
+                                        imageData = imageData.Concat(reader.ReadBytes(header.biWidth)).ToArray();
+                                        reader.ReadBytes(4 - (header.biWidth & 3)); //skip the padding on each row
+                                    }
+                                }
+                                ByteArrayToBitmap(imageData, result, true);
                                 return result;
                             }
                         }

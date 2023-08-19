@@ -9,10 +9,10 @@ namespace MLLE
 {
     public partial struct PlusPropertyList
     {
-        const uint CurrentMLLEData5Version = 0x106;
+        const uint CurrentMLLEData5Version = 0x107;
         const string MLLEData5MagicString = "MLLE";
-        const string CurrentMLLEData5VersionStringForComparison = "0x106";
-        const string CurrentMLLEData5VersionString = "1.6";
+        const string CurrentMLLEData5VersionStringForComparison = "0x107";
+        const string CurrentMLLEData5VersionString = "1.7";
 
         const string AngelscriptLibrary =
 @"//This is a standard library created by MLLE to read some JJ2+ properties from a level file whose script includes this library. DO NOT MANUALLY MODIFY THIS FILE.
@@ -248,9 +248,12 @@ namespace MLLE {{
             if (pchar >= 0)
                 layer.texture = TEXTURE::Texture(pchar);
             else {{
-                jjPIXELMAP texture(256, 256);
-                for (uint y = 0; y < 256; ++y)
-                    for (uint x = 0; x < 256; ++x)
+                uint textureWidth, textureHeight;
+                data5.pop(textureWidth);
+                data5.pop(textureHeight);
+                jjPIXELMAP texture(textureWidth, textureHeight);
+                for (uint y = 0; y < textureHeight; ++y)
+                    for (uint x = 0; x < textureWidth; ++x)
                         data5.pop(texture[x,y]);
                 texture.makeTexture(layer);
             }}

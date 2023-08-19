@@ -1020,8 +1020,9 @@ void main() {
                     (J2T.ColorRemapping == null) ?
                         originalTileImage :
                         Enumerable.Range(0, 32 * 32).Select(val => J2T.ColorRemapping[originalTileImage[val]]).ToArray(),
-                    J2L.Palette
-                ))
+                    J2L.Palette,
+                    32,8, false
+                ) == 32) //changed
                     RerenderTile((uint)MouseTile);
                 _suspendEvent.Set();
             }
@@ -1037,8 +1038,9 @@ void main() {
                 if (new TileImageEditorForm().ShowForm(
                     ref J2L.PlusPropertyList.TileMasks[MouseTile],
                     J2T.Masks[J2T.MaskAddress[tileInTilesetID]],
-                    null
-                ))
+                    null,
+                    32,8, false
+                ) == 32) //changed
                     RerenderTileMask((uint)MouseTile);
                 _suspendEvent.Set();
             }
@@ -1101,7 +1103,7 @@ void main() {
         private void pasteImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Bitmap clipboardBitmap = BitmapStuff.GetBitmapFromClipboard(null);
-            if (clipboardBitmap != null)
+            if (clipboardBitmap != null && (clipboardBitmap.Width & 3) == 0)
             {
                 int selectionWidth = (BottomRightSelectionCorner.X - UpperLeftSelectionCorner.X) * 32;
                 int selectionHeight = (BottomRightSelectionCorner.Y - UpperLeftSelectionCorner.Y) * 32;

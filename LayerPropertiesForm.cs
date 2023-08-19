@@ -149,13 +149,17 @@ namespace MLLE
             InnerAutoX.Text = layer.InnerAutoX.ToString();
             InnerAutoY.Text = layer.InnerAutoY.ToString();
             if (layer.Texture >= 0)
+            {
                 TextureSource.SelectedIndex = layer.Texture;
+                TextureWidth = 256;
+            }
             else
             {
                 if (TextureSource.Items.Count == 16)
                     TextureSource.Items.Add("[Custom]");
                 TextureSource.SelectedIndex = 16;
                 Texture = layer.TextureImage;
+                TextureWidth = layer.TextureWidth;
             }
         }
 
@@ -303,6 +307,7 @@ namespace MLLE
                 Single.TryParse(InnerAutoY.Text, out DataSource.InnerAutoY);
                 DataSource.Texture = TextureSource.SelectedIndex < 16 ? (sbyte)TextureSource.SelectedIndex : (sbyte)-1;
                 DataSource.TextureImage = Texture;
+                DataSource.TextureWidth = TextureWidth;
                 SourceForm.LevelHasBeenModified = true;
             }
 
@@ -360,6 +365,8 @@ namespace MLLE
                 fadeSuffix = "Pivot";
             else if (TextureModeSelect.SelectedIndex == 4)
                 fadeSuffix = "Amplitude";
+            else if (TextureModeSelect.SelectedIndex == 7)
+                fadeSuffix = "Scale";
             XFadeLabel.Text = "X-" + fadeSuffix;
             YFadeLabel.Text = (TextureModeSelect.SelectedIndex != 6) ? "Y-" + fadeSuffix : "Top";
             GenericInputChanged(sender, e);
@@ -467,6 +474,7 @@ namespace MLLE
         }
 
         byte[] Texture = null;
+        int TextureWidth;
         private static readonly Bitmap[] TextureImages = { Properties.Resources._1_normal, Properties.Resources._2_psych, Properties.Resources._3_medivo, Properties.Resources._4_diamb, Properties.Resources._5_wisetyness, Properties.Resources._6_blade, Properties.Resources._7_mez02, Properties.Resources._8_windstormfortress, Properties.Resources._9_raneforusv, Properties.Resources._10_corruptedsanctuary, Properties.Resources._11_xargon, Properties.Resources._12_tubelectric, Properties.Resources._13_wtf, Properties.Resources._14_muckamoknight, Properties.Resources._15_desolation };
         private void TextureSourceDraw_Click(object sender, EventArgs e)
         {
@@ -501,22 +509,26 @@ namespace MLLE
             }
             else if (TextureSource.SelectedIndex >= 16) //custom
             {
-                texture = DataSource.TextureImage.Clone() as byte[];
+                texture = Texture;
             }
             else
             {
                 texture = BitmapStuff.BitmapToByteArray(TextureImages[TextureSource.SelectedIndex - 1]);
             }
-            if (new TileImageEditorForm().ShowForm(
+            int newWidth = new TileImageEditorForm().ShowForm(
                 ref texture,
                 texture,
-                SourceForm.J2L.Palette
-            ))
+                SourceForm.J2L.Palette,
+                TextureWidth, 1,
+                TextureModeSelect.SelectedIndex == 7 //static
+            );
+            if (newWidth != 0)
             {
                 if (TextureSource.Items.Count == 16)
                     TextureSource.Items.Add("[Custom]");
                 TextureSource.SelectedIndex = 16;
                 Texture = texture;
+                TextureWidth = newWidth;
                 GenericInputChanged(sender, e);
             }
         }

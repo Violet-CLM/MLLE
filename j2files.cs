@@ -831,6 +831,7 @@ class Layer
     public float XFade, YFade, InnerX, InnerY, InnerAutoX, InnerAutoY;
     public sbyte Texture;
     public byte[] TextureImage;
+    public int TextureWidth;
 
     public ArrayMap<ushort> TileMap;
 
@@ -858,6 +859,7 @@ class Layer
         Fade = 192;
         XFade = YFade = 0.5f;
         XSpeedModel = YSpeedModel = (byte)((i == 7) ? 1 : 0);
+        TextureWidth = 256;
     }
 
     public Layer(Layer other)
@@ -908,10 +910,12 @@ class Layer
         InnerAutoX = other.InnerAutoX;
         InnerAutoY = other.InnerAutoY;
         Texture = other.Texture;
-        if (Texture >= 0)
+        if (Texture >= 0) {
             TextureImage = null;
-        else
+        } else {
             TextureImage = other.TextureImage.Clone() as byte[];
+            TextureWidth = other.TextureWidth;
+        }
 
         TileMap = new ArrayMap<ushort>(Width, Height);
         for (ushort x = 0; x < Width; x++)
@@ -950,6 +954,7 @@ class Layer
         TextureSurface = 0;
         Fade = 192;
         XFade = YFade = 0.5f;
+        TextureWidth = 256;
 
         TileMap = new ArrayMap<ushort>(Width, Height);
     }
@@ -962,6 +967,7 @@ class Layer
         TileMap = new ArrayMap<ushort>(Width, Height);
         Fade = 192;
         XFade = YFade = 0.5f;
+        TextureWidth = 256;
     }
 
     public uint GetSize()

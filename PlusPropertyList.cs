@@ -648,7 +648,11 @@ namespace MLLE
                     data5bodywriter.Write(layer.InnerAutoY);
                     data5bodywriter.Write(layer.Texture);
                     if (layer.Texture < 0)
+                    {
+                        data5bodywriter.Write(layer.TextureWidth);
+                        data5bodywriter.Write(layer.TextureImage.Length / layer.TextureWidth);
                         data5bodywriter.Write(layer.TextureImage);
+                    }
                 }
 
                 int levelTileCount = Tilesets.Sum(ts => (int)ts.TileCount);
@@ -897,8 +901,21 @@ namespace MLLE
                                 layer.InnerAutoX = data5bodyreader.ReadSingle();
                                 layer.InnerAutoY = data5bodyreader.ReadSingle();
                                 layer.Texture = data5bodyreader.ReadSByte();
+                                layer.TextureWidth = 256; //likely, default
                                 if (layer.Texture < 0)
-                                    layer.TextureImage = data5bodyreader.ReadBytes(256 * 256);
+                                {
+                                    int textureHeight;
+                                    if (data5Version >= 0x107) //MLLE-Include-1.7 allows textures of alternate sizes... JJ2+ can only currently use them for TEXTURE::STATIC, but the j2l files don't need to know that
+                                    {
+                                        layer.TextureWidth = data5bodyreader.ReadInt32();
+                                        textureHeight = data5bodyreader.ReadInt32();
+                                    }
+                                    else
+                                    {
+                                        textureHeight = 256;
+                                    }
+                                    layer.TextureImage = data5bodyreader.ReadBytes((int)(layer.TextureWidth * textureHeight));
+                                }
                             }
                             else if (layerID < 0) //don't assume that every eighth layer from a mlle-data level has layer 8 speed models (but the other default values are fine)
                             {
