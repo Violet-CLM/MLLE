@@ -142,7 +142,7 @@ namespace MLLE
                 var record = listView1.SelectedItems[0];
                 var J2T = new J2TFile();
                 J2T.VersionType = VersionType;
-                Bitmap image = new Bitmap(1, 1), image32 = new Bitmap(1, 1), mask = new Bitmap(1, 1);
+                Bitmap image = null, image32 = null, mask = new Bitmap(1, 1);
                 string sourceFilepath = "";
                 try
                 {
@@ -159,8 +159,8 @@ namespace MLLE
                     switch (J2T.Build(image, image32, mask, record.Text, VersionIsPlusCompatible))
                     {
                         case BuildResults.DifferentDimensions:
-                            if (image != null && image32 != null)
-                                MessageBox.Show(String.Format("The images and the mask must be the same dimensions. Your images are {0} by {1} and {2} by {3}, and your mask is {2} by {3}.", image.Width, image.Height, image32.Width, image32.Height, mask.Width, mask.Height), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            if (image32 != null)
+                                MessageBox.Show(String.Format("The images and the mask must be the same dimensions. Your images are {0} by {1} and {2} by {3}, and your mask is {4} by {5}.", image.Width, image.Height, image32.Width, image32.Height, mask.Width, mask.Height), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             else
                                 MessageBox.Show(String.Format("The image and the mask must be the same dimensions. Your image is {0} by {1}, and your mask is {2} by {3}.", (image ?? image32).Width, (image ?? image32).Height, mask.Width, mask.Height), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             break;
@@ -204,8 +204,10 @@ namespace MLLE
                 }
                 finally
                 {
-                    image.Dispose();
-                    image32.Dispose();
+                    if (image != null)
+                        image.Dispose();
+                    if (image32 != null)
+                        image32.Dispose();
                     mask.Dispose();
                 }
             }

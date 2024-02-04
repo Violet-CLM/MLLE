@@ -88,7 +88,7 @@ partial class J2TFile : J2File
     public Palette Palette;
     public uint TotalNumberOfTiles; //Again, good for looping.
     public uint FirstTile = 0, TileCount; //for multiple-tileset purposes
-    public bool[] IsFullyOpaque; //Not too useful, but there's a shortcut bool to indicate that a tile has no transparency at ALL and may be drawn more simply.
+    public byte[] AlphaSpread; //0: at least one 0 alpha, no partial alphas. 1: every pixel is 255 alpha. 2: at least one partial alpha
     //internal byte[] unknown1;
     public uint[] ImageAddress; //Where in Data2 the 1024 pixels for each tile are. Here divided by 1024 just to be straight-forward.
     //internal uint[] unknown2;
@@ -195,7 +195,7 @@ partial class J2TFile : J2File
                     VersionType = Version.Plus;
                     break;
             }
-            IsFullyOpaque = new bool[MaxTiles];
+            AlphaSpread = new byte[MaxTiles];
             //unknown1 = new byte[MaxTiles];
             ImageAddress = new uint[MaxTiles];
             //unknown2 = new uint[MaxTiles];
@@ -204,11 +204,8 @@ partial class J2TFile : J2File
             //unknown3 = new uint[MaxTiles];
             MaskAddress = new uint[MaxTiles];
             //FlippedMaskAddress = new uint[MaxTiles];
-            if (VersionType != Version.Plus)
-            {
-                TransparencyMaskJCS_Style = new byte[MaxTiles][];
-                TransparencyMaskJJ2_Style = new byte[MaxTiles][];
-            }
+            TransparencyMaskJCS_Style = new byte[MaxTiles][];
+            TransparencyMaskJJ2_Style = new byte[MaxTiles][];
             #endregion setup version-specific sizes
             for (byte i = 0; i < 4; i++)
                 UncompressedData[i] = new MemoryStream(ZlibStream.UncompressBuffer(binreader.ReadBytes(CompressedDataLength[i])));
@@ -217,15 +214,12 @@ partial class J2TFile : J2File
             BinaryReader data1reader = new BinaryReader(UncompressedData[0], encoding);
             Palette = new Palette(data1reader);
             TileCount = TotalNumberOfTiles = data1reader.ReadUInt32();
-            for (short i = 0; i < MaxTiles; i++) IsFullyOpaque[i] = data1reader.ReadBoolean();
+            for (short i = 0; i < MaxTiles; i++) AlphaSpread[i] = data1reader.ReadByte();
             data1reader.BaseStream.Seek(MaxTiles * sizeof(byte), SeekOrigin.Current); // for(short i = 0; i < MaxTiles; i++) unknown1[i] = data1reader.ReadByte();
             for (short i = 0; i < MaxTiles; i++) ImageAddress[i] = data1reader.ReadUInt32();
             data1reader.BaseStream.Seek(MaxTiles * sizeof(UInt32), SeekOrigin.Current); // for (short i = 0; i < MaxTiles; i++) unknown2[i] = data1reader.ReadUInt32();
-            if (VersionType != Version.Plus)
-            {
-                for (short i = 0; i < MaxTiles; i++) TransparencyMaskAddress[i] = data1reader.ReadUInt32();
-                data1reader.BaseStream.Seek(MaxTiles * sizeof(UInt32), SeekOrigin.Current); // for (short i = 0; i < MaxTiles; i++) unknown3[i] = data1reader.ReadUInt32();
-            }
+            for (short i = 0; i < MaxTiles; i++) TransparencyMaskAddress[i] = data1reader.ReadUInt32();
+            data1reader.BaseStream.Seek(MaxTiles * sizeof(UInt32), SeekOrigin.Current); // for (short i = 0; i < MaxTiles; i++) unknown3[i] = data1reader.ReadUInt32();
             for (short i = 0; i < MaxTiles; i++) MaskAddress[i] = data1reader.ReadUInt32() / 128;
             data1reader.BaseStream.Seek(MaxTiles * sizeof(UInt32), SeekOrigin.Current); // for (short i = 0; i < MaxTiles; i++) FlippedMaskAddress[i] = data1reader.ReadUInt32() / 128;
             #endregion data1
@@ -248,28 +242,25 @@ partial class J2TFile : J2File
             Images = imageList.ToArray();
             #endregion
             #region data3
-            if (VersionType != Version.Plus)
+            BinaryReader data3reader = new BinaryReader(UncompressedData[2], encoding);
+            uint data3Pointer = 0;
+            while (data3Pointer < UncompressedDataLength[2])
             {
-                BinaryReader data3reader = new BinaryReader(UncompressedData[2], encoding);
-                uint data3Pointer = 0;
-                while (data3Pointer < UncompressedDataLength[2])
+                TransparencyMaskOffset[data3Counter] = data3Pointer;
+                TransparencyMaskJCS_Style[data3Counter] = Convert128BitsToByteMask(data3reader.ReadBytes(128)); data3Pointer += 128;
+                TransparencyMaskJJ2_Style[data3Counter] = new byte[1024];// for (ushort i = 0; i < 1024; i++) tmasksjj2[data3counter][i] = 0;
+                for (int row = 0; row < 32; row++)
                 {
-                    TransparencyMaskOffset[data3Counter] = data3Pointer;
-                    TransparencyMaskJCS_Style[data3Counter] = Convert128BitsToByteMask(data3reader.ReadBytes(128)); data3Pointer += 128;
-                    TransparencyMaskJJ2_Style[data3Counter] = new byte[1024];// for (ushort i = 0; i < 1024; i++) tmasksjj2[data3counter][i] = 0;
-                    for (int row = 0; row < 32; row++)
+                    int data3Skip = row * 32;
+                    int data3BlockNumber = data3reader.ReadByte(); data3Pointer++;
+                    for (int i = 0; i < data3BlockNumber; i++)
                     {
-                        int data3Skip = row * 32;
-                        int data3BlockNumber = data3reader.ReadByte(); data3Pointer++;
-                        for (int i = 0; i < data3BlockNumber; i++)
-                        {
-                            data3Skip += data3reader.ReadByte(); data3Pointer++;
-                            int data3BlockNumber2 = data3Skip + data3reader.ReadByte(); data3Pointer++;
-                            for (; data3Skip < data3BlockNumber2; data3Skip++) TransparencyMaskJJ2_Style[data3Counter][data3Skip] = 1;
-                        }
+                        data3Skip += data3reader.ReadByte(); data3Pointer++;
+                        int data3BlockNumber2 = data3Skip + data3reader.ReadByte(); data3Pointer++;
+                        for (; data3Skip < data3BlockNumber2; data3Skip++) TransparencyMaskJJ2_Style[data3Counter][data3Skip] = 1;
                     }
-                    data3Counter++;
                 }
+                data3Counter++;
             }
             #endregion data3
             #region data4
@@ -286,7 +277,7 @@ partial class J2TFile : J2File
         TileCount = TotalNumberOfTiles = binreader.ReadUInt32();
 
         data3Counter = (ushort)TotalNumberOfTiles;
-        IsFullyOpaque = new bool[1024];
+        AlphaSpread = new byte[1024];
         //unknown1 = new byte[1024];
         ImageAddress = new uint[1024];
         Images = new byte[TotalNumberOfTiles][];
@@ -312,7 +303,7 @@ partial class J2TFile : J2File
             TransparencyMaskJCS_Style[tile] = new byte[1024];
             TransparencyMaskJJ2_Style[tile] = new byte[1024];
             rawTransBits = binreader.ReadByte();
-            IsFullyOpaque[tile] = (rawTransBits == 240 && TileTypes[tile] == 0);
+            AlphaSpread[tile] = (byte)((rawTransBits == 240 && TileTypes[tile] == 0) ? 1 : 0);
             //if (IsFullyOpaque[tile]) Console.WriteLine(tile);
             bool[] quadrantIsNontransparent = new bool[4];
             for (byte i = 0; i < 4; i++) quadrantIsNontransparent[i] = ((rawTransBits & (16 << i)) != 0);
@@ -586,7 +577,7 @@ partial class J2TFile : J2File
 
         Images = new byte[MaxTiles][];
         Masks = new byte[MaxTiles][];
-        IsFullyOpaque = new bool[MaxTiles];
+        AlphaSpread = new byte[MaxTiles];
         TransparencyMaskJCS_Style = new byte[MaxTiles][];
 
         Palette = new Palette((image ?? mask).Palette);
@@ -624,6 +615,8 @@ partial class J2TFile : J2File
                 var image32Array = new byte[32*32 * 4];
                 var transpArray = new byte[32*32];
                 var maskArray = Masks[tileID] = new byte[32*32];
+                bool fullyOpaque8Bit = true;
+                AlphaSpread[tileID] = 1; //fully opaque, by default
                 int x = (tileID % 10) * 32, y = (tileID / 10) * 32;
                 for (int xx = 0; xx < 32; ++xx)
                     for (int yy = 0; yy < 32; ++yy)
@@ -631,12 +624,15 @@ partial class J2TFile : J2File
                         int tileIndex = xx | (yy << 5);
                         int sourceIndex = (x | xx) + (y | yy) * 320;
                         maskArray[tileIndex] = (byte)(maskIndices[sourceIndex] != 0 ? 1 : 0);
-                        bool pixelIsFullyOpaque = true;
                         if (image != null)
                         {
                             byte color = imageIndices[sourceIndex];
                             if (color == 1) color = 0;
-                            transpArray[tileIndex] = (byte)((pixelIsFullyOpaque = (imageArray[tileIndex] = color) != 0) ? 1 : 0);
+                            imageArray[tileIndex] = color;
+                            if (color == 0)
+                                fullyOpaque8Bit = false; //at least one transparent pixel
+                            else
+                                transpArray[tileIndex] = 1;
                         }
                         if (VersionType == Version.Plus)
                         {
@@ -647,25 +643,45 @@ partial class J2TFile : J2File
                                     sourceIndex <<= 2;
                                     for (int ch = 0; ch < 3; ++ch)
                                         image32Array[tileIndex | (2 - ch)] = image32Indices[sourceIndex | ch]; //reverse BGR to RGB
-                                    pixelIsFullyOpaque |= (image32Array[tileIndex | 3] = image32Indices[sourceIndex | 3]) == 255; //...A
+                                    byte alpha = image32Array[tileIndex | 3] = image32Indices[sourceIndex | 3]; //...A
+                                    if (alpha == 0)
+                                    {
+                                        if (AlphaSpread[tileID] == 1)
+                                            AlphaSpread[tileID] = 0;
+                                    }
+                                    else
+                                    {
+                                        transpArray[tileIndex >> 2] = 1;
+                                        if (alpha < 255) //anything from 1-254, inclusive, is partial opacity
+                                        {
+                                            AlphaSpread[tileID] = 2;
+                                        }
+                                    }
                                     break;
                                 case PixelFormat.Format32bppRgb:
                                 case PixelFormat.Format24bppRgb:
                                     sourceIndex *= (image32.PixelFormat == PixelFormat.Format24bppRgb) ? 3 : 4;
+                                    uint channelSum = 0;
                                     for (int ch = 0; ch < 3; ++ch)
-                                        pixelIsFullyOpaque |= ((image32Array[tileIndex | ch] = image32Indices[sourceIndex | ch]) != 0);
-                                    image32Array[tileIndex | 3] = (byte)(pixelIsFullyOpaque ? 255 : 0); //transparent is color 0,0,0
+                                        channelSum += (image32Array[tileIndex | ch] = image32Indices[sourceIndex | ch]);
+                                    if (channelSum == 0)
+                                        AlphaSpread[tileID] = 0;
+                                    else
+                                    {
+                                        image32Array[tileIndex | 3] = 255; //transparent is color 0,0,0
+                                        transpArray[tileIndex >> 2] = 1;
+                                    }
                                     break;
                             }
                         }
-                        if (!pixelIsFullyOpaque) IsFullyOpaque[tileID] = false;
                     }
                 if (VersionType != Version.Plus || image32Array.SequenceEqual(empty32BitTile)) { //only use the 8-bit image if the 32-bit image is empty/nonexistent
                     Images[tileID] = imageArray;
-                    TransparencyMaskJCS_Style[tileID] = transpArray;
+                    AlphaSpread[tileID] = (byte)(fullyOpaque8Bit ? 1 : 0);
                 } else {
                     Images[tileID] = image32Array;
                 }
+                TransparencyMaskJCS_Style[tileID] = transpArray;
             }
         }
 
@@ -790,7 +806,7 @@ partial class J2TFile : J2File
                 data1writer.Write(color);
             data1writer.Write(TileCount);
             for (int i = 0; i < MaxTiles * 2; ++i)
-                data1writer.Write(i < TileCount ? IsFullyOpaque[i] : false);
+                data1writer.Write(i < TileCount ? AlphaSpread[i] : (byte)0);
 
             byte[][]
                 TransparencyInstructions = new byte[TileCount][],
@@ -798,8 +814,7 @@ partial class J2TFile : J2File
                 ReversedMaskBits = new byte[TileCount][];
             for (uint i = 0; i < TileCount; ++i)
             {
-                if (VersionType != Version.Plus)
-                    TransparencyInstructions[i] = GenerateTransparencyInstructionsFromTransparencyMask(TransparencyMaskJCS_Style[i]);
+                TransparencyInstructions[i] = GenerateTransparencyInstructionsFromTransparencyMask(TransparencyMaskJCS_Style[i]);
                 MaskBits[i] = ConvertByteMaskTo128Bits(Masks[i]);
                 ReversedMaskBits[i] = ConvertByteMaskTo128Bits(
                     Masks[i]
@@ -824,30 +839,24 @@ partial class J2TFile : J2File
                 int numberOfTimesToWrite = (dataID < 2) ? MaxTiles * 2 : MaxTiles;
                 for (int tileID = 0; tileID < numberOfTimesToWrite; ++tileID)
                 {
-                    if (VersionType != Version.Plus || dataID != 1)
+                    if (tileID < TileCount)
                     {
-                        if (tileID < TileCount)
+                        var bytes = new ByteArrayKey(source[tileID]);
+                        if (!dest.ContainsKey(bytes))
                         {
-                            var bytes = new ByteArrayKey(source[tileID]);
-                            if (!dest.ContainsKey(bytes))
-                            {
-                                var pointerToNewTile = (uint)writer.BaseStream.Length;
-                                if (VersionType == Version.Plus && dataID == 0 && source[tileID].Length == 32 * 32 * 4)
-                                    pointerToNewTile |= 0x80000000u;
-                                dest[bytes] = pointerToNewTile;
-                                writer.Write(bytes.Bytes);
-                            }
-                            System.Diagnostics.Debug.WriteLine(dest[bytes].ToString("x"));
-                            data1writer.Write(dest[bytes]);
+                            var pointerToNewTile = (uint)writer.BaseStream.Length;
+                            if (VersionType == Version.Plus && dataID == 0 && source[tileID].Length == 32 * 32 * 4)
+                                pointerToNewTile |= 0x80000000u;
+                            dest[bytes] = pointerToNewTile;
+                            writer.Write(bytes.Bytes);
                         }
-                        else
-                            data1writer.Write(0);
+                        //System.Diagnostics.Debug.WriteLine(dest[bytes].ToString("x"));
+                        data1writer.Write(dest[bytes]);
                     }
+                    else
+                        data1writer.Write(0);
                 }
             }
-
-            if (VersionType == Version.Plus)
-                data3writer.Write(false); //non-empty
 
             using (BinaryWriter binwriter = new BinaryWriter(
                 File.Open(FullFilePath, FileMode.Create, FileAccess.Write),
