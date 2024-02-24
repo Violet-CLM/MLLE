@@ -14,7 +14,7 @@ public class VOres
     public VOres(string filename)
     {
         Filename = filename;
-        using (BinaryReader binreader = new BinaryReader(File.Open(filename, FileMode.Open, FileAccess.Read), J2File.FileEncoding))
+        using (BinaryReader binreader = new BinaryReader(File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read), J2File.FileEncoding))
         {
             binreader.ReadBytes(20);
             int numberOfSounds = binreader.ReadInt32();

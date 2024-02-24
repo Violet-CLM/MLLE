@@ -902,6 +902,8 @@ partial class J2TFile
     internal bool LoadSmartTiles(bool maxTiles4096, uint tileOffset)
     {
         SmartTiles.Clear();
+        if (FullFilePath == null || FullFilePath == string.Empty)
+            return false;
         string filepath = Path.ChangeExtension(FullFilePath, ".MLLESet");
         if (!File.Exists(filepath)) //check in JJ2 folder
             if (!File.Exists(filepath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, Path.GetFileName(filepath)))) //check in MLLE folder

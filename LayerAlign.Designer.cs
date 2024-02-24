@@ -60,7 +60,7 @@
             this.UpperLeft.Location = new System.Drawing.Point(6, 19);
             this.UpperLeft.Name = "UpperLeft";
             this.UpperLeft.Size = new System.Drawing.Size(32, 32);
-            this.UpperLeft.TabIndex = 0;
+            this.UpperLeft.TabIndex = 6;
             this.UpperLeft.UseVisualStyleBackColor = true;
             this.UpperLeft.Click += new System.EventHandler(this.UpperLeft_Click);
             // 
@@ -69,7 +69,7 @@
             this.UpperCenter.Location = new System.Drawing.Point(44, 19);
             this.UpperCenter.Name = "UpperCenter";
             this.UpperCenter.Size = new System.Drawing.Size(32, 32);
-            this.UpperCenter.TabIndex = 1;
+            this.UpperCenter.TabIndex = 7;
             this.UpperCenter.UseVisualStyleBackColor = true;
             this.UpperCenter.Click += new System.EventHandler(this.UpperCenter_Click);
             // 
@@ -78,7 +78,7 @@
             this.UpperRight.Location = new System.Drawing.Point(82, 19);
             this.UpperRight.Name = "UpperRight";
             this.UpperRight.Size = new System.Drawing.Size(32, 32);
-            this.UpperRight.TabIndex = 2;
+            this.UpperRight.TabIndex = 8;
             this.UpperRight.UseVisualStyleBackColor = true;
             this.UpperRight.Click += new System.EventHandler(this.UpperRight_Click);
             // 
@@ -87,7 +87,7 @@
             this.RightMiddle.Location = new System.Drawing.Point(82, 57);
             this.RightMiddle.Name = "RightMiddle";
             this.RightMiddle.Size = new System.Drawing.Size(32, 32);
-            this.RightMiddle.TabIndex = 5;
+            this.RightMiddle.TabIndex = 11;
             this.RightMiddle.UseVisualStyleBackColor = true;
             this.RightMiddle.Click += new System.EventHandler(this.RightMiddle_Click);
             // 
@@ -96,7 +96,7 @@
             this.MiddleCenter.Location = new System.Drawing.Point(44, 57);
             this.MiddleCenter.Name = "MiddleCenter";
             this.MiddleCenter.Size = new System.Drawing.Size(32, 32);
-            this.MiddleCenter.TabIndex = 4;
+            this.MiddleCenter.TabIndex = 10;
             this.MiddleCenter.UseVisualStyleBackColor = true;
             this.MiddleCenter.Click += new System.EventHandler(this.MiddleCenter_Click);
             // 
@@ -105,7 +105,7 @@
             this.LeftMiddle.Location = new System.Drawing.Point(6, 57);
             this.LeftMiddle.Name = "LeftMiddle";
             this.LeftMiddle.Size = new System.Drawing.Size(32, 32);
-            this.LeftMiddle.TabIndex = 3;
+            this.LeftMiddle.TabIndex = 9;
             this.LeftMiddle.UseVisualStyleBackColor = true;
             this.LeftMiddle.Click += new System.EventHandler(this.LeftMiddle_Click);
             // 
@@ -114,7 +114,7 @@
             this.LowerRight.Location = new System.Drawing.Point(82, 95);
             this.LowerRight.Name = "LowerRight";
             this.LowerRight.Size = new System.Drawing.Size(32, 32);
-            this.LowerRight.TabIndex = 8;
+            this.LowerRight.TabIndex = 14;
             this.LowerRight.UseVisualStyleBackColor = true;
             this.LowerRight.Click += new System.EventHandler(this.LowerRight_Click);
             // 
@@ -123,7 +123,7 @@
             this.LowerCenter.Location = new System.Drawing.Point(44, 95);
             this.LowerCenter.Name = "LowerCenter";
             this.LowerCenter.Size = new System.Drawing.Size(32, 32);
-            this.LowerCenter.TabIndex = 7;
+            this.LowerCenter.TabIndex = 13;
             this.LowerCenter.UseVisualStyleBackColor = true;
             this.LowerCenter.Click += new System.EventHandler(this.LowerCenter_Click);
             // 
@@ -132,7 +132,7 @@
             this.LowerLeft.Location = new System.Drawing.Point(6, 95);
             this.LowerLeft.Name = "LowerLeft";
             this.LowerLeft.Size = new System.Drawing.Size(32, 32);
-            this.LowerLeft.TabIndex = 6;
+            this.LowerLeft.TabIndex = 12;
             this.LowerLeft.UseVisualStyleBackColor = true;
             this.LowerLeft.Click += new System.EventHandler(this.LowerLeft_Click);
             // 
@@ -141,7 +141,7 @@
             this.ButtonOK.Location = new System.Drawing.Point(12, 227);
             this.ButtonOK.Name = "ButtonOK";
             this.ButtonOK.Size = new System.Drawing.Size(114, 23);
-            this.ButtonOK.TabIndex = 9;
+            this.ButtonOK.TabIndex = 0;
             this.ButtonOK.Text = "OK";
             this.ButtonOK.UseVisualStyleBackColor = true;
             this.ButtonOK.Click += new System.EventHandler(this.ButtonOK_Click);
@@ -152,7 +152,7 @@
             this.ButtonCancel.Location = new System.Drawing.Point(132, 227);
             this.ButtonCancel.Name = "ButtonCancel";
             this.ButtonCancel.Size = new System.Drawing.Size(114, 23);
-            this.ButtonCancel.TabIndex = 10;
+            this.ButtonCancel.TabIndex = 1;
             this.ButtonCancel.Text = "Cancel";
             this.ButtonCancel.UseVisualStyleBackColor = true;
             this.ButtonCancel.Click += new System.EventHandler(this.ButtonCancel_Click);
@@ -222,8 +222,8 @@
             this.label1.Size = new System.Drawing.Size(234, 64);
             this.label1.TabIndex = 20;
             this.label1.Text = "You are modifying layer {0} to be {1} tiles {2}er and {3} tiles {4}er. Please set" +
-                " the coordinates relative to the old layer that the new layer should be drawn at" +
-                ".";
+    " the coordinates relative to the old layer that the new layer should be drawn at" +
+    ".";
             this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // TopBox
@@ -241,7 +241,7 @@
             -2147483648});
             this.TopBox.Name = "TopBox";
             this.TopBox.Size = new System.Drawing.Size(55, 20);
-            this.TopBox.TabIndex = 21;
+            this.TopBox.TabIndex = 2;
             this.TopBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.TopBox.Value = new decimal(new int[] {
             1,
@@ -265,7 +265,7 @@
             -2147483648});
             this.BottomBox.Name = "BottomBox";
             this.BottomBox.Size = new System.Drawing.Size(55, 20);
-            this.BottomBox.TabIndex = 22;
+            this.BottomBox.TabIndex = 4;
             this.BottomBox.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.BottomBox.Value = new decimal(new int[] {
             2,
@@ -289,7 +289,7 @@
             -2147483648});
             this.RightBox.Name = "RightBox";
             this.RightBox.Size = new System.Drawing.Size(55, 20);
-            this.RightBox.TabIndex = 24;
+            this.RightBox.TabIndex = 5;
             this.RightBox.Value = new decimal(new int[] {
             4,
             0,
@@ -312,7 +312,7 @@
             -2147483648});
             this.LeftBox.Name = "LeftBox";
             this.LeftBox.Size = new System.Drawing.Size(55, 20);
-            this.LeftBox.TabIndex = 23;
+            this.LeftBox.TabIndex = 3;
             this.LeftBox.Value = new decimal(new int[] {
             3,
             0,

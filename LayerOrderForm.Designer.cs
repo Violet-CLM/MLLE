@@ -47,7 +47,7 @@
             this.ButtonCancel.Location = new System.Drawing.Point(158, 226);
             this.ButtonCancel.Name = "ButtonCancel";
             this.ButtonCancel.Size = new System.Drawing.Size(138, 23);
-            this.ButtonCancel.TabIndex = 12;
+            this.ButtonCancel.TabIndex = 1;
             this.ButtonCancel.Text = "Cancel";
             this.ButtonCancel.UseVisualStyleBackColor = true;
             this.ButtonCancel.Click += new System.EventHandler(this.ButtonCancel_Click);
@@ -58,7 +58,7 @@
             this.ButtonOK.Location = new System.Drawing.Point(12, 226);
             this.ButtonOK.Name = "ButtonOK";
             this.ButtonOK.Size = new System.Drawing.Size(140, 23);
-            this.ButtonOK.TabIndex = 11;
+            this.ButtonOK.TabIndex = 0;
             this.ButtonOK.Text = "OK";
             this.ButtonOK.UseVisualStyleBackColor = true;
             this.ButtonOK.Click += new System.EventHandler(this.ButtonOK_Click);
@@ -72,7 +72,7 @@
             this.listBox1.Location = new System.Drawing.Point(13, 13);
             this.listBox1.Name = "listBox1";
             this.listBox1.Size = new System.Drawing.Size(254, 199);
-            this.listBox1.TabIndex = 13;
+            this.listBox1.TabIndex = 2;
             this.listBox1.SelectedIndexChanged += new System.EventHandler(this.listBox1_SelectedIndexChanged);
             this.listBox1.DoubleClick += new System.EventHandler(this.ButtonEdit_Click);
             // 
@@ -84,7 +84,7 @@
             this.ButtonDelete.Location = new System.Drawing.Point(273, 42);
             this.ButtonDelete.Name = "ButtonDelete";
             this.ButtonDelete.Size = new System.Drawing.Size(23, 23);
-            this.ButtonDelete.TabIndex = 15;
+            this.ButtonDelete.TabIndex = 4;
             this.ButtonDelete.UseVisualStyleBackColor = true;
             this.ButtonDelete.Click += new System.EventHandler(this.ButtonDelete_Click);
             // 
@@ -95,7 +95,7 @@
             this.ButtonAdd.Location = new System.Drawing.Point(273, 13);
             this.ButtonAdd.Name = "ButtonAdd";
             this.ButtonAdd.Size = new System.Drawing.Size(23, 23);
-            this.ButtonAdd.TabIndex = 14;
+            this.ButtonAdd.TabIndex = 3;
             this.ButtonAdd.UseVisualStyleBackColor = true;
             this.ButtonAdd.Click += new System.EventHandler(this.ButtonAdd_Click);
             // 
@@ -107,7 +107,7 @@
             this.ButtonEdit.Location = new System.Drawing.Point(273, 71);
             this.ButtonEdit.Name = "ButtonEdit";
             this.ButtonEdit.Size = new System.Drawing.Size(23, 23);
-            this.ButtonEdit.TabIndex = 16;
+            this.ButtonEdit.TabIndex = 5;
             this.ButtonEdit.UseVisualStyleBackColor = true;
             this.ButtonEdit.Click += new System.EventHandler(this.ButtonEdit_Click);
             // 
@@ -119,7 +119,7 @@
             this.ButtonUp.Location = new System.Drawing.Point(273, 129);
             this.ButtonUp.Name = "ButtonUp";
             this.ButtonUp.Size = new System.Drawing.Size(23, 23);
-            this.ButtonUp.TabIndex = 17;
+            this.ButtonUp.TabIndex = 7;
             this.ButtonUp.UseVisualStyleBackColor = true;
             this.ButtonUp.Click += new System.EventHandler(this.ButtonUp_Click);
             // 
@@ -131,7 +131,7 @@
             this.ButtonDown.Location = new System.Drawing.Point(273, 158);
             this.ButtonDown.Name = "ButtonDown";
             this.ButtonDown.Size = new System.Drawing.Size(23, 23);
-            this.ButtonDown.TabIndex = 18;
+            this.ButtonDown.TabIndex = 8;
             this.ButtonDown.UseVisualStyleBackColor = true;
             this.ButtonDown.Click += new System.EventHandler(this.ButtonDown_Click);
             // 
@@ -143,7 +143,7 @@
             this.ButtonClone.Location = new System.Drawing.Point(273, 100);
             this.ButtonClone.Name = "ButtonClone";
             this.ButtonClone.Size = new System.Drawing.Size(23, 23);
-            this.ButtonClone.TabIndex = 19;
+            this.ButtonClone.TabIndex = 6;
             this.ButtonClone.UseVisualStyleBackColor = true;
             this.ButtonClone.Click += new System.EventHandler(this.ButtonClone_Click);
             // 

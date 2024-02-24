@@ -32,18 +32,31 @@ namespace MLLE
             //todo AGA files I guess
         };
 
-        HashSet<string> fileNamesToInclude = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase); //filenames only, to prevent duplicate files from getting included
-        HashSet<string> fileNamesThatHaveBeenProcessedAsLevelsOrScripts = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase); //what it says
-        List<string> filePathsToInclude = new List<string>(); //full paths, for when creating the final ZIP
+        class TFilenameOnlyComparer : StringComparer {
+            public override int Compare(string x, string y) {
+                return StringComparer.InvariantCultureIgnoreCase.Compare(Path.GetFileName(x), Path.GetFileName(y));
+            }
+            public override bool Equals(string x, string y) {
+                return StringComparer.InvariantCultureIgnoreCase.Equals(Path.GetFileName(x), Path.GetFileName(y));
+            }
+            public override int GetHashCode(string obj) {
+                return StringComparer.InvariantCultureIgnoreCase.GetHashCode(Path.GetFileName(obj));
+            }
+        }
+        static TFilenameOnlyComparer FilenameOnlyComparer = new TFilenameOnlyComparer();
+
+        HashSet<string> fileNamesThatHaveBeenProcessedAsLevelsOrScripts = new HashSet<string>(FilenameOnlyComparer); //what it says
+        HashSet<string> filePathsToInclude = new HashSet<string>(FilenameOnlyComparer); //full paths, for when creating the final ZIP
         DialogResult addFilepath (ref string newFilepath) { //this doesn't care about file extension at all
-            string newFilename = Path.GetFileName(newFilepath);
-            string quotedFilename = '"' + newFilename + '"';
-            if (fileNamesToInclude.Contains(newFilename)) //test only the filename, not the directory
+            string quotedFilename = '"' + Path.GetFileName(newFilepath) + '"';
+            string filenameSeenBefore;
+            if (filePathsToInclude.TryGetValue(newFilepath, out filenameSeenBefore)) //test only the filename, not the directory
             {
+                newFilepath = filenameSeenBefore;
                 textBox1.AppendText(Environment.NewLine + "Duplicate filename " + quotedFilename);
                 return DialogResult.No;
             }
-            else if (checkboxExcludeDefault.Checked && DefaultFilenames.Contains(newFilename, StringComparer.InvariantCultureIgnoreCase))
+            else if (checkboxExcludeDefault.Checked && DefaultFilenames.Contains(newFilepath, FilenameOnlyComparer))
             {
                 textBox1.AppendText(Environment.NewLine + "Official filename " + quotedFilename);
                 return DialogResult.No;
@@ -64,7 +77,7 @@ namespace MLLE
                                     alternateFileOpenDialog.FileName = newFilepath;
                                     if (alternateFileOpenDialog.ShowDialog() == DialogResult.OK)
                                     {
-                                        if (StringComparer.InvariantCultureIgnoreCase.Compare(Path.GetFileName(alternateFileOpenDialog.FileName), newFilename) != 0) //different filename than the original
+                                        if (FilenameOnlyComparer.Compare(alternateFileOpenDialog.FileName, newFilepath) != 0) //different filename than the original
                                         {
                                             switch (MessageBox.Show("Warning: a file with the filename " + quotedFilename + " was expected, but you found a file with the filename \"" + Path.GetFileName(alternateFileOpenDialog.FileName) + "\". Is this okay (Yes), or would you like to try again (No)?", "Different Filename", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning))
                                             {
@@ -88,7 +101,7 @@ namespace MLLE
                                 break;
                             case DialogResult.No:
                                 lblCouldNotFind:
-                                fileNamesToInclude.Add(newFilename); //so this one doesn't get asked about again
+                                filePathsToInclude.Add(newFilepath); //so this one doesn't get asked about again
                                 textBox1.AppendText(Environment.NewLine + "Could not find " + quotedFilename + ", skipping");
                                 return DialogResult.No;
                             case DialogResult.Cancel:
@@ -103,7 +116,6 @@ namespace MLLE
                     }
                 }
                 filePathsToInclude.Add(newFilepath);
-                fileNamesToInclude.Add(newFilename);
                 textBox1.AppendText(Environment.NewLine + "Found " + quotedFilename);
 
                 if (checkBoxMLLESet.Checked && Path.GetExtension(newFilepath).Equals('.' + tilesetExtension, StringComparison.InvariantCultureIgnoreCase))
@@ -118,11 +130,10 @@ namespace MLLE
         private DialogResult extendedAddFilepath(ref string newFilepath) //for scripts or levels
         {
             DialogResult result = addFilepath(ref newFilepath);
-            string newFilename = Path.GetFileName(newFilepath);
-            if (result == DialogResult.No && File.Exists(newFilepath) && !fileNamesThatHaveBeenProcessedAsLevelsOrScripts.Contains(newFilename)) //hasn't been processed yet
+            if (result == DialogResult.No && File.Exists(newFilepath) && !fileNamesThatHaveBeenProcessedAsLevelsOrScripts.Contains(newFilepath)) //hasn't been processed yet
                 result = DialogResult.Yes;
             if (result == DialogResult.Yes)
-                fileNamesThatHaveBeenProcessedAsLevelsOrScripts.Add(newFilename);
+                fileNamesThatHaveBeenProcessedAsLevelsOrScripts.Add(newFilepath);
             return result;
         }
         private void OKButton_Click(object sender, EventArgs e)
@@ -207,6 +218,7 @@ namespace MLLE
                                     case DialogResult.Cancel:
                                         return;
                                 }
+                                textBox1.AppendText(Environment.NewLine + "Reading script \"" + scriptFilepath + '"');
                                 var fileContents = System.IO.File.ReadAllText(scriptFilepath, J2LFile.FileEncoding);
                                 foreach (System.Text.RegularExpressions.Match match in System.Text.RegularExpressions.Regex.Matches(fileContents, "#include\\s+(['\"])(.+?)\\1", System.Text.RegularExpressions.RegexOptions.IgnoreCase)) { //actually I don't even know whether #include is case-insensitive   jjSampleLoad(SOUND::ORANGE_BOEMR, "expmine.wav");
                                     scriptFilepaths.Add(match.Groups[2].Value); //come back to this script later in the loop
@@ -231,8 +243,15 @@ namespace MLLE
                 {
                     foreach (string filepath in filePathsToInclude)
                     {
-                        textBox1.AppendText(Environment.NewLine + "Compressing " + filepath);
-                        zip.CreateEntryFromFile(filepath, Path.GetFileName(filepath));
+                        if (File.Exists(filepath))
+                        {
+                            textBox1.AppendText(Environment.NewLine + "Compressing " + filepath);
+                            zip.CreateEntryFromFile(filepath, Path.GetFileName(filepath));
+                        }
+                        else
+                        {
+                            textBox1.AppendText(Environment.NewLine + "Couldn't find " + filepath);
+                        }
                     }
                 }
 

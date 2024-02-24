@@ -27,39 +27,51 @@ namespace MLLE
         }
         private void LayerPropertiesForm_Load(object sender, EventArgs e)
         {
-            if (SourceForm.TextureTypes.Count == 0) { TextureMode.Parent = groupBox3; TextureMode.Location = new Point(TileHeight.Location.X, LimitVisibleRegion.Location.Y); ClientSize = new Size(ClientSize.Width, ClientSize.Height - (groupBox4.Bottom - groupBox3.Bottom)); }
+            int heightBetweenRows = 26;
+            if (SourceForm.TextureTypes.Count == 0)
+            {
+                TextureMode.Parent = groupBox3;
+                TextureMode.Location = new Point(TileHeight.Location.X, LimitVisibleRegion.Location.Y);
+                groupBox4.Hide();
+                groupBox4.Height = 0;
+            }
             else if (SourceForm.TextureTypes.Count == 1)
             {
                 TextureModeSelect.Visible = false;
-                foreach (Control foo in new Control[] { Param1, Param2, Param3, RedLabel, GreenLabel, BlueLabel, Stars, ColorBox, ColorLabel })
-                { foo.Location = new Point(foo.Location.X, foo.Location.Y - TextureModeSelect.Height); }
-                /*Param1.Location = new Point(Param1.Location.X, Param1.Location.Y - TextureModeSelect.Height);
-                Param2.Location = new Point(Param2.Location.X, Param2.Location.Y - TextureModeSelect.Height);
-                Param3.Location = new Point(Param3.Location.X, Param3.Location.Y - TextureModeSelect.Height);
-                RedLabel.Location = new Point(RedLabel.Location.X, RedLabel.Location.Y - TextureModeSelect.Height);
-                GreenLabel.Location = new Point(GreenLabel.Location.X, GreenLabel.Location.Y - TextureModeSelect.Height);
-                BlueLabel.Location = new Point(BlueLabel.Location.X, BlueLabel.Location.Y - TextureModeSelect.Height);
-                Stars.Location = new Point(Stars.Location.X, Stars.Location.Y - TextureModeSelect.Height);
-                ColorBox.Location = new Point(ColorBox.Location.X, ColorBox.Location.Y - TextureModeSelect.Height);
-                ColorLabel.Location = new Point(ColorLabel.Location.X, ColorLabel.Location.Y - TextureModeSelect.Height);*/
-                if (SourceForm.TextureTypes[0][1] == "+")
-                {
-                    groupBox4.Height -= TextureModeSelect.Height + (Param3.Location.Y - Param1.Location.Y);
-                    Height -= TextureModeSelect.Height + (Param3.Location.Y - Param1.Location.Y);
-                }
-                else
-                {
-                    groupBox4.Height -= TextureModeSelect.Height;
-                    Height -= TextureModeSelect.Height;
-                }
+                if (SourceForm.TextureTypes[0][1] == "+") //color, not three number boxes
+                    groupBox4.Height -= heightBetweenRows;
             }
             if (!SourceForm.EnableableBools[SourceForm.J2L.VersionType][EnableableTitles.BoolDevelopingForPlus])
             {
                 groupBoxPlus.Hide();
-                var amountToShrinkWindow = groupBox3.Location.Y - groupBoxPlus.Location.Y;
-                groupBox3.Location = new Point(groupBox3.Location.X, groupBox3.Location.Y - amountToShrinkWindow);
-                groupBox4.Location = new Point(groupBox4.Location.X, groupBox4.Location.Y - amountToShrinkWindow);
-                Height -= amountToShrinkWindow;
+                groupBoxPlus.Height = 0;
+                groupBox4.Left = groupBoxPlus.Left;
+                if (TextureModeSelect.Visible)
+                {
+                    TextureModeSelect.Width += TextureModeSelect.Left - TextureSurfaceSelect.Left;
+                    TextureModeSelect.Left = TextureSurfaceSelect.Left;
+                }
+                else
+                {
+                    foreach (Control foo in new Control[] { Param1, Param2, Param3, RedLabel, GreenLabel, BlueLabel, Stars, ColorBox, ColorLabel })
+                        foo.Top -= heightBetweenRows;
+                    groupBox4.Height -= heightBetweenRows;
+                }
+                TextureSurfaceSelect.Visible = false;
+                TintColor.Visible = TintColorLabel.Visible = TextureSource.Visible = TextureSourceDraw.Visible = Fade.Visible = XFade.Visible = XFadeLabel.Visible = YFade.Visible = YFadeLabel.Visible = false;
+                foreach (Control foo in new Control[] { Param1, Param2, Param3, RedLabel, GreenLabel, BlueLabel, Stars, ColorBox, ColorLabel })
+                    foo.Top -= heightBetweenRows * 2;
+                groupBox4.Height -= heightBetweenRows * 2;
+            }
+            else //yes developing for plus
+            {
+                TextureMode.Visible = false;
+                groupBox4.Text = "Texture Mode";
+                if (!TextureModeSelect.Visible) //only if you're doing weird stuff to your ini
+                {
+                    TextureSurfaceSelect.Width += TextureModeSelect.Right - TextureSurfaceSelect.Right;
+                }
+                SpriteParamMapping.Items.AddRange(SourceForm.J2L.PlusPropertyList.NamedPalettes.Select(np => np.Name).ToArray());
             }
             TextureModeSelect.Items.Clear();
             for (ushort i = 0; i < SourceForm.TextureTypes.Count; i++) TextureModeSelect.Items.Add(SourceForm.TextureTypes[i][0].Trim());
@@ -68,9 +80,8 @@ namespace MLLE
                 ButtonApply.Hide();
                 groupBox1.Hide();
                 var amountToShrinkWindow = groupBox2.Location.Y - groupBox1.Location.Y;
-                foreach (GroupBox foo in new GroupBox[] { groupBox2, groupBox3, groupBox4, groupBoxPlus })
+                foreach (GroupBox foo in new GroupBox[] { groupBox2, groupBoxPlus })
                 { foo.Location = new Point(foo.Location.X, foo.Location.Y - amountToShrinkWindow); }
-                Height -= amountToShrinkWindow;
                 if (DataSource.id == J2LFile.SpriteLayerID || DataSource.id == 7)
                     Copy4.Hide();
                 ReadLayer(DataSource);
@@ -80,6 +91,7 @@ namespace MLLE
                 LayerSelect.Items.AddRange(SourceForm.J2L.AllLayers.ToArray());
                 LayerSelect.SelectedIndex = CurrentLayer;
             }
+            ClientSize = new Size(ClientSize.Width, Math.Max(groupBoxPlus.Bottom, groupBox4.Bottom) + (groupBoxPlus.Visible ? 62 : 12));
         }
 
         private void ReadLayer(Layer layer)
@@ -95,7 +107,8 @@ namespace MLLE
             YSpeed.Text = layer.YSpeed.ToString();
             AutoYSpeed.Text = layer.AutoYSpeed.ToString();
             LimitVisibleRegion.Checked = layer.LimitVisibleRegion;
-            TextureMode.Checked = layer.IsTextured;
+            TextureMode.Checked = layer.TextureSurface != 0;
+            TextureSurfaceSelect.SelectedIndex = layer.TextureSurface;
             Stars.Checked = layer.HasStars;
             Param1.Value = layer.TexturParam1;
             Param2.Value = layer.TexturParam2;
@@ -118,8 +131,32 @@ namespace MLLE
             Hidden.Checked = layer.Hidden;
             SpriteMode.SelectedIndex = layer.SpriteMode;
             SpriteParam.Value = layer.SpriteParam;
+            try {
+                SpriteParamMapping.SelectedIndex = layer.SpriteParam;
+            } catch {
+                //oh well
+            }
             RotationAngle.Value = layer.RotationAngle;
             RotationRadiusMultiplier.Value = layer.RotationRadiusMultiplier;
+            XSModel.SelectedIndex = layer.XSpeedModel;
+            YSModel.SelectedIndex = layer.YSpeedModel;
+            Fade.Checked = layer.Fade != 0;
+            TintColor.Value = layer.Fade;
+            XFade.Text = layer.XFade.ToString();
+            YFade.Text = layer.YFade.ToString();
+            InnerX.Text = layer.InnerX.ToString();
+            InnerY.Text = layer.InnerY.ToString();
+            InnerAutoX.Text = layer.InnerAutoX.ToString();
+            InnerAutoY.Text = layer.InnerAutoY.ToString();
+            if (layer.Texture >= 0)
+                TextureSource.SelectedIndex = layer.Texture;
+            else
+            {
+                if (TextureSource.Items.Count == 16)
+                    TextureSource.Items.Add("[Custom]");
+                TextureSource.SelectedIndex = 16;
+                Texture = layer.TextureImage;
+            }
         }
 
         private bool ApplyChanges()
@@ -127,6 +164,24 @@ namespace MLLE
             newrectangle = null;
             lock (DataSource)
             {
+                if (SourceForm.EnableableBools[SourceForm.J2L.VersionType][EnableableTitles.BoolDevelopingForPlus]) //any width/height allowed for textured layers, in principle
+                {
+                    if (TextureSurfaceSelect.SelectedIndex != 0 && TextureSource.SelectedIndex == 0)
+                    {
+                        int layerSize = (((int)WidthBox.Value + 3) & ~3) * (int)HeightBox.Value;
+                        if (layerSize < 8 * 8)
+                        {
+                            switch (MessageBox.Show("You are trying to save a textured layer using [From Tiles] as its texture image, but the layer is too small. Would you like to resize the layer to 8x8?", "Layer too small", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning))
+                            {
+                                case DialogResult.Yes:
+                                    WidthBox.Value = HeightBox.Value = 8;
+                                    break;
+                                case DialogResult.Cancel:
+                                    return false;
+                            }
+                        }
+                    }
+                }
                 if (DataSource.Width != WidthBox.Value || DataSource.Height != HeightBox.Value)
                 {
                     if (DataSource.HasTiles)
@@ -135,6 +190,10 @@ namespace MLLE
                         if (newrectangle == null) return false;
                         SourceForm.Undoable = new Stack<MLLE.Mainframe.LayerAndSpecificTiles>(SourceForm.Undoable.Where(action => action.Layer != DataSource));
                         SourceForm.Redoable = new Stack<MLLE.Mainframe.LayerAndSpecificTiles>(SourceForm.Redoable.Where(action => action.Layer != DataSource));
+                    }
+                    else
+                    {
+                        DataSource.TileMap = new ArrayMap<ushort> ((uint)WidthBox.Value, (uint)HeightBox.Value);
                     }
                 }
 
@@ -218,7 +277,7 @@ namespace MLLE
                 Single.TryParse(XOffset.Text, out DataSource.WaveX);
                 Single.TryParse(YOffset.Text, out DataSource.WaveY);
                 DataSource.LimitVisibleRegion = LimitVisibleRegion.Checked;
-                DataSource.IsTextured = TextureMode.Checked;
+                DataSource.TextureSurface = (byte)(TextureMode.Visible ? (TextureMode.Checked ? 1 : 0) : TextureSurfaceSelect.SelectedIndex);
                 DataSource.HasStars = Stars.Checked;
                 DataSource.TexturParam1 = (byte)Param1.Value;
                 DataSource.TexturParam2 = (byte)Param2.Value;
@@ -227,9 +286,23 @@ namespace MLLE
                 DataSource.Name = NameBox.Text;
                 DataSource.Hidden = Hidden.Checked;
                 DataSource.SpriteMode = (byte)SpriteMode.SelectedIndex;
-                DataSource.SpriteParam = (byte)SpriteParam.Value;
+                if (SpriteMode.SelectedIndex < 48) //not MAPPING or TRANSLUCENTMAPPING
+                    DataSource.SpriteParam = (byte)SpriteParam.Value;
+                else
+                    DataSource.SpriteParam = (byte)SpriteParamMapping.SelectedIndex;
                 DataSource.RotationAngle = (int)RotationAngle.Value;
                 DataSource.RotationRadiusMultiplier = (int)RotationRadiusMultiplier.Value;
+                DataSource.XSpeedModel = (byte)XSModel.SelectedIndex;
+                DataSource.YSpeedModel = (byte)YSModel.SelectedIndex;
+                DataSource.Fade = !(TextureModeSelect.SelectedIndex == 6 && TextureSurfaceSelect.SelectedIndex != 0) ? (byte)(Fade.Checked ? 192 : 0) : (byte)TintColor.Value;
+                Single.TryParse(XFade.Text, out DataSource.XFade);
+                Single.TryParse(YFade.Text, out DataSource.YFade);
+                Single.TryParse(InnerX.Text, out DataSource.InnerX);
+                Single.TryParse(InnerY.Text, out DataSource.InnerY);
+                Single.TryParse(InnerAutoX.Text, out DataSource.InnerAutoX);
+                Single.TryParse(InnerAutoY.Text, out DataSource.InnerAutoY);
+                DataSource.Texture = TextureSource.SelectedIndex < 16 ? (sbyte)TextureSource.SelectedIndex : (sbyte)-1;
+                DataSource.TextureImage = Texture;
                 SourceForm.LevelHasBeenModified = true;
             }
 
@@ -256,9 +329,39 @@ namespace MLLE
             {
                 if (properties.Length >= 4) { Param1.Visible = RedLabel.Visible = true; RedLabel.Text = properties[3].Trim(); }
                 if (properties.Length >= 5) { Param2.Visible = GreenLabel.Visible = true; GreenLabel.Text = properties[4].Trim(); }
-                if (properties.Length >= 6) { Param3.Visible = BlueLabel.Visible = true; BlueLabel.Text = properties[5].Trim(); }
+                if (properties.Length >= 6) {
+                    Param3.Visible = BlueLabel.Visible = true; BlueLabel.Text = properties[5].Trim();
+                    if (TextureModeSelect.SelectedIndex != 4)
+                    {
+                        Param3.Minimum = 0;
+                        Param3.Maximum = 255;
+                    }
+                    else
+                    {
+                        Param3.Minimum = -128;
+                        Param3.Maximum = 127;
+                    }
+                }
                 ColorLabel.Visible = ColorBox.Visible = false;
             }
+
+            if (TextureSurfaceSelect.Visible)
+            {
+                Fade.Visible = (TextureModeSelect.SelectedIndex <= 1 || TextureModeSelect.SelectedIndex == 5); //warp horizon, tunnel, cylinder
+                Fade.Enabled = TextureMode.Checked && Fade.Visible;
+                TintColor.Visible = TintColorLabel.Visible = TextureMode.Checked && TextureModeSelect.SelectedIndex == 6; //reflection
+                TintColor.Enabled = TextureMode.Checked && TintColor.Visible;
+            }
+            TextureSource.Enabled = TextureMode.Checked && TextureModeSelect.SelectedIndex != 2;
+            TextureSourceDraw.Enabled = TextureSource.Enabled && SourceForm.J2L.HasTiles;
+            SpriteMode.Enabled = !TextureMode.Checked || TextureModeSelect.SelectedIndex != 6;
+            string fadeSuffix = "Fade";
+            if (TextureModeSelect.SelectedIndex == 2 || TextureModeSelect.SelectedIndex == 3)
+                fadeSuffix = "Pivot";
+            else if (TextureModeSelect.SelectedIndex == 4)
+                fadeSuffix = "Amplitude";
+            XFadeLabel.Text = "X-" + fadeSuffix;
+            YFadeLabel.Text = (TextureModeSelect.SelectedIndex != 6) ? "Y-" + fadeSuffix : "Top";
             GenericInputChanged(sender, e);
         }
 
@@ -281,7 +384,7 @@ namespace MLLE
             ReadLayer(DataSource = SourceForm.J2L.AllLayers[CurrentLayer]);
             TileWidth.Enabled = TileHeight.Enabled = (
                 (
-                    XOffset.Enabled = YOffset.Enabled = groupBox2.Enabled = TextureMode.Enabled = (DataSource.id != J2LFile.SpriteLayerID)
+                    XSModel.Enabled = YSModel.Enabled = XOffset.Enabled = YOffset.Enabled = TextureMode.Enabled = groupBox2.Enabled = groupBox4.Enabled = (DataSource.id != J2LFile.SpriteLayerID)
                 ) ||
                 SourceForm.EnableableBools[SourceForm.J2L.VersionType][EnableableTitles.BoolDevelopingForPlus]
             );
@@ -291,10 +394,28 @@ namespace MLLE
 
         private void TextureMode_CheckedChanged(object sender, EventArgs e)
         {
-            TextureModeSelect.Enabled = Stars.Enabled = ColorBox.Enabled = ColorLabel.Enabled = Param1.Enabled = Param2.Enabled = Param3.Enabled = RedLabel.Enabled = GreenLabel.Enabled = BlueLabel.Enabled = TextureMode.Checked;
-            WidthBox.Enabled = HeightBox.Enabled = WidthLabel.Enabled = HeightLabel.Enabled = !TextureMode.Checked;
-            if (TextureMode.Checked) WidthBox.Value = HeightBox.Value = 8;
-            else { WidthBox.Value = DataSource.Width; HeightBox.Value = DataSource.Height; }
+            XFade.Enabled = YFade.Enabled = XFadeLabel.Enabled = YFadeLabel.Enabled = TextureModeSelect.Enabled = Stars.Enabled = ColorBox.Enabled = ColorLabel.Enabled = Param1.Enabled = Param2.Enabled = Param3.Enabled = RedLabel.Enabled = GreenLabel.Enabled = BlueLabel.Enabled = TextureMode.Checked;
+            TextureSource.Enabled = TextureMode.Checked && TextureModeSelect.SelectedIndex != 2;
+            TextureSourceDraw.Enabled = TextureSource.Enabled && SourceForm.J2L.HasTiles;
+            if (TextureSurfaceSelect.Visible)
+            {
+                Fade.Visible = (TextureModeSelect.SelectedIndex <= 1 || TextureModeSelect.SelectedIndex == 5); //warp horizon, tunnel, cylinder
+                Fade.Enabled = TextureMode.Checked && Fade.Visible;
+                TintColor.Visible = TintColorLabel.Visible = TextureMode.Checked && TextureModeSelect.SelectedIndex == 6; //reflection
+                TintColor.Enabled = TextureMode.Checked && TintColor.Visible;
+            }
+            SpriteMode.Enabled = !TextureMode.Checked || TextureModeSelect.SelectedIndex != 6;
+            if (!SourceForm.EnableableBools[SourceForm.J2L.VersionType][EnableableTitles.BoolDevelopingForPlus])
+            {
+                if (TextureMode.Checked) {
+                    WidthBox.Value = HeightBox.Value = 8;
+                    WidthBox.Enabled = HeightBox.Enabled = WidthLabel.Enabled = HeightLabel.Enabled = false;
+                } else {
+                    WidthBox.Value = DataSource.Width;
+                    HeightBox.Value = DataSource.Height;
+                    WidthBox.Enabled = HeightBox.Enabled = WidthLabel.Enabled = HeightLabel.Enabled = true;
+                }
+            } //else, in a JJ2+ level, the texture might take its image from plus.j2d or a pixelmap, so the layer size no longer needs to be 8x8 (or otherwise 64+ tiles)
             TileHeight_CheckedChanged(sender, e);
         }
         private void TileHeight_CheckedChanged(object sender, EventArgs e) {
@@ -327,6 +448,108 @@ namespace MLLE
                 LayerSelect.Items[LayerSelect.SelectedIndex] = SourceForm.J2L.AllLayers[LayerSelect.SelectedIndex].ToString();
                 ButtonApply.Enabled = false;
             }
+        }
+
+        private void TextureSurfaceSelect_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            TextureMode.Checked = TextureSurfaceSelect.SelectedIndex != 0;
+            groupBoxInner.Visible = TextureSurfaceSelect.SelectedIndex == 3 || TextureSurfaceSelect.SelectedIndex == 4;
+            SpriteMode.Enabled = !TextureMode.Checked || TextureModeSelect.SelectedIndex != 6;
+            GenericInputChanged(sender, e);
+        }
+
+        private void TextureSource_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (TextureSource.SelectedIndex < 16)
+                while (TextureSource.Items.Count > 16) //includes [Custom]
+                    TextureSource.Items.RemoveAt(16);
+            GenericInputChanged(sender, e);
+        }
+
+        byte[] Texture = null;
+        private static readonly Bitmap[] TextureImages = { Properties.Resources._1_normal, Properties.Resources._2_psych, Properties.Resources._3_medivo, Properties.Resources._4_diamb, Properties.Resources._5_wisetyness, Properties.Resources._6_blade, Properties.Resources._7_mez02, Properties.Resources._8_windstormfortress, Properties.Resources._9_raneforusv, Properties.Resources._10_corruptedsanctuary, Properties.Resources._11_xargon, Properties.Resources._12_tubelectric, Properties.Resources._13_wtf, Properties.Resources._14_muckamoknight, Properties.Resources._15_desolation };
+        private void TextureSourceDraw_Click(object sender, EventArgs e)
+        {
+            if (!SourceForm.J2L.HasTiles)
+                return; //no palette, can't do any editing
+            byte[] texture;
+            if (TextureSource.SelectedIndex == 0) //from tiles
+            {
+                texture = new byte[256 * 256];
+                if (DataSource.Width * DataSource.Height >= 8*8)
+                {
+                    for (int i = 0; i < 8 * 8; ++i)
+                    {
+                        uint tileID = DataSource.TileMap[i % DataSource.Width, i / DataSource.Width];
+                        if (tileID < SourceForm.J2L.TileCount)
+                        {
+                            byte[] tileImageAsBytes = SourceForm.J2L.PlusPropertyList.TileImages[tileID];
+                            if (tileImageAsBytes == null)
+                            {
+                                J2TFile J2T;
+                                uint tileInTilesetID = SourceForm.J2L.getTileInTilesetID(tileID, out J2T);
+                                tileImageAsBytes = J2T.Images[J2T.ImageAddress[tileInTilesetID]];
+                                if (J2T.ColorRemapping != null)
+                                    tileImageAsBytes = tileImageAsBytes.Select(c => J2T.ColorRemapping[c]).ToArray();
+                            }
+                            int firstResultByteIndex = (i & 7) * 32 + (i / 8) * 32 * 256;
+                            for (int b = 0; b < 32 * 32; ++b)
+                                texture[firstResultByteIndex + (b & 31) + (b >> 5) * 256] = tileImageAsBytes[b];
+                        }
+                    }
+                }
+            }
+            else if (TextureSource.SelectedIndex >= 16) //custom
+            {
+                texture = DataSource.TextureImage.Clone() as byte[];
+            }
+            else
+            {
+                texture = BitmapStuff.BitmapToByteArray(TextureImages[TextureSource.SelectedIndex - 1]);
+            }
+            if (new TileImageEditorForm().ShowForm(
+                ref texture,
+                texture,
+                SourceForm.J2L.Palette
+            ))
+            {
+                if (TextureSource.Items.Count == 16)
+                    TextureSource.Items.Add("[Custom]");
+                TextureSource.SelectedIndex = 16;
+                Texture = texture;
+                GenericInputChanged(sender, e);
+            }
+        }
+
+        private void SetSpeedNames(int selectedIndex, Label normalL, TextBox normal, Label autoL, TextBox auto, char prefix, string start, string end)
+        {
+            normalL.Enabled = normal.Enabled = autoL.Enabled = auto.Enabled = selectedIndex != 4; //not Fit Level
+            if (selectedIndex != 5) //not Speed Multipliers
+            {
+                normalL.Text = prefix + "-Speed";
+                autoL.Text = "Auto " + prefix + "-Speed";
+            }
+            else
+            {
+                normalL.Text = start;
+                autoL.Text = end;
+            }
+            GenericInputChanged(null, null);
+        }
+        private void YSModel_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            LimitVisibleRegion.Enabled = (YSModel.SelectedIndex == 0 || YSModel.SelectedIndex == 2) && DataSource.id != J2LFile.SpriteLayerID; //either Normal or Both Speeds
+            SetSpeedNames(YSModel.SelectedIndex, YLabel, YSpeed, AutoYLabel, AutoYSpeed, 'Y', "Top Pos", "Bottom Pos");
+        }
+        private void XSModel_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            SetSpeedNames(XSModel.SelectedIndex, XLabel, XSpeed, AutoXLabel, AutoXSpeed, 'X', "Left Pos", "Right Pos");
+        }
+
+        private void SpriteMode_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            GenericInputChanged(sender, e);
+            SpriteParam.Visible = !(SpriteParamMapping.Visible = (SpriteMode.SelectedIndex >= 48)); //48 and 49 = MAPPING and TRANSLUCENTMAPPING
         }
     }
 }

@@ -12,7 +12,7 @@ using Extra.Collections;
 
 public enum Version { JJ2, TSF, O, GorH, BC, AGA, AmbiguousBCO, Plus };
 public enum VersionChangeResults { Success, TilesetTooBig, TooManyAnimatedTiles, UnsupportedConversion };
-public enum SavingResults { Success, UndefinedTiles, NoTilesetSelected, TilesetIsDifferentVersion, Error };
+public enum SavingResults { Success, UndefinedTiles, NoTilesetSelected, TilesetIsDifferentVersion, NoExtraPalettes, Error };
 public enum OpeningResults { Success, SuccessfulButAmbiguous, PasswordNeeded, WrongPassword, UnexpectedFourCC, IncorrectEncoding, SecurityEnvelopeDamaged, Error };
 public enum InsertFrameResults { Success, Full, StackOverflow };
 public enum BuildResults { Success, DifferentDimensions, BadDimensions, ImageWrongFormat, Image32WrongFormat, MaskWrongFormat, TooBigForVersion, MaskNeedsPaletteFor32BitImages, VersionDoesNotSupport32BitImage };
@@ -156,7 +156,7 @@ partial class J2TFile : J2File
     {
         FilenameOnly = Path.GetFileName(FullFilePath = filename);
         Encoding encoding = FileEncoding;
-        using (BinaryReader binreader = new BinaryReader(File.Open(filename, FileMode.Open, FileAccess.Read), encoding))
+        using (BinaryReader binreader = new BinaryReader(File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read), encoding))
         {
             #region header
             Header = (binreader.PeekChar() == 32) ? new string(binreader.ReadChars(180)) : "";
@@ -899,12 +899,11 @@ class Layer
     public bool TileWidth;
     public bool TileHeight;
     public bool LimitVisibleRegion;
-    public bool IsTextured;
     public bool HasStars;
     public byte unknown1;
     public bool HasTiles
     {
-        get { return id == J2LFile.SpriteLayerID || TileMap.Count != 0; }
+        get { return id == J2LFile.SpriteLayerID || TextureSurface > 1 || TileMap.Count != 0; }
     }
     public bool isDefault { get { return id >= 0; } }
 
@@ -928,6 +927,12 @@ class Layer
     public bool Hidden;
     public byte SpriteMode, SpriteParam;
     public int RotationAngle, RotationRadiusMultiplier;
+    public byte XSpeedModel, YSpeedModel;
+    public byte TextureSurface;
+    public byte Fade;
+    public float XFade, YFade, InnerX, InnerY, InnerAutoX, InnerAutoY;
+    public sbyte Texture;
+    public byte[] TextureImage;
 
     public ArrayMap<ushort> TileMap;
 
@@ -940,18 +945,21 @@ class Layer
         {
             //HasTiles = (raw & 4) == 4; //not needed since maintained with TileMap.Count
             LimitVisibleRegion = (raw & 8) == 8;
-            IsTextured = (raw & 16) == 16;
+            TextureSurface = (byte)((raw & 16) == 16 ? 1 : 0);
         }
         else
         {
             LimitVisibleRegion = (raw & 4) == 4;
-            IsTextured = (raw & 8) == 8;
+            TextureSurface = (byte)((raw & 8) == 8 ? 1 : 0);
             HasStars = (raw & 16) == 16;
         }
 
         Name = DefaultNames[i];
         RotationAngle = DefaultRotationAngles[i];
         RotationRadiusMultiplier = DefaultRotationRadiusMultipliers[i];
+        Fade = 192;
+        XFade = YFade = 0.5f;
+        XSpeedModel = YSpeedModel = (byte)((i == 7) ? 1 : 0);
     }
 
     public Layer(Layer other)
@@ -960,7 +968,7 @@ class Layer
         TileWidth = other.TileWidth;
         TileHeight = other.TileHeight;
         LimitVisibleRegion = other.LimitVisibleRegion;
-        IsTextured = other.IsTextured;
+        TextureSurface = other.TextureSurface;
         HasStars = other.HasStars;
         unknown1 = other.unknown1;
         Width = other.Width;
@@ -985,6 +993,27 @@ class Layer
         SpriteParam = other.SpriteParam;
         RotationAngle = other.RotationAngle;
         RotationRadiusMultiplier = other.RotationRadiusMultiplier;
+        if (other.id == 7 && other.XSpeedModel == 1 && other.YSpeedModel == 1) //layer 8 using "Layer 8" models
+        {
+            XSpeedModel = YSpeedModel = 0; //"Normal" instead. This is how JJ2+'s jjLAYER constructor does it, might as well follow suit.
+        }
+        else
+        {
+            XSpeedModel = other.XSpeedModel;
+            YSpeedModel = other.YSpeedModel;
+        }
+        Fade = other.Fade;
+        XFade = other.XFade;
+        YFade = other.YFade;
+        InnerX = other.InnerX;
+        InnerY = other.InnerY;
+        InnerAutoX = other.InnerAutoX;
+        InnerAutoY = other.InnerAutoY;
+        Texture = other.Texture;
+        if (Texture >= 0)
+            TextureImage = null;
+        else
+            TextureImage = other.TextureImage.Clone() as byte[];
 
         TileMap = new ArrayMap<ushort>(Width, Height);
         for (ushort x = 0; x < Width; x++)
@@ -1013,11 +1042,16 @@ class Layer
         AutoXSpeed = AutoYSpeed = 0;
 
         TileWidth = TileHeight = (i == 7);
-        LimitVisibleRegion = IsTextured = HasStars = false;
+        LimitVisibleRegion = HasStars = false;
 
         Name = DefaultNames[i];
         RotationAngle = DefaultRotationAngles[i];
         RotationRadiusMultiplier = DefaultRotationRadiusMultipliers[i];
+
+        XSpeedModel = YSpeedModel = (byte)((i == 7) ? 1 : 0);
+        TextureSurface = 0;
+        Fade = 192;
+        XFade = YFade = 0.5f;
 
         TileMap = new ArrayMap<ushort>(Width, Height);
     }
@@ -1028,11 +1062,17 @@ class Layer
         Name = "New Layer";
         id = -1;
         TileMap = new ArrayMap<ushort>(Width, Height);
+        Fade = 192;
+        XFade = YFade = 0.5f;
     }
 
     public uint GetSize()
     {
         return (RealWidth+3)/4*4 * Height;
+    }
+    public Size GetSizeTimes32()
+    {
+        return new Size((int)Width * 32, (int)Height * 32);
     }
     /*public ushort GetTileAt(int x, int y)
     {
@@ -1056,37 +1096,84 @@ class Layer
         yOrigin = -32 - (upperLeftY % 32);
         upperLeftY /= 32;
     }
-    public void GetFixedCornerOriginNumbers(int xPosition, int yPosition, int widthReduced, int heightReduced, ref int xOrigin, ref int yOrigin, ref int upperLeftX, ref int upperLeftY, byte tileSize, bool applyWaveAsOffsets, bool useLayer8Speeds)
+    public void GetFixedCornerOriginNumbers(Point position, Size viewport, Size levelSize, ref Point origin, ref Point upperLeft, byte tileSize, bool applyWaveAsOffsets)
     {
-        /*if (id == 7)
+        switch (XSpeedModel) //JJ2+ v5.10 stuff
         {
-            upperLeftX = -tileSize;
-            upperLeftY = -tileSize - (LimitVisibleRegion ? heightReduced * 2 : 0);
+            case 1: //layer 8
+                upperLeft.X = 0;
+                break;
+            case 3: //from start
+                upperLeft.X = (int)Math.Floor(XSpeed * position.X);
+                break;
+            case 4: //fit level
+                {
+                    int layerWidth = (int)Width * 32;
+                    if (layerWidth == levelSize.Width)
+                        upperLeft.X = 0;
+                    else
+                        upperLeft.X = position.X * (layerWidth - viewport.Width) / (levelSize.Width - viewport.Width);
+                }
+                break;
+            case 5: //speed multipliers
+                if (levelSize.Width == viewport.Width)
+                    upperLeft.X = -(int)(XSpeed * viewport.Width);
+                else
+                    upperLeft.X = -(int)((XSpeed + position.X * (AutoXSpeed - XSpeed) / (levelSize.Width - viewport.Width)) * viewport.Width);
+                break;
+            case 0: //normal
+            case 2: //both speeds... treat the same as "normal," because MLLE isn't going to display autospeeds for you
+            default:
+                {
+                    int widthReduced = (viewport.Width - 320) / 2;
+                    upperLeft.X = (int)Math.Floor(XSpeed * (position.X + widthReduced)) - widthReduced;
+                    break;
+                }
         }
-        else
+        switch (YSpeedModel)
         {
-            upperLeftX = (int)Math.Floor(xPosition * XSpeed) - tileSize;
-            upperLeftY = (int)(yPosition * YSpeed - (LimitVisibleRegion ? heightReduced * 2 : 0)) - tileSize;
-        }*/
-        if (id == 7 && !useLayer8Speeds)
-        {
-            upperLeftX = -32;
-            upperLeftY = -32;
+            case 1: //layer 8
+                upperLeft.Y = 0;
+                break;
+            case 3: //from start
+                upperLeft.Y = (int)Math.Floor(YSpeed * position.Y);
+                break;
+            case 4: //fit level
+                {
+                    int layerHeight = (int)Height * 32;
+                    if (layerHeight == levelSize.Height)
+                        upperLeft.Y = 0;
+                    else
+                        upperLeft.Y = position.Y * (layerHeight - viewport.Height) / (levelSize.Height - viewport.Height);
+                }
+                break;
+            case 5: //speed multipliers
+                if (levelSize.Height == viewport.Height)
+                    upperLeft.Y = -(int)(YSpeed * viewport.Height);
+                else
+                    upperLeft.Y = -(int)((YSpeed + position.Y * (AutoYSpeed - YSpeed) / (levelSize.Height - viewport.Height)) * viewport.Height);
+                break;
+            case 0: //normal
+            case 2: //both speeds... treat the same as "normal," because MLLE isn't going to display autospeeds for you
+            default:
+                {
+                    int heightReduced = (viewport.Height - 200) / 2;
+                    upperLeft.Y = (int)Math.Floor(YSpeed * (position.Y + heightReduced)) - ((LimitVisibleRegion && !TileHeight) ? heightReduced * 2 : heightReduced);
+                    break;
+                }
         }
-        else
-        {
-            upperLeftX = (int)Math.Floor(xPosition * XSpeed - widthReduced) - tileSize;
-            upperLeftY = (int)(yPosition * YSpeed - ((LimitVisibleRegion && !TileHeight) ? heightReduced * 2 : heightReduced)) - tileSize;
-        }
+
         if (applyWaveAsOffsets)
         {
-            upperLeftX += (int)(WaveX * tileSize / 32);
-            upperLeftY += (int)(WaveY * tileSize / 32);
+            upperLeft.X += (int)WaveX;// (int)(WaveX * tileSize / 32);
+            upperLeft.Y += (int)WaveY;// (int)(WaveY * tileSize / 32);
         }
-        xOrigin = -tileSize - (upperLeftX % tileSize);
-        upperLeftX /= tileSize;
-        yOrigin = -tileSize - (upperLeftY % tileSize);
-        upperLeftY /= tileSize;
+        upperLeft.X -= tileSize;
+        origin.X = -tileSize - (upperLeft.X % tileSize);
+        upperLeft.X /= tileSize;
+        upperLeft.Y -= tileSize;
+        origin.Y = -tileSize - (upperLeft.Y % tileSize);
+        upperLeft.Y /= tileSize;
     }
 
     internal bool PlusOnly
@@ -1102,6 +1189,29 @@ class Layer
             if (RotationAngle != DefaultRotationAngles[id] || RotationRadiusMultiplier != DefaultRotationRadiusMultipliers[id])
                 return true;
             if (Name != DefaultNames[id])
+                return true;
+            int defaultSpeedModel = (id != 7) ? 0 : 1;
+            if (XSpeedModel != defaultSpeedModel || YSpeedModel != defaultSpeedModel)
+                return true;
+            if (TextureSurface != 0) { //in vanilla this is a bool
+                if (TextureMode == 0) //warp horizon
+                {
+                    if (TextureSurface != 1) //not Legacy
+                        return true;
+                }
+                else //anything other than warp horizon
+                {
+                    if (TextureSurface != 2) //not Full Screen
+                        return true;
+                }
+            }
+            if (Fade != 192)
+                return true;
+            if (XFade != 0.5f || YFade != 0.5f)
+                return true;
+            if (InnerX != 0 || InnerY != 0 || InnerAutoX != 0 || InnerAutoY != 0)
+                return true;
+            if (Texture != 0)
                 return true;
             return false;
         }
@@ -1369,6 +1479,8 @@ class J2LFile : J2File
         {
             if (Tilesets.Count > 1 || !AllLayers.SequenceEqual(DefaultLayers) || PlusPropertyList.LevelNeedsData5)
                 return true;
+            if (DefaultLayers.FirstOrDefault(layer => layer.PlusOnly) != null)
+                return true;
             return false;
         }
     }
@@ -1450,7 +1562,7 @@ class J2LFile : J2File
     public OpeningResults OpenLevel(string filename, ref byte[] Data5, string password = null, Dictionary<Version, string> defaultDirectories = null, Encoding encoding = null, uint? SecurityStringOverride = null, bool onlyInterestedInData1 = false)
     {
         encoding = encoding ?? FileEncoding;
-        using (BinaryReader binreader = new BinaryReader(File.Open(filename, FileMode.Open, FileAccess.Read), encoding))
+        using (BinaryReader binreader = new BinaryReader(File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read), encoding))
         {
             FilenameOnly = Path.GetFileName(FullFilePath = filename);
             bool[] hasTiles = new bool[DefaultLayers.Length]; //only needed for loading; Layer has its own read-only HasTiles
@@ -1592,7 +1704,12 @@ class J2LFile : J2File
                     foreach (Layer layer in DefaultLayers) layer.YSpeed = data1reader.ReadInt32() / 65536.0F;
                     foreach (Layer layer in DefaultLayers) layer.AutoXSpeed = data1reader.ReadInt32() / 65536.0F;
                     foreach (Layer layer in DefaultLayers) layer.AutoYSpeed = data1reader.ReadInt32() / 65536.0F;
-                    foreach (Layer layer in DefaultLayers) layer.TextureMode = data1reader.ReadByte();
+                    foreach (Layer layer in DefaultLayers)
+                    {
+                        layer.TextureMode = data1reader.ReadByte();
+                        if (layer.TextureMode != 0 && layer.TextureSurface == 1) //legacy but not warp horizon
+                            layer.TextureSurface = 2; //full screen instead of legacy
+                    }
                     foreach (Layer layer in DefaultLayers) { layer.TexturParam1 = data1reader.ReadByte(); layer.TexturParam2 = data1reader.ReadByte(); layer.TexturParam3 = data1reader.ReadByte(); }
                     AnimOffset = data1reader.ReadUInt16();
                     for (ushort i = 0; i < MaxTiles; i++) EventTiles[i] = data1reader.ReadUInt32();
@@ -1602,7 +1719,11 @@ class J2LFile : J2File
                     //Console.WriteLine("break");
                     for (ushort i = 0; i < MaxTiles; i++) IsEachTileUsed[i] = data1reader.ReadBoolean();
                     //for (ushort i = 0; i < MaxTiles; i++) if (unknownsection3[i] != 0) Console.WriteLine(i.ToString() + ": " + unknownsection3[i].ToString());
-                    if (VersionNumber == 256) AGA_unknownsection = data1reader.ReadBytes(32768); //wtf??
+                    if (VersionNumber == 256)
+                    {
+                        AGA_unknownsection = data1reader.ReadBytes(32768); //wtf??
+                        DefaultLayers[7].XSpeedModel = DefaultLayers[7].YSpeedModel = 0; //AGA levels don't give layer 8 special speed treatment
+                    }
                     //for (int i = 0; i < 32768; i++) Console.Write(AGA_unknownsection[i]);
                     Animations = new AnimatedTile[256];
                     for (ushort i = 0; i < 256; i++)
@@ -1934,6 +2055,8 @@ class J2LFile : J2File
 
         for (int i = 0; i < DefaultLayers.Length; i++)
             DefaultLayers[i] = new Layer(i);
+        if (VersionType == Version.AGA)
+            DefaultLayers[7].XSpeedModel = DefaultLayers[7].YSpeedModel = 0; //AGA levels don't give layer 8 special speed treatment
         AllLayers = new List<Layer>(DefaultLayers);
 
         unknownsection = new byte[64];
@@ -1986,8 +2109,8 @@ class J2LFile : J2File
             }
         }
     }
-    public SavingResults Save(bool eraseUndefinedTiles = false, bool allowDifferentTilesetVersion = false, byte[] Data5 = null) { return Save(FullFilePath, eraseUndefinedTiles, allowDifferentTilesetVersion, false, Data5); }
-    public SavingResults Save(string filename, bool eraseUndefinedTiles = false, bool allowDifferentTilesetVersion = false, bool storeGivenFilename = true, byte[] Data5 = null)
+    public SavingResults Save(bool eraseUndefinedTiles = false, bool allowDifferentTilesetVersion = false, bool removeImpossibleMappingSpriteModes = false, byte[] Data5 = null) { return Save(FullFilePath, eraseUndefinedTiles, allowDifferentTilesetVersion, false, removeImpossibleMappingSpriteModes, Data5); }
+    public SavingResults Save(string filename, bool eraseUndefinedTiles = false, bool allowDifferentTilesetVersion = false, bool storeGivenFilename = true, bool removeImpossibleMappingSpriteModes = false, byte[] Data5 = null)
     {
         if (!HasTiles)
         {
@@ -2001,6 +2124,14 @@ class J2LFile : J2File
         {
             /*first non-Open/New reference to DefaultLayers in this file*/ foreach (Layer CurrentLayer in DefaultLayers) foreach (ushort tile in CurrentLayer.TileMap) if (IsAnUndefinedTile(tile)) return SavingResults.UndefinedTiles;
             for (ushort i = 0; i < NumberOfAnimations; i++) foreach (ushort tile in Animations[i].Sequence) if (IsAnUndefinedTile(tile)) return SavingResults.UndefinedTiles;
+        }
+        if (!removeImpossibleMappingSpriteModes)
+        {
+            if (PlusPropertyList.NamedPalettes.Count == 0 && AllLayers.Any(layer =>
+            {
+                return layer.SpriteMode >= 48; //48 and 49 = MAPPING and TRANSLUCENTMAPPING
+            }))
+                return SavingResults.NoExtraPalettes;
         }
         if (storeGivenFilename) FilenameOnly = Path.GetFileName(FullFilePath = filename);
         Encoding encoding = FileEncoding;
@@ -2088,7 +2219,7 @@ class J2LFile : J2File
                                     (CurrentLayer.TileHeight ? 2 : 0) |
                                     (CurrentLayer.HasTiles ? 4 : 0) |
                                     (CurrentLayer.LimitVisibleRegion ? 8 : 0) |
-                                    (CurrentLayer.IsTextured ? 16 : 0)
+                                    (CurrentLayer.TextureSurface != 0 ? 16 : 0)
                                     );
                         LINFO.Write((ushort)CurrentLayer.Width);
                         LINFO.Write((ushort)CurrentLayer.Height);
@@ -2177,7 +2308,7 @@ class J2LFile : J2File
                     for (uint i = 0; i < EventMap.Length; i++) EVNT.Write(EventMap[i % EventMap.GetLength(0), i / EventMap.GetLength(0)]);
 
                     TMAP.Write((ushort)(257));
-                    if (DefaultLayers[7].IsTextured)
+                    if (DefaultLayers[7].TextureSurface != 0)
                     {
                         TMAP.Write(1);
                         TMAP.Write(7);
@@ -2322,7 +2453,7 @@ class J2LFile : J2File
                             if (AGA_SoundPointer[i] == null) for (byte j = 0; j < 16; j++) data1writer.Write(0); //16 longs = 64 bytes
                             else data1writer.Write(getBytes(encoding, (AGA_SoundPointer[i][0] + "\\" + AGA_SoundPointer[i][1]), 64));
                         }
-                    foreach (Layer layer in layersToSave) data1writer.Write((layer.TileWidth ? 1 : 0) + (layer.TileHeight ? 2 : 0) + (layer.LimitVisibleRegion ? 4 : 0) + (layer.IsTextured ? 8 : 0) + (layer.HasStars ? 16 : 0));
+                    foreach (Layer layer in layersToSave) data1writer.Write((layer.TileWidth ? 1 : 0) + (layer.TileHeight ? 2 : 0) + (layer.LimitVisibleRegion ? 4 : 0) + (layer.TextureSurface != 0 ? 8 : 0) + (layer.HasStars ? 16 : 0));
                     foreach (Layer layer in layersToSave) data1writer.Write(layer.unknown1);
                     foreach (Layer layer in layersToSave) data1writer.Write(layer.HasTiles);
                     foreach (Layer layer in layersToSave) data1writer.Write(layer.Width);

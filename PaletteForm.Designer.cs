@@ -48,6 +48,10 @@
             this.swapBlueRedToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             this.SaveButton = new System.Windows.Forms.Button();
+            this.checkBox1 = new System.Windows.Forms.CheckBox();
+            this.ButtonDelete = new System.Windows.Forms.Button();
+            this.NameLabel = new System.Windows.Forms.Label();
+            this.NameBox = new System.Windows.Forms.TextBox();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -58,7 +62,7 @@
             this.ButtonCancel.Location = new System.Drawing.Point(327, 59);
             this.ButtonCancel.Name = "ButtonCancel";
             this.ButtonCancel.Size = new System.Drawing.Size(75, 23);
-            this.ButtonCancel.TabIndex = 3;
+            this.ButtonCancel.TabIndex = 1;
             this.ButtonCancel.Text = "Cancel";
             this.ButtonCancel.UseVisualStyleBackColor = true;
             this.ButtonCancel.Click += new System.EventHandler(this.ButtonCancel_Click);
@@ -66,10 +70,11 @@
             // OKButton
             // 
             this.OKButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.OKButton.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.OKButton.Location = new System.Drawing.Point(327, 30);
             this.OKButton.Name = "OKButton";
             this.OKButton.Size = new System.Drawing.Size(75, 23);
-            this.OKButton.TabIndex = 2;
+            this.OKButton.TabIndex = 0;
             this.OKButton.Text = "OK";
             this.OKButton.UseVisualStyleBackColor = true;
             this.OKButton.Click += new System.EventHandler(this.OKButton_Click);
@@ -77,7 +82,7 @@
             // ResetButton
             // 
             this.ResetButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.ResetButton.Location = new System.Drawing.Point(327, 316);
+            this.ResetButton.Location = new System.Drawing.Point(327, 332);
             this.ResetButton.Name = "ResetButton";
             this.ResetButton.Size = new System.Drawing.Size(75, 23);
             this.ResetButton.TabIndex = 4;
@@ -88,10 +93,10 @@
             // LoadButton
             // 
             this.LoadButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.LoadButton.Location = new System.Drawing.Point(327, 229);
+            this.LoadButton.Location = new System.Drawing.Point(327, 244);
             this.LoadButton.Name = "LoadButton";
             this.LoadButton.Size = new System.Drawing.Size(75, 23);
-            this.LoadButton.TabIndex = 5;
+            this.LoadButton.TabIndex = 2;
             this.LoadButton.Text = "Load...";
             this.LoadButton.UseVisualStyleBackColor = true;
             this.LoadButton.Click += new System.EventHandler(this.LoadButton_Click);
@@ -102,6 +107,7 @@
             // 
             // menuStrip1
             // 
+            this.menuStrip1.ImageScalingSize = new System.Drawing.Size(40, 40);
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.selectionToolStripMenuItem,
             this.toolsToolStripMenuItem});
@@ -171,7 +177,7 @@
             this.swapGreenBlueToolStripMenuItem,
             this.swapBlueRedToolStripMenuItem});
             this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
-            this.toolsToolStripMenuItem.Size = new System.Drawing.Size(47, 20);
+            this.toolsToolStripMenuItem.Size = new System.Drawing.Size(46, 20);
             this.toolsToolStripMenuItem.Text = "Tools";
             this.toolsToolStripMenuItem.DropDownClosed += new System.EventHandler(this.toolsToolStripMenuItem_DropDownClosed);
             this.toolsToolStripMenuItem.DropDownOpening += new System.EventHandler(this.toolsToolStripMenuItem_DropDownOpening);
@@ -218,13 +224,52 @@
             // SaveButton
             // 
             this.SaveButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.SaveButton.Location = new System.Drawing.Point(327, 258);
+            this.SaveButton.Location = new System.Drawing.Point(327, 273);
             this.SaveButton.Name = "SaveButton";
             this.SaveButton.Size = new System.Drawing.Size(75, 23);
-            this.SaveButton.TabIndex = 7;
+            this.SaveButton.TabIndex = 3;
             this.SaveButton.Text = "Save...";
             this.SaveButton.UseVisualStyleBackColor = true;
             this.SaveButton.Click += new System.EventHandler(this.SaveButton_Click);
+            // 
+            // checkBox1
+            // 
+            this.checkBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.checkBox1.AutoSize = true;
+            this.checkBox1.Location = new System.Drawing.Point(4, 344);
+            this.checkBox1.Margin = new System.Windows.Forms.Padding(1);
+            this.checkBox1.Name = "checkBox1";
+            this.checkBox1.Size = new System.Drawing.Size(227, 17);
+            this.checkBox1.TabIndex = 7;
+            this.checkBox1.Text = "Reapply palette after dying in Single Player";
+            this.checkBox1.UseVisualStyleBackColor = true;
+            // 
+            // ButtonDelete
+            // 
+            this.ButtonDelete.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.ButtonDelete.DialogResult = System.Windows.Forms.DialogResult.Abort;
+            this.ButtonDelete.Location = new System.Drawing.Point(327, 88);
+            this.ButtonDelete.Name = "ButtonDelete";
+            this.ButtonDelete.Size = new System.Drawing.Size(75, 23);
+            this.ButtonDelete.TabIndex = 8;
+            this.ButtonDelete.Text = "Delete";
+            this.ButtonDelete.UseVisualStyleBackColor = true;
+            // 
+            // NameLabel
+            // 
+            this.NameLabel.AutoSize = true;
+            this.NameLabel.Location = new System.Drawing.Point(4, 344);
+            this.NameLabel.Name = "NameLabel";
+            this.NameLabel.Size = new System.Drawing.Size(35, 13);
+            this.NameLabel.TabIndex = 9;
+            this.NameLabel.Text = "Name";
+            // 
+            // NameBox
+            // 
+            this.NameBox.Location = new System.Drawing.Point(46, 344);
+            this.NameBox.Name = "NameBox";
+            this.NameBox.Size = new System.Drawing.Size(185, 20);
+            this.NameBox.TabIndex = 10;
             // 
             // PaletteForm
             // 
@@ -232,7 +277,11 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
-            this.ClientSize = new System.Drawing.Size(414, 351);
+            this.ClientSize = new System.Drawing.Size(414, 367);
+            this.Controls.Add(this.NameBox);
+            this.Controls.Add(this.NameLabel);
+            this.Controls.Add(this.ButtonDelete);
+            this.Controls.Add(this.checkBox1);
             this.Controls.Add(this.SaveButton);
             this.Controls.Add(this.LoadButton);
             this.Controls.Add(this.ResetButton);
@@ -277,5 +326,9 @@
         private System.Windows.Forms.ToolStripMenuItem swapBlueRedToolStripMenuItem;
         private System.Windows.Forms.OpenFileDialog openFileDialog1;
         private System.Windows.Forms.Button SaveButton;
+        private System.Windows.Forms.CheckBox checkBox1;
+        private System.Windows.Forms.Button ButtonDelete;
+        private System.Windows.Forms.Label NameLabel;
+        private System.Windows.Forms.TextBox NameBox;
     }
 }

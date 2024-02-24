@@ -39,7 +39,7 @@
             this.ButtonOK.Location = new System.Drawing.Point(13, 61);
             this.ButtonOK.Name = "ButtonOK";
             this.ButtonOK.Size = new System.Drawing.Size(75, 23);
-            this.ButtonOK.TabIndex = 0;
+            this.ButtonOK.TabIndex = 2;
             this.ButtonOK.Text = "OK";
             this.ButtonOK.UseVisualStyleBackColor = true;
             this.ButtonOK.Click += new System.EventHandler(this.ButtonOK_Click);
@@ -50,7 +50,7 @@
             this.ButtonCancel.Location = new System.Drawing.Point(117, 61);
             this.ButtonCancel.Name = "ButtonCancel";
             this.ButtonCancel.Size = new System.Drawing.Size(75, 23);
-            this.ButtonCancel.TabIndex = 1;
+            this.ButtonCancel.TabIndex = 3;
             this.ButtonCancel.Text = "Cancel";
             this.ButtonCancel.UseVisualStyleBackColor = true;
             this.ButtonCancel.Click += new System.EventHandler(this.ButtonCancel_Click);
@@ -65,7 +65,7 @@
             0});
             this.numericUpDown1.Name = "numericUpDown1";
             this.numericUpDown1.Size = new System.Drawing.Size(49, 20);
-            this.numericUpDown1.TabIndex = 3;
+            this.numericUpDown1.TabIndex = 0;
             this.numericUpDown1.ValueChanged += new System.EventHandler(this.numericUpDown1_ValueChanged);
             // 
             // label1
@@ -83,7 +83,7 @@
             this.checkBox1.Location = new System.Drawing.Point(15, 38);
             this.checkBox1.Name = "checkBox1";
             this.checkBox1.Size = new System.Drawing.Size(138, 17);
-            this.checkBox1.TabIndex = 5;
+            this.checkBox1.TabIndex = 1;
             this.checkBox1.Text = "On for Blue, off for Red.";
             this.checkBox1.UseVisualStyleBackColor = true;
             // 

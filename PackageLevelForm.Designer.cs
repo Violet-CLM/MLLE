@@ -48,14 +48,14 @@
             this.textBox1.ReadOnly = true;
             this.textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Both;
             this.textBox1.Size = new System.Drawing.Size(390, 107);
-            this.textBox1.TabIndex = 0;
+            this.textBox1.TabIndex = 7;
             // 
             // OKButton
             // 
             this.OKButton.Location = new System.Drawing.Point(327, 191);
             this.OKButton.Name = "OKButton";
             this.OKButton.Size = new System.Drawing.Size(75, 23);
-            this.OKButton.TabIndex = 1;
+            this.OKButton.TabIndex = 0;
             this.OKButton.Text = "Start";
             this.OKButton.UseVisualStyleBackColor = true;
             this.OKButton.Click += new System.EventHandler(this.OKButton_Click);
@@ -68,7 +68,7 @@
             this.checkboxMissing.Location = new System.Drawing.Point(16, 10);
             this.checkboxMissing.Name = "checkboxMissing";
             this.checkboxMissing.Size = new System.Drawing.Size(136, 17);
-            this.checkboxMissing.TabIndex = 3;
+            this.checkboxMissing.TabIndex = 1;
             this.checkboxMissing.Text = "Prompt for Missing Files";
             this.checkboxMissing.UseVisualStyleBackColor = true;
             // 
@@ -78,7 +78,7 @@
             this.CancelButton.Location = new System.Drawing.Point(246, 192);
             this.CancelButton.Name = "CancelButton";
             this.CancelButton.Size = new System.Drawing.Size(75, 23);
-            this.CancelButton.TabIndex = 4;
+            this.CancelButton.TabIndex = 8;
             this.CancelButton.Text = "Cancel";
             this.CancelButton.UseVisualStyleBackColor = true;
             // 
@@ -90,7 +90,7 @@
             this.checkboxMultipleLevels.Location = new System.Drawing.Point(16, 34);
             this.checkboxMultipleLevels.Name = "checkboxMultipleLevels";
             this.checkboxMultipleLevels.Size = new System.Drawing.Size(142, 17);
-            this.checkboxMultipleLevels.TabIndex = 5;
+            this.checkboxMultipleLevels.TabIndex = 3;
             this.checkboxMultipleLevels.Text = "Package Multiple Levels";
             this.checkboxMultipleLevels.UseVisualStyleBackColor = true;
             // 
@@ -102,7 +102,7 @@
             this.checkboxExcludeDefault.Location = new System.Drawing.Point(228, 34);
             this.checkboxExcludeDefault.Name = "checkboxExcludeDefault";
             this.checkboxExcludeDefault.Size = new System.Drawing.Size(123, 17);
-            this.checkboxExcludeDefault.TabIndex = 6;
+            this.checkboxExcludeDefault.TabIndex = 4;
             this.checkboxExcludeDefault.Text = "Exclude Official Files";
             this.checkboxExcludeDefault.UseVisualStyleBackColor = true;
             // 
@@ -114,7 +114,7 @@
             this.checkboxIncludeMusic.Location = new System.Drawing.Point(228, 10);
             this.checkboxIncludeMusic.Name = "checkboxIncludeMusic";
             this.checkboxIncludeMusic.Size = new System.Drawing.Size(92, 17);
-            this.checkboxIncludeMusic.TabIndex = 7;
+            this.checkboxIncludeMusic.TabIndex = 2;
             this.checkboxIncludeMusic.Text = "Include Music";
             this.checkboxIncludeMusic.UseVisualStyleBackColor = true;
             // 
@@ -124,7 +124,7 @@
             this.checkboxAngelscriptFunctions.Location = new System.Drawing.Point(16, 55);
             this.checkboxAngelscriptFunctions.Name = "checkboxAngelscriptFunctions";
             this.checkboxAngelscriptFunctions.Size = new System.Drawing.Size(211, 17);
-            this.checkboxAngelscriptFunctions.TabIndex = 8;
+            this.checkboxAngelscriptFunctions.TabIndex = 5;
             this.checkboxAngelscriptFunctions.Text = "Search AngelScript Function Filenames";
             this.checkboxAngelscriptFunctions.UseVisualStyleBackColor = true;
             // 
@@ -134,7 +134,7 @@
             this.checkBoxMLLESet.Location = new System.Drawing.Point(228, 55);
             this.checkBoxMLLESet.Name = "checkBoxMLLESet";
             this.checkBoxMLLESet.Size = new System.Drawing.Size(163, 17);
-            this.checkBoxMLLESet.TabIndex = 9;
+            this.checkBoxMLLESet.TabIndex = 6;
             this.checkBoxMLLESet.Text = "Include Smart Tile Definitions";
             this.checkBoxMLLESet.UseVisualStyleBackColor = true;
             // 

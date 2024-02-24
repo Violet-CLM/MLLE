@@ -64,12 +64,14 @@
             // Tree
             // 
             this.Tree.AllowDrop = true;
+            this.Tree.HideSelection = false;
             this.Tree.Location = new System.Drawing.Point(12, 31);
             this.Tree.Name = "Tree";
             this.Tree.Size = new System.Drawing.Size(329, 233);
             this.Tree.TabIndex = 51;
             this.Tree.ItemDrag += new System.Windows.Forms.ItemDragEventHandler(this.Tree_ItemDrag);
             this.Tree.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.Tree_AfterSelect);
+            this.Tree.DrawNode += new System.Windows.Forms.DrawTreeNodeEventHandler(this.Tree_DrawNode);
             // 
             // ButtonOK
             // 

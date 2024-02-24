@@ -27,13 +27,12 @@ namespace MLLE
         private void LevelProperties_Load(object sender, EventArgs e)
         {
             #region visibility
-            int heightdiff;
+            int heightdiff = (NextLevel.Location.Y - LevelName.Location.Y);
             label4.Text = SourceForm.EnableableStrings[SourceForm.J2L.VersionType][EnableableTitles.SecretLevelName];
             if (label4.Text == "")
             {
                 label4.Visible = SecretLevel.Visible = BrowseSecret.Visible = false;
-                heightdiff = (NextLevel.Location.Y - LevelName.Location.Y);
-                foreach (Control foo in new Control[] { label5, BonusLevel, IsMultiplayer, HideHCL, groupBox2, groupBox3 }) foo.Location = new Point(foo.Location.X, foo.Location.Y - heightdiff);
+                foreach (Control foo in new Control[] { label5, BonusLevel, label8, Arguments, argumentsGenerate, IsMultiplayer, HideHCL, groupBox2, groupBox3 }) foo.Location = new Point(foo.Location.X, foo.Location.Y - heightdiff);
                 groupBox1.Height -= heightdiff;
                 Height -= heightdiff;
             }
@@ -41,8 +40,14 @@ namespace MLLE
             if (label5.Text == "")
             {
                 label5.Visible = BonusLevel.Visible = false;
-                heightdiff = (NextLevel.Location.Y - LevelName.Location.Y);
-                foreach (Control foo in new Control[] { BonusLevel, IsMultiplayer, HideHCL, groupBox2, groupBox3 }) foo.Location = new Point(foo.Location.X, foo.Location.Y - heightdiff);
+                foreach (Control foo in new Control[] { label8, Arguments, argumentsGenerate, IsMultiplayer, HideHCL, groupBox2, groupBox3 }) foo.Location = new Point(foo.Location.X, foo.Location.Y - heightdiff);
+                groupBox1.Height -= heightdiff;
+                Height -= heightdiff;
+            }
+            if (!SourceForm.EnableableBools[SourceForm.J2L.VersionType][EnableableTitles.BoolDevelopingForPlus])
+            {
+                label8.Visible = Arguments.Visible = argumentsGenerate.Visible = false;
+                foreach (Control foo in new Control[] { IsMultiplayer, HideHCL, groupBox2, groupBox3 }) foo.Location = new Point(foo.Location.X, foo.Location.Y - heightdiff);
                 groupBox1.Height -= heightdiff;
                 Height -= heightdiff;
             }
@@ -54,7 +59,7 @@ namespace MLLE
                 HideHCL.Visible = false;
                 if (IsMultiplayer.Text == "")
                 {
-                    heightdiff = (IsMultiplayer.Location.Y - BonusLevel.Location.Y);
+                    //heightdiff = (IsMultiplayer.Location.Y - Arguments.Location.Y);
                     foreach (Control foo in new Control[] { groupBox2, groupBox3 }) foo.Location = new Point(foo.Location.X, foo.Location.Y - heightdiff);
                     groupBox1.Height -= heightdiff;
                     Height -= heightdiff;
@@ -94,6 +99,7 @@ namespace MLLE
             StartLight.Value = (int)(SourceForm.J2L.StartLight * 1.5625);
             MinLight.Value = (int)(SourceForm.J2L.MinLight * 1.5625);
             if (SourceForm.J2L.UsesVerticalSplitscreen == true) radioButton2.Checked = true; else radioButton1.Checked = true;
+            Arguments.Text = SourceForm.J2L.PlusPropertyList.CommandLineArguments;
             DataLoaded = true;
             #endregion values
         }
@@ -121,6 +127,7 @@ namespace MLLE
             SourceForm.J2L.StartLight = (byte)Math.Ceiling(StartLight.Value / (decimal)1.5625);
             SourceForm.J2L.MinLight = (byte)Math.Ceiling(MinLight.Value / (decimal)1.5625);
             SourceForm.J2L.UsesVerticalSplitscreen = radioButton2.Checked;
+            SourceForm.J2L.PlusPropertyList.CommandLineArguments = Arguments.Text;
             SourceForm.LevelHasBeenModified = true;
             Dispose();
         }
@@ -146,6 +153,11 @@ namespace MLLE
         private void MusicFile_TextChanged(object sender, EventArgs e)
         {
             if (DataLoaded) MusicChanged = true;
+        }
+
+        private void argumentsGenerate_Click(object sender, EventArgs e)
+        {
+            new Arguments(Arguments).ShowDialog();
         }
     }
 }
