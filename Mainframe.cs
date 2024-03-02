@@ -1017,9 +1017,11 @@ void main() {
                 var originalTileImage = J2T.Images[J2T.ImageAddress[tileInTilesetID]];
                 if (new TileImageEditorForm().ShowForm(
                     ref J2L.PlusPropertyList.TileImages[MouseTile],
-                    (J2T.ColorRemapping == null) ?
-                        originalTileImage :
-                        Enumerable.Range(0, 32 * 32).Select(val => J2T.ColorRemapping[originalTileImage[val]]).ToArray(),
+                    originalTileImage.Length == 32 * 32 ?
+                        (J2T.ColorRemapping == null) ?
+                            originalTileImage :
+                            Enumerable.Range(0, 32 * 32).Select(val => J2T.ColorRemapping[originalTileImage[val]]).ToArray() :
+                        null, //32-bit
                     J2L.Palette
                 ))
                     RerenderTile((uint)MouseTile);
@@ -1049,7 +1051,17 @@ void main() {
             uint tileInTilesetID = J2L.getTileInTilesetID(tileID, out J2T);
             byte[] originalMask = J2T.Masks[J2T.MaskAddress[tileInTilesetID]];
             byte[] oldMask = J2L.PlusPropertyList.TileMasks[MouseTile] ?? originalMask;
-            byte[] newMask = (J2L.PlusPropertyList.TileImages[MouseTile] ?? J2T.Images[J2T.ImageAddress[tileInTilesetID]]).Select(val => val != 0 ? (byte)1 : (byte)0).ToArray();
+            byte[] newMask;
+            byte[] image = (J2L.PlusPropertyList.TileImages[MouseTile] ?? J2T.Images[J2T.ImageAddress[tileInTilesetID]]);
+            if (image.Length == 32 * 32) { //8-bit
+                newMask = image.Select(val => val != 0 ? (byte)1 : (byte)0).ToArray();
+            } else if (image.Length == 32 * 32 * 4) { //32-bit
+                newMask = new byte[32 * 32];
+                for (int i = 0; i < 32 * 32; ++i)
+                    newMask[i] = image[i * 4 + 3] != 0 ? (byte)1 : (byte)0; //only test alphas
+            } else { //should be impossible
+                return;
+            }
             if (originalMask.SequenceEqual(newMask))
                 J2L.PlusPropertyList.TileMasks[MouseTile] = null;
             else
@@ -1087,6 +1099,13 @@ void main() {
                                 {
                                     tileImageAsBytes = tileImageAsBytes.Select(c => J2T.ColorRemapping[c]).ToArray();
                                 }
+                            }
+                            if (tileImageAsBytes.Length != 32 * 32) //32-bit tile
+                            {
+                                _suspendEvent.Reset();
+                                MessageBox.Show("Copying 32-bit tile images is not currently supported.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                _suspendEvent.Set();
+                                return;
                             }
                             int firstResultByteIndex = (x - UpperLeftSelectionCorner.X) * 32 + (y - UpperLeftSelectionCorner.Y) * 32 * result.Width;
                             for (int b = 0; b < 32 * 32; ++b)
@@ -4411,7 +4430,7 @@ void main() {
                 Bitmap thumbnail = new Bitmap(32,32, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
                 J2TFile J2T;
                 uint tileInTilesetID = J2L.getTileInTilesetID((uint)MouseTile, out J2T);
-                BitmapStuff.ByteArrayToBitmap(J2L.PlusPropertyList.TileImages[MouseTile] ?? J2T.Images[J2T.ImageAddress[tileInTilesetID]], thumbnail);
+                imageToolStripMenuItem.Enabled = BitmapStuff.ByteArrayToBitmap(J2L.PlusPropertyList.TileImages[MouseTile] ?? J2T.Images[J2T.ImageAddress[tileInTilesetID]], thumbnail);
                 J2L.Palette.Apply(thumbnail, Color.Transparent);
                 SingleTileSubmenuDropdown.Image = thumbnail;
 

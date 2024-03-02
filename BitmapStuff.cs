@@ -81,7 +81,7 @@ namespace MLLE
             handle.Free();
         }
 
-        static public void ByteArrayToBitmap(byte[] byteArray, Bitmap bitmap, bool flipV = false)
+        static public bool ByteArrayToBitmap(byte[] byteArray, Bitmap bitmap, bool flipV = false)
         {
             if (byteArray.Length == bitmap.Width * bitmap.Height)
             {
@@ -92,7 +92,9 @@ namespace MLLE
                 var data = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.WriteOnly, PixelFormat.Format8bppIndexed);
                 Marshal.Copy(byteArray, 0, data.Scan0, byteArray.Length);
                 bitmap.UnlockBits(data);
+                return true;
             }
+            return false;
         }
         static public byte[] BitmapToByteArray(Bitmap bitmap)
         {

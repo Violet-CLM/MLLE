@@ -326,7 +326,7 @@ class TexturedJ2L : J2LFile
                         byte alpha = src[startingIndex + 3];
                         bmp.SetPixel(x, y, alpha != 0 ? transformation(new byte[] { src[startingIndex + 0], src[startingIndex + 1], src[startingIndex + 2] }, TileTypes[tileInLevelID], alpha) : transparentColor);
                     }
-            } else if (J2T == null) { //tileset's normal 8-bit image
+            } else if (J2T != null) { //tileset's normal 8-bit image
                 byte[] tileTrans = J2T.TransparencyMaskJJ2_Style[Array.BinarySearch(J2T.TransparencyMaskOffset, 0, (int)J2T.data3Counter, J2T.TransparencyMaskAddress[tileInTilesetID])];
                 var colorRemapping = J2T.ColorRemapping ?? J2TFile.DefaultColorRemapping;
                 for (int x = 0; x < 32; x++)

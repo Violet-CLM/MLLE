@@ -381,12 +381,13 @@ namespace MLLE
                 for (uint i = 0; i < Palette.PaletteSize; ++i)
                     Colors[i] = new SolidBrush(Palette.Convert(palette.Colors[i]));
 
-                Dimension = (int)Math.Sqrt(originalImage.Length); //currently Length will only ever be 32*32 or 256*256, so this should be okay
+                Dimension = (image ?? originalImage).Length == 256*256 ? 256 : 32;
                 Scale = 256 / Dimension; //8 or 1
 
                 PrimaryColor = SecondaryColor = 0;
 
                 FormTitle = "Edit Tile Image";
+                resetToolStripMenuItem.Enabled = originalImage != null;
             }
             else //mask
             {
@@ -424,7 +425,7 @@ namespace MLLE
 
             if (result) { //clicked OK
                 bool changed = !Image.SequenceEqual(image ?? originalImage);
-                if (Image.SequenceEqual(originalImage))
+                if (originalImage != null && Image.SequenceEqual(originalImage))
                     image = null;
                 else
                     image = Image;
