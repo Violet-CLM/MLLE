@@ -1470,6 +1470,8 @@ void main() {
                 string mainFilename = Path.Combine(Path.GetDirectoryName(tilesetImageSaveDialog.FileName), Path.GetFileNameWithoutExtension(tilesetImageSaveDialog.FileName));
                 images[0].Save(mainFilename + "-image.png");
                 images[1].Save(mainFilename + "-mask.png");
+                if (images[2] != null)
+                    images[2].Save(mainFilename + "-image32.png");
             }
             _suspendEvent.Set();
         }

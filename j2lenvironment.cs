@@ -249,6 +249,16 @@ class TexturedJ2L : J2LFile
             mask.Palette = image.Palette;
         }
 
+        Bitmap image32 = null;
+        System.Drawing.Imaging.BitmapData data32 = null;
+        byte[] bytes32 = null;
+        if (Tilesets.Any(j2t => j2t.VersionType == Version.Plus)) //at least one 32-bit tile
+        {
+            image32 = new Bitmap(320, (int)imageHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            data32 = image32.LockBits(new Rectangle(0, 0, image32.Width, image32.Height), System.Drawing.Imaging.ImageLockMode.WriteOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            bytes32 = new byte[data32.Height * data32.Stride];
+        }
+
         for (ushort tileInLevelID = 0; tileInLevelID < TileCount; tileInLevelID++)
         {
             J2TFile J2T;
@@ -268,13 +278,29 @@ class TexturedJ2L : J2LFile
             
             var xOrg = (tileInLevelID % 10) * 32;
             var yOrg = tileInLevelID / 10 * 32;
-            for (uint x = 0; x < 32; ++x)
-                for (uint y = 0; y < 32; ++y)
-                {
-                    uint xy = x + y * 32;
-                    if (tileTrans[xy] != 0)
-                        bytes[xOrg + x + (yOrg + y) * data.Stride] = colorRemapping[tile[xy]];
-                }
+            if (tile.Length == 32 * 32)
+            {
+                for (uint x = 0; x < 32; ++x)
+                    for (uint y = 0; y < 32; ++y)
+                    {
+                        uint xy = x + y * 32;
+                        if (tileTrans[xy] != 0)
+                            bytes[xOrg + x + (yOrg + y) * data.Stride] = colorRemapping[tile[xy]];
+                    }
+            }
+            else
+            {
+                for (int x = 0; x < 32; ++x)
+                    for (int y = 0; y < 32; ++y)
+                    {
+                        int xy = (x + y * 32) * 4;
+                        int xyd = (xOrg + x) * 4 + (yOrg + y) * data32.Stride;
+                        bytes32[xyd + 0] = tile[xy + 2]; //change from RGBA to BGRA :(
+                        bytes32[xyd + 1] = tile[xy + 1];
+                        bytes32[xyd + 2] = tile[xy + 0];
+                        bytes32[xyd + 3] = tile[xy + 3];
+                    }
+            }
 
             if (includeMasks)
             {
@@ -295,7 +321,12 @@ class TexturedJ2L : J2LFile
             Marshal.Copy(maskBytes, 0, maskData.Scan0, maskBytes.Length);
             mask.UnlockBits(maskData);
         }
-        return new Bitmap[] { image, mask };
+        if (image32 != null)
+        {
+            Marshal.Copy(bytes32, 0, data32.Scan0, bytes32.Length);
+            image32.UnlockBits(data32);
+        }
+        return new Bitmap[] { image, mask, image32 };
     }
     public void RerenderTile(uint tileInLevelID)
     {
