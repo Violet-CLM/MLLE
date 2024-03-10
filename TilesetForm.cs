@@ -21,6 +21,7 @@ namespace MLLE
         bool Result = false;
         Palette LevelPalette;
         Bitmap TilesetOriginalColorsImage;
+        Bitmap Tileset32BitTiles = null;
         int InitialTileCount, InitialFirstTile;
         public TilesetForm()
         {
@@ -48,39 +49,82 @@ namespace MLLE
 
         internal void DrawTilesetUsingRemappedLevelPalette()
         {
-            Image image = pictureBox1.Image;
+            Image image = TilesetOriginalColorsImage.Clone() as Bitmap;
             var palette = image.Palette;
             var entries = palette.Entries;
             for (uint i = 0; i < Palette.PaletteSize; ++i)
                 entries[i] = Palette.Convert(LevelPalette.Colors[(Tileset.ColorRemapping ?? J2TFile.DefaultColorRemapping)[i]]);
             image.Palette = palette;
+            if (Tileset.VersionType == Version.Plus)
+            {
+                pictureBox1.Image = new Bitmap(pictureBox1.Width, pictureBox1.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                using (var gr = Graphics.FromImage(pictureBox1.Image))
+                {
+                    gr.DrawImage(image, new Point(0, 0));
+                    gr.DrawImage(Tileset32BitTiles, new Point(0, 0));
+                }
+            }
+            else
+            {
+                pictureBox1.Image = image;
+            }
             pictureBox1.Refresh();
         }
 
         private void CreateImageFromTileset()
         {
             pictureBox1.Height = (int)(Tileset.TotalNumberOfTiles + 9) / 10 * 32;
-            var image = new Bitmap(pictureBox1.Width, pictureBox1.Height, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
-            var data = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), ImageLockMode.WriteOnly, PixelFormat.Format8bppIndexed);
-            byte[] bytes = new byte[data.Height * data.Stride];
-            //Marshal.Copy(data.Scan0, bytes, 0, bytes.Length);
+
+            Bitmap image, image32 = null;
+            BitmapData data, data32 = null;
+            byte[] bytes, bytes32 = null;
+
+            image = new Bitmap(pictureBox1.Width, pictureBox1.Height, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
+            data = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), ImageLockMode.WriteOnly, PixelFormat.Format8bppIndexed);
+            bytes = new byte[data.Height * data.Stride];
+            if (Tileset.VersionType == Version.Plus)
+            {
+                image32 = new Bitmap(pictureBox1.Width, pictureBox1.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                data32 = image32.LockBits(new Rectangle(0, 0, image32.Width, image32.Height), ImageLockMode.WriteOnly, PixelFormat.Format32bppArgb);
+                bytes32 = new byte[data32.Height * data32.Stride];
+            }
+
             for (uint i = 0; i < Tileset.TotalNumberOfTiles; ++i)
             {
                 var tileImage = Tileset.Images[Tileset.ImageAddress[i]];
                 var xOrg = (i % 10) * 32;
                 var yOrg = i / 10 * 32;
-                for (uint x = 0; x < 32; ++x)
+                if (tileImage.Length == 32 * 32)
+                    for (uint y = 0; y < 32; ++y)
+                        Array.Copy(tileImage, y * 32, bytes, xOrg + (yOrg + y) * data.Stride, 32);
+                else
+                {
+                    xOrg *= 4;
                     for (uint y = 0; y < 32; ++y)
                     {
-                        bytes[xOrg + x + (yOrg + y) * data.Stride] = tileImage[x + y*32];
+                        var srcStart = y * 32 * 4;
+                        var dstStart = xOrg + (yOrg + y) * data32.Stride;
+                        for (uint x = 0; x < 32; ++x, srcStart += 4, dstStart += 4)
+                        { //change from RGBA to BGRA :(
+                            bytes32[dstStart + 0] = tileImage[srcStart + 2];
+                            bytes32[dstStart + 1] = tileImage[srcStart + 1];
+                            bytes32[dstStart + 2] = tileImage[srcStart + 0];
+                            bytes32[dstStart + 3] = tileImage[srcStart + 3];
+                        }
                     }
+                }
             }
             Marshal.Copy(bytes, 0, data.Scan0, bytes.Length);
             image.UnlockBits(data);
-            pictureBox1.Image = image;
-            
-            TilesetOriginalColorsImage = image.Clone() as Bitmap;
-            Tileset.Palette.Apply(TilesetOriginalColorsImage);
+            Tileset.Palette.Apply(image);
+            TilesetOriginalColorsImage = image;
+
+            if (Tileset.VersionType == Version.Plus)
+            {
+                Marshal.Copy(bytes32, 0, data32.Scan0, bytes32.Length);
+                image32.UnlockBits(data32);
+                Tileset32BitTiles = image32;
+            }
 
             DrawTilesetUsingRemappedLevelPalette();
         }
