@@ -74,6 +74,7 @@
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.Copy4 = new System.Windows.Forms.Button();
             this.groupBoxPlus = new System.Windows.Forms.GroupBox();
+            this.SpriteParamMapping = new System.Windows.Forms.ComboBox();
             this.YSModel = new System.Windows.Forms.ComboBox();
             this.XSModel = new System.Windows.Forms.ComboBox();
             this.OffsetXSModel = new System.Windows.Forms.Label();
@@ -103,7 +104,6 @@
             this.InnerAutoY = new System.Windows.Forms.TextBox();
             this.InnerAutoXLabel = new System.Windows.Forms.Label();
             this.InnerAutoX = new System.Windows.Forms.TextBox();
-            this.SpriteParamMapping = new System.Windows.Forms.ComboBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -470,6 +470,7 @@
             this.Fade.TabIndex = 30;
             this.Fade.Text = "Fade";
             this.Fade.UseVisualStyleBackColor = true;
+            this.Fade.CheckedChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // XFadeLabel
             // 
@@ -506,6 +507,7 @@
             this.XFade.Size = new System.Drawing.Size(50, 20);
             this.XFade.TabIndex = 23;
             this.XFade.Text = "0";
+            this.XFade.TextChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // Param1
             // 
@@ -529,6 +531,7 @@
             this.YFade.Size = new System.Drawing.Size(50, 20);
             this.YFade.TabIndex = 24;
             this.YFade.Text = "0";
+            this.YFade.TextChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // Param2
             // 
@@ -697,6 +700,18 @@
             this.groupBoxPlus.TabIndex = 8;
             this.groupBoxPlus.TabStop = false;
             this.groupBoxPlus.Text = "JJ2+ Properties";
+            // 
+            // SpriteParamMapping
+            // 
+            this.SpriteParamMapping.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.SpriteParamMapping.DropDownWidth = 175;
+            this.SpriteParamMapping.FormattingEnabled = true;
+            this.SpriteParamMapping.Location = new System.Drawing.Point(203, 95);
+            this.SpriteParamMapping.MaxDropDownItems = 10;
+            this.SpriteParamMapping.Name = "SpriteParamMapping";
+            this.SpriteParamMapping.Size = new System.Drawing.Size(51, 21);
+            this.SpriteParamMapping.TabIndex = 21;
+            this.SpriteParamMapping.SelectedIndexChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // YSModel
             // 
@@ -1020,6 +1035,7 @@
             this.InnerY.Size = new System.Drawing.Size(50, 20);
             this.InnerY.TabIndex = 10;
             this.InnerY.Text = "0";
+            this.InnerY.TextChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // InnerXLabel
             // 
@@ -1047,6 +1063,7 @@
             this.InnerX.Size = new System.Drawing.Size(50, 20);
             this.InnerX.TabIndex = 11;
             this.InnerX.Text = "0";
+            this.InnerX.TextChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // InnerAutoY
             // 
@@ -1056,6 +1073,7 @@
             this.InnerAutoY.Size = new System.Drawing.Size(50, 20);
             this.InnerAutoY.TabIndex = 12;
             this.InnerAutoY.Text = "0";
+            this.InnerAutoY.TextChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // InnerAutoXLabel
             // 
@@ -1074,17 +1092,7 @@
             this.InnerAutoX.Size = new System.Drawing.Size(50, 20);
             this.InnerAutoX.TabIndex = 12;
             this.InnerAutoX.Text = "0";
-            // 
-            // SpriteParamMapping
-            // 
-            this.SpriteParamMapping.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.SpriteParamMapping.DropDownWidth = 175;
-            this.SpriteParamMapping.FormattingEnabled = true;
-            this.SpriteParamMapping.Location = new System.Drawing.Point(203, 95);
-            this.SpriteParamMapping.MaxDropDownItems = 10;
-            this.SpriteParamMapping.Name = "SpriteParamMapping";
-            this.SpriteParamMapping.Size = new System.Drawing.Size(51, 21);
-            this.SpriteParamMapping.TabIndex = 21;
+            this.InnerAutoX.TextChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // LayerPropertiesForm
             // 
