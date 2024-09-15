@@ -9,10 +9,10 @@ namespace MLLE
 {
     public partial struct PlusPropertyList
     {
-        const uint CurrentMLLEData5Version = 0x106;
+        const uint CurrentMLLEData5Version = 0x107;
         const string MLLEData5MagicString = "MLLE";
-        const string CurrentMLLEData5VersionStringForComparison = "0x106";
-        const string CurrentMLLEData5VersionString = "1.6";
+        const string CurrentMLLEData5VersionStringForComparison = "0x107";
+        const string CurrentMLLEData5VersionString = "1.7";
 
         const string AngelscriptLibrary =
 @"//This is a standard library created by MLLE to read some JJ2+ properties from a level file whose script includes this library. DO NOT MANUALLY MODIFY THIS FILE.
@@ -292,7 +292,10 @@ namespace MLLE {{
                 data5.pop(ammoCrateEventID);
                 if (ammoCrateEventID > 32) {{
                     jjOBJ@ preset = jjObjectPresets[ammoCrateEventID];
-                    preset.behavior = AmmoCrate(ammoCrateEventID);
+                    if (jjGameConnection == GAME::LOCAL)
+                        preset.behavior = AmmoCrate(ammoCrateEventID);
+                    else
+                        preset.behavior = BEHAVIOR::AMMO15;
                     preset.playerHandling = HANDLING::SPECIAL;
                     preset.scriptedCollisions = false;
                     preset.direction = 1;
@@ -471,6 +474,55 @@ namespace MLLE {{
                     return;
                 else if (ev == int(0xFFFFF3FE))
                     jjParameterSet(x,y, -12,32, 0);
+            }}
+        }} else {{
+            for (uint i = 0; i < _offGridObjects.length; ++i) {{
+                const auto params = _offGridObjects[i].params;
+                uint8 eventID = params;
+                if (eventID == OBJECT::GENERATOR || eventID == OBJECT::GUNCRATE || eventID == OBJECT::CARROTCRATE || eventID == OBJECT::ONEUPCRATE || eventID == OBJECT::BOMBCRATE || eventID == OBJECT::SPRINGCRATE)
+                    eventID = params >> 12;
+                if ((eventID >= OBJECT::APPLE && eventID <= OBJECT::STRAWBERRY) || (eventID >= OBJECT::LEMON && eventID <= OBJECT::CHEESE)) {{
+                    jjSugarRushAllowed = true;
+                }} else switch (eventID) {{
+                    case OBJECT::BOUNCERAMMO3:
+                    case OBJECT::BOUNCERAMMO15:
+                    case OBJECT::GUNCRATE:
+                    case OBJECT::GUNBARREL:
+                        jjWeapons[WEAPON::BOUNCER].allowed = true;
+                        break;
+                    case OBJECT::ICEAMMO3:
+                    case OBJECT::ICEAMMO15:
+                        jjWeapons[WEAPON::ICE].allowed = true;
+                        break;
+                    case OBJECT::SEEKERAMMO3:
+                    case OBJECT::RFAMMO3:
+                    case OBJECT::TOASTERAMMO3:
+                    case OBJECT::TNTAMMO3:
+                    case OBJECT::GUN8AMMO3:
+                    case OBJECT::GUN9AMMO3:
+                        jjWeapons[eventID - 31].allowed = true;
+                        break;
+                    case OBJECT::SEEKERAMMO15:
+                    case OBJECT::RFAMMO15:
+                    case OBJECT::TOASTERAMMO15:
+                        jjWeapons[eventID - 51].allowed = true;
+                        break;
+                    case OBJECT::BLASTERPOWERUP:
+                    case OBJECT::BOUNCERPOWERUP:
+                    case OBJECT::ICEPOWERUP:
+                    case OBJECT::SEEKERPOWERUP:
+                    case OBJECT::RFPOWERUP:
+                    case OBJECT::TOASTERPOWERUP: {{
+                        const auto weaponID = eventID - 130;
+                        jjWeapons[weaponID].allowed = jjWeapons[weaponID].allowedPowerup = true;
+                        break; }}
+                    case OBJECT::TNTPOWERUP:
+                    case OBJECT::GUN8POWERUP:
+                    case OBJECT::GUN9POWERUP: {{
+                        const auto weaponID = eventID - 212;
+                        jjWeapons[weaponID].allowed = jjWeapons[weaponID].allowedPowerup = true;
+                        break; }}
+                }}
             }}
         }}
     }}
