@@ -4419,7 +4419,14 @@ void main() {
 
             OverSmartTiles.Enabled = !AnimationSettings.Visible; //may not always be Visible, though, depending on tileset/s
 
-            if (!HoveringOverAnimationAreaOfTilesetPane)
+            if (!J2L.HasTiles)
+            {
+                SingleTileSubmenuDropdown.Enabled =
+                SelectedTilesSubmenuDropdown.Enabled =
+                    false;
+                SingleTileSubmenuDropdown.Image = null;
+            }
+            else if (!HoveringOverAnimationAreaOfTilesetPane)
             {
                 SingleTileSubmenuDropdown.Text = "Tile #" + MouseTile.ToString();
                 Bitmap thumbnail = new Bitmap(32,32, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
@@ -4432,6 +4439,7 @@ void main() {
                 bool atLeastOneTileSelected = J2L.HasTiles && LastFocusedZone == FocusedZone.Tileset && CurrentTilesetOverlay != TilesetOverlay.SmartTiles && IsEachTileSelected.Any(col => col.Contains(true));
                 SelectedTilesSubmenuDropdown.Enabled = atLeastOneTileSelected;
                 pasteImageToolStripMenuItem.Enabled = BitmapStuff.ClipboardHasBitmap();
+                SingleTileSubmenuDropdown.Enabled = true;
             }
         }
 
