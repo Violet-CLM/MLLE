@@ -767,9 +767,11 @@ void main() {
                         return true;
                     }
                 case Keys.X:
+                case Keys.Shift | Keys.X:
                     KeyXPressed = true;
                     return true;
                 case Keys.Y:
+                case Keys.Shift | Keys.Y:
                     KeyYPressed = true;
                     return true;
                 case Keys.Tab:
@@ -964,9 +966,11 @@ void main() {
                     if (ParallaxDisplayMode == ParallaxMode.TemporaryParallax) ParallaxDisplayMode = ParallaxButton.Checked ? ParallaxMode.FullParallax : ParallaxMode.NoParallax;
                     break;
                 case Keys.X:
+                case Keys.Shift | Keys.X:
                     KeyXPressed = false;
                     break;
                 case Keys.Y:
+                case Keys.Shift | Keys.Y:
                     KeyYPressed = false;
                     break;
                 case Keys.Tab:
@@ -3292,10 +3296,20 @@ void main() {
                 MouseTileY = (MousePixelY = Math.Max(0, (e.Y + LDScrollV.Value))) / ZoomTileSize;
                 if (!SnapEventsToGridToggle.Checked)
                 {
-                    if (KeyXPressed)
-                        MousePixelX = (MousePixelX & ~(ZoomTileSize - 1)) | (ZoomTileSize / 2);
-                    if (KeyYPressed)
-                        MousePixelY = (MousePixelY & ~(ZoomTileSize - 1)) | (ZoomTileSize / 2);
+                    if (Control.ModifierKeys == Keys.Shift)
+                    {
+                        if (KeyXPressed)
+                            MousePixelX = (((MousePixelX + (ZoomTileSize / 4)) & ~((ZoomTileSize / 2) - 1)) | (ZoomTileSize / 4)) - (ZoomTileSize / 4);
+                        if (KeyYPressed)
+                            MousePixelY = (((MousePixelY + (ZoomTileSize / 4)) & ~((ZoomTileSize / 2) - 1)) | (ZoomTileSize / 4)) - (ZoomTileSize / 4);
+                    }
+                    else
+                    {
+                        if (KeyXPressed)
+                            MousePixelX = (MousePixelX & ~(ZoomTileSize - 1)) | (ZoomTileSize / 2);
+                        if (KeyYPressed)
+                            MousePixelY = (MousePixelY & ~(ZoomTileSize - 1)) | (ZoomTileSize / 2);
+                    }
                 }
                 if (SafeToDisplay)
                 {

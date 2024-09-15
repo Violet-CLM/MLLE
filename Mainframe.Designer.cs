@@ -1936,8 +1936,9 @@
             this.OffgridInstructions.Size = new System.Drawing.Size(198, 225);
             this.OffgridInstructions.TabIndex = 14;
             this.OffgridInstructions.Text = "Left-click: Place\r\nMiddle-click: Select\r\nRight-click: Delete\r\nCtrl-left-click: Co" +
-    "py\r\nCtrl-right-click: Cut\r\nE: Select\r\nShift+E: Place\r\nCtrl+E: Copy\r\nX/Y: Center";
+    "py\r\nCtrl-right-click: Cut\r\nE: Select\r\nShift+E: Place\r\nCtrl+E: Copy\r\nX/Y: Center\r\nShift+X/Y: Half-center";
             this.OffgridInstructions.Visible = false;
+            this.OffgridInstructions.BorderStyle = System.Windows.Forms.BorderStyle.None;
             // 
             // Mainframe
             // 
