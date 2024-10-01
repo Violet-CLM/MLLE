@@ -552,13 +552,18 @@ namespace MLLE {{
             }}
         }}
         const uint xTile = uint(og.xPos) >> 5, yTile = uint(og.yPos) >> 5;
-        const int realEvent = jjParameterGet(xTile,yTile, -12,32);
-        jjParameterSet(xTile,yTile, -12,32, og.params);
-        jjOBJ@ obj = jjObjects[jjAddObject(og.params, og.xPos, og.yPos, 0, CREATOR::LEVEL)];
-        jjParameterSet(xTile,yTile, -12,32, realEvent);
-        if (jjGameConnection == GAME::LOCAL) {{
-            obj.deactivates = false;
-            obj.creatorID = 1;
+        const uint8 eventID = og.params;
+        if ((eventID <= 32 || eventID == AREA::SUCKERTUBE || eventID == AREA::WATERBLOCK || eventID == AREA::WARPTARGET || eventID == AREA::PATH || eventID == OBJECT::CTFBASE || eventID == AREA::NOFIREZONE || eventID == AREA::TRIGGERZONE || eventID == AREA::TEXT || eventID == AREA::WATERLEVEL || eventID == AREA::MORPHFROG || eventID == 255) && cast<jjVOIDFUNCOBJ>(jjObjectPresets[eventID].behavior) is null) {{
+            jjDebug('MLLE::Setup: Warning, Event #' + eventID + ' (at ' + xTile + ',' + yTile + ') should not be placed off-grid.');
+        }} else {{
+            const int realEvent = jjParameterGet(xTile,yTile, -12,32);
+            jjParameterSet(xTile,yTile, -12,32, og.params);
+            jjOBJ@ obj = jjObjects[jjAddObject(eventID, og.xPos, og.yPos, 0, CREATOR::LEVEL)];
+            jjParameterSet(xTile,yTile, -12,32, realEvent);
+            if (jjGameConnection == GAME::LOCAL) {{
+                obj.deactivates = false;
+                obj.creatorID = 1;
+            }}
         }}
     }}
     uint _replaceMeIndex = 0;
