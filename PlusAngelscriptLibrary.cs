@@ -244,6 +244,8 @@ namespace MLLE {{
             layer.xInnerAutoSpeed = pfloat;
             data5.pop(pfloat);
             layer.yInnerAutoSpeed = pfloat;
+            data5.pop(pbool);
+            layer.textureColorZeroIsTransparent = pbool;
             data5.pop(pchar);
             if (pchar >= 0)
                 layer.texture = TEXTURE::Texture(pchar);

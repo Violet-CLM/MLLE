@@ -829,6 +829,7 @@ class Layer
     public byte TextureSurface;
     public byte Fade;
     public float XFade, YFade, InnerX, InnerY, InnerAutoX, InnerAutoY;
+    public bool TextureColorZeroIsTransparent;
     public sbyte Texture;
     public byte[] TextureImage;
 
@@ -858,6 +859,7 @@ class Layer
         Fade = 192;
         XFade = YFade = 0.5f;
         XSpeedModel = YSpeedModel = (byte)((i == 7) ? 1 : 0);
+        TextureColorZeroIsTransparent = false;
     }
 
     public Layer(Layer other)
@@ -907,6 +909,7 @@ class Layer
         InnerY = other.InnerY;
         InnerAutoX = other.InnerAutoX;
         InnerAutoY = other.InnerAutoY;
+        TextureColorZeroIsTransparent = other.TextureColorZeroIsTransparent;
         Texture = other.Texture;
         if (Texture >= 0)
             TextureImage = null;
@@ -950,6 +953,7 @@ class Layer
         TextureSurface = 0;
         Fade = 192;
         XFade = YFade = 0.5f;
+        TextureColorZeroIsTransparent = false;
 
         TileMap = new ArrayMap<ushort>(Width, Height);
     }
@@ -1108,6 +1112,8 @@ class Layer
             if (XFade != 0.5f || YFade != 0.5f)
                 return true;
             if (InnerX != 0 || InnerY != 0 || InnerAutoX != 0 || InnerAutoY != 0)
+                return true;
+            if (TextureColorZeroIsTransparent)
                 return true;
             if (Texture != 0)
                 return true;

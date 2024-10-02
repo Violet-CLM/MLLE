@@ -148,6 +148,7 @@ namespace MLLE
             InnerY.Text = layer.InnerY.ToString();
             InnerAutoX.Text = layer.InnerAutoX.ToString();
             InnerAutoY.Text = layer.InnerAutoY.ToString();
+            TextureColorZeroIsTransparent.Checked = layer.TextureColorZeroIsTransparent;
             if (layer.Texture >= 0)
                 TextureSource.SelectedIndex = layer.Texture;
             else
@@ -301,6 +302,7 @@ namespace MLLE
                 Single.TryParse(InnerY.Text, out DataSource.InnerY);
                 Single.TryParse(InnerAutoX.Text, out DataSource.InnerAutoX);
                 Single.TryParse(InnerAutoY.Text, out DataSource.InnerAutoY);
+                DataSource.TextureColorZeroIsTransparent = TextureColorZeroIsTransparent.Checked;
                 DataSource.Texture = TextureSource.SelectedIndex < 16 ? (sbyte)TextureSource.SelectedIndex : (sbyte)-1;
                 DataSource.TextureImage = Texture;
                 SourceForm.LevelHasBeenModified = true;
@@ -355,6 +357,7 @@ namespace MLLE
             TextureSource.Enabled = TextureMode.Checked && TextureModeSelect.SelectedIndex != 2;
             TextureSourceDraw.Enabled = TextureSource.Enabled && SourceForm.J2L.HasTiles;
             SpriteMode.Enabled = !TextureMode.Checked || TextureModeSelect.SelectedIndex != 6;
+            TextureColorZeroIsTransparent.Enabled = TextureMode.Checked && TextureModeSelect.SelectedIndex != 6;
             string fadeSuffix = "Fade";
             if (TextureModeSelect.SelectedIndex == 2 || TextureModeSelect.SelectedIndex == 3)
                 fadeSuffix = "Pivot";
@@ -397,6 +400,7 @@ namespace MLLE
             XFade.Enabled = YFade.Enabled = XFadeLabel.Enabled = YFadeLabel.Enabled = TextureModeSelect.Enabled = Stars.Enabled = ColorBox.Enabled = ColorLabel.Enabled = Param1.Enabled = Param2.Enabled = Param3.Enabled = RedLabel.Enabled = GreenLabel.Enabled = BlueLabel.Enabled = TextureMode.Checked;
             TextureSource.Enabled = TextureMode.Checked && TextureModeSelect.SelectedIndex != 2;
             TextureSourceDraw.Enabled = TextureSource.Enabled && SourceForm.J2L.HasTiles;
+            TextureColorZeroIsTransparent.Enabled = TextureMode.Checked && TextureModeSelect.SelectedIndex != 6; //not reflection
             if (TextureSurfaceSelect.Visible)
             {
                 Fade.Visible = (TextureModeSelect.SelectedIndex <= 1 || TextureModeSelect.SelectedIndex == 5); //warp horizon, tunnel, cylinder
