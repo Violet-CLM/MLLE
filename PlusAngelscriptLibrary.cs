@@ -250,9 +250,12 @@ namespace MLLE {{
             if (pchar >= 0)
                 layer.texture = TEXTURE::Texture(pchar);
             else {{
-                jjPIXELMAP texture(256, 256);
-                for (uint y = 0; y < 256; ++y)
-                    for (uint x = 0; x < 256; ++x)
+                uint textureWidth, textureHeight;
+                data5.pop(textureWidth);
+                data5.pop(textureHeight);
+                jjPIXELMAP texture(textureWidth, textureHeight);
+                for (uint y = 0; y < textureHeight; ++y)
+                    for (uint x = 0; x < textureWidth; ++x)
                         data5.pop(texture[x,y]);
                 texture.makeTexture(layer);
             }}
