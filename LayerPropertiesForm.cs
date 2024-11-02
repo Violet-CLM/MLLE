@@ -263,6 +263,11 @@ namespace MLLE
                                         : (ushort)0;
                                 }
                             SourceForm.J2L.EventMap = newEventMap;
+
+                            foreach (var offGrid in SourceForm.J2L.PlusPropertyList.OffGridObjects) {
+                                offGrid.location.X -= newrectangle[2] * 32;
+                                offGrid.location.Y -= newrectangle[0] * 32;
+                            }
                         }
                     }
                     DataSource.TileMap = newTileMap;
