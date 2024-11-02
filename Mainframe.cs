@@ -950,6 +950,24 @@ void main() {
                         if (CurrentTilesetOverlay != TilesetOverlay.SmartTiles) MakeSelectionIntoStamp(true);
                         return true;
                     }
+                case (Keys.Control | Keys.L):
+                    {
+                        ChangeLayerByOrder(
+                            CurrentLayerID == 0 ?
+                                (byte)(J2L.AllLayers.Count() - 1) :
+                                (CurrentLayerID - 1)
+                        );
+                        return true;
+                    }
+                case (Keys.Shift | Keys.L):
+                    {
+                        ChangeLayerByOrder(
+                            CurrentLayerID == J2L.AllLayers.Count() - 1 ?
+                                0 :
+                                (CurrentLayerID + 1)
+                        );
+                        return true;
+                    }
 
                 default: return base.ProcessCmdKey(ref msg, keyData);
             }
