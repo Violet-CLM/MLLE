@@ -3894,7 +3894,7 @@ void main() {
 
         private void LevelDisplay_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
         {
-            if (LastFocusedZone == FocusedZone.Level && KeyTabPressed)
+            if (LastFocusedZone == FocusedZone.Level && (KeyTabPressed || e.Button == MouseButtons.Middle))
             {
                 MouseHeldDownTabDragging = e.Location;
             }
