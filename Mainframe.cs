@@ -15,6 +15,7 @@ using OpenTK.Graphics.OpenGL;
 using Ini;
 using Un4seen.Bass;
 using Extra.Collections;
+using System.Globalization;
 
 namespace MLLE
 {
@@ -145,6 +146,8 @@ namespace MLLE
         private bool KeyXPressed = false;
         private bool KeyYPressed = false;
         private bool KeyTabPressed = false;
+
+        private CultureInfo DefaultCulture;
 
         private bool levelHasBeenModified = false;
         internal bool LevelHasBeenModified
@@ -440,6 +443,8 @@ namespace MLLE
         {
             while (!LevelDisplayLoaded) ;
 
+            DefaultCulture = CultureInfo.CurrentCulture;
+
             {
                 string X = Settings.IniReadValue("Window", "X");
                 string Y = Settings.IniReadValue("Window", "Y");
@@ -553,6 +558,7 @@ namespace MLLE
             PreviewHelpStringColors = (Settings.IniReadValue("Miscellaneous", "PreviewHelpStringColors") != "0"); previewHelpStringColorsToolStripMenuItem.Checked = PreviewHelpStringColors;
             BDisablesSmartTiles = (Settings.IniReadValue("Miscellaneous", "BDisablesSmartTiles") == "1"); bDisablesSmartTilesToolStripMenuItem.Checked = BDisablesSmartTiles;
             stijnVisionToolStripMenuItem.Checked = (Settings.IniReadValue("Miscellaneous", "stijnVision") == "1");
+            culturespecificDecimalsToolStripMenuItem.Checked = (Settings.IniReadValue("Miscellaneous", "CultureSpecificDecimals") != "0");
             stijnVision = stijnVisionToolStripMenuItem.Checked && stijnVisionToolStripMenuItem.Enabled;
 
             ToolStripMenuItem[] recolorableSpriteSubcategories = { pinballToolStripMenuItem, platformsToolStripMenuItem, polesToolStripMenuItem, sceneryToolStripMenuItem };
@@ -4126,6 +4132,20 @@ void main() {
             }
             return false;
         }
+
+        private void culturespecificDecimalsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (culturespecificDecimalsToolStripMenuItem.Checked)
+            {
+                CultureInfo.CurrentCulture = DefaultCulture;
+            }
+            else
+            {
+                CultureInfo.CurrentCulture = new CultureInfo("en-US", false);
+            }
+            Settings.IniWriteValue("Miscellaneous", "CultureSpecificDecimals", (stijnVision = culturespecificDecimalsToolStripMenuItem.Checked) ? "1" : "0");
+        }
+
         private Point MakeUpSomeValidStampCoordinates(bool blankTilesAreAcceptable, int MinX, int MinY, int MaxX, int MaxY, int iterations = 0)
         {
             Point p = new Point(_r.Next(MinX, MaxX), _r.Next(MinY, MaxY));

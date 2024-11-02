@@ -95,6 +95,7 @@
             this.zoomingAbove100ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.previewHelpStringColorsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.bDisablesSmartTilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.culturespecificDecimalsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator19 = new System.Windows.Forms.ToolStripSeparator();
             this.setTransparentColorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.setTile0ColorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -714,6 +715,7 @@
             this.zoomingAbove100ToolStripMenuItem,
             this.previewHelpStringColorsToolStripMenuItem,
             this.bDisablesSmartTilesToolStripMenuItem,
+            this.culturespecificDecimalsToolStripMenuItem,
             this.toolStripSeparator19,
             this.setTransparentColorToolStripMenuItem,
             this.setTile0ColorToolStripMenuItem,
@@ -761,6 +763,14 @@
             this.bDisablesSmartTilesToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
             this.bDisablesSmartTilesToolStripMenuItem.Text = "\'B\' returns to normal mode";
             this.bDisablesSmartTilesToolStripMenuItem.Click += new System.EventHandler(this.bDisablesSmartTilesToolStripMenuItem_Click);
+            // 
+            // culturespecificDecimalsToolStripMenuItem
+            // 
+            this.culturespecificDecimalsToolStripMenuItem.CheckOnClick = true;
+            this.culturespecificDecimalsToolStripMenuItem.Name = "culturespecificDecimalsToolStripMenuItem";
+            this.culturespecificDecimalsToolStripMenuItem.Size = new System.Drawing.Size(216, 22);
+            this.culturespecificDecimalsToolStripMenuItem.Text = "Culture-specific decimals";
+            this.culturespecificDecimalsToolStripMenuItem.Click += new System.EventHandler(this.culturespecificDecimalsToolStripMenuItem_Click);
             // 
             // toolStripSeparator19
             // 
@@ -849,7 +859,7 @@
             // 
             // TilesetScrollbar
             // 
-            this.TilesetScrollbar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            this.TilesetScrollbar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
             this.TilesetScrollbar.LargeChange = 256;
             this.TilesetScrollbar.Location = new System.Drawing.Point(320, 49);
@@ -863,7 +873,7 @@
             // DrawingTools
             // 
             this.DrawingTools.AllowItemReorder = true;
-            this.DrawingTools.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            this.DrawingTools.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
             this.DrawingTools.AutoSize = false;
             this.DrawingTools.BackColor = System.Drawing.SystemColors.ControlLightLight;
@@ -1071,7 +1081,7 @@
             // 
             // DisplayToolstrip
             // 
-            this.DisplayToolstrip.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            this.DisplayToolstrip.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.DisplayToolstrip.AutoSize = false;
             this.DisplayToolstrip.BackColor = System.Drawing.SystemColors.ControlLightLight;
@@ -1308,7 +1318,7 @@
             // 
             // LDScrollV
             // 
-            this.LDScrollV.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            this.LDScrollV.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.LDScrollV.LargeChange = 256;
             this.LDScrollV.Location = new System.Drawing.Point(827, 49);
@@ -1321,7 +1331,7 @@
             // 
             // LDScrollH
             // 
-            this.LDScrollH.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
+            this.LDScrollH.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.LDScrollH.LargeChange = 256;
             this.LDScrollH.Location = new System.Drawing.Point(361, 257);
@@ -1335,8 +1345,8 @@
             // 
             // LevelDisplay
             // 
-            this.LevelDisplay.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.LevelDisplay.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.LevelDisplay.AutoScrollMargin = new System.Drawing.Size(17, 17);
             this.LevelDisplay.BackColor = System.Drawing.Color.Black;
@@ -2184,5 +2194,6 @@
         private System.Windows.Forms.ToolStripMenuItem angelScriptAPIToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem angelScriptSyntaxToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator27;
+        private System.Windows.Forms.ToolStripMenuItem culturespecificDecimalsToolStripMenuItem;
     }
 }
