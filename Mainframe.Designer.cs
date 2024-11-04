@@ -1276,6 +1276,7 @@
             this.TilesetLabel.Name = "TilesetLabel";
             this.TilesetLabel.Size = new System.Drawing.Size(40, 24);
             this.TilesetLabel.Text = "Tileset";
+            this.TilesetLabel.Click += new System.EventHandler(this.TilesetLabel_Click);
             // 
             // TilesetSelection
             // 

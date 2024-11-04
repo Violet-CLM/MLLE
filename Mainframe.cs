@@ -4164,6 +4164,13 @@ void main() {
             Settings.IniWriteValue("Miscellaneous", "CultureSpecificDecimals", (stijnVision = culturespecificDecimalsToolStripMenuItem.Checked) ? "1" : "0");
         }
 
+        private void TilesetLabel_Click(object sender, EventArgs e)
+        {
+            _suspendEvent.Reset();
+            new TilesetSelection().ShowForm(AllTilesetLists[J2L.VersionType], HotKolors[1]);
+            _suspendEvent.Set();
+        }
+
         private Point MakeUpSomeValidStampCoordinates(bool blankTilesAreAcceptable, int MinX, int MinY, int MaxX, int MaxY, int iterations = 0)
         {
             Point p = new Point(_r.Next(MinX, MaxX), _r.Next(MinY, MaxY));
