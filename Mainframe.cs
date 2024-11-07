@@ -178,11 +178,20 @@ namespace MLLE
             public StringAndIndex(string str, int i) { String = str; Index = i; }
             public override String ToString() { return String; }
         }
-        public struct NameAndFilename
+        public class NameAndFilename
         {
             public string Name;
-            public string Filename;
-            public NameAndFilename(string n, string f) { Name = n; Filename = f; }
+            public string Filepath;
+            public string FilterText;
+            public int CRC32;
+            public Bitmap Thumbnail;
+            public NameAndFilename(string n, string f) {
+                Name = n;
+                Filepath = f;
+                FilterText = Name.ToLowerInvariant() + " " + Path.GetFileNameWithoutExtension(f).ToLowerInvariant();
+                CRC32 = 0;
+                Thumbnail = null;
+            }
             public override String ToString() { return Name; }
         }
 
@@ -667,7 +676,7 @@ void main() {
 
         internal void IdentifyTileset()
         {
-            TilesetSelection.SelectedIndex = TilesetSelection.Items.IndexOf(AllTilesetLists[J2L.VersionType].FirstOrDefault((NameAndFilename nf) => { return Path.GetFileName(nf.Filename) == J2L.MainTilesetFilename; }));
+            TilesetSelection.SelectedIndex = TilesetSelection.Items.IndexOf(AllTilesetLists[J2L.VersionType].FirstOrDefault((NameAndFilename nf) => { return Path.GetFileName(nf.Filepath) == J2L.MainTilesetFilename; }));
             //desiredindex = AllTilesets.FindIndex(delegate(string current) { return Path.GetFileName(current) == J2L.Tileset; });
             //foreach (StringAndIndex item in TilesetSelection.Items)
             //{
@@ -1197,7 +1206,7 @@ void main() {
 
         #region Menu Busywork
         private void TilesetSelection_SelectedIndexChanged(object sender, EventArgs e)
-        { if (TilesetSelection.SelectedIndex < 0) return; TilesetScrollbar.Focus(); ChangeTileset(((NameAndFilename)TilesetSelection.Items[TilesetSelection.SelectedIndex]).Filename); }
+        { if (TilesetSelection.SelectedIndex < 0) return; TilesetScrollbar.Focus(); ChangeTileset(((NameAndFilename)TilesetSelection.Items[TilesetSelection.SelectedIndex]).Filepath); }
 
         private void aboutMLLEToolStripMenuItem_Click(object sender, EventArgs e) { _suspendEvent.Reset(); new AboutBox1().ShowDialog(); _suspendEvent.Set(); }
 

@@ -35,7 +35,7 @@ namespace MLLE
                 pictureBox1.Size = new Size(160, 160);
                 pictureBox1.Location = new Point(10, 10);
 
-                J2TFile tileset = new J2TFile(f.Filename);
+                J2TFile tileset = new J2TFile(f.Filepath);
                 tileset.Palette.Colors[0] = Palette.Convert(transparentColor);
 
                 var image = new Bitmap(pictureBox1.Width, pictureBox1.Height, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
@@ -57,6 +57,8 @@ namespace MLLE
                 image.UnlockBits(data);
                 tileset.Palette.Apply(image);
                 pictureBox1.Image = image;
+                f.Thumbnail = image;
+                f.CRC32 = tileset.Crc32;
                 //pictureBox1.Enabled = false;
                 string tooltipText = f.Name /*+ " (" + Path.GetFileNameWithoutExtension(f.Filename) + ")"*/;
                 toolTip1.SetToolTip(pictureBox1, tooltipText);
@@ -64,6 +66,7 @@ namespace MLLE
                 panel.Controls.Add(pictureBox1);
                 flowLayoutPanel1.Controls.Add(panel);
 
+                panel.Tag = f.FilterText;
                 pictureBox1.Tag = tileset;
                 pictureBox1.MouseEnter += PictureBox_MouseEnter;
                 pictureBox1.MouseLeave += PictureBox_MouseLeave;
@@ -106,6 +109,33 @@ namespace MLLE
         private static void PictureBox_MouseEnter(object sender, EventArgs e)
         {
             (sender as Control).Parent.BackColor = SystemColors.Highlight;
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+            string filter = (sender as TextBox).Text.Trim();
+            if (filter == string.Empty)
+            {
+                foreach (var panel in flowLayoutPanel1.Controls)
+                    (panel as Control).Visible = true;
+            }
+            else
+            {
+                filter = filter.ToLowerInvariant();
+                foreach (Control panel in flowLayoutPanel1.Controls)
+                {
+                    panel.Visible = (panel.Tag as string).Contains(filter);
+                    if (!panel.Visible && panel == SelectedPanel) //the selected tileset was filtered out of the search results
+                    {
+                        panel.BackColor = SystemColors.Control;
+                        SelectedPanel = null;
+                        SelectedPictureBox = null;
+                        SelectedTileset = null;
+                        TilesetPalette.Image = null;
+                        label3.ResetText();
+                    }
+                }
+            }
         }
     }
 }
