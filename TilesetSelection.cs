@@ -21,7 +21,9 @@ namespace MLLE
         private delegate void PanelFlowDelegate(Panel p, FlowLayoutPanel f);
         private delegate void PanelStringDelegate(Panel p, string f);
 
-        private Object gridlock = new Object(), textlock = new Object();
+        private Object
+           // gridlock = new Object(),
+            textlock = new Object();
         private class FacadeControl : Control
         {
             private SolidBrush invalidPen, hoveringPen, selectedPen, labelPen;
@@ -57,42 +59,6 @@ namespace MLLE
                 SetStyle(ControlStyles.ResizeRedraw, true); // make sure the control is redrawn every time it is resized
                 DoubleBuffered = true;
             }
-            /*void getFirstTilesetID()
-            {
-                int maxNumberOfTilesetsThatCanBeDrawn = MaximumTilesetsThatCanBeDrawnAtOnce();
-                if (FirstTilesetToDraw >= NumberOfTilesetsToDraw)
-                    FirstTilesetToDraw = NumberOfTilesetsToDraw - maxNumberOfTilesetsThatCanBeDrawn;
-                if (FirstTilesetToDraw <= 0)
-                {
-                    FirstTilesetToDraw = 0;
-                    return;
-                }
-                while (true)
-                {
-                    while (!Tilesets[FirstTilesetToDraw].Show)
-                    {
-                        --FirstTilesetToDraw;
-                        if (FirstTilesetToDraw == 0)
-                            return;
-                    }
-                    int tryListingTilesetsFromHere = FirstTilesetToDraw;
-                    int numberOfTilesetsRemaining = maxNumberOfTilesetsThatCanBeDrawn;
-                    while (true)
-                    {
-                        if (Tilesets[tryListingTilesetsFromHere++].Show)
-                            numberOfTilesetsRemaining -= 1;
-                        if (numberOfTilesetsRemaining == 0)
-                            return;
-                        if (tryListingTilesetsFromHere >= NumberOfTilesetsToDraw)
-                        {
-                            --FirstTilesetToDraw;
-                            if (FirstTilesetToDraw == 0)
-                                return;
-                            break;
-                        }
-                    }
-                }
-            }*/
 
             internal void ScrollUp()
             {
@@ -176,6 +142,7 @@ namespace MLLE
 
             MyFacade.Dock = DockStyle.Fill;
             MyFacade.Tilesets = files;
+            MyFacade.MouseEnter += MyFacade_MouseEnter;
             MyFacade.MouseMove += MyFacade_MouseMove;
             MyFacade.MouseClick += MyFacade_MouseClick;
             MouseWheel += MyFacade_MouseWheel;
@@ -183,7 +150,7 @@ namespace MLLE
 
             label3.Text = ""; //hide until a tileset is chosen
 
-            flowLayoutPanel1.Visible = false;
+            buttonOkay.Enabled = false;
 
             new Thread(new ThreadStart(() =>
             {
@@ -255,7 +222,6 @@ namespace MLLE
                             MyFacade.NumberOfTilesetsToDraw += 1;
                             if (f.Show)
                                 Invoke(new FacadeDelegate(delegate (FacadeControl p) { p.Invalidate(); }), new object[] { MyFacade }); //can't do this if the main thread is stuck on the lock statement in text updated...
-                            //Invoke(new PanelFlowDelegate(delegate(Panel p, FlowLayoutPanel l) { l.Controls.Add(p); }), new object[] { panel, flowLayoutPanel1 });
                         }
 
                     } catch {
@@ -270,12 +236,26 @@ namespace MLLE
             ShowDialog();
         }
 
+        private void MyFacade_MouseEnter(object sender, EventArgs e)
+        {
+            MyFacade.Focus(); //for mouse wheel
+        }
+
         private void MyFacade_MouseWheel(object sender, MouseEventArgs e)
         {
-            if (e.Delta < -120)
-                MyFacade.ScrollUp();
-            else if (e.Delta > 120)
+            if (e.Delta <= -120)
                 MyFacade.ScrollDown();
+            else if (e.Delta >= 120)
+                MyFacade.ScrollUp();
+        }
+
+        private void SelectTileset(Mainframe.NameAndFilename newSelectedTileset)
+        {
+            MyFacade.SelectedTileset = newSelectedTileset;
+            label3.Text = MyFacade.SelectedTileset.Name + "\n" + Path.GetFileName(MyFacade.SelectedTileset.Filepath);// + "\n" + tileset.TileCount.ToString() + " tiles";
+            TilesetPalette.Palette = new Palette(MyFacade.SelectedTileset.Thumbnail.Palette);
+            TilesetPalette.Update(PaletteImage.AllPaletteColors);
+            buttonOkay.Enabled = true;
         }
 
         private void MyFacade_MouseClick(object sender, MouseEventArgs e)
@@ -283,10 +263,7 @@ namespace MLLE
             foreach (var possibleTileset in MyFacade.CurrentlyShownTilesets)
             {
                 if (possibleTileset.rectangle.Contains(e.Location)) {
-                    MyFacade.SelectedTileset = possibleTileset.tileset;
-                    label3.Text = MyFacade.SelectedTileset.Name + "\n" + Path.GetFileName(MyFacade.SelectedTileset.Filepath);// + "\n" + tileset.TileCount.ToString() + " tiles";
-                    TilesetPalette.Palette = new Palette(MyFacade.SelectedTileset.Thumbnail.Palette);
-                    TilesetPalette.Update(PaletteImage.AllPaletteColors);
+                    SelectTileset(possibleTileset.tileset);
                     break;
                 }
             }
@@ -320,14 +297,6 @@ namespace MLLE
                 {
                     for (int tilesetID = 0; tilesetID < MyFacade.NumberOfTilesetsToDraw; ++tilesetID)
                         MyFacade.Tilesets[tilesetID].Show = true;
-                    /*Parallel.ForEach<Control>(flowLayoutPanel1.Controls.Cast<Panel>(), panel =>
-                    // foreach (var panel in flowLayoutPanel1.Controls)
-                    {
-                        Invoke(new PanelDelegate(delegate (Panel p) { p.Visible = true; }), new object[] { panel });
-                        //(panel as Control).Visible = ((panel as Control).Tag as string).Contains(filter);
-                    });
-                    //foreach (var panel in flowLayoutPanel1.Controls)
-                      // (panel as Control).Visible = true;*/
                 }
             }
             else
@@ -338,6 +307,7 @@ namespace MLLE
                 {
                     MyFacade.SelectedTileset = null;
                     TilesetPalette.Image = null;
+                    buttonOkay.Enabled = false;
                     label3.ResetText();
                 }
                 //lock (gridlock)
@@ -345,20 +315,14 @@ namespace MLLE
                     for (int tilesetID = 0; tilesetID < MyFacade.NumberOfTilesetsToDraw; ++tilesetID)
                         MyFacade.Tilesets[tilesetID].Show = MyFacade.Tilesets[tilesetID].FilterText.Contains(filter);
                     MyFacade.FirstTilesetToDraw = 0; //simplest
-                    /*
-                    flowLayoutPanel1.SuspendLayout();
-                    //Parallel.ForEach(flowLayoutPanel1.Controls.Cast<Panel>(), (panel) =>
-                    foreach (Panel panel in flowLayoutPanel1.Controls)
-                    {
-                        //string f = filter;
-                        //Invoke(new PanelDelegate(delegate(Panel p){ p.Visible = (p.Tag as string).Contains(filter); }), new object[] { panel });
-                        panel.Visible = (panel.Tag as string).Contains(filter);
-                    };
-                    flowLayoutPanel1.ResumeLayout();
-                    */
                 }
             }
             MyFacade.Invalidate();
+        }
+
+        private void textBox1_MouseEnter(object sender, EventArgs e)
+        {
+            textBox1.Focus();
         }
     }
 }
