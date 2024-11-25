@@ -38,6 +38,9 @@
             this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
+            this.customDrawHolder = new System.Windows.Forms.Panel();
+            this.buttonUp = new System.Windows.Forms.Button();
+            this.buttonDown = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -48,10 +51,10 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.flowLayoutPanel1.AutoScroll = true;
             this.flowLayoutPanel1.BackColor = System.Drawing.SystemColors.Window;
-            this.flowLayoutPanel1.Location = new System.Drawing.Point(9, 33);
+            this.flowLayoutPanel1.Location = new System.Drawing.Point(527, 443);
             this.flowLayoutPanel1.Margin = new System.Windows.Forms.Padding(1);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(825, 400);
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(97, 39);
             this.flowLayoutPanel1.TabIndex = 0;
             // 
             // buttonOkay
@@ -144,6 +147,39 @@
             this.label3.TabIndex = 7;
             this.label3.Text = "info line 1\r\ninfo line 2\r\ninfo line 3";
             // 
+            // customDrawHolder
+            // 
+            this.customDrawHolder.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.customDrawHolder.BackColor = System.Drawing.SystemColors.Window;
+            this.customDrawHolder.Location = new System.Drawing.Point(15, 33);
+            this.customDrawHolder.Name = "customDrawHolder";
+            this.customDrawHolder.Size = new System.Drawing.Size(800, 400);
+            this.customDrawHolder.TabIndex = 8;
+            // 
+            // buttonUp
+            // 
+            this.buttonUp.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonUp.Location = new System.Drawing.Point(821, 33);
+            this.buttonUp.Name = "buttonUp";
+            this.buttonUp.Size = new System.Drawing.Size(16, 100);
+            this.buttonUp.TabIndex = 9;
+            this.buttonUp.Text = "^";
+            this.buttonUp.UseVisualStyleBackColor = true;
+            this.buttonUp.Click += new System.EventHandler(this.buttonUp_Click);
+            // 
+            // buttonDown
+            // 
+            this.buttonDown.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonDown.Location = new System.Drawing.Point(821, 333);
+            this.buttonDown.Name = "buttonDown";
+            this.buttonDown.Size = new System.Drawing.Size(16, 100);
+            this.buttonDown.TabIndex = 10;
+            this.buttonDown.Text = "v";
+            this.buttonDown.UseVisualStyleBackColor = true;
+            this.buttonDown.Click += new System.EventHandler(this.buttonDown_Click);
+            // 
             // TilesetSelection
             // 
             this.AcceptButton = this.buttonOkay;
@@ -151,6 +187,10 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.buttonCancel;
             this.ClientSize = new System.Drawing.Size(844, 528);
+            this.Controls.Add(this.buttonDown);
+            this.Controls.Add(this.buttonUp);
+            this.Controls.Add(this.flowLayoutPanel1);
+            this.Controls.Add(this.customDrawHolder);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.numericUpDown1);
@@ -158,7 +198,6 @@
             this.Controls.Add(this.label1);
             this.Controls.Add(this.buttonCancel);
             this.Controls.Add(this.buttonOkay);
-            this.Controls.Add(this.flowLayoutPanel1);
             this.Margin = new System.Windows.Forms.Padding(1);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
@@ -185,5 +224,8 @@
         private System.Windows.Forms.NumericUpDown numericUpDown1;
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Panel customDrawHolder;
+        private System.Windows.Forms.Button buttonUp;
+        private System.Windows.Forms.Button buttonDown;
     }
 }

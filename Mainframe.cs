@@ -185,12 +185,14 @@ namespace MLLE
             public string FilterText;
             public int CRC32;
             public Bitmap Thumbnail;
-            public NameAndFilename(string n, string f) {
+            public bool Show;
+            byte Rating;
+            public NameAndFilename(string n, string f, int crc = 0) {
                 Name = n;
                 Filepath = f;
-                FilterText = Name.ToLowerInvariant() + " " + Path.GetFileNameWithoutExtension(f).ToLowerInvariant();
-                CRC32 = 0;
+                CRC32 = crc;
                 Thumbnail = null;
+                Rating = 3;
             }
             public override String ToString() { return Name; }
         }
@@ -413,7 +415,10 @@ namespace MLLE
             {
                 BinaryReader file = new BinaryReader(File.Open(AllTilesets[i], FileMode.Open, FileAccess.Read, FileShare.Read), J2File.FileEncoding);
                 file.ReadBytes((file.PeekChar() == 32) ? 188 : 8);
-                AllTilesetLists[version][i] = new NameAndFilename(new string(file.ReadChars(32)).TrimEnd('\0'), AllTilesets[i]);
+                string tilesetName = new string(file.ReadChars(32)).TrimEnd('\0');
+                file.ReadBytes(6); //version, filesize
+                int crc = file.ReadInt32();
+                AllTilesetLists[version][i] = new NameAndFilename(tilesetName, AllTilesets[i], crc);
                 file.Close();
             }
         }

@@ -17,10 +17,149 @@ namespace MLLE
     public partial class TilesetSelection : Form
     {
         private delegate void PanelDelegate(Panel p);
+        private delegate void FacadeDelegate(FacadeControl p);
         private delegate void PanelFlowDelegate(Panel p, FlowLayoutPanel f);
         private delegate void PanelStringDelegate(Panel p, string f);
 
         private Object gridlock = new Object(), textlock = new Object();
+        private class FacadeControl : Control
+        {
+            private SolidBrush invalidPen, hoveringPen, selectedPen, labelPen;
+            internal int NumberOfTilesetsToDraw = 0;
+            internal int FirstTilesetToDraw = 0;
+            internal Mainframe.NameAndFilename[] Tilesets;
+            internal Mainframe.NameAndFilename SelectedTileset = null;
+
+            internal int MaximumTilesetsThatCanBeDrawnAtOnce() //8 by default, but the user may resize the window
+            {
+                return (Width / 200) * (Height / 200);
+            }
+
+            internal struct CurrentlyShownTileset
+            {
+                internal Rectangle rectangle;
+                internal Mainframe.NameAndFilename tileset;
+
+                public CurrentlyShownTileset(Rectangle rectangle, Mainframe.NameAndFilename tileset)
+                {
+                    this.rectangle = rectangle;
+                    this.tileset = tileset;
+                }
+            }
+            internal List<CurrentlyShownTileset> CurrentlyShownTilesets = new List<CurrentlyShownTileset>();
+
+            public FacadeControl()
+            {
+                invalidPen = new SolidBrush(SystemColors.Control);
+                hoveringPen = new SolidBrush(SystemColors.Highlight);
+                selectedPen = new SolidBrush(SystemColors.ControlDark);
+                labelPen = new SolidBrush(SystemColors.ControlText);
+                SetStyle(ControlStyles.ResizeRedraw, true); // make sure the control is redrawn every time it is resized
+                DoubleBuffered = true;
+            }
+            /*void getFirstTilesetID()
+            {
+                int maxNumberOfTilesetsThatCanBeDrawn = MaximumTilesetsThatCanBeDrawnAtOnce();
+                if (FirstTilesetToDraw >= NumberOfTilesetsToDraw)
+                    FirstTilesetToDraw = NumberOfTilesetsToDraw - maxNumberOfTilesetsThatCanBeDrawn;
+                if (FirstTilesetToDraw <= 0)
+                {
+                    FirstTilesetToDraw = 0;
+                    return;
+                }
+                while (true)
+                {
+                    while (!Tilesets[FirstTilesetToDraw].Show)
+                    {
+                        --FirstTilesetToDraw;
+                        if (FirstTilesetToDraw == 0)
+                            return;
+                    }
+                    int tryListingTilesetsFromHere = FirstTilesetToDraw;
+                    int numberOfTilesetsRemaining = maxNumberOfTilesetsThatCanBeDrawn;
+                    while (true)
+                    {
+                        if (Tilesets[tryListingTilesetsFromHere++].Show)
+                            numberOfTilesetsRemaining -= 1;
+                        if (numberOfTilesetsRemaining == 0)
+                            return;
+                        if (tryListingTilesetsFromHere >= NumberOfTilesetsToDraw)
+                        {
+                            --FirstTilesetToDraw;
+                            if (FirstTilesetToDraw == 0)
+                                return;
+                            break;
+                        }
+                    }
+                }
+            }*/
+
+            internal void ScrollUp()
+            {
+                int maxNumberOfTilesetsToGoBackUp = MaximumTilesetsThatCanBeDrawnAtOnce();
+                while (true)
+                {
+                    if (FirstTilesetToDraw == 0) //can't scroll more than this!
+                        break;
+                    if (Tilesets[--FirstTilesetToDraw].Show)
+                    {
+                        if (--maxNumberOfTilesetsToGoBackUp == 0)
+                            break;
+                    }
+                }
+                Invalidate();
+            }
+            internal void ScrollDown()
+            {
+                int maxNumberOfTilesetsToGoDown = MaximumTilesetsThatCanBeDrawnAtOnce() * 2;
+                while (true)
+                {
+                    if (++FirstTilesetToDraw == NumberOfTilesetsToDraw)
+                    {
+                        break;
+                    }
+                    if (Tilesets[FirstTilesetToDraw].Show)
+                    {
+                        if (--maxNumberOfTilesetsToGoDown == 0)
+                            break;
+                    }
+                }
+                ScrollUp();
+            }
+
+            protected override void OnPaint(PaintEventArgs pe)
+            {
+                CurrentlyShownTilesets.Clear();
+
+                Graphics g = pe.Graphics;
+
+                Point cursor = PointToClient(MousePosition);
+
+                int xPos = 10, yPos = 10;
+                //getFirstTilesetID();
+                for (int tilesetID = FirstTilesetToDraw; tilesetID < NumberOfTilesetsToDraw; ++tilesetID) {
+                    var tileset = Tilesets[tilesetID];
+                    if (!tileset.Show)
+                        continue;
+
+                    Rectangle dimensions = new Rectangle(xPos, yPos, 180, 180);
+                    CurrentlyShownTilesets.Add(new CurrentlyShownTileset(dimensions, tileset));
+                    g.FillRectangle(
+                        dimensions.Contains(cursor) ? hoveringPen : tileset == SelectedTileset ? selectedPen : invalidPen,
+                        dimensions
+                    );
+                    g.DrawImageUnscaled(tileset.Thumbnail, xPos + 10, yPos + 10);
+                    g.DrawString(tileset.Name, Label.DefaultFont, labelPen, xPos - 7, yPos - 10);
+                    if ((xPos += 200) > Width - 190)
+                    {
+                        xPos = 10;
+                        if ((yPos += 200) > Height - 190)
+                            break;
+                    }
+                }
+            }
+        }
+        FacadeControl MyFacade = new FacadeControl();
 
         PaletteImage TilesetPalette = new PaletteImage(3, 0, true, false);
 
@@ -30,11 +169,21 @@ namespace MLLE
         }
         internal void ShowForm(Mainframe.NameAndFilename[] files, Color transparentColor)
         {
+
             TilesetPalette.Location = new Point(buttonCancel.Right - TilesetPalette.Width, buttonCancel.Top - TilesetPalette.Height - 10);
             TilesetPalette.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             Controls.Add(TilesetPalette);
 
+            MyFacade.Dock = DockStyle.Fill;
+            MyFacade.Tilesets = files;
+            MyFacade.MouseMove += MyFacade_MouseMove;
+            MyFacade.MouseClick += MyFacade_MouseClick;
+            MouseWheel += MyFacade_MouseWheel;
+            customDrawHolder.Controls.Add(MyFacade);
+
             label3.Text = ""; //hide until a tileset is chosen
+
+            flowLayoutPanel1.Visible = false;
 
             new Thread(new ThreadStart(() =>
             {
@@ -42,19 +191,21 @@ namespace MLLE
                 {
                     try
                     {
-                        Panel panel = new Panel();
+                        f.FilterText = (f.Name + " " + Path.GetFileNameWithoutExtension(f.Filepath)).ToLowerInvariant();
+
+                        /*Panel panel = new Panel();
                         panel.Size = new Size(180, 180);
                         panel.BackColor = SystemColors.Control;
                         panel.Margin = new Padding(10);
 
                         PictureBox pictureBox1 = new PictureBox();
                         pictureBox1.Size = new Size(160, 160);
-                        pictureBox1.Location = new Point(10, 10);
+                        pictureBox1.Location = new Point(10, 10);*/
 
                         J2TFile tileset = new J2TFile(f.Filepath);
                         tileset.Palette.Colors[0] = Palette.Convert(transparentColor);
 
-                        var image = new Bitmap(pictureBox1.Width, pictureBox1.Height, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
+                        var image = new Bitmap(160, 160, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
                         var data = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), ImageLockMode.WriteOnly, PixelFormat.Format8bppIndexed);
                         byte[] bytes = new byte[data.Height * data.Stride];
                         uint numberOfTilesToDraw = Math.Min(tileset.TotalNumberOfTiles, 100); //we're drawing a 160x160 area, which is the first 100 tiles, though not all tilesets even have 100 tiles
@@ -72,32 +223,41 @@ namespace MLLE
                         Marshal.Copy(bytes, 0, data.Scan0, bytes.Length);
                         image.UnlockBits(data);
                         tileset.Palette.Apply(image);
-                        pictureBox1.Image = image;
+                        //pictureBox1.Image = image;
                         f.Thumbnail = image;
                         f.CRC32 = tileset.Crc32;
+
+                        /*
                         //pictureBox1.Enabled = false;
-                        string tooltipText = f.Name /*+ " (" + Path.GetFileNameWithoutExtension(f.Filename) + ")"*/;
+                        string tooltipText = f.Name;// + " (" + Path.GetFileNameWithoutExtension(f.Filename) + ")";
                         toolTip1.SetToolTip(pictureBox1, tooltipText);
                         // toolTip1.SetToolTip(panel, tooltipText);
-                        panel.Controls.Add(pictureBox1);
+                        panel.Controls.Add(pictureBox1);*/
+
                         string filter;
                         lock (textlock)
                         {
                             filter = textBox1.Text.Trim();
                         }
                         if (filter != string.Empty)
-                                panel.Visible = f.FilterText.Contains(filter.ToLowerInvariant());
+                            f.Show = f.FilterText.Contains(filter.ToLowerInvariant());
+                        else
+                            f.Show = true;
 
-                        panel.Tag = f.FilterText;
+                        /*panel.Tag = f.FilterText;
                         pictureBox1.Tag = tileset.Name + "\n" + tileset.FilenameOnly + "\n" + tileset.TileCount.ToString() + " tiles";
                         pictureBox1.MouseEnter += PictureBox_MouseEnter;
                         pictureBox1.MouseLeave += PictureBox_MouseLeave;
-                        pictureBox1.MouseClick += PictureBox1_MouseClick;
+                        pictureBox1.MouseClick += PictureBox1_MouseClick;*/
 
-                        lock (gridlock)
+                        //lock (gridlock)
                         {
-                            Invoke(new PanelFlowDelegate(delegate(Panel p, FlowLayoutPanel l) { l.Controls.Add(p); }), new object[] { panel, flowLayoutPanel1 });
+                            MyFacade.NumberOfTilesetsToDraw += 1;
+                            if (f.Show)
+                                Invoke(new FacadeDelegate(delegate (FacadeControl p) { p.Invalidate(); }), new object[] { MyFacade }); //can't do this if the main thread is stuck on the lock statement in text updated...
+                            //Invoke(new PanelFlowDelegate(delegate(Panel p, FlowLayoutPanel l) { l.Controls.Add(p); }), new object[] { panel, flowLayoutPanel1 });
                         }
+
                     } catch {
                         //just skip this one lol
                     }
@@ -110,28 +270,41 @@ namespace MLLE
             ShowDialog();
         }
 
-        Panel SelectedPanel;
-        PictureBox SelectedPictureBox;
-
-        private void PictureBox1_MouseClick(object sender, MouseEventArgs e)
+        private void MyFacade_MouseWheel(object sender, MouseEventArgs e)
         {
-            if (SelectedPanel != null)
-                SelectedPanel.BackColor = SystemColors.Control; //deselect
-            SelectedPictureBox = sender as PictureBox;
-            SelectedPanel = SelectedPictureBox.Parent as Panel;
-            label3.Text = SelectedPictureBox.Tag as string;
-            TilesetPalette.Palette = new Palette(SelectedPictureBox.Image.Palette);
-            TilesetPalette.Update(PaletteImage.AllPaletteColors);
+            if (e.Delta < -120)
+                MyFacade.ScrollUp();
+            else if (e.Delta > 120)
+                MyFacade.ScrollDown();
         }
 
-        private void PictureBox_MouseLeave(object sender, EventArgs e)
+        private void MyFacade_MouseClick(object sender, MouseEventArgs e)
         {
-            Panel panel = (sender as Control).Parent as Panel;
-            panel.BackColor = panel == SelectedPanel ? SystemColors.ControlDark : SystemColors.Control;
+            foreach (var possibleTileset in MyFacade.CurrentlyShownTilesets)
+            {
+                if (possibleTileset.rectangle.Contains(e.Location)) {
+                    MyFacade.SelectedTileset = possibleTileset.tileset;
+                    label3.Text = MyFacade.SelectedTileset.Name + "\n" + Path.GetFileName(MyFacade.SelectedTileset.Filepath);// + "\n" + tileset.TileCount.ToString() + " tiles";
+                    TilesetPalette.Palette = new Palette(MyFacade.SelectedTileset.Thumbnail.Palette);
+                    TilesetPalette.Update(PaletteImage.AllPaletteColors);
+                    break;
+                }
+            }
         }
-        private static void PictureBox_MouseEnter(object sender, EventArgs e)
+
+        private void MyFacade_MouseMove(object sender, MouseEventArgs e)
         {
-            (sender as Control).Parent.BackColor = SystemColors.Highlight;
+            MyFacade.Invalidate();
+        }
+
+        private void buttonUp_Click(object sender, EventArgs e)
+        {
+            MyFacade.ScrollUp();
+        }
+
+        private void buttonDown_Click(object sender, EventArgs e)
+        {
+            MyFacade.ScrollDown();
         }
 
         private void textBox1_TextChanged(object sender, EventArgs e)
@@ -142,32 +315,37 @@ namespace MLLE
                 filter = textBox1.Text.Trim();
             }
             if (filter == string.Empty)
-            {/*
-                lock (gridlock)
+            {
+                //lock (gridlock)
                 {
-                    Parallel.ForEach<Control>(flowLayoutPanel1.Controls.Cast<Panel>(), panel =>
+                    for (int tilesetID = 0; tilesetID < MyFacade.NumberOfTilesetsToDraw; ++tilesetID)
+                        MyFacade.Tilesets[tilesetID].Show = true;
+                    /*Parallel.ForEach<Control>(flowLayoutPanel1.Controls.Cast<Panel>(), panel =>
                     // foreach (var panel in flowLayoutPanel1.Controls)
                     {
                         Invoke(new PanelDelegate(delegate (Panel p) { p.Visible = true; }), new object[] { panel });
                         //(panel as Control).Visible = ((panel as Control).Tag as string).Contains(filter);
                     });
                     //foreach (var panel in flowLayoutPanel1.Controls)
-                      // (panel as Control).Visible = true;
-                }*/
+                      // (panel as Control).Visible = true;*/
+                }
             }
             else
             {
                 filter = filter.ToLowerInvariant();
-                if (SelectedPanel != null && !(SelectedPanel.Tag as string).Contains(filter)) //the selected tileset was filtered out of the search results
+                
+                if (MyFacade.SelectedTileset != null && !MyFacade.SelectedTileset.FilterText.Contains(filter)) //the selected tileset was filtered out of the search results
                 {
-                    SelectedPanel.BackColor = SystemColors.Control;
-                    SelectedPanel = null;
-                    SelectedPictureBox = null;
+                    MyFacade.SelectedTileset = null;
                     TilesetPalette.Image = null;
                     label3.ResetText();
                 }
-                lock (gridlock)
+                //lock (gridlock)
                 {
+                    for (int tilesetID = 0; tilesetID < MyFacade.NumberOfTilesetsToDraw; ++tilesetID)
+                        MyFacade.Tilesets[tilesetID].Show = MyFacade.Tilesets[tilesetID].FilterText.Contains(filter);
+                    MyFacade.FirstTilesetToDraw = 0; //simplest
+                    /*
                     flowLayoutPanel1.SuspendLayout();
                     //Parallel.ForEach(flowLayoutPanel1.Controls.Cast<Panel>(), (panel) =>
                     foreach (Panel panel in flowLayoutPanel1.Controls)
@@ -177,8 +355,10 @@ namespace MLLE
                         panel.Visible = (panel.Tag as string).Contains(filter);
                     };
                     flowLayoutPanel1.ResumeLayout();
+                    */
                 }
             }
+            MyFacade.Invalidate();
         }
     }
 }
