@@ -182,11 +182,14 @@ namespace MLLE
         {
             public string Name;
             public string Filepath;
-            public string FilterText;
             public int CRC32;
+            //fields only used by the TilesetSelection window:
+            public string FilterText;
             public Bitmap Thumbnail;
+            public string ThumbnailFilepath;
             public bool Show;
             byte Rating;
+
             public NameAndFilename(string n, string f, int crc = 0) {
                 Name = n;
                 Filepath = f;

@@ -153,45 +153,54 @@ namespace MLLE
 
             new Thread(new ThreadStart(() =>
             {
+                string thumbnailFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MLLE-Thumbnails");
+                if (!Directory.Exists(thumbnailFolder))
+                    Directory.CreateDirectory(thumbnailFolder);
+
                 foreach (var f in files)
                 {
                     try
                     {
-                        f.FilterText = (f.Name + " " + Path.GetFileNameWithoutExtension(f.Filepath)).ToLowerInvariant();
-
-                        /*Panel panel = new Panel();
-                        panel.Size = new Size(180, 180);
-                        panel.BackColor = SystemColors.Control;
-                        panel.Margin = new Padding(10);
-
-                        PictureBox pictureBox1 = new PictureBox();
-                        pictureBox1.Size = new Size(160, 160);
-                        pictureBox1.Location = new Point(10, 10);*/
-
-                        J2TFile tileset = new J2TFile(f.Filepath);
-                        tileset.Palette.Colors[0] = Palette.Convert(transparentColor);
-
-                        var image = new Bitmap(160, 160, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
-                        var data = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), ImageLockMode.WriteOnly, PixelFormat.Format8bppIndexed);
-                        byte[] bytes = new byte[data.Height * data.Stride];
-                        uint numberOfTilesToDraw = Math.Min(tileset.TotalNumberOfTiles, 100); //we're drawing a 160x160 area, which is the first 100 tiles, though not all tilesets even have 100 tiles
-                        for (uint i = 0; i < numberOfTilesToDraw; ++i)
+                        if (f.Thumbnail is null) //haven't yet looked at this tileset in this window in this session
                         {
-                            var tileImage = tileset.Images[tileset.ImageAddress[i]];
-                            var xOrg = (i % 10) * 16;
-                            var yOrg = i / 10 * 16;
-                            for (uint x = 0; x < 32; x += 2) //+= 2 because this is a 0.5 size thumbnail
-                                for (uint y = 0; y < 32; y += 2)
+                            if (string.IsNullOrEmpty(f.FilterText))
+                                f.FilterText = (f.Name + " " + Path.GetFileNameWithoutExtension(f.Filepath)).ToLowerInvariant();
+                            if (string.IsNullOrEmpty(f.ThumbnailFilepath)) //probably true in exactly the same cases as the previous if(), but hey
+                                f.ThumbnailFilepath = Path.Combine(thumbnailFolder, Path.GetFileNameWithoutExtension(f.Filepath) + "." + f.CRC32.ToString("X8") + ".png");
+
+                            try
+                            {
+                                f.Thumbnail = new Bitmap(f.ThumbnailFilepath); //load from thumbnail cache folder, where it was created a previous time this window was opened (in the same or different MLLE session)
+                            }
+                            catch //cached image does not exist yet
+                            {
+                                J2TFile tileset = new J2TFile(f.Filepath);
+                                tileset.Palette.Colors[0] = Palette.Convert(transparentColor);
+
+                                var image = new Bitmap(160, 160, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
+                                var data = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), ImageLockMode.WriteOnly, PixelFormat.Format8bppIndexed);
+                                byte[] bytes = new byte[data.Height * data.Stride];
+                                uint numberOfTilesToDraw = Math.Min(tileset.TotalNumberOfTiles, 100); //we're drawing a 160x160 area, which is the first 100 tiles, though not all tilesets even have 100 tiles
+                                for (uint i = 0; i < numberOfTilesToDraw; ++i)
                                 {
-                                    bytes[xOrg + x / 2 + (yOrg + y / 2) * data.Stride] = tileImage[x + y * 32];
+                                    var tileImage = tileset.Images[tileset.ImageAddress[i]];
+                                    var xOrg = (i % 10) * 16;
+                                    var yOrg = i / 10 * 16;
+                                    for (uint x = 0; x < 32; x += 2) //+= 2 because this is a 0.5 size thumbnail
+                                        for (uint y = 0; y < 32; y += 2)
+                                        {
+                                            bytes[xOrg + x / 2 + (yOrg + y / 2) * data.Stride] = tileImage[x + y * 32];
+                                        }
                                 }
+                                Marshal.Copy(bytes, 0, data.Scan0, bytes.Length);
+                                image.UnlockBits(data);
+                                tileset.Palette.Apply(image);
+                                f.Thumbnail = image;
+                                f.CRC32 = tileset.Crc32; //should be the same...
+
+                                image.Save(f.ThumbnailFilepath, ImageFormat.Png); //loading from PNG is much faster than loading from J2T, so cache this for later
+                            }
                         }
-                        Marshal.Copy(bytes, 0, data.Scan0, bytes.Length);
-                        image.UnlockBits(data);
-                        tileset.Palette.Apply(image);
-                        //pictureBox1.Image = image;
-                        f.Thumbnail = image;
-                        f.CRC32 = tileset.Crc32;
 
                         /*
                         //pictureBox1.Enabled = false;
