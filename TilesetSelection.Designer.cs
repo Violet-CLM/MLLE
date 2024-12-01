@@ -53,6 +53,7 @@
             this.buttonOkay.TabIndex = 1;
             this.buttonOkay.Text = "OK";
             this.buttonOkay.UseVisualStyleBackColor = true;
+            this.buttonOkay.Click += new System.EventHandler(this.buttonOkay_Click);
             // 
             // buttonCancel
             // 
@@ -64,6 +65,7 @@
             this.buttonCancel.TabIndex = 2;
             this.buttonCancel.Text = "Cancel";
             this.buttonCancel.UseVisualStyleBackColor = true;
+            this.buttonCancel.Click += new System.EventHandler(this.buttonCancel_Click);
             // 
             // toolTip1
             // 
@@ -112,6 +114,7 @@
             0,
             0,
             0});
+            this.numericUpDown1.MouseEnter += new System.EventHandler(this.textBox1_MouseEnter);
             // 
             // textBox1
             // 

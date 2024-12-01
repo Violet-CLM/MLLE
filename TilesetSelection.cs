@@ -133,7 +133,7 @@ namespace MLLE
         {
             InitializeComponent();
         }
-        internal void ShowForm(Mainframe.NameAndFilename[] files, Color transparentColor)
+        internal Mainframe.NameAndFilename ShowForm(Mainframe.NameAndFilename[] files, Color transparentColor)
         {
 
             TilesetPalette.Location = new Point(buttonCancel.Right - TilesetPalette.Width, buttonCancel.Top - TilesetPalette.Height - 10);
@@ -142,7 +142,6 @@ namespace MLLE
 
             MyFacade.Dock = DockStyle.Fill;
             MyFacade.Tilesets = files;
-            MyFacade.MouseEnter += MyFacade_MouseEnter;
             MyFacade.MouseMove += MyFacade_MouseMove;
             MyFacade.MouseClick += MyFacade_MouseClick;
             MouseWheel += MyFacade_MouseWheel;
@@ -234,11 +233,8 @@ namespace MLLE
             })).Start();
 
             ShowDialog();
-        }
 
-        private void MyFacade_MouseEnter(object sender, EventArgs e)
-        {
-            MyFacade.Focus(); //for mouse wheel
+            return MyFacade.SelectedTileset;
         }
 
         private void MyFacade_MouseWheel(object sender, MouseEventArgs e)
@@ -322,7 +318,21 @@ namespace MLLE
 
         private void textBox1_MouseEnter(object sender, EventArgs e)
         {
-            textBox1.Focus();
+            (sender as Control).Focus();
+        }
+
+        private void buttonOkay_Click(object sender, EventArgs e)
+        {
+            if (MyFacade.SelectedTileset != null) //should always be true, but let's play it safe
+            {
+                Dispose();
+            }
+        }
+
+        private void buttonCancel_Click(object sender, EventArgs e)
+        {
+            MyFacade.SelectedTileset = null;
+            Dispose();
         }
     }
 }

@@ -681,7 +681,9 @@ void main() {
 
         internal void IdentifyTileset()
         {
-            TilesetSelection.SelectedIndex = TilesetSelection.Items.IndexOf(AllTilesetLists[J2L.VersionType].FirstOrDefault((NameAndFilename nf) => { return Path.GetFileName(nf.Filepath) == J2L.MainTilesetFilename; }));
+            string filenameToCompare = Path.GetFileName(J2L.MainTilesetFilename).ToLower();
+            Debug.Write("Identifying " + filenameToCompare);
+            TilesetSelection.SelectedIndex = TilesetSelection.Items.IndexOf(AllTilesetLists[J2L.VersionType].FirstOrDefault((NameAndFilename nf) => { return Path.GetFileName(nf.Filepath).ToLower() == filenameToCompare; }));
             //desiredindex = AllTilesets.FindIndex(delegate(string current) { return Path.GetFileName(current) == J2L.Tileset; });
             //foreach (StringAndIndex item in TilesetSelection.Items)
             //{
@@ -4181,8 +4183,13 @@ void main() {
         private void TilesetLabel_Click(object sender, EventArgs e)
         {
             _suspendEvent.Reset();
-            new TilesetSelection().ShowForm(AllTilesetLists[J2L.VersionType], HotKolors[1]);
+            NameAndFilename result = new TilesetSelection().ShowForm(AllTilesetLists[J2L.VersionType], HotKolors[1]);
             _suspendEvent.Set();
+            if (result != null)
+            {
+                ChangeTileset(result.Filepath);
+                IdentifyTileset();
+            }
         }
 
         private Point MakeUpSomeValidStampCoordinates(bool blankTilesAreAcceptable, int MinX, int MinY, int MaxX, int MaxY, int iterations = 0)
