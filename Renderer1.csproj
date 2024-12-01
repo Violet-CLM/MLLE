@@ -364,6 +364,7 @@
     <None Include="Images\Snow.png" />
     <None Include="Images\JazzAbout.bmp" />
     <None Include="Images\JazzAbout.png" />
+    <Content Include="Images\Ratings.png" />
     <Content Include="Images\SmartTilesPermutations.png" />
     <Content Include="Images\BollPlatform.png" />
     <Content Include="Images\FruitPlatform.png" />

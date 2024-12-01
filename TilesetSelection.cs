@@ -24,6 +24,34 @@ namespace MLLE
         private Object
            // gridlock = new Object(),
             textlock = new Object();
+
+        private class RatingsImage : PictureBox
+        {
+            public int Rating; //1-indexed
+            public RatingsImage(int initialRating = 3)
+            {
+                Width = Properties.Resources.Ratings.Width;
+                Height = Properties.Resources.Ratings.Height / 5;
+                Image = new Bitmap(Width, Height);
+
+                SetRating(initialRating);
+            }
+            public void SetRating(int newRating)
+            {
+                if (Rating != newRating)
+                {
+                    Rating = newRating;
+
+                    using (Graphics g = Graphics.FromImage(Image))
+                        g.DrawImage(Properties.Resources.Ratings, new Rectangle(new Point(0, 0), Size), new Rectangle(new Point(0, (Rating - 1) * Height), Size), GraphicsUnit.Pixel);
+                    Invalidate();
+                }
+            }
+            public void SetRating(MouseEventArgs e)
+            {
+                SetRating(e.X / (Width / 5) + 1);
+            }
+        }
         private class FacadeControl : Control
         {
             private SolidBrush invalidPen, hoveringPen, selectedPen, labelPen;
@@ -126,6 +154,7 @@ namespace MLLE
             }
         }
         FacadeControl MyFacade = new FacadeControl();
+        RatingsImage FilterRating = new RatingsImage(), TilesetRating = new RatingsImage();
 
         PaletteImage TilesetPalette = new PaletteImage(3, 0, true, false);
 
@@ -147,13 +176,24 @@ namespace MLLE
             MouseWheel += MyFacade_MouseWheel;
             customDrawHolder.Controls.Add(MyFacade);
 
+            FilterRating.Location = new Point(label1.Right + 16, label1.Top);
+            TilesetRating.Location = new Point(labelRating.Left + 2, labelRating.Bottom + 10);
+            TilesetRating.Visible = false;
+            TilesetRating.Anchor = labelRating.Anchor;
+
+            FilterRating.MouseClick += FilterRating_MouseClick;
+            TilesetRating.MouseClick += TilesetRating_MouseClick;
+
+            Controls.Add(FilterRating);
+            Controls.Add(TilesetRating);
+
             label3.Text = ""; //hide until a tileset is chosen
 
             buttonOkay.Enabled = false;
 
             new Thread(new ThreadStart(() =>
             {
-                string thumbnailFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MLLE-Thumbnails");
+                string thumbnailFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MLLE Thumbnails");
                 if (!Directory.Exists(thumbnailFolder))
                     Directory.CreateDirectory(thumbnailFolder);
 
@@ -170,12 +210,14 @@ namespace MLLE
 
                             try
                             {
-                                f.Thumbnail = new Bitmap(f.ThumbnailFilepath); //load from thumbnail cache folder, where it was created a previous time this window was opened (in the same or different MLLE session)
+                                f.Thumbnail = new Bitmap(new MemoryStream(File.ReadAllBytes(f.ThumbnailFilepath))); //load from thumbnail cache folder, where it was created a previous time this window was opened (in the same or different MLLE session). https://stackoverflow.com/questions/4803935/free-file-locked-by-new-bitmapfilepath
+                                f.Rating = f.Thumbnail.Palette.Entries[2].R;
+                                if (f.Rating == 0 || f.Rating > 5) //something went wrong
+                                    f.Rating = 3;
                             }
                             catch //cached image does not exist yet
                             {
                                 J2TFile tileset = new J2TFile(f.Filepath);
-                                tileset.Palette.Colors[0] = Palette.Convert(transparentColor);
 
                                 var image = new Bitmap(160, 160, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
                                 var data = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), ImageLockMode.WriteOnly, PixelFormat.Format8bppIndexed);
@@ -194,7 +236,11 @@ namespace MLLE
                                 }
                                 Marshal.Copy(bytes, 0, data.Scan0, bytes.Length);
                                 image.UnlockBits(data);
-                                tileset.Palette.Apply(image);
+                                //save some metadata in Colors[2], which should never be used in any tilesets, and even if it is, this is just the preview thumbnail, so we should be fine
+                                tileset.Palette.Colors[2][0] = f.Rating; //3, may be changed later
+                                tileset.Palette.Colors[2][1] = (byte)(tileset.TileCount);
+                                tileset.Palette.Colors[2][2] = (byte)(tileset.TileCount >> 8);
+                                tileset.Palette.Apply(image, transparentColor);
                                 f.Thumbnail = image;
                                 f.CRC32 = tileset.Crc32; //should be the same...
 
@@ -202,28 +248,15 @@ namespace MLLE
                             }
                         }
 
-                        /*
-                        //pictureBox1.Enabled = false;
-                        string tooltipText = f.Name;// + " (" + Path.GetFileNameWithoutExtension(f.Filename) + ")";
-                        toolTip1.SetToolTip(pictureBox1, tooltipText);
-                        // toolTip1.SetToolTip(panel, tooltipText);
-                        panel.Controls.Add(pictureBox1);*/
-
                         string filter;
                         lock (textlock)
                         {
                             filter = textBox1.Text.Trim();
                         }
                         if (filter != string.Empty)
-                            f.Show = f.FilterText.Contains(filter.ToLowerInvariant());
+                            f.Show = f.Rating >= FilterRating.Rating && f.FilterText.Contains(filter.ToLowerInvariant());
                         else
-                            f.Show = true;
-
-                        /*panel.Tag = f.FilterText;
-                        pictureBox1.Tag = tileset.Name + "\n" + tileset.FilenameOnly + "\n" + tileset.TileCount.ToString() + " tiles";
-                        pictureBox1.MouseEnter += PictureBox_MouseEnter;
-                        pictureBox1.MouseLeave += PictureBox_MouseLeave;
-                        pictureBox1.MouseClick += PictureBox1_MouseClick;*/
+                            f.Show = f.Rating >= FilterRating.Rating;
 
                         //lock (gridlock)
                         {
@@ -235,15 +268,30 @@ namespace MLLE
                     } catch {
                         //just skip this one lol
                     }
-
-                    //if (++fileID == 12) //debug
-                    //    break;
                 }
             })).Start();
 
             ShowDialog();
 
             return MyFacade.SelectedTileset;
+        }
+
+        private void TilesetRating_MouseClick(object sender, MouseEventArgs e)
+        {
+            TilesetRating.SetRating(e);
+            var currentTileset = MyFacade.SelectedTileset;
+            currentTileset.Rating = (byte)TilesetRating.Rating;
+            var tilesetPalette = currentTileset.Thumbnail.Palette;
+            Color oldColor1 = tilesetPalette.Entries[2];
+            tilesetPalette.Entries[2] = Color.FromArgb(currentTileset.Rating, oldColor1.G, oldColor1.B);
+            currentTileset.Thumbnail.Palette = tilesetPalette;
+            currentTileset.Thumbnail.Save(currentTileset.ThumbnailFilepath, ImageFormat.Png);
+        }
+
+        private void FilterRating_MouseClick(object sender, MouseEventArgs e)
+        {
+            FilterRating.SetRating(e);
+            textBox1_TextChanged(null, null);
         }
 
         private void MyFacade_MouseWheel(object sender, MouseEventArgs e)
@@ -257,10 +305,14 @@ namespace MLLE
         private void SelectTileset(Mainframe.NameAndFilename newSelectedTileset)
         {
             MyFacade.SelectedTileset = newSelectedTileset;
-            label3.Text = MyFacade.SelectedTileset.Name + "\n" + Path.GetFileName(MyFacade.SelectedTileset.Filepath);// + "\n" + tileset.TileCount.ToString() + " tiles";
+            Color tilesetMetadata = MyFacade.SelectedTileset.Thumbnail.Palette.Entries[2];
+            label3.Text = MyFacade.SelectedTileset.Name + "\n" + Path.GetFileName(MyFacade.SelectedTileset.Filepath) + "\n" + (tilesetMetadata.G | (tilesetMetadata.B << 8)).ToString() + " tiles";
             TilesetPalette.Palette = new Palette(MyFacade.SelectedTileset.Thumbnail.Palette);
             TilesetPalette.Update(PaletteImage.AllPaletteColors);
+            TilesetRating.SetRating(newSelectedTileset.Rating);
             buttonOkay.Enabled = true;
+            TilesetRating.Visible = true;
+            labelRating.Visible = true;
         }
 
         private void MyFacade_MouseClick(object sender, MouseEventArgs e)
@@ -296,32 +348,41 @@ namespace MLLE
             {
                 filter = textBox1.Text.Trim();
             }
-            if (filter == string.Empty)
+            if (string.IsNullOrEmpty(filter))
             {
                 //lock (gridlock)
                 {
                     for (int tilesetID = 0; tilesetID < MyFacade.NumberOfTilesetsToDraw; ++tilesetID)
-                        MyFacade.Tilesets[tilesetID].Show = true;
+                    {
+                        var tileset = MyFacade.Tilesets[tilesetID];
+                        tileset.Show = tileset.Rating >= FilterRating.Rating;
+                    }
                 }
             }
             else
             {
                 filter = filter.ToLowerInvariant();
                 
-                if (MyFacade.SelectedTileset != null && !MyFacade.SelectedTileset.FilterText.Contains(filter)) //the selected tileset was filtered out of the search results
-                {
-                    MyFacade.SelectedTileset = null;
-                    TilesetPalette.Image = null;
-                    buttonOkay.Enabled = false;
-                    label3.ResetText();
-                }
                 //lock (gridlock)
                 {
                     for (int tilesetID = 0; tilesetID < MyFacade.NumberOfTilesetsToDraw; ++tilesetID)
-                        MyFacade.Tilesets[tilesetID].Show = MyFacade.Tilesets[tilesetID].FilterText.Contains(filter);
-                    MyFacade.FirstTilesetToDraw = 0; //simplest
+                    {
+                        var tileset = MyFacade.Tilesets[tilesetID];
+                        tileset.Show = tileset.Rating >= FilterRating.Rating && tileset.FilterText.Contains(filter);
+                    }
                 }
             }
+
+            if (MyFacade.SelectedTileset != null && !MyFacade.SelectedTileset.Show) //the selected tileset was filtered out of the search results
+            {
+                MyFacade.SelectedTileset = null;
+                TilesetPalette.Image = null;
+                buttonOkay.Enabled = false;
+                label3.ResetText();
+                TilesetRating.Visible = false;
+                labelRating.Visible = false;
+            }
+            MyFacade.FirstTilesetToDraw = 0; //simplest
             MyFacade.Invalidate();
         }
 

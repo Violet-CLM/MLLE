@@ -188,7 +188,7 @@ namespace MLLE
             public Bitmap Thumbnail;
             public string ThumbnailFilepath;
             public bool Show;
-            byte Rating;
+            public byte Rating;
 
             public NameAndFilename(string n, string f, int crc = 0) {
                 Name = n;

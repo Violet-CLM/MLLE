@@ -34,13 +34,12 @@
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
-            this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.customDrawHolder = new System.Windows.Forms.Panel();
             this.buttonUp = new System.Windows.Forms.Button();
             this.buttonDown = new System.Windows.Forms.Button();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
+            this.labelRating = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // buttonOkay
@@ -92,29 +91,6 @@
             this.label2.Size = new System.Drawing.Size(176, 13);
             this.label2.TabIndex = 4;
             this.label2.Text = "Show tilesets with these characters:";
-            // 
-            // numericUpDown1
-            // 
-            this.numericUpDown1.Location = new System.Drawing.Point(204, 6);
-            this.numericUpDown1.Maximum = new decimal(new int[] {
-            3,
-            0,
-            0,
-            0});
-            this.numericUpDown1.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.numericUpDown1.Name = "numericUpDown1";
-            this.numericUpDown1.Size = new System.Drawing.Size(120, 20);
-            this.numericUpDown1.TabIndex = 5;
-            this.numericUpDown1.Value = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.numericUpDown1.MouseEnter += new System.EventHandler(this.textBox1_MouseEnter);
             // 
             // textBox1
             // 
@@ -170,6 +146,17 @@
             this.buttonDown.UseVisualStyleBackColor = true;
             this.buttonDown.Click += new System.EventHandler(this.buttonDown_Click);
             // 
+            // labelRating
+            // 
+            this.labelRating.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.labelRating.AutoSize = true;
+            this.labelRating.Location = new System.Drawing.Point(340, 443);
+            this.labelRating.Name = "labelRating";
+            this.labelRating.Size = new System.Drawing.Size(50, 13);
+            this.labelRating.TabIndex = 11;
+            this.labelRating.Text = "My rating:";
+            this.labelRating.Visible = false;
+            // 
             // TilesetSelection
             // 
             this.AcceptButton = this.buttonOkay;
@@ -177,12 +164,12 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.buttonCancel;
             this.ClientSize = new System.Drawing.Size(844, 528);
+            this.Controls.Add(this.labelRating);
             this.Controls.Add(this.buttonDown);
             this.Controls.Add(this.buttonUp);
             this.Controls.Add(this.customDrawHolder);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.textBox1);
-            this.Controls.Add(this.numericUpDown1);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.buttonCancel);
@@ -196,7 +183,6 @@
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Select Tileset";
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -208,11 +194,11 @@
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.NumericUpDown numericUpDown1;
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Panel customDrawHolder;
         private System.Windows.Forms.Button buttonUp;
         private System.Windows.Forms.Button buttonDown;
+        private System.Windows.Forms.Label labelRating;
     }
 }
