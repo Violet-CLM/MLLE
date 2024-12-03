@@ -219,6 +219,7 @@
             this.colorDialog1 = new System.Windows.Forms.ColorDialog();
             this.folderBrowserDialog1 = new System.Windows.Forms.FolderBrowserDialog();
             this.OffgridInstructions = new System.Windows.Forms.Label();
+            this.addNewBetaToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.MainMenu.SuspendLayout();
             this.DrawingTools.SuspendLayout();
             this.StatusBar.SuspendLayout();
@@ -619,14 +620,14 @@
             // levelPaletteToolStripMenuItem
             // 
             this.levelPaletteToolStripMenuItem.Name = "levelPaletteToolStripMenuItem";
-            this.levelPaletteToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.levelPaletteToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
             this.levelPaletteToolStripMenuItem.Text = "Level Palette";
             this.levelPaletteToolStripMenuItem.Click += new System.EventHandler(this.paletteToolStripMenuItem_Click);
             // 
             // addNewPaletteToolStripMenuItem
             // 
             this.addNewPaletteToolStripMenuItem.Name = "addNewPaletteToolStripMenuItem";
-            this.addNewPaletteToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.addNewPaletteToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
             this.addNewPaletteToolStripMenuItem.Text = "Add New...";
             this.addNewPaletteToolStripMenuItem.Click += new System.EventHandler(this.addNewPaletteToolStripMenuItem_Click);
             // 
@@ -640,7 +641,8 @@
             // tilesetsToolStripMenuItem
             // 
             this.tilesetsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.addNewToolStripMenuItem});
+            this.addNewToolStripMenuItem,
+            this.addNewBetaToolStripMenuItem});
             this.tilesetsToolStripMenuItem.Name = "tilesetsToolStripMenuItem";
             this.tilesetsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.tilesetsToolStripMenuItem.Text = "Tilesets";
@@ -649,7 +651,7 @@
             // addNewToolStripMenuItem
             // 
             this.addNewToolStripMenuItem.Name = "addNewToolStripMenuItem";
-            this.addNewToolStripMenuItem.Size = new System.Drawing.Size(132, 22);
+            this.addNewToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.addNewToolStripMenuItem.Text = "Add New...";
             this.addNewToolStripMenuItem.Click += new System.EventHandler(this.addNewToolStripMenuItem_Click);
             // 
@@ -816,44 +818,44 @@
             // 
             this.readmeToolStripMenuItem.Enabled = false;
             this.readmeToolStripMenuItem.Name = "readmeToolStripMenuItem";
-            this.readmeToolStripMenuItem.Size = new System.Drawing.Size(139, 22);
+            this.readmeToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
             this.readmeToolStripMenuItem.Text = "Contents";
             // 
             // toolStripSeparator4
             // 
             this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(136, 6);
+            this.toolStripSeparator4.Size = new System.Drawing.Size(170, 6);
             // 
             // levelmakingTipsToolStripMenuItem
             // 
             this.levelmakingTipsToolStripMenuItem.Name = "levelmakingTipsToolStripMenuItem";
-            this.levelmakingTipsToolStripMenuItem.Size = new System.Drawing.Size(448, 54);
+            this.levelmakingTipsToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
             this.levelmakingTipsToolStripMenuItem.Text = "Levelmaking Tips";
             this.levelmakingTipsToolStripMenuItem.Click += new System.EventHandler(this.levelmakingTipsToolStripMenuItem_Click);
             // 
             // angelScriptAPIToolStripMenuItem
             // 
             this.angelScriptAPIToolStripMenuItem.Name = "angelScriptAPIToolStripMenuItem";
-            this.angelScriptAPIToolStripMenuItem.Size = new System.Drawing.Size(448, 54);
+            this.angelScriptAPIToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
             this.angelScriptAPIToolStripMenuItem.Text = "AngelScript API";
             this.angelScriptAPIToolStripMenuItem.Click += new System.EventHandler(this.angelScriptAPIToolStripMenuItem_Click);
             // 
             // angelScriptSyntaxToolStripMenuItem
             // 
             this.angelScriptSyntaxToolStripMenuItem.Name = "angelScriptSyntaxToolStripMenuItem";
-            this.angelScriptSyntaxToolStripMenuItem.Size = new System.Drawing.Size(448, 54);
+            this.angelScriptSyntaxToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
             this.angelScriptSyntaxToolStripMenuItem.Text = "AngelScript Syntax";
             this.angelScriptSyntaxToolStripMenuItem.Click += new System.EventHandler(this.angelScriptSyntaxToolStripMenuItem_Click);
             // 
             // toolStripSeparator27
             // 
             this.toolStripSeparator27.Name = "toolStripSeparator27";
-            this.toolStripSeparator27.Size = new System.Drawing.Size(445, 6);
+            this.toolStripSeparator27.Size = new System.Drawing.Size(170, 6);
             // 
             // aboutMLLEToolStripMenuItem
             // 
             this.aboutMLLEToolStripMenuItem.Name = "aboutMLLEToolStripMenuItem";
-            this.aboutMLLEToolStripMenuItem.Size = new System.Drawing.Size(139, 22);
+            this.aboutMLLEToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
             this.aboutMLLEToolStripMenuItem.Text = "About MLLE";
             this.aboutMLLEToolStripMenuItem.Click += new System.EventHandler(this.aboutMLLEToolStripMenuItem_Click);
             // 
@@ -1944,12 +1946,19 @@
             this.OffgridInstructions.ForeColor = System.Drawing.Color.White;
             this.OffgridInstructions.Location = new System.Drawing.Point(12, 60);
             this.OffgridInstructions.Name = "OffgridInstructions";
-            this.OffgridInstructions.Size = new System.Drawing.Size(198, 225);
+            this.OffgridInstructions.Size = new System.Drawing.Size(219, 250);
             this.OffgridInstructions.TabIndex = 14;
             this.OffgridInstructions.Text = "Left-click: Place\r\nMiddle-click: Select\r\nRight-click: Delete\r\nCtrl-left-click: Co" +
-    "py\r\nCtrl-right-click: Cut\r\nE: Select\r\nShift+E: Place\r\nCtrl+E: Copy\r\nX/Y: Center\r\nShift+X/Y: Half-center";
+    "py\r\nCtrl-right-click: Cut\r\nE: Select\r\nShift+E: Place\r\nCtrl+E: Copy\r\nX/Y: Center\r" +
+    "\nShift+X/Y: Half-center";
             this.OffgridInstructions.Visible = false;
-            this.OffgridInstructions.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            // 
+            // addNewBetaToolStripMenuItem
+            // 
+            this.addNewBetaToolStripMenuItem.Name = "addNewBetaToolStripMenuItem";
+            this.addNewBetaToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.addNewBetaToolStripMenuItem.Text = "Add New (Beta)...";
+            this.addNewBetaToolStripMenuItem.Click += new System.EventHandler(this.addNewBetaToolStripMenuItem_Click);
             // 
             // Mainframe
             // 
@@ -2196,5 +2205,6 @@
         private System.Windows.Forms.ToolStripMenuItem angelScriptSyntaxToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator27;
         private System.Windows.Forms.ToolStripMenuItem culturespecificDecimalsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem addNewBetaToolStripMenuItem;
     }
 }

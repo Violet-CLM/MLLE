@@ -1760,8 +1760,9 @@ void main() {
                 toolstripItem.Click += tilesetsToolStripMenuItemTileset_Click;
                 tilesetsToolStripMenuItem.DropDownItems.Add(toolstripItem);
             }
-            addNewToolStripMenuItem.Enabled = J2L.HasTiles && (J2L.TileCount + J2L.NumberOfAnimations + 10 < J2L.MaxTiles);
+            addNewBetaToolStripMenuItem.Enabled = addNewToolStripMenuItem.Enabled = J2L.HasTiles && (J2L.TileCount + J2L.NumberOfAnimations + 10 < J2L.MaxTiles);
             tilesetsToolStripMenuItem.DropDownItems.Add(addNewToolStripMenuItem);
+            tilesetsToolStripMenuItem.DropDownItems.Add(addNewBetaToolStripMenuItem);
         }
         private void ReadjustTilesetImage()
         {
@@ -4193,6 +4194,20 @@ void main() {
                 ChangeTileset(result.Filepath);
                 IdentifyTileset();
             }
+        }
+
+        private void addNewBetaToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _suspendEvent.Reset();
+            NameAndFilename result = new TilesetSelection().ShowForm(AllTilesetLists[J2L.VersionType], HotKolors[1]);
+            if (result != null)
+            {
+                var newTileset = new J2TFile(result.Filepath);
+                newTileset.TileCount = 10;
+                if (new TilesetForm().ShowForm(newTileset, J2L, J2L.MaxTiles, J2L.TileCount + J2L.NumberOfAnimations))
+                    ReadjustTilesetImage();
+            }
+            _suspendEvent.Set();
         }
 
         private Point MakeUpSomeValidStampCoordinates(bool blankTilesAreAcceptable, int MinX, int MinY, int MaxX, int MaxY, int iterations = 0)
