@@ -178,11 +178,25 @@ namespace MLLE
             public StringAndIndex(string str, int i) { String = str; Index = i; }
             public override String ToString() { return String; }
         }
-        public struct NameAndFilename
+        public class NameAndFilename
         {
             public string Name;
-            public string Filename;
-            public NameAndFilename(string n, string f) { Name = n; Filename = f; }
+            public string Filepath;
+            public int CRC32;
+            //fields only used by the TilesetSelection window:
+            public string FilterText;
+            public Bitmap Thumbnail;
+            public string ThumbnailFilepath;
+            public bool Show;
+            public byte Rating;
+
+            public NameAndFilename(string n, string f, int crc = 0) {
+                Name = n;
+                Filepath = f;
+                CRC32 = crc;
+                Thumbnail = null;
+                Rating = 3;
+            }
             public override String ToString() { return Name; }
         }
 
@@ -404,7 +418,10 @@ namespace MLLE
             {
                 BinaryReader file = new BinaryReader(File.Open(AllTilesets[i], FileMode.Open, FileAccess.Read, FileShare.Read), J2File.FileEncoding);
                 file.ReadBytes((file.PeekChar() == 32) ? 188 : 8);
-                AllTilesetLists[version][i] = new NameAndFilename(new string(file.ReadChars(32)).TrimEnd('\0'), AllTilesets[i]);
+                string tilesetName = new string(file.ReadChars(32)).TrimEnd('\0');
+                file.ReadBytes(6); //version, filesize
+                int crc = file.ReadInt32();
+                AllTilesetLists[version][i] = new NameAndFilename(tilesetName, AllTilesets[i], crc);
                 file.Close();
             }
         }
@@ -667,7 +684,9 @@ void main() {
 
         internal void IdentifyTileset()
         {
-            TilesetSelection.SelectedIndex = TilesetSelection.Items.IndexOf(AllTilesetLists[J2L.VersionType].FirstOrDefault((NameAndFilename nf) => { return Path.GetFileName(nf.Filename) == J2L.MainTilesetFilename; }));
+            string filenameToCompare = Path.GetFileName(J2L.MainTilesetFilename).ToLower();
+            Debug.Write("Identifying " + filenameToCompare);
+            TilesetSelection.SelectedIndex = TilesetSelection.Items.IndexOf(AllTilesetLists[J2L.VersionType].FirstOrDefault((NameAndFilename nf) => { return Path.GetFileName(nf.Filepath).ToLower() == filenameToCompare; }));
             //desiredindex = AllTilesets.FindIndex(delegate(string current) { return Path.GetFileName(current) == J2L.Tileset; });
             //foreach (StringAndIndex item in TilesetSelection.Items)
             //{
@@ -1197,7 +1216,7 @@ void main() {
 
         #region Menu Busywork
         private void TilesetSelection_SelectedIndexChanged(object sender, EventArgs e)
-        { if (TilesetSelection.SelectedIndex < 0) return; TilesetScrollbar.Focus(); ChangeTileset(((NameAndFilename)TilesetSelection.Items[TilesetSelection.SelectedIndex]).Filename); }
+        { if (TilesetSelection.SelectedIndex < 0) return; TilesetScrollbar.Focus(); ChangeTileset(((NameAndFilename)TilesetSelection.Items[TilesetSelection.SelectedIndex]).Filepath); }
 
         private void aboutMLLEToolStripMenuItem_Click(object sender, EventArgs e) { _suspendEvent.Reset(); new AboutBox1().ShowDialog(); _suspendEvent.Set(); }
 
@@ -1741,8 +1760,9 @@ void main() {
                 toolstripItem.Click += tilesetsToolStripMenuItemTileset_Click;
                 tilesetsToolStripMenuItem.DropDownItems.Add(toolstripItem);
             }
-            addNewToolStripMenuItem.Enabled = J2L.HasTiles && (J2L.TileCount + J2L.NumberOfAnimations + 10 < J2L.MaxTiles);
+            addNewBetaToolStripMenuItem.Enabled = addNewToolStripMenuItem.Enabled = J2L.HasTiles && (J2L.TileCount + J2L.NumberOfAnimations + 10 < J2L.MaxTiles);
             tilesetsToolStripMenuItem.DropDownItems.Add(addNewToolStripMenuItem);
+            tilesetsToolStripMenuItem.DropDownItems.Add(addNewBetaToolStripMenuItem);
         }
         private void ReadjustTilesetImage()
         {
@@ -4162,6 +4182,32 @@ void main() {
                 CultureInfo.CurrentCulture = new CultureInfo("en-US", false);
             }
             Settings.IniWriteValue("Miscellaneous", "CultureSpecificDecimals", (stijnVision = culturespecificDecimalsToolStripMenuItem.Checked) ? "1" : "0");
+        }
+
+        private void TilesetLabel_Click(object sender, EventArgs e)
+        {
+            _suspendEvent.Reset();
+            NameAndFilename result = new TilesetSelection().ShowForm(AllTilesetLists[J2L.VersionType], HotKolors[1]);
+            _suspendEvent.Set();
+            if (result != null)
+            {
+                ChangeTileset(result.Filepath);
+                IdentifyTileset();
+            }
+        }
+
+        private void addNewBetaToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _suspendEvent.Reset();
+            NameAndFilename result = new TilesetSelection().ShowForm(AllTilesetLists[J2L.VersionType], HotKolors[1]);
+            if (result != null)
+            {
+                var newTileset = new J2TFile(result.Filepath);
+                newTileset.TileCount = 10;
+                if (new TilesetForm().ShowForm(newTileset, J2L, J2L.MaxTiles, J2L.TileCount + J2L.NumberOfAnimations))
+                    ReadjustTilesetImage();
+            }
+            _suspendEvent.Set();
         }
 
         private Point MakeUpSomeValidStampCoordinates(bool blankTilesAreAcceptable, int MinX, int MinY, int MaxX, int MaxY, int iterations = 0)
