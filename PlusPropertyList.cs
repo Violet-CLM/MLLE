@@ -552,9 +552,6 @@ namespace MLLE
             using (BinaryWriter data5writer = new BinaryWriter(data5header, J2LFile.FileEncoding))
             using (BinaryWriter data5bodywriter = new BinaryWriter(data5body, J2LFile.FileEncoding))
             {
-                data5writer.Write(MLLEData5MagicString.ToCharArray());
-                data5writer.Write(CurrentMLLEData5Version);
-
                 data5bodywriter.Write(IsSnowing);
                 data5bodywriter.Write(IsSnowingOutdoorsOnly);
                 data5bodywriter.Write(SnowingIntensity);
@@ -771,6 +768,17 @@ namespace MLLE
                 
                 this = new PlusPropertyList(null);
 
+                var extraFiles = new List<byte[]>();
+                if (data5Version >= 0x200)
+                { //MLLE-Include-2.0 moved the extra .j2l files containing extra layers into the main .j2l instead of having them be actual files. The extra "file" array was put at the start of Data5 because, in theory, ANY part of Data5 might want to refer back to it.
+                    var numberOfExtraFiles = data5reader.ReadByte();
+                    while (numberOfExtraFiles-- != 0)
+                    {
+                        int extraFileSize = data5reader.ReadInt32();
+                        extraFiles.Add(data5reader.ReadBytes(extraFileSize));
+                    }
+                }
+
                 uint csize = data5reader.ReadUInt32();
                 uint usize = data5reader.ReadUInt32();
                 using (BinaryReader data5bodyreader = new BinaryReader(new MemoryStream(ZlibStream.UncompressBuffer(data5reader.ReadBytes((int)csize)))))
@@ -854,17 +862,24 @@ namespace MLLE
                         for (int i = 8; i < layerCount; i += 8)
                         {
                             J2LFile extraLevel = new J2LFile();
-                            string levelFilePath = GetExtraDataLevelFilepath(Filepath, i / 8 - 1);
-                            if (File.Exists(levelFilePath))
+                            if (data5Version < 0x200)
                             {
-                                extraLevel.OpenLevel(levelFilePath, ref Data5, SecurityStringOverride: J2LFile.SecurityStringExtraDataNotForDirectEditing);
-                                nonDefaultLayers.AddRange(extraLevel.DefaultLayers);
+                                string levelFilePath = GetExtraDataLevelFilepath(Filepath, i / 8 - 1);
+                                if (File.Exists(levelFilePath))
+                                {
+                                    extraLevel.OpenLevel(levelFilePath, ref Data5, SecurityStringOverride: J2LFile.SecurityStringExtraDataNotForDirectEditing);
+                                }
+                                else
+                                {
+                                    this = new PlusPropertyList(null);
+                                    return "Additional file \"" + levelFilePath + "\" not found; MLLE will stop trying to read this Data5 section.";
+                                }
                             }
                             else
                             {
-                                this = new PlusPropertyList(null);
-                                return "Additional file \"" + levelFilePath + "\" not found; MLLE will stop trying to read this Data5 section.";
+                                extraLevel.OpenLevel(extraFiles.ElementAt((i - 1) / 8), ref Data5, SecurityStringOverride: J2LFile.SecurityStringExtraDataNotForDirectEditing);
                             }
+                            nonDefaultLayers.AddRange(extraLevel.DefaultLayers);
                         }
                         int nextNonDefaultLayerID = 0;
                         for (uint i = 0; i < layerCount; ++i)

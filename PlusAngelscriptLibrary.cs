@@ -9,10 +9,10 @@ namespace MLLE
 {
     public partial struct PlusPropertyList
     {
-        const uint CurrentMLLEData5Version = 0x107;
-        const string MLLEData5MagicString = "MLLE";
-        const string CurrentMLLEData5VersionStringForComparison = "0x107";
-        const string CurrentMLLEData5VersionString = "1.7";
+        internal const uint CurrentMLLEData5Version = 0x200;
+        internal const string MLLEData5MagicString = "MLLE";
+        const string CurrentMLLEData5VersionStringForComparison = "0x200";
+        const string CurrentMLLEData5VersionString = "2.0";
 
         const string AngelscriptLibrary =
 @"//This is a standard library created by MLLE to read some JJ2+ properties from a level file whose script includes this library. DO NOT MANUALLY MODIFY THIS FILE.
@@ -82,6 +82,16 @@ namespace MLLE {{
             return false;
         }}
 
+        bool pbool; uint8 pbyte; int8 pchar; int16 pshort; float pfloat; int pint; uint puint, puint2;
+
+        level.pop(pbyte);
+        pchar = 0;
+        while (pbyte-- != 0) {{
+            jjSTREAM tempFile;
+            level.pop(tempFile);
+            tempFile.save('|MLLE-Temp-' + (++pchar));
+        }}
+
         uint csize, usize;
         level.pop(csize); level.pop(usize);
         jjSTREAM data5;
@@ -90,7 +100,6 @@ namespace MLLE {{
             return false;
         }}
 
-        bool pbool; uint8 pbyte; int8 pchar; int16 pshort; float pfloat; int pint; uint puint, puint2;
         data5.pop(pbool); jjIsSnowing = pbool;
         data5.pop(pbool); jjIsSnowingOutdoorsOnly = pbool;
         data5.pop(pbyte); jjSnowingIntensity = pbyte;
@@ -194,10 +203,9 @@ namespace MLLE {{
             for (uint j = i; j < puint && j < i + 8; ++j) {{
                 layerIDsToGrab.insertLast((j & 7) + 1);
             }}
-            const string extraLayersFilename = jjLevelFileName.substr(0, jjLevelFileName.length() - 4) + '-MLLE-Data-' + (i/8) + '.j2l';
-            array<jjLAYER@> extraLayers = jjLayersFromLevel(extraLayersFilename, layerIDsToGrab);
+            array<jjLAYER@> extraLayers = jjLayersFromLevel('|MLLE-Temp-' + (i / 8), layerIDsToGrab);
             if (extraLayers.length == 0) {{
-                jjDebug('MLLE::Setup: Error reading ""' + extraLayersFilename + '""!');
+                jjDebug('MLLE::Setup: Error reading layers ' + (i + 1) + '-' + (i + layerIDsToGrab.length) + '!');
                 return false;
             }}
             for (uint j = 0; j < extraLayers.length(); ++j)
@@ -680,9 +688,6 @@ shared interface MLLEWeaponApply { bool Apply(uint, se::WeaponHook@ = null, jjST
             RequiredFilenames.Add(Path.ChangeExtension(Path.GetFileName(filepath), ".j2l"));
             for (int i = 1; i < Tilesets.Count; ++i)
                 RequiredFilenames.Add(Tilesets[i].FilenameOnly);
-            int extraDataLevelID = 0;
-            for (extraDataLevelID = 0; extraDataLevelID < numberOfExtraDataLevels; ++extraDataLevelID)
-                RequiredFilenames.Add(Path.GetFileName(GetExtraDataLevelFilepath(filepath, extraDataLevelID)));
             foreach (string fn in RequiredFilenames)
             {
                 string pragma = GetPragmaRequire(fn);
@@ -695,7 +700,8 @@ shared interface MLLEWeaponApply { bool Apply(uint, se::WeaponHook@ = null, jjST
                         fileContents = pragma + TagForProgrammaticallyAddedLines + fileContents;
                 }
             }
-            while (true) //remove extra such pragmas/files if the number of layers has decreased since the last time this level was saved
+            int extraDataLevelID = 0;
+            while (true) //remove old extra layer pragmas/files
             {
                 string extraFilepath = GetExtraDataLevelFilepath(filepath, extraDataLevelID++);
                 File.Delete(extraFilepath);

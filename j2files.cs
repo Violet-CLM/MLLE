@@ -1457,12 +1457,24 @@ class J2LFile : J2File
 
     int[] AGAMostValues = new int[256], AGAMostStrings = new int[256];
 
+    public OpeningResults OpenLevel(byte[] fileBytes, ref byte[] Data5, Encoding encoding = null, uint? SecurityStringOverride = null, bool onlyInterestedInData1 = false)
+    {
+        return OpenLevel(new BinaryReader(new MemoryStream(fileBytes, false)), ref Data5, encoding: encoding ?? FileEncoding, SecurityStringOverride: SecurityStringOverride, onlyInterestedInData1: onlyInterestedInData1);
+    }
     public OpeningResults OpenLevel(string filename, ref byte[] Data5, string password = null, Dictionary<Version, string> defaultDirectories = null, Encoding encoding = null, uint? SecurityStringOverride = null, bool onlyInterestedInData1 = false)
     {
         encoding = encoding ?? FileEncoding;
-        using (BinaryReader binreader = new BinaryReader(File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read), encoding))
+        FilenameOnly = Path.GetFileName(FullFilePath = filename);
+        var result = OpenLevel(new BinaryReader(File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read), encoding), ref Data5, password, defaultDirectories, encoding, SecurityStringOverride, onlyInterestedInData1);
+        if (result == OpeningResults.Success)
         {
-            FilenameOnly = Path.GetFileName(FullFilePath = filename);
+            Tilesets = new List<J2TFile>(1) { new J2TFile(Path.Combine((defaultDirectories == null) ? Path.GetDirectoryName(filename) : defaultDirectories[VersionType], MainTilesetFilename)) };
+        }
+        return result;
+    }
+    public OpeningResults OpenLevel(BinaryReader binreader, ref byte[] Data5, string password = null, Dictionary<Version, string> defaultDirectories = null, Encoding encoding = null, uint? SecurityStringOverride = null, bool onlyInterestedInData1 = false)
+    {
+        {
             bool[] hasTiles = new bool[DefaultLayers.Length]; //only needed for loading; Layer has its own read-only HasTiles
             if (binreader.PeekChar() != 'D') // not a .LEV file
             {
@@ -1516,7 +1528,7 @@ class J2LFile : J2File
                 for (byte i = 0; i < 4; i++) UncompressedData[i] = new MemoryStream(ZlibStream.UncompressBuffer(binreader.ReadBytes(CompressedDataLength[i])));
                 if (VersionType == Version.AGA)
                 {
-                    BinaryWriter stream2 = new BinaryWriter(File.Open("AGA" + Path.GetFileNameWithoutExtension(filename) + "Data2.dat", FileMode.Create), FileEncoding); stream2.Write(UncompressedData[1].ToArray()); stream2.Close();
+                    //BinaryWriter stream2 = new BinaryWriter(File.Open("AGA" + Path.GetFileNameWithoutExtension(filename) + "Data2.dat", FileMode.Create), FileEncoding); stream2.Write(UncompressedData[1].ToArray()); stream2.Close();
                     //BinaryWriter stream1 = new BinaryWriter(File.Open("AGA" + Path.GetFileNameWithoutExtension(filename) + "Data1.dat", FileMode.Create), FileEncoding); stream1.Write(UncompressedData[0].ToArray()); stream1.Close();
                 }
                 #endregion header
@@ -1554,7 +1566,6 @@ class J2LFile : J2File
                     data1reader.ReadUInt32(); //StreamSize
                     Name = new string(data1reader.ReadChars(32)).TrimEnd('\0');
                     MainTilesetFilename = new string(data1reader.ReadChars(32)).TrimEnd('\0');
-                    if (VersionType != Version.AmbiguousBCO) Tilesets = new List<J2TFile>(1) { new J2TFile(Path.Combine((defaultDirectories == null) ? Path.GetDirectoryName(filename) : defaultDirectories[VersionType], MainTilesetFilename)) };
                     BonusLevel = new string(data1reader.ReadChars(32)).TrimEnd('\0');
                     NextLevel = new string(data1reader.ReadChars(32)).TrimEnd('\0');
                     SecretLevel = new string(data1reader.ReadChars(32)).TrimEnd('\0');
@@ -2252,7 +2263,7 @@ class J2LFile : J2File
         {
             var WordMapsPerLayer = new Dictionary<Layer, List<ushort>>(AllLayers.Count);
 
-            List<Layer[]> LayerArraysToSave = new List<Layer[]> { DefaultLayers };
+            List<Layer[]> LayerArraysToSave = new List<Layer[]>();
             var nonDefaultLayers = new List<Layer>(AllLayers.Where(l => !l.isDefault));
             while (nonDefaultLayers.Count > 0)
             {
@@ -2262,6 +2273,8 @@ class J2LFile : J2File
                     nonDefaultLayersToAddToList.Add(new Layer());
                 LayerArraysToSave.Add(nonDefaultLayersToAddToList.ToArray());
             }
+            LayerArraysToSave.Add(DefaultLayers);
+            var extraFilesAtStartOfData5 = new MemoryStream[LayerArraysToSave.Count - 1];
             for (int i = 0; i < 4; i++)
                 CompressedData[i] = new MemoryStream();
 
@@ -2304,7 +2317,7 @@ class J2LFile : J2File
 
             for (int layerArrayID = 0; layerArrayID < LayerArraysToSave.Count; ++layerArrayID) //per .j2l:
             {
-                bool extraDataLevel = layerArrayID != 0;
+                bool extraDataLevel = layerArrayID != LayerArraysToSave.Count - 1; //generate the real j2l last, after the extra layer levels
                 var layersToSave = LayerArraysToSave[layerArrayID];
 
                 using (BinaryWriter data1writer = new BinaryWriter(CompressedData[0], encoding, true))
@@ -2464,12 +2477,9 @@ class J2LFile : J2File
                                 data4writer.Write(tileID);
                 }
                 using (BinaryWriter binwriter = new BinaryWriter(
-                    File.Open(
-                        !extraDataLevel ?
-                            filename :
-                            MLLE.PlusPropertyList.GetExtraDataLevelFilepath(filename, layerArrayID - 1),
-                        FileMode.Create, FileAccess.Write),
-                    encoding
+                    extraDataLevel ? (extraFilesAtStartOfData5[layerArrayID] = new MemoryStream()) as Stream :
+                    File.Open(filename, FileMode.Create, FileAccess.Write),
+                    encoding, extraDataLevel
                 ))
                 {
                     binwriter.Write(encoding.GetBytes(Header)); //the copyright notice
@@ -2490,8 +2500,26 @@ class J2LFile : J2File
                     }
                     if (!extraDataLevel && Data5 != null)
                     {
-                        binwriter.Write(Data5); //immediately after the compressed Data4 block
-                        CRCCalculator.SlurpBlock(Data5, 0, Data5.Length);
+                        using (MemoryStream data5Header = new MemoryStream())
+                        {
+                            using (BinaryWriter data5HeaderWriter = new BinaryWriter(data5Header, encoding, true))
+                            {
+                                data5HeaderWriter.Write(MLLE.PlusPropertyList.MLLEData5MagicString.ToCharArray());
+                                data5HeaderWriter.Write(MLLE.PlusPropertyList.CurrentMLLEData5Version);
+                                data5HeaderWriter.Write((byte)extraFilesAtStartOfData5.Length);
+                                foreach (var extraFile in extraFilesAtStartOfData5)
+                                {
+                                    var extraFileBytes = extraFile.ToArray();
+                                    data5HeaderWriter.Write(extraFileBytes.Length);
+                                    data5HeaderWriter.Write(extraFileBytes);
+                                }
+                            }
+                            var data5HeaderBytes = data5Header.ToArray();
+                            binwriter.Write(data5HeaderBytes); //immediately after the compressed Data4 block
+                            CRCCalculator.SlurpBlock(data5HeaderBytes, 0, data5HeaderBytes.Length);
+                            binwriter.Write(Data5);
+                            CRCCalculator.SlurpBlock(Data5, 0, Data5.Length);
+                        }
                     }
                     binwriter.Seek(encoding.GetByteCount(Header) + 42, 0);
                     binwriter.Write((int)(binwriter.BaseStream.Length));

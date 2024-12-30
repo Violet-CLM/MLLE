@@ -2132,18 +2132,6 @@ void main() {
             string genericFilepath = Path.Combine(directory, "MLLEGenericFilename.j2l");
             File.Delete(genericFilepath);
             File.Delete(Path.ChangeExtension(genericFilepath, ".j2as"));
-            if (J2L.AllLayers.Count > 8) //delete extra files saved in order to store extra layers
-            {
-                int extraDataLevelID = 0;
-                while (true)
-                {
-                    string extraFilepath = PlusPropertyList.GetExtraDataLevelFilepath(genericFilepath, extraDataLevelID++);
-                    if (File.Exists(extraFilepath))
-                        File.Delete(extraFilepath);
-                    else
-                        break;
-                }
-            }
         }
         private void saveRunToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -2205,19 +2193,7 @@ void main() {
 
             string scriptFilename = Path.ChangeExtension(filepath, ".j2as");
             if (File.Exists(scriptFilename))
-            {
                 filenamesToMakeBackupsOf.Add(scriptFilename);
-                int extraDataFileID = 0;
-                while (true)
-                {
-                    string extraDataFilePath = PlusPropertyList.GetExtraDataLevelFilepath(filepath, extraDataFileID);
-                    if (File.Exists(extraDataFilePath))
-                        filenamesToMakeBackupsOf.Add(extraDataFilePath);
-                    else
-                        break;
-                    ++extraDataFileID;
-                }
-            }
 
             using (var zip = ZipFile.Open(backupFilename, ZipArchiveMode.Create))
                 foreach (string filename in filenamesToMakeBackupsOf)
