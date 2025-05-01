@@ -634,6 +634,8 @@ partial class J2TFile : J2File
                             else
                                 transpArray[tileIndex] = 1;
                         }
+                        else
+                            fullyOpaque8Bit = false;
                         if (VersionType == Version.Plus)
                         {
                             tileIndex <<= 2;
