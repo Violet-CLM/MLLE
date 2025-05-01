@@ -192,6 +192,12 @@
     <Compile Include="TileSetOrganizer.Designer.cs">
       <DependentUpon>TileSetOrganizer.cs</DependentUpon>
     </Compile>
+    <Compile Include="TilesetSelection.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TilesetSelection.Designer.cs">
+      <DependentUpon>TilesetSelection.cs</DependentUpon>
+    </Compile>
     <Compile Include="TriggerSelect.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -318,6 +324,9 @@
     <EmbeddedResource Include="TileSetOrganizer.resx">
       <DependentUpon>TileSetOrganizer.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="TilesetSelection.resx">
+      <DependentUpon>TilesetSelection.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="TriggerSelect.resx">
       <DependentUpon>TriggerSelect.cs</DependentUpon>
     </EmbeddedResource>
@@ -355,6 +364,7 @@
     <None Include="Images\Snow.png" />
     <None Include="Images\JazzAbout.bmp" />
     <None Include="Images\JazzAbout.png" />
+    <Content Include="Images\Ratings.png" />
     <Content Include="Images\SmartTilesPermutations.png" />
     <Content Include="Images\BollPlatform.png" />
     <Content Include="Images\FruitPlatform.png" />

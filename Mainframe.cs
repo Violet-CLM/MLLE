@@ -15,6 +15,7 @@ using OpenTK.Graphics.OpenGL;
 using Ini;
 using Un4seen.Bass;
 using Extra.Collections;
+using System.Globalization;
 
 namespace MLLE
 {
@@ -146,6 +147,8 @@ namespace MLLE
         private bool KeyYPressed = false;
         private bool KeyTabPressed = false;
 
+        private CultureInfo DefaultCulture;
+
         private bool levelHasBeenModified = false;
         internal bool LevelHasBeenModified
         {
@@ -175,11 +178,25 @@ namespace MLLE
             public StringAndIndex(string str, int i) { String = str; Index = i; }
             public override String ToString() { return String; }
         }
-        public struct NameAndFilename
+        public class NameAndFilename
         {
             public string Name;
-            public string Filename;
-            public NameAndFilename(string n, string f) { Name = n; Filename = f; }
+            public string Filepath;
+            public int CRC32;
+            //fields only used by the TilesetSelection window:
+            public string FilterText;
+            public Bitmap Thumbnail;
+            public string ThumbnailFilepath;
+            public bool Show;
+            public byte Rating;
+
+            public NameAndFilename(string n, string f, int crc = 0) {
+                Name = n;
+                Filepath = f;
+                CRC32 = crc;
+                Thumbnail = null;
+                Rating = 3;
+            }
             public override String ToString() { return Name; }
         }
 
@@ -401,7 +418,10 @@ namespace MLLE
             {
                 BinaryReader file = new BinaryReader(File.Open(AllTilesets[i], FileMode.Open, FileAccess.Read, FileShare.Read), J2File.FileEncoding);
                 file.ReadBytes((file.PeekChar() == 32) ? 188 : 8);
-                AllTilesetLists[version][i] = new NameAndFilename(new string(file.ReadChars(32)).TrimEnd('\0'), AllTilesets[i]);
+                string tilesetName = new string(file.ReadChars(32)).TrimEnd('\0');
+                file.ReadBytes(6); //version, filesize
+                int crc = file.ReadInt32();
+                AllTilesetLists[version][i] = new NameAndFilename(tilesetName, AllTilesets[i], crc);
                 file.Close();
             }
         }
@@ -439,6 +459,8 @@ namespace MLLE
         private void Mainframe_Load(object sender, EventArgs e)
         {
             while (!LevelDisplayLoaded) ;
+
+            DefaultCulture = CultureInfo.CurrentCulture;
 
             {
                 string X = Settings.IniReadValue("Window", "X");
@@ -553,6 +575,7 @@ namespace MLLE
             PreviewHelpStringColors = (Settings.IniReadValue("Miscellaneous", "PreviewHelpStringColors") != "0"); previewHelpStringColorsToolStripMenuItem.Checked = PreviewHelpStringColors;
             BDisablesSmartTiles = (Settings.IniReadValue("Miscellaneous", "BDisablesSmartTiles") == "1"); bDisablesSmartTilesToolStripMenuItem.Checked = BDisablesSmartTiles;
             stijnVisionToolStripMenuItem.Checked = (Settings.IniReadValue("Miscellaneous", "stijnVision") == "1");
+            culturespecificDecimalsToolStripMenuItem.Checked = (Settings.IniReadValue("Miscellaneous", "CultureSpecificDecimals") != "0");
             stijnVision = stijnVisionToolStripMenuItem.Checked && stijnVisionToolStripMenuItem.Enabled;
 
             ToolStripMenuItem[] recolorableSpriteSubcategories = { pinballToolStripMenuItem, platformsToolStripMenuItem, polesToolStripMenuItem, sceneryToolStripMenuItem };
@@ -661,7 +684,9 @@ void main() {
 
         internal void IdentifyTileset()
         {
-            TilesetSelection.SelectedIndex = TilesetSelection.Items.IndexOf(AllTilesetLists[J2L.VersionType].FirstOrDefault((NameAndFilename nf) => { return Path.GetFileName(nf.Filename) == J2L.MainTilesetFilename; }));
+            string filenameToCompare = Path.GetFileName(J2L.MainTilesetFilename).ToLower();
+            Debug.Write("Identifying " + filenameToCompare);
+            TilesetSelection.SelectedIndex = TilesetSelection.Items.IndexOf(AllTilesetLists[J2L.VersionType].FirstOrDefault((NameAndFilename nf) => { return Path.GetFileName(nf.Filepath).ToLower() == filenameToCompare; }));
             //desiredindex = AllTilesets.FindIndex(delegate(string current) { return Path.GetFileName(current) == J2L.Tileset; });
             //foreach (StringAndIndex item in TilesetSelection.Items)
             //{
@@ -767,9 +792,11 @@ void main() {
                         return true;
                     }
                 case Keys.X:
+                case Keys.Shift | Keys.X:
                     KeyXPressed = true;
                     return true;
                 case Keys.Y:
+                case Keys.Shift | Keys.Y:
                     KeyYPressed = true;
                     return true;
                 case Keys.Tab:
@@ -942,6 +969,24 @@ void main() {
                         if (CurrentTilesetOverlay != TilesetOverlay.SmartTiles) MakeSelectionIntoStamp(true);
                         return true;
                     }
+                case (Keys.Control | Keys.L):
+                    {
+                        ChangeLayerByOrder(
+                            CurrentLayerID == 0 ?
+                                (byte)(J2L.AllLayers.Count() - 1) :
+                                (CurrentLayerID - 1)
+                        );
+                        return true;
+                    }
+                case (Keys.Shift | Keys.L):
+                    {
+                        ChangeLayerByOrder(
+                            CurrentLayerID == J2L.AllLayers.Count() - 1 ?
+                                0 :
+                                (CurrentLayerID + 1)
+                        );
+                        return true;
+                    }
 
                 default: return base.ProcessCmdKey(ref msg, keyData);
             }
@@ -964,9 +1009,11 @@ void main() {
                     if (ParallaxDisplayMode == ParallaxMode.TemporaryParallax) ParallaxDisplayMode = ParallaxButton.Checked ? ParallaxMode.FullParallax : ParallaxMode.NoParallax;
                     break;
                 case Keys.X:
+                case Keys.Shift | Keys.X:
                     KeyXPressed = false;
                     break;
                 case Keys.Y:
+                case Keys.Shift | Keys.Y:
                     KeyYPressed = false;
                     break;
                 case Keys.Tab:
@@ -1188,7 +1235,7 @@ void main() {
 
         #region Menu Busywork
         private void TilesetSelection_SelectedIndexChanged(object sender, EventArgs e)
-        { if (TilesetSelection.SelectedIndex < 0) return; TilesetScrollbar.Focus(); ChangeTileset(((NameAndFilename)TilesetSelection.Items[TilesetSelection.SelectedIndex]).Filename); }
+        { if (TilesetSelection.SelectedIndex < 0) return; TilesetScrollbar.Focus(); ChangeTileset(((NameAndFilename)TilesetSelection.Items[TilesetSelection.SelectedIndex]).Filepath); }
 
         private void aboutMLLEToolStripMenuItem_Click(object sender, EventArgs e) { _suspendEvent.Reset(); new AboutBox1().ShowDialog(); _suspendEvent.Set(); }
 
@@ -1734,8 +1781,9 @@ void main() {
                 toolstripItem.Click += tilesetsToolStripMenuItemTileset_Click;
                 tilesetsToolStripMenuItem.DropDownItems.Add(toolstripItem);
             }
-            addNewToolStripMenuItem.Enabled = J2L.HasTiles && (J2L.TileCount + J2L.NumberOfAnimations + 10 < J2L.MaxTiles);
+            addNewBetaToolStripMenuItem.Enabled = addNewToolStripMenuItem.Enabled = J2L.HasTiles && (J2L.TileCount + J2L.NumberOfAnimations + 10 < J2L.MaxTiles);
             tilesetsToolStripMenuItem.DropDownItems.Add(addNewToolStripMenuItem);
+            tilesetsToolStripMenuItem.DropDownItems.Add(addNewBetaToolStripMenuItem);
         }
         private void ReadjustTilesetImage()
         {
@@ -3313,10 +3361,20 @@ void main() {
                 MouseTileY = (MousePixelY = Math.Max(0, (e.Y + LDScrollV.Value))) / ZoomTileSize;
                 if (!SnapEventsToGridToggle.Checked)
                 {
-                    if (KeyXPressed)
-                        MousePixelX = (MousePixelX & ~(ZoomTileSize - 1)) | (ZoomTileSize / 2);
-                    if (KeyYPressed)
-                        MousePixelY = (MousePixelY & ~(ZoomTileSize - 1)) | (ZoomTileSize / 2);
+                    if (Control.ModifierKeys == Keys.Shift)
+                    {
+                        if (KeyXPressed)
+                            MousePixelX = (((MousePixelX + (ZoomTileSize / 4)) & ~((ZoomTileSize / 2) - 1)) | (ZoomTileSize / 4)) - (ZoomTileSize / 4);
+                        if (KeyYPressed)
+                            MousePixelY = (((MousePixelY + (ZoomTileSize / 4)) & ~((ZoomTileSize / 2) - 1)) | (ZoomTileSize / 4)) - (ZoomTileSize / 4);
+                    }
+                    else
+                    {
+                        if (KeyXPressed)
+                            MousePixelX = (MousePixelX & ~(ZoomTileSize - 1)) | (ZoomTileSize / 2);
+                        if (KeyYPressed)
+                            MousePixelY = (MousePixelY & ~(ZoomTileSize - 1)) | (ZoomTileSize / 2);
+                    }
                 }
                 if (SafeToDisplay)
                 {
@@ -3895,7 +3953,7 @@ void main() {
 
         private void LevelDisplay_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
         {
-            if (LastFocusedZone == FocusedZone.Level && KeyTabPressed)
+            if (LastFocusedZone == FocusedZone.Level && (KeyTabPressed || e.Button == MouseButtons.Middle))
             {
                 MouseHeldDownTabDragging = e.Location;
             }
@@ -4133,6 +4191,46 @@ void main() {
             }
             return false;
         }
+
+        private void culturespecificDecimalsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (culturespecificDecimalsToolStripMenuItem.Checked)
+            {
+                CultureInfo.CurrentCulture = DefaultCulture;
+            }
+            else
+            {
+                CultureInfo.CurrentCulture = new CultureInfo("en-US", false);
+            }
+            Settings.IniWriteValue("Miscellaneous", "CultureSpecificDecimals", (stijnVision = culturespecificDecimalsToolStripMenuItem.Checked) ? "1" : "0");
+        }
+
+        private void TilesetLabel_Click(object sender, EventArgs e)
+        {
+            _suspendEvent.Reset();
+            NameAndFilename result = new TilesetSelection().ShowForm(AllTilesetLists[J2L.VersionType], HotKolors[1]);
+            _suspendEvent.Set();
+            if (result != null)
+            {
+                ChangeTileset(result.Filepath);
+                IdentifyTileset();
+            }
+        }
+
+        private void addNewBetaToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _suspendEvent.Reset();
+            NameAndFilename result = new TilesetSelection().ShowForm(AllTilesetLists[J2L.VersionType], HotKolors[1]);
+            if (result != null)
+            {
+                var newTileset = new J2TFile(result.Filepath);
+                newTileset.TileCount = 10;
+                if (new TilesetForm().ShowForm(newTileset, J2L, J2L.MaxTiles, J2L.TileCount + J2L.NumberOfAnimations))
+                    ReadjustTilesetImage();
+            }
+            _suspendEvent.Set();
+        }
+
         private Point MakeUpSomeValidStampCoordinates(bool blankTilesAreAcceptable, int MinX, int MinY, int MaxX, int MaxY, int iterations = 0)
         {
             Point p = new Point(_r.Next(MinX, MaxX), _r.Next(MinY, MaxY));
@@ -4426,7 +4524,14 @@ void main() {
 
             OverSmartTiles.Enabled = !AnimationSettings.Visible; //may not always be Visible, though, depending on tileset/s
 
-            if (!HoveringOverAnimationAreaOfTilesetPane)
+            if (!J2L.HasTiles)
+            {
+                SingleTileSubmenuDropdown.Enabled =
+                SelectedTilesSubmenuDropdown.Enabled =
+                    false;
+                SingleTileSubmenuDropdown.Image = null;
+            }
+            else if (!HoveringOverAnimationAreaOfTilesetPane)
             {
                 SingleTileSubmenuDropdown.Text = "Tile #" + MouseTile.ToString();
                 Bitmap thumbnail = new Bitmap(32,32, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
@@ -4439,6 +4544,7 @@ void main() {
                 bool atLeastOneTileSelected = J2L.HasTiles && LastFocusedZone == FocusedZone.Tileset && CurrentTilesetOverlay != TilesetOverlay.SmartTiles && IsEachTileSelected.Any(col => col.Contains(true));
                 SelectedTilesSubmenuDropdown.Enabled = atLeastOneTileSelected;
                 pasteImageToolStripMenuItem.Enabled = BitmapStuff.ClipboardHasBitmap();
+                SingleTileSubmenuDropdown.Enabled = true;
             }
         }
 
