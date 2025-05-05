@@ -196,7 +196,7 @@ class TexturedJ2L : J2LFile
                     }
                     else
                     {
-                        switch (J2T.ColorImportStyle)
+                        switch (customTileImage ? J2TFile.ColorImportStyles.normal8bit : J2T.ColorImportStyle)
                         {
                             case J2TFile.ColorImportStyles.normal8bit:
                             default:
@@ -304,7 +304,7 @@ class TexturedJ2L : J2LFile
                         int xy = x + y * 32;
                         if (tileTrans[xy] != 0)
                         {
-                            switch (J2T.ColorImportStyle)
+                            switch (customTileImage ? J2TFile.ColorImportStyles.normal8bit : J2T.ColorImportStyle)
                             {
                                 case J2TFile.ColorImportStyles.normal8bit:
                                 default:
