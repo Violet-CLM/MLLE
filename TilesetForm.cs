@@ -52,8 +52,24 @@ namespace MLLE
             Image image = TilesetOriginalColorsImage.Clone() as Bitmap;
             var palette = image.Palette;
             var entries = palette.Entries;
-            for (uint i = 0; i < Palette.PaletteSize; ++i)
-                entries[i] = Palette.Convert(LevelPalette.Colors[(Tileset.ColorRemapping ?? J2TFile.DefaultColorRemapping)[i]]);
+            switch (Tileset.ColorImportStyle)
+            {
+                case J2TFile.ColorImportStyles.normal8bit:
+                    for (uint i = 0; i < Palette.PaletteSize; ++i)
+                        entries[i] = Palette.Convert(LevelPalette.Colors[i]);
+                    break;
+                case J2TFile.ColorImportStyles.remapped8bit:
+                    for (uint i = 0; i < Palette.PaletteSize; ++i)
+                        entries[i] = Palette.Convert(LevelPalette.Colors[Tileset.ColorRemapping[i]]);
+                    break;
+                case J2TFile.ColorImportStyles.normal24bit: //already perfect
+                    break;
+                case J2TFile.ColorImportStyles.alternatePalette24bit:
+                    var alternatePalette = Level.PlusPropertyList.NamedPalettes[Tileset.AlternatePaletteMappingID24Bit].Palette.Colors;
+                    for (uint i = 0; i < Palette.PaletteSize; ++i)
+                        entries[i] = Palette.Convert(alternatePalette[i]);
+                    break;
+            }
             image.Palette = palette;
             if (Tileset.VersionType == Version.Plus)
             {
@@ -126,7 +142,12 @@ namespace MLLE
                 Tileset32BitTiles = image32;
             }
 
-            DrawTilesetUsingRemappedLevelPalette();
+            foreach (var palette in Level.PlusPropertyList.NamedPalettes)
+                ColorsList.Items.Add(palette.Name);
+            if (Tileset.ColorImportStyle != J2TFile.ColorImportStyles.alternatePalette24bit)
+                ColorsList.SelectedIndex = (int)Tileset.ColorImportStyle;
+            else
+                ColorsList.SelectedIndex = 3 + Tileset.AlternatePaletteMappingID24Bit;
         }
 
         private void UpdatePreviewControls()
@@ -293,12 +314,37 @@ namespace MLLE
             catch { } //invalid value because of Minimum/Maximum of that textbox; do nothing
         }
 
-        private void ColorsButton_Click(object sender, EventArgs e)
+        int LastSelectedIndex = -1;
+        private void ColorsList_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (new SpriteRecolorForm().ShowForm(LevelPalette, TilesetOriginalColorsImage.Clone() as Bitmap, ref Tileset.ColorRemapping, BackColor))
+            var newSelectedIndex = (sender as ListBox).SelectedIndex;
+            switch (newSelectedIndex)
             {
-                DrawTilesetUsingRemappedLevelPalette();
+                case 1:
+                    if (LastSelectedIndex < 0 || new SpriteRecolorForm().ShowForm(LevelPalette, TilesetOriginalColorsImage.Clone() as Bitmap, ref Tileset.ColorRemapping, BackColor))
+                    {
+                        Tileset.ColorImportStyle = J2TFile.ColorImportStyles.remapped8bit;
+                    }
+                    else
+                    {
+                        Tileset.ColorImportStyle = J2TFile.ColorImportStyles.normal8bit;
+                        ColorsList.SelectedIndex = 0;
+                        return;
+                    }
+                    break;
+                case 0:
+                    Tileset.ColorImportStyle = J2TFile.ColorImportStyles.normal8bit;
+                    break;
+                case 2:
+                    Tileset.ColorImportStyle = J2TFile.ColorImportStyles.normal24bit;
+                    break;
+                default:
+                    Tileset.ColorImportStyle = J2TFile.ColorImportStyles.alternatePalette24bit;
+                    Tileset.AlternatePaletteMappingID24Bit = (byte)(newSelectedIndex - 3);
+                    break;
             }
+            LastSelectedIndex = newSelectedIndex;
+            DrawTilesetUsingRemappedLevelPalette();
         }
     }
 }

@@ -9,10 +9,10 @@ namespace MLLE
 {
     public partial struct PlusPropertyList
     {
-        const uint CurrentMLLEData5Version = 0x107;
+        const uint CurrentMLLEData5Version = 0x108;
         const string MLLEData5MagicString = "MLLE";
-        const string CurrentMLLEData5VersionStringForComparison = "0x107";
-        const string CurrentMLLEData5VersionString = "1.7";
+        const string CurrentMLLEData5VersionStringForComparison = "0x108";
+        const string CurrentMLLEData5VersionString = "1.8";
 
         const string AngelscriptLibrary =
 @"//This is a standard library created by MLLE to read some JJ2+ properties from a level file whose script includes this library. DO NOT MANUALLY MODIFY THIS FILE.
@@ -166,15 +166,28 @@ namespace MLLE {{
             string tilesetFilename = _read7BitEncodedStringFromStream(data5);
             uint16 tileStart, tileCount;
             data5.pop(tileStart); data5.pop(tileCount);
-            array<uint8>@ colors = null;
-            data5.pop(pbool); if (pbool) {{
-                @colors = array<uint8>(256);
-                for (uint j = 0; j < 256; ++j)
-                    data5.pop(colors[j]);
-            }}
-            if (!jjTilesFromTileset(tilesetFilename, tileStart, tileCount, colors)) {{
-                jjDebug('MLLE::Setup: Error reading ""' + tilesetFilename + '""!');
-                return false;
+            data5.pop(pchar);
+            if (pchar < 2) {{
+                array<uint8>@ colors = null;
+                if (pchar == 1) {{
+                    @colors = array<uint8>(256);
+                    for (uint j = 0; j < 256; ++j)
+                        data5.pop(colors[j]);
+                }}
+                if (!jjTilesFromTileset(tilesetFilename, tileStart, tileCount, colors)) {{
+                    jjDebug('MLLE::Setup: Error reading ""' + tilesetFilename + '""!');
+                    return false;
+                }}
+            }} else {{
+                jjPAL@ thisPalette = null;
+                if (pchar == 3) {{
+                    data5.pop(pchar);
+                    @thisPalette = jjSpriteModeGetColorMapping(mappingIndices[uint8(pchar)]);
+                }}
+                if (!jjTilesFromTileset32(tilesetFilename, tileStart, tileCount, thisPalette)) {{
+                    jjDebug('MLLE::Setup: Error reading ""' + tilesetFilename + '""!');
+                    return false;
+                }}
             }}
         }}
         if (pbyte != 0) {{

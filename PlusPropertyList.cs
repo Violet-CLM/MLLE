@@ -603,11 +603,12 @@ namespace MLLE
                     data5bodywriter.Write(Path.ChangeExtension(tileset.FilenameOnly, ".j2t")); //convert "J2T" to "j2t" so JJ2+ doesn't reject the jjTilesFromTileset call
                     data5bodywriter.Write((ushort)tileset.FirstTile);
                     data5bodywriter.Write((ushort)tileset.TileCount);
-                    byte[] remappings = tileset.ColorRemapping;
-                    data5bodywriter.Write(remappings != null);
-                    if (remappings != null)
-                        for (int i = 0; i < remappings.Length; ++i)
-                            data5bodywriter.Write(remappings[i]);
+                    data5bodywriter.Write((byte)tileset.ColorImportStyle);
+                    if (tileset.ColorImportStyle == J2TFile.ColorImportStyles.alternatePalette24bit)
+                        data5bodywriter.Write(tileset.AlternatePaletteMappingID24Bit);
+                    else if (tileset.ColorImportStyle == J2TFile.ColorImportStyles.remapped8bit)
+                        for (int i = 0; i < tileset.ColorRemapping.Length; ++i) //should always be non-null if ColorImportStyle is remapped8bit
+                            data5bodywriter.Write(tileset.ColorRemapping[i]);
                 }
 
                 data5bodywriter.Write((uint)Layers.Count);
@@ -830,11 +831,17 @@ namespace MLLE
                             var tileset = new J2TFile(tilesetFilepath);
                             tileset.FirstTile = data5bodyreader.ReadUInt16();
                             tileset.TileCount = data5bodyreader.ReadUInt16();
-                            if (data5bodyreader.ReadBoolean())
+                            switch (tileset.ColorImportStyle = (J2TFile.ColorImportStyles)data5bodyreader.ReadByte()) //was a boolean before MLLE-Include-1.8
                             {
-                                tileset.ColorRemapping = new byte[Palette.PaletteSize];
-                                for (uint i = 0; i < Palette.PaletteSize; ++i)
-                                    tileset.ColorRemapping[i] = data5bodyreader.ReadByte();
+                                case J2TFile.ColorImportStyles.normal8bit: //no need to read any additional bytes for this tileset
+                                case J2TFile.ColorImportStyles.normal24bit:
+                                    break;
+                                case J2TFile.ColorImportStyles.remapped8bit: //1, true for the boolean version
+                                    tileset.ColorRemapping = data5bodyreader.ReadBytes((int)(Palette.PaletteSize));
+                                    break;
+                                case J2TFile.ColorImportStyles.alternatePalette24bit:
+                                    tileset.AlternatePaletteMappingID24Bit = data5bodyreader.ReadByte();
+                                    break;
                             }
                             Tilesets.Add(tileset);
                         }

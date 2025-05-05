@@ -103,7 +103,14 @@ partial class J2TFile : J2File
     internal ushort data3Counter = 0;
     internal byte[][] Masks;
 
-    public byte[] ColorRemapping = null; //for levels with multiple tilesets
+    //for levels with multiple tilesets
+    public enum ColorImportStyles
+    {
+        normal8bit, remapped8bit, normal24bit, alternatePalette24bit
+    };
+    public ColorImportStyles ColorImportStyle = ColorImportStyles.normal8bit;
+    public byte[] ColorRemapping = null;
+    public byte AlternatePaletteMappingID24Bit;
     public static readonly byte[] DefaultColorRemapping = Enumerable.Range(0, (int)Palette.PaletteSize).Select(val => (byte)val).ToArray();
 
     static internal bool[] Convert128BitsToBoolMask(byte[] bits)

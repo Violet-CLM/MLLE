@@ -43,8 +43,9 @@
             this.label2 = new System.Windows.Forms.Label();
             this.outputMath = new System.Windows.Forms.Label();
             this.ButtonDelete = new System.Windows.Forms.Button();
-            this.ColorsButton = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.ColorsList = new System.Windows.Forms.ListBox();
+            this.label5 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.panel1.SuspendLayout();
             this.EdgePanelRight.SuspendLayout();
@@ -68,8 +69,6 @@
             // 
             // panel1
             // 
-            this.panel1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.panel1.AutoScroll = true;
             this.panel1.Controls.Add(this.EdgePanelRight);
             this.panel1.Controls.Add(this.EdgePanelLeft);
@@ -127,7 +126,7 @@
             this.ButtonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.ButtonCancel.Location = new System.Drawing.Point(362, 39);
             this.ButtonCancel.Name = "ButtonCancel";
-            this.ButtonCancel.Size = new System.Drawing.Size(75, 23);
+            this.ButtonCancel.Size = new System.Drawing.Size(90, 23);
             this.ButtonCancel.TabIndex = 5;
             this.ButtonCancel.Text = "Cancel";
             this.ButtonCancel.UseVisualStyleBackColor = true;
@@ -138,7 +137,7 @@
             this.OKButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.OKButton.Location = new System.Drawing.Point(362, 10);
             this.OKButton.Name = "OKButton";
-            this.OKButton.Size = new System.Drawing.Size(75, 23);
+            this.OKButton.Size = new System.Drawing.Size(90, 23);
             this.OKButton.TabIndex = 4;
             this.OKButton.Text = "OK";
             this.OKButton.UseVisualStyleBackColor = true;
@@ -148,7 +147,7 @@
             // 
             this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(362, 121);
+            this.label1.Location = new System.Drawing.Point(359, 121);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(44, 13);
             this.label1.TabIndex = 6;
@@ -164,7 +163,7 @@
             0,
             0});
             this.inputFirst.Name = "inputFirst";
-            this.inputFirst.Size = new System.Drawing.Size(81, 20);
+            this.inputFirst.Size = new System.Drawing.Size(96, 20);
             this.inputFirst.TabIndex = 7;
             this.inputFirst.ValueChanged += new System.EventHandler(this.inputFirst_ValueChanged);
             // 
@@ -173,7 +172,7 @@
             this.inputLast.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.inputLast.Location = new System.Drawing.Point(362, 176);
             this.inputLast.Name = "inputLast";
-            this.inputLast.Size = new System.Drawing.Size(81, 20);
+            this.inputLast.Size = new System.Drawing.Size(96, 20);
             this.inputLast.TabIndex = 9;
             this.inputLast.Value = new decimal(new int[] {
             10,
@@ -186,7 +185,7 @@
             // 
             this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(362, 160);
+            this.label2.Location = new System.Drawing.Point(359, 160);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(38, 13);
             this.label2.TabIndex = 8;
@@ -196,7 +195,7 @@
             // 
             this.outputMath.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.outputMath.AutoSize = true;
-            this.outputMath.Location = new System.Drawing.Point(362, 199);
+            this.outputMath.Location = new System.Drawing.Point(359, 199);
             this.outputMath.Name = "outputMath";
             this.outputMath.Size = new System.Drawing.Size(35, 13);
             this.outputMath.TabIndex = 10;
@@ -207,22 +206,36 @@
             this.ButtonDelete.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.ButtonDelete.Location = new System.Drawing.Point(362, 68);
             this.ButtonDelete.Name = "ButtonDelete";
-            this.ButtonDelete.Size = new System.Drawing.Size(75, 23);
+            this.ButtonDelete.Size = new System.Drawing.Size(90, 23);
             this.ButtonDelete.TabIndex = 11;
             this.ButtonDelete.Text = "Delete";
             this.ButtonDelete.UseVisualStyleBackColor = true;
             this.ButtonDelete.Click += new System.EventHandler(this.ButtonDelete_Click);
             // 
-            // ColorsButton
+            // ColorsList
             // 
-            this.ColorsButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.ColorsButton.Location = new System.Drawing.Point(362, 304);
-            this.ColorsButton.Name = "ColorsButton";
-            this.ColorsButton.Size = new System.Drawing.Size(75, 23);
-            this.ColorsButton.TabIndex = 12;
-            this.ColorsButton.Text = "Colors...";
-            this.ColorsButton.UseVisualStyleBackColor = true;
-            this.ColorsButton.Click += new System.EventHandler(this.ColorsButton_Click);
+            this.ColorsList.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.ColorsList.FormattingEnabled = true;
+            this.ColorsList.Items.AddRange(new object[] {
+            "[Same Indices]",
+            "[Remapped...]",
+            "[Tileset Palette]"});
+            this.ColorsList.Location = new System.Drawing.Point(362, 276);
+            this.ColorsList.Name = "ColorsList";
+            this.ColorsList.ScrollAlwaysVisible = true;
+            this.ColorsList.Size = new System.Drawing.Size(96, 56);
+            this.ColorsList.TabIndex = 13;
+            this.ColorsList.SelectedIndexChanged += new System.EventHandler(this.ColorsList_SelectedIndexChanged);
+            // 
+            // label5
+            // 
+            this.label5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(359, 260);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(77, 13);
+            this.label5.TabIndex = 14;
+            this.label5.Text = "8-bit tile colors:";
             // 
             // TilesetForm
             // 
@@ -230,8 +243,9 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
-            this.ClientSize = new System.Drawing.Size(449, 339);
-            this.Controls.Add(this.ColorsButton);
+            this.ClientSize = new System.Drawing.Size(464, 339);
+            this.Controls.Add(this.label5);
+            this.Controls.Add(this.ColorsList);
             this.Controls.Add(this.ButtonDelete);
             this.Controls.Add(this.outputMath);
             this.Controls.Add(this.inputLast);
@@ -272,11 +286,12 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label outputMath;
         private System.Windows.Forms.Button ButtonDelete;
-        private System.Windows.Forms.Button ColorsButton;
         private System.Windows.Forms.ToolTip toolTip1;
         private System.Windows.Forms.Panel EdgePanelRight;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Panel EdgePanelLeft;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.ListBox ColorsList;
+        private System.Windows.Forms.Label label5;
     }
 }
