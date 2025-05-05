@@ -111,7 +111,6 @@ partial class J2TFile : J2File
     public ColorImportStyles ColorImportStyle = ColorImportStyles.normal8bit;
     public byte[] ColorRemapping = null;
     public byte AlternatePaletteMappingID24Bit;
-    public static readonly byte[] DefaultColorRemapping = Enumerable.Range(0, (int)Palette.PaletteSize).Select(val => (byte)val).ToArray();
 
     static internal bool[] Convert128BitsToBoolMask(byte[] bits)
     {

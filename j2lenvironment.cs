@@ -182,7 +182,6 @@ class TexturedJ2L : J2LFile
                 tileTrans = ((source == TransparencySource.JJ2_Style) ? J2T.TransparencyMaskJJ2_Style : J2T.TransparencyMaskJCS_Style)[Array.BinarySearch(J2T.TransparencyMaskOffset, 0, (int)J2T.data3Counter, J2T.TransparencyMaskAddress[tileInTilesetID])];
             } else
                 tileTrans = tile;
-            var colorRemapping = (J2T.ColorRemapping == null || customTileImage) ? J2TFile.DefaultColorRemapping : J2T.ColorRemapping;
 
             var mask = PlusPropertyList.TileMasks[tileInLevelID] ?? J2T.Masks[J2T.MaskAddress[tileInTilesetID]];
 
@@ -191,10 +190,30 @@ class TexturedJ2L : J2LFile
                 byte[] color;
                 if (tile.Length == 32*32) //8-bit
                 {
-                    bool transparentPixel = tileTrans[j / 4] == 0;
-                    color = !transparentPixel ? Palette.Convert(transformation(palette[colorRemapping[tile[j / 4]]], TileTypes[tileInLevelID], byte.MaxValue), true) : usedColor;
-                    if (transparentPixel)
-                        color[3] = 0;
+                    if (tileTrans[j / 4] == 0)
+                    {
+                        color = usedColor;
+                    }
+                    else
+                    {
+                        switch (J2T.ColorImportStyle)
+                        {
+                            case J2TFile.ColorImportStyles.normal8bit:
+                            default:
+                                color = palette[tile[j / 4]];
+                                break;
+                            case J2TFile.ColorImportStyles.remapped8bit:
+                                color = palette[J2T.ColorRemapping[tile[j / 4]]];
+                                break;
+                            case J2TFile.ColorImportStyles.normal24bit:
+                                color = J2T.Palette[tile[j / 4]];
+                                break;
+                            case J2TFile.ColorImportStyles.alternatePalette24bit:
+                                color = PlusPropertyList.NamedPalettes[J2T.AlternatePaletteMappingID24Bit].Palette[tile[j / 4]];
+                                break;
+                        }
+                        color = Palette.Convert(transformation(color, TileTypes[tileInLevelID], byte.MaxValue), true);
+                    }
                 }
                 else //32-bit
                 {
@@ -252,7 +271,7 @@ class TexturedJ2L : J2LFile
         Bitmap image32 = null;
         System.Drawing.Imaging.BitmapData data32 = null;
         byte[] bytes32 = null;
-        if (Tilesets.Any(j2t => j2t.VersionType == Version.Plus)) //at least one 32-bit tile
+        if (Tilesets.Any(j2t => j2t.VersionType == Version.Plus || j2t.ColorImportStyle >= J2TFile.ColorImportStyles.normal24bit)) //at least one 32-bit tile
         {
             image32 = new Bitmap(320, (int)imageHeight, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
             data32 = image32.LockBits(new Rectangle(0, 0, image32.Width, image32.Height), System.Drawing.Imaging.ImageLockMode.WriteOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
@@ -274,18 +293,37 @@ class TexturedJ2L : J2LFile
             }
             else
                 tileTrans = tile;
-            var colorRemapping = (J2T.ColorRemapping == null || customTileImage) ? J2TFile.DefaultColorRemapping : J2T.ColorRemapping;
             
             var xOrg = (tileInLevelID % 10) * 32;
             var yOrg = tileInLevelID / 10 * 32;
             if (tile.Length == 32 * 32)
             {
-                for (uint x = 0; x < 32; ++x)
-                    for (uint y = 0; y < 32; ++y)
+                for (int x = 0; x < 32; ++x)
+                    for (int y = 0; y < 32; ++y)
                     {
-                        uint xy = x + y * 32;
+                        int xy = x + y * 32;
                         if (tileTrans[xy] != 0)
-                            bytes[xOrg + x + (yOrg + y) * data.Stride] = colorRemapping[tile[xy]];
+                        {
+                            switch (J2T.ColorImportStyle)
+                            {
+                                case J2TFile.ColorImportStyles.normal8bit:
+                                default:
+                                    bytes[xOrg + x + (yOrg + y) * data.Stride] = tile[xy];
+                                    break;
+                                case J2TFile.ColorImportStyles.remapped8bit:
+                                    bytes[xOrg + x + (yOrg + y) * data.Stride] = J2T.ColorRemapping[tile[xy]];
+                                    break;
+                                case J2TFile.ColorImportStyles.normal24bit:
+                                case J2TFile.ColorImportStyles.alternatePalette24bit:
+                                    int xyd = (xOrg + x) * 4 + (yOrg + y) * data32.Stride;
+                                    var color = (J2T.ColorImportStyle == J2TFile.ColorImportStyles.alternatePalette24bit ? PlusPropertyList.NamedPalettes[J2T.AlternatePaletteMappingID24Bit].Palette : J2T.Palette)[tile[xy]];
+                                    bytes32[xyd + 0] = color[2]; //change from RGBA to BGRA :(
+                                    bytes32[xyd + 1] = color[1];
+                                    bytes32[xyd + 2] = color[0];
+                                    bytes32[xyd + 3] = Byte.MaxValue;
+                                    break;
+                            }
+                        }
                     }
             }
             else
@@ -359,13 +397,31 @@ class TexturedJ2L : J2LFile
                     }
             } else if (J2T != null) { //tileset's normal 8-bit image
                 byte[] tileTrans = J2T.TransparencyMaskJJ2_Style[Array.BinarySearch(J2T.TransparencyMaskOffset, 0, (int)J2T.data3Counter, J2T.TransparencyMaskAddress[tileInTilesetID])];
-                var colorRemapping = J2T.ColorRemapping ?? J2TFile.DefaultColorRemapping;
                 for (int x = 0; x < 32; x++)
                     for (int y = 0; y < 32; y++)
                         if (tileTrans[x + y * 32] == 0)
                             bmp.SetPixel(x, y, transparentColor);
                         else
-                            bmp.SetPixel(x, y, transformation(palette[colorRemapping[src[x + y * 32]]], TileTypes[tileInLevelID], byte.MaxValue));
+                        {
+                            byte[] color;
+                            switch (J2T.ColorImportStyle)
+                            {
+                                case J2TFile.ColorImportStyles.normal8bit:
+                                default:
+                                    color = palette[src[x + y * 32]];
+                                    break;
+                                case J2TFile.ColorImportStyles.remapped8bit:
+                                    color = palette[J2T.ColorRemapping[src[x + y * 32]]];
+                                    break;
+                                case J2TFile.ColorImportStyles.normal24bit:
+                                    color = J2T.Palette[src[x + y * 32]];
+                                    break;
+                                case J2TFile.ColorImportStyles.alternatePalette24bit:
+                                    color = PlusPropertyList.NamedPalettes[J2T.AlternatePaletteMappingID24Bit].Palette[src[x + y * 32]];
+                                    break;
+                            }
+                            bmp.SetPixel(x, y, transformation(color, TileTypes[tileInLevelID], byte.MaxValue));
+                        }
             } else { //for angelscript-edited tile images, there is no distinction between image and transparency
                 for (int x = 0; x < 32; x++)
                     for (int y = 0; y < 32; y++)
