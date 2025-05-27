@@ -923,7 +923,7 @@ namespace MLLE
                                 for (int i = 0; i < numberOfImages; ++i)
                                 {
                                     int tileID = data5bodyreader.ReadUInt16();
-                                    images[tileID] = data5bodyreader.ReadBytes(32 * 32);
+                                    images[tileID & (0x2000 - 1)] = data5bodyreader.ReadBytes(((tileID & 0x2000) != 0) ? (32 * 32 * 4) : (32 * 32)); //32-bit tiles were added in MLLE-Include-1.8 but earlier data5s would never use this pattern so there's no need to do an extra test
                                 }
                             }
 

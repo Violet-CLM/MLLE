@@ -99,7 +99,7 @@ namespace MLLE {{
         if (jjIsSnowing) {{
             if (jjSnowingType == SNOWING::SNOW && jjAnimSets[ANIM::SNOW] == 0)
                 jjAnimSets[ANIM::SNOW].load();
-            else if (jjSnowingType == SNOWING::LEAF && jjAnimSets[ANIM::PLUS_SCENERY] == 0)
+            else if ((uint(jjSnowingType) & 3) != 0 && jjAnimSets[ANIM::PLUS_SCENERY] == 0)
                 jjAnimSets[ANIM::PLUS_SCENERY].load();
         }}
 
@@ -262,9 +262,7 @@ namespace MLLE {{
                 layer.texture = TEXTURE::Texture(pchar);
             else {{
                 jjPIXELMAP texture(256, 256);
-                for (uint y = 0; y < 256; ++y)
-                    for (uint x = 0; x < 256; ++x)
-                        data5.pop(texture[x,y]);
+                _readImage(data5, texture);
                 texture.makeTexture(layer);
             }}
             newLayerOrder.insertLast(layer);
@@ -274,11 +272,15 @@ namespace MLLE {{
         uint16 numberOfObjects; data5.pop(numberOfObjects);
         while (numberOfObjects-- != 0) {{
             uint16 tileID; data5.pop(tileID);
-            jjPIXELMAP tile(32, 32);
-            for (int y = 0; y < 32; ++y)
-                for (int x = 0; x < 32; ++x)
-                    data5.pop(tile[x,y]);
-            tile.save(tileID, true);
+            if ((tileID & TILE::VFLIPPED) != 0) {{
+                jjCOLORMAP tile(32, 32);
+                _readImage(data5, tile);
+                tile.save(tileID & (TILE::VFLIPPED - 1), true);
+            }} else {{
+                jjPIXELMAP tile(32, 32);
+                _readImage(data5, tile);
+                tile.save(tileID, true);
+            }}
         }}
         data5.pop(numberOfObjects);
         while (numberOfObjects-- != 0) {{
@@ -596,6 +598,18 @@ namespace MLLE {{
             stream.pop(palette.color[i].green);
             stream.pop(palette.color[i].blue);
         }}
+    }}
+
+    void _readImage(jjSTREAM& stream, jjPIXELMAP& image) {{
+        for (uint y = 0; y < image.height; ++y)
+            for (uint x = 0; x < image.width; ++x)
+                stream.pop(image[x,y]);
+    }}
+    void _readImage(jjSTREAM& stream, jjCOLORMAP& image) {{
+        for (uint y = 0; y < image.height; ++y)
+            for (uint x = 0; x < image.width; ++x)
+                for (uint c = 0; c < 4; ++c)
+                    stream.pop(image[x,y].component[COLOR::Component(c)]);
     }}
 
     uint _read7BitEncodedUintFromStream(jjSTREAM& stream) {{
