@@ -228,11 +228,18 @@ namespace MLLE
                                     var tileImage = tileset.Images[tileset.ImageAddress[i]];
                                     var xOrg = (i % 10) * 16;
                                     var yOrg = i / 10 * 16;
-                                    for (uint x = 0; x < 32; x += 2) //+= 2 because this is a 0.5 size thumbnail
-                                        for (uint y = 0; y < 32; y += 2)
-                                        {
-                                            bytes[xOrg + x / 2 + (yOrg + y / 2) * data.Stride] = tileImage[x + y * 32];
-                                        }
+                                    if (tileImage.Length == 32 * 32) //8-bit tile
+                                        for (uint x = 0; x < 32; x += 2) //+= 2 because this is a 0.5 size thumbnail
+                                            for (uint y = 0; y < 32; y += 2)
+                                            {
+                                                bytes[xOrg + x / 2 + (yOrg + y / 2) * data.Stride] = tileImage[x + y * 32];
+                                            }
+                                        else //32-bit tile
+                                            for (uint x = 0; x < 32; x += 2)
+                                                for (uint y = 0; y < 32; y += 2)
+                                                {
+                                                    bytes[xOrg + x / 2 + (yOrg + y / 2) * data.Stride] = tileset.Palette.FindNearestColor(new ArraySegment<byte>(tileImage, (int)(x * 4 + y * 128), 3).ToArray());
+                                                }
                                 }
                                 Marshal.Copy(bytes, 0, data.Scan0, bytes.Length);
                                 image.UnlockBits(data);
