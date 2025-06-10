@@ -38,12 +38,13 @@
             this.columnTileset = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.sourceImage = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.sourceMask = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.sourceImage32 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.SuspendLayout();
             // 
             // Add
             // 
             this.Add.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.Add.Location = new System.Drawing.Point(437, 12);
+            this.Add.Location = new System.Drawing.Point(555, 12);
             this.Add.Name = "Add";
             this.Add.Size = new System.Drawing.Size(75, 23);
             this.Add.TabIndex = 1;
@@ -55,7 +56,7 @@
             // 
             this.OK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.OK.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.OK.Location = new System.Drawing.Point(436, 246);
+            this.OK.Location = new System.Drawing.Point(554, 246);
             this.OK.Name = "OK";
             this.OK.Size = new System.Drawing.Size(75, 23);
             this.OK.TabIndex = 0;
@@ -66,7 +67,7 @@
             // Remove
             // 
             this.Remove.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.Remove.Location = new System.Drawing.Point(437, 41);
+            this.Remove.Location = new System.Drawing.Point(555, 41);
             this.Remove.Name = "Remove";
             this.Remove.Size = new System.Drawing.Size(75, 23);
             this.Remove.TabIndex = 2;
@@ -77,7 +78,7 @@
             // Refresh
             // 
             this.Refresh.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.Refresh.Location = new System.Drawing.Point(437, 85);
+            this.Refresh.Location = new System.Drawing.Point(555, 85);
             this.Refresh.Name = "Refresh";
             this.Refresh.Size = new System.Drawing.Size(75, 23);
             this.Refresh.TabIndex = 3;
@@ -88,7 +89,7 @@
             // Build
             // 
             this.Build.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.Build.Location = new System.Drawing.Point(437, 134);
+            this.Build.Location = new System.Drawing.Point(555, 134);
             this.Build.Name = "Build";
             this.Build.Size = new System.Drawing.Size(75, 23);
             this.Build.TabIndex = 4;
@@ -105,6 +106,7 @@
             this.columnName,
             this.columnTileset,
             this.sourceImage,
+            this.sourceImage32,
             this.sourceMask});
             this.listView1.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.Nonclickable;
             this.listView1.HideSelection = false;
@@ -112,7 +114,7 @@
             this.listView1.MultiSelect = false;
             this.listView1.Name = "listView1";
             this.listView1.ShowGroups = false;
-            this.listView1.Size = new System.Drawing.Size(417, 256);
+            this.listView1.Size = new System.Drawing.Size(535, 256);
             this.listView1.TabIndex = 5;
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
@@ -138,12 +140,17 @@
             this.sourceMask.Text = "Source Mask";
             this.sourceMask.Width = 232;
             // 
+            // sourceImage32
+            // 
+            this.sourceImage32.Text = "Source Image32";
+            this.sourceImage32.Width = 118;
+            // 
             // TileSetOrganizer
             // 
             this.AcceptButton = this.OK;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(524, 281);
+            this.ClientSize = new System.Drawing.Size(642, 281);
             this.Controls.Add(this.listView1);
             this.Controls.Add(this.Build);
             this.Controls.Add(this.Refresh);
@@ -152,7 +159,7 @@
             this.Controls.Add(this.Add);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.MinimumSize = new System.Drawing.Size(540, 320);
+            this.MinimumSize = new System.Drawing.Size(658, 320);
             this.Name = "TileSetOrganizer";
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
@@ -174,5 +181,6 @@
         private System.Windows.Forms.ColumnHeader sourceImage;
         private System.Windows.Forms.ColumnHeader sourceMask;
         private System.Windows.Forms.ColumnHeader columnTileset;
+        private System.Windows.Forms.ColumnHeader sourceImage32;
     }
 }

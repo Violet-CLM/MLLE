@@ -15,6 +15,7 @@ using OpenTK.Graphics.OpenGL;
 using Ini;
 using Un4seen.Bass;
 using Extra.Collections;
+using System.Globalization;
 
 namespace MLLE
 {
@@ -146,6 +147,8 @@ namespace MLLE
         private bool KeyYPressed = false;
         private bool KeyTabPressed = false;
 
+        private CultureInfo DefaultCulture;
+
         private bool levelHasBeenModified = false;
         internal bool LevelHasBeenModified
         {
@@ -175,11 +178,25 @@ namespace MLLE
             public StringAndIndex(string str, int i) { String = str; Index = i; }
             public override String ToString() { return String; }
         }
-        public struct NameAndFilename
+        public class NameAndFilename
         {
             public string Name;
-            public string Filename;
-            public NameAndFilename(string n, string f) { Name = n; Filename = f; }
+            public string Filepath;
+            public int CRC32;
+            //fields only used by the TilesetSelection window:
+            public string FilterText;
+            public Bitmap Thumbnail;
+            public string ThumbnailFilepath;
+            public bool Show;
+            public byte Rating;
+
+            public NameAndFilename(string n, string f, int crc = 0) {
+                Name = n;
+                Filepath = f;
+                CRC32 = crc;
+                Thumbnail = null;
+                Rating = 3;
+            }
             public override String ToString() { return Name; }
         }
 
@@ -401,7 +418,10 @@ namespace MLLE
             {
                 BinaryReader file = new BinaryReader(File.Open(AllTilesets[i], FileMode.Open, FileAccess.Read, FileShare.Read), J2File.FileEncoding);
                 file.ReadBytes((file.PeekChar() == 32) ? 188 : 8);
-                AllTilesetLists[version][i] = new NameAndFilename(new string(file.ReadChars(32)).TrimEnd('\0'), AllTilesets[i]);
+                string tilesetName = new string(file.ReadChars(32)).TrimEnd('\0');
+                file.ReadBytes(6); //version, filesize
+                int crc = file.ReadInt32();
+                AllTilesetLists[version][i] = new NameAndFilename(tilesetName, AllTilesets[i], crc);
                 file.Close();
             }
         }
@@ -439,6 +459,8 @@ namespace MLLE
         private void Mainframe_Load(object sender, EventArgs e)
         {
             while (!LevelDisplayLoaded) ;
+
+            DefaultCulture = CultureInfo.CurrentCulture;
 
             {
                 string X = Settings.IniReadValue("Window", "X");
@@ -553,6 +575,7 @@ namespace MLLE
             PreviewHelpStringColors = (Settings.IniReadValue("Miscellaneous", "PreviewHelpStringColors") != "0"); previewHelpStringColorsToolStripMenuItem.Checked = PreviewHelpStringColors;
             BDisablesSmartTiles = (Settings.IniReadValue("Miscellaneous", "BDisablesSmartTiles") == "1"); bDisablesSmartTilesToolStripMenuItem.Checked = BDisablesSmartTiles;
             stijnVisionToolStripMenuItem.Checked = (Settings.IniReadValue("Miscellaneous", "stijnVision") == "1");
+            culturespecificDecimalsToolStripMenuItem.Checked = (Settings.IniReadValue("Miscellaneous", "CultureSpecificDecimals") != "0");
             stijnVision = stijnVisionToolStripMenuItem.Checked && stijnVisionToolStripMenuItem.Enabled;
 
             ToolStripMenuItem[] recolorableSpriteSubcategories = { pinballToolStripMenuItem, platformsToolStripMenuItem, polesToolStripMenuItem, sceneryToolStripMenuItem };
@@ -661,7 +684,9 @@ void main() {
 
         internal void IdentifyTileset()
         {
-            TilesetSelection.SelectedIndex = TilesetSelection.Items.IndexOf(AllTilesetLists[J2L.VersionType].FirstOrDefault((NameAndFilename nf) => { return Path.GetFileName(nf.Filename) == J2L.MainTilesetFilename; }));
+            string filenameToCompare = Path.GetFileName(J2L.MainTilesetFilename).ToLower();
+            Debug.Write("Identifying " + filenameToCompare);
+            TilesetSelection.SelectedIndex = TilesetSelection.Items.IndexOf(AllTilesetLists[J2L.VersionType].FirstOrDefault((NameAndFilename nf) => { return Path.GetFileName(nf.Filepath).ToLower() == filenameToCompare; }));
             //desiredindex = AllTilesets.FindIndex(delegate(string current) { return Path.GetFileName(current) == J2L.Tileset; });
             //foreach (StringAndIndex item in TilesetSelection.Items)
             //{
@@ -944,6 +969,24 @@ void main() {
                         if (CurrentTilesetOverlay != TilesetOverlay.SmartTiles) MakeSelectionIntoStamp(true);
                         return true;
                     }
+                case (Keys.Control | Keys.L):
+                    {
+                        ChangeLayerByOrder(
+                            CurrentLayerID == 0 ?
+                                (byte)(J2L.AllLayers.Count() - 1) :
+                                (CurrentLayerID - 1)
+                        );
+                        return true;
+                    }
+                case (Keys.Shift | Keys.L):
+                    {
+                        ChangeLayerByOrder(
+                            CurrentLayerID == J2L.AllLayers.Count() - 1 ?
+                                0 :
+                                (CurrentLayerID + 1)
+                        );
+                        return true;
+                    }
 
                 default: return base.ProcessCmdKey(ref msg, keyData);
             }
@@ -1021,11 +1064,13 @@ void main() {
                 var originalTileImage = J2T.Images[J2T.ImageAddress[tileInTilesetID]];
                 if (new TileImageEditorForm().ShowForm(
                     ref J2L.PlusPropertyList.TileImages[MouseTile],
-                    (J2T.ColorRemapping == null) ?
-                        originalTileImage :
-                        Enumerable.Range(0, 32 * 32).Select(val => J2T.ColorRemapping[originalTileImage[val]]).ToArray(),
+                    originalTileImage.Length == 32 * 32 ?
+                        (J2T.ColorRemapping == null) ?
+                            originalTileImage :
+                            Enumerable.Range(0, 32 * 32).Select(val => J2T.ColorRemapping[originalTileImage[val]]).ToArray() :
+                        null, //32-bit
                     J2L.Palette,
-                    32,8, false
+                    32, 8, false
                 ) == 32) //changed
                     RerenderTile((uint)MouseTile);
                 _suspendEvent.Set();
@@ -1055,7 +1100,17 @@ void main() {
             uint tileInTilesetID = J2L.getTileInTilesetID(tileID, out J2T);
             byte[] originalMask = J2T.Masks[J2T.MaskAddress[tileInTilesetID]];
             byte[] oldMask = J2L.PlusPropertyList.TileMasks[MouseTile] ?? originalMask;
-            byte[] newMask = (J2L.PlusPropertyList.TileImages[MouseTile] ?? J2T.Images[J2T.ImageAddress[tileInTilesetID]]).Select(val => val != 0 ? (byte)1 : (byte)0).ToArray();
+            byte[] newMask;
+            byte[] image = (J2L.PlusPropertyList.TileImages[MouseTile] ?? J2T.Images[J2T.ImageAddress[tileInTilesetID]]);
+            if (image.Length == 32 * 32) { //8-bit
+                newMask = image.Select(val => val != 0 ? (byte)1 : (byte)0).ToArray();
+            } else if (image.Length == 32 * 32 * 4) { //32-bit
+                newMask = new byte[32 * 32];
+                for (int i = 0; i < 32 * 32; ++i)
+                    newMask[i] = image[i * 4 + 3] != 0 ? (byte)1 : (byte)0; //only test alphas
+            } else { //should be impossible
+                return;
+            }
             if (originalMask.SequenceEqual(newMask))
                 J2L.PlusPropertyList.TileMasks[MouseTile] = null;
             else
@@ -1093,6 +1148,13 @@ void main() {
                                 {
                                     tileImageAsBytes = tileImageAsBytes.Select(c => J2T.ColorRemapping[c]).ToArray();
                                 }
+                            }
+                            if (tileImageAsBytes.Length != 32 * 32) //32-bit tile
+                            {
+                                _suspendEvent.Reset();
+                                MessageBox.Show("Copying 32-bit tile images is not currently supported.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                _suspendEvent.Set();
+                                return;
                             }
                             int firstResultByteIndex = (x - UpperLeftSelectionCorner.X) * 32 + (y - UpperLeftSelectionCorner.Y) * 32 * result.Width;
                             for (int b = 0; b < 32 * 32; ++b)
@@ -1175,7 +1237,7 @@ void main() {
 
         #region Menu Busywork
         private void TilesetSelection_SelectedIndexChanged(object sender, EventArgs e)
-        { if (TilesetSelection.SelectedIndex < 0) return; TilesetScrollbar.Focus(); ChangeTileset(((NameAndFilename)TilesetSelection.Items[TilesetSelection.SelectedIndex]).Filename); }
+        { if (TilesetSelection.SelectedIndex < 0) return; TilesetScrollbar.Focus(); ChangeTileset(((NameAndFilename)TilesetSelection.Items[TilesetSelection.SelectedIndex]).Filepath); }
 
         private void aboutMLLEToolStripMenuItem_Click(object sender, EventArgs e) { _suspendEvent.Reset(); new AboutBox1().ShowDialog(); _suspendEvent.Set(); }
 
@@ -1457,6 +1519,8 @@ void main() {
                 string mainFilename = Path.Combine(Path.GetDirectoryName(tilesetImageSaveDialog.FileName), Path.GetFileNameWithoutExtension(tilesetImageSaveDialog.FileName));
                 images[0].Save(mainFilename + "-image.png");
                 images[1].Save(mainFilename + "-mask.png");
+                if (images[2] != null)
+                    images[2].Save(mainFilename + "-image32.png");
             }
             _suspendEvent.Set();
         }
@@ -1719,8 +1783,9 @@ void main() {
                 toolstripItem.Click += tilesetsToolStripMenuItemTileset_Click;
                 tilesetsToolStripMenuItem.DropDownItems.Add(toolstripItem);
             }
-            addNewToolStripMenuItem.Enabled = J2L.HasTiles && (J2L.TileCount + J2L.NumberOfAnimations + 10 < J2L.MaxTiles);
+            addNewBetaToolStripMenuItem.Enabled = addNewToolStripMenuItem.Enabled = J2L.HasTiles && (J2L.TileCount + J2L.NumberOfAnimations + 10 < J2L.MaxTiles);
             tilesetsToolStripMenuItem.DropDownItems.Add(addNewToolStripMenuItem);
+            tilesetsToolStripMenuItem.DropDownItems.Add(addNewBetaToolStripMenuItem);
         }
         private void ReadjustTilesetImage()
         {
@@ -3890,7 +3955,7 @@ void main() {
 
         private void LevelDisplay_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
         {
-            if (LastFocusedZone == FocusedZone.Level && KeyTabPressed)
+            if (LastFocusedZone == FocusedZone.Level && (KeyTabPressed || e.Button == MouseButtons.Middle))
             {
                 MouseHeldDownTabDragging = e.Location;
             }
@@ -4128,6 +4193,46 @@ void main() {
             }
             return false;
         }
+
+        private void culturespecificDecimalsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (culturespecificDecimalsToolStripMenuItem.Checked)
+            {
+                CultureInfo.CurrentCulture = DefaultCulture;
+            }
+            else
+            {
+                CultureInfo.CurrentCulture = new CultureInfo("en-US", false);
+            }
+            Settings.IniWriteValue("Miscellaneous", "CultureSpecificDecimals", (stijnVision = culturespecificDecimalsToolStripMenuItem.Checked) ? "1" : "0");
+        }
+
+        private void TilesetLabel_Click(object sender, EventArgs e)
+        {
+            _suspendEvent.Reset();
+            NameAndFilename result = new TilesetSelection().ShowForm(AllTilesetLists[J2L.VersionType], HotKolors[1]);
+            _suspendEvent.Set();
+            if (result != null)
+            {
+                ChangeTileset(result.Filepath);
+                IdentifyTileset();
+            }
+        }
+
+        private void addNewBetaToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _suspendEvent.Reset();
+            NameAndFilename result = new TilesetSelection().ShowForm(AllTilesetLists[J2L.VersionType], HotKolors[1]);
+            if (result != null)
+            {
+                var newTileset = new J2TFile(result.Filepath);
+                newTileset.TileCount = 10;
+                if (new TilesetForm().ShowForm(newTileset, J2L, J2L.MaxTiles, J2L.TileCount + J2L.NumberOfAnimations))
+                    ReadjustTilesetImage();
+            }
+            _suspendEvent.Set();
+        }
+
         private Point MakeUpSomeValidStampCoordinates(bool blankTilesAreAcceptable, int MinX, int MinY, int MaxX, int MaxY, int iterations = 0)
         {
             Point p = new Point(_r.Next(MinX, MaxX), _r.Next(MinY, MaxY));
@@ -4434,7 +4539,7 @@ void main() {
                 Bitmap thumbnail = new Bitmap(32,32, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
                 J2TFile J2T;
                 uint tileInTilesetID = J2L.getTileInTilesetID((uint)MouseTile, out J2T);
-                BitmapStuff.ByteArrayToBitmap(J2L.PlusPropertyList.TileImages[MouseTile] ?? J2T.Images[J2T.ImageAddress[tileInTilesetID]], thumbnail);
+                imageToolStripMenuItem.Enabled = BitmapStuff.ByteArrayToBitmap(J2L.PlusPropertyList.TileImages[MouseTile] ?? J2T.Images[J2T.ImageAddress[tileInTilesetID]], thumbnail);
                 J2L.Palette.Apply(thumbnail, Color.Transparent);
                 SingleTileSubmenuDropdown.Image = thumbnail;
 
@@ -4448,7 +4553,7 @@ void main() {
         private void TilesetMakerButton_Click(object sender, EventArgs e)
         {
             _suspendEvent.Reset();
-            new TileSetOrganizer().ShowForm(Settings, J2L.VersionType, Path.Combine(DefaultDirectories[J2L.VersionType], "Tiles"));
+            new TileSetOrganizer().ShowForm(Settings, J2L.VersionType, Path.Combine(DefaultDirectories[J2L.VersionType], "Tiles"), VersionIsPlusCompatible(J2L.VersionType));
             _suspendEvent.Set();
 
         }

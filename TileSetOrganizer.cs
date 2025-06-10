@@ -23,7 +23,8 @@ namespace MLLE
         Version VersionType;
         string VersionString;
         string TileDirectory;
-        internal void ShowForm(IniFile settings, Version versionType, string tileDirectory)
+        bool VersionIsPlusCompatible;
+        internal void ShowForm(IniFile settings, Version versionType, string tileDirectory, bool versionIsPlusCompatible)
         {
             Settings = settings;
             VersionType = versionType;
@@ -31,6 +32,12 @@ namespace MLLE
             TileDirectory = tileDirectory;
             if (!Directory.Exists(tileDirectory))
                 Directory.CreateDirectory(tileDirectory);
+            VersionIsPlusCompatible = versionIsPlusCompatible;
+            if (!VersionIsPlusCompatible)
+            {
+                Size = MinimumSize = new Size(MinimumSize.Width - sourceImage32.Width, MinimumSize.Height);
+                sourceImage32.Width = 0;
+            }
             listView1.Columns[listView1.Columns.Count - 1].Width = -2;
             RefreshList();
             ShowDialog();
@@ -44,14 +51,15 @@ namespace MLLE
                 string iniText = Settings.IniReadValue("Tilesets", (iniTilesetIndex++).ToString());
                 if (string.IsNullOrWhiteSpace(iniText)) //run out of subsequently numbered ini lines
                     break;
-                var match = System.Text.RegularExpressions.Regex.Match(iniText, "\\s*\"([^\"]+)\",\\s*\"([^\"]+)\",\\s*\"([^\"]+)\",\\s*\"([^\"]+)\",\\s*(TSF|JJ2|BC|AGA|GorH)\\s*");
+                var match = System.Text.RegularExpressions.Regex.Match(iniText, "\\s*\"([^\"]+)\",\\s*\"([^\"]+)\",\\s*\"([^\"]+)\",\\s*\"([^\"]*)\",(?:\\s*\"([^\"]+)\",)?\\s*(TSF|JJ2|BC|AGA|GorH)\\s*");
                 if (!match.Success) //something went wrong
                     continue; //oh well!
                 ListViewItem newRecord = new ListViewItem(match.Groups[2].Value);
                 newRecord.SubItems.Add(match.Groups[1].Value);
                 newRecord.SubItems.Add(match.Groups[4].Value);
+                newRecord.SubItems.Add(match.Groups[5].Value);
                 newRecord.SubItems.Add(match.Groups[3].Value);
-                newRecord.Tag = match.Groups[5].Value;
+                newRecord.Tag = match.Groups[6].Value;
                 ThinkAboutAdding(newRecord);
             }
         }
@@ -66,7 +74,7 @@ namespace MLLE
                 if (iniTilesetIndex < AllTilesets.Count)
                 {
                     ListViewItem record = AllTilesets[iniTilesetIndex];
-                    Settings.IniWriteValue("Tilesets", keyName, "\"" + record.SubItems[1].Text + "\", \"" + record.Text + "\", \"" + record.SubItems[3].Text + "\", \"" + record.SubItems[2].Text + "\", " + (record.Tag as string));
+                    Settings.IniWriteValue("Tilesets", keyName, "\"" + record.SubItems[1].Text + "\", \"" + record.Text + "\", \"" + record.SubItems[4].Text + "\", \"" + record.SubItems[2].Text + "\", " + (record.SubItems[3].Text.Length > 0 ? ("\"" + record.SubItems[3].Text + "\", ") : "") + (record.Tag as string));
                 }
                 else if (!string.IsNullOrWhiteSpace(Settings.IniReadValue("Tilesets", keyName))) //leftover line number that doesn't need to exist anymore after the list got shorter
                     Settings.IniWriteValue("Tilesets", keyName, null); //delete it
@@ -84,7 +92,7 @@ namespace MLLE
         private void Add_Click(object sender, EventArgs e)
         {
             var newRecord = new ListViewItem();
-            for (int i = 0; i < 3; ++i)
+            for (int i = 0; i < 4; ++i)
                 newRecord.SubItems.Add(new ListViewItem.ListViewSubItem());
             newRecord.Tag = VersionString;
             Select(newRecord);
@@ -104,7 +112,7 @@ namespace MLLE
 
         private void Select(ListViewItem newRecord)
         {
-            if (new SelectTileSet().ShowForm(newRecord, TileDirectory, VersionType != Version.AGA ? ".j2t" : ".til"))
+            if (new SelectTileSet().ShowForm(newRecord, TileDirectory, VersionType != Version.AGA ? ".j2t" : ".til", VersionIsPlusCompatible))
             {
                 ThinkAboutAdding(newRecord);
                 SaveList();
@@ -134,37 +142,55 @@ namespace MLLE
                 var record = listView1.SelectedItems[0];
                 var J2T = new J2TFile();
                 J2T.VersionType = VersionType;
-                Bitmap image = new Bitmap(1,1), mask = new Bitmap(1,1);
-                string sourceFilepath = Path.Combine(TileDirectory, record.SubItems[2].Text);
+                Bitmap image = null, image32 = null, mask = new Bitmap(1, 1);
+                string sourceFilepath = "";
                 try
                 {
-                    image = new Bitmap(sourceFilepath);
-                    sourceFilepath = Path.Combine(TileDirectory, record.SubItems[3].Text);
-                    mask = new Bitmap(sourceFilepath);
+                    string sourceFilename = record.SubItems[2].Text;
+                    if (sourceFilename.Length > 0)
+                        image = (Bitmap)Bitmap.FromFile(sourceFilepath = Path.Combine(TileDirectory, sourceFilename));
+                    sourceFilename = record.SubItems[3].Text;
+                    if (sourceFilename.Length > 0)
+                        image32 = (Bitmap)Bitmap.FromFile(sourceFilepath = Path.Combine(TileDirectory, sourceFilename));
+                    sourceFilename = record.SubItems[4].Text;
+                    //if (true) //always a mask
+                        mask = (Bitmap)Bitmap.FromFile(sourceFilepath = Path.Combine(TileDirectory, sourceFilename));
 
-                    switch (J2T.Build(image, mask, record.Text))
+                    switch (J2T.Build(image, image32, mask, record.Text, VersionIsPlusCompatible))
                     {
                         case BuildResults.DifferentDimensions:
-                            MessageBox.Show(String.Format("The image and the mask must be the same dimensions. Your image is {0} by {1}, and your mask is {2} by {3}.", image.Width, image.Height, mask.Width, mask.Height), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            if (image32 != null)
+                                MessageBox.Show(String.Format("The images and the mask must be the same dimensions. Your images are {0} by {1} and {2} by {3}, and your mask is {4} by {5}.", image.Width, image.Height, image32.Width, image32.Height, mask.Width, mask.Height), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            else
+                                MessageBox.Show(String.Format("The image and the mask must be the same dimensions. Your image is {0} by {1}, and your mask is {2} by {3}.", (image ?? image32).Width, (image ?? image32).Height, mask.Width, mask.Height), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             break;
                         case BuildResults.BadDimensions:
-                            MessageBox.Show(String.Format("A tileset image must be 320 pixels wide and a multiple of 32 pixels high. Your image is {0} by {1}.", image.Width, image.Height), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show(String.Format("A tileset image must be 320 pixels wide and a multiple of 32 pixels high. Your image is {0} by {1}.", (image ?? image32).Width, (image ?? image32).Height), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             break;
                         case BuildResults.ImageWrongFormat:
-                            MessageBox.Show("Your image file is saved in an incorrect color mode. A tileset image must use 8-bit color with no transparency (color 0 is used for transparency instead).", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show("Your image file is saved in an incorrect color mode instead of 8-bit color with no transparency (color 0 is used for transparency instead).", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            break;
+                        case BuildResults.Image32WrongFormat:
+                            MessageBox.Show("Your 32-bit image file is saved in an incorrect color mode instead of 24-bit or 32-bit color.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             break;
                         case BuildResults.MaskWrongFormat:
-                            MessageBox.Show("Your mask file is saved in an incorrect color mode. A tileset mask must use 8-bit color with no transparency (color 0 is used for transparency instead).", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show("Your mask file is saved in an incorrect color mode. A tileset mask must use indexed color with no transparency (color 0 is used for transparency instead).", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             break;
                         case BuildResults.TooBigForVersion:
-                            MessageBox.Show(String.Format("Your tileset images are too big. The tile limit for a {0} tileset is {1} tiles, but your tileset contains {2}.", J2File.FullVersionNames[J2T.VersionType], J2T.MaxTiles, (image.Height / 32 * 10)), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            MessageBox.Show(String.Format("Your tileset images are too big. The tile limit for a {0} tileset is {1} tiles, but your tileset contains {2}.", J2File.FullVersionNames[J2T.VersionType], J2T.MaxTiles, ((image ?? image32).Height / 32 * 10)), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            break;
+                        case BuildResults.MaskNeedsPaletteFor32BitImages:
+                            MessageBox.Show("When building a tileset with a 32-bit image but no 8-bit image, the mask image must define the tileset's palette instead, using 8-bit color with no transparency (color 0 is used for transparency instead).", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             break;
                         case BuildResults.Success:
                             string fullFilePath = Path.Combine(Directory.GetParent(TileDirectory).ToString(), record.SubItems[1].Text);
                             if (J2T.Save(fullFilePath) != SavingResults.Success)
                                 MessageBox.Show("Something went wrong.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             else
-                                MessageBox.Show(String.Format("OK: Your tileset '{0}' has been built at {1} with {2} tiles ({3} Kb).", record.Text, fullFilePath, (image.Height / 32 * 10), new System.IO.FileInfo(fullFilePath).Length / 1024), "Successful Build", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                MessageBox.Show(String.Format("OK: Your tileset '{0}' has been built at {1} with {2} tiles ({3} Kb).", record.Text, fullFilePath, ((image ?? image32).Height / 32 * 10), new System.IO.FileInfo(fullFilePath).Length / 1024), "Successful Build", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            break;
+                        default:
+                            MessageBox.Show("Something went wrong.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             break;
                     }
                 }
@@ -178,7 +204,10 @@ namespace MLLE
                 }
                 finally
                 {
-                    image.Dispose();
+                    if (image != null)
+                        image.Dispose();
+                    if (image32 != null)
+                        image32.Dispose();
                     mask.Dispose();
                 }
             }

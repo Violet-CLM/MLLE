@@ -603,11 +603,12 @@ namespace MLLE
                     data5bodywriter.Write(Path.ChangeExtension(tileset.FilenameOnly, ".j2t")); //convert "J2T" to "j2t" so JJ2+ doesn't reject the jjTilesFromTileset call
                     data5bodywriter.Write((ushort)tileset.FirstTile);
                     data5bodywriter.Write((ushort)tileset.TileCount);
-                    byte[] remappings = tileset.ColorRemapping;
-                    data5bodywriter.Write(remappings != null);
-                    if (remappings != null)
-                        for (int i = 0; i < remappings.Length; ++i)
-                            data5bodywriter.Write(remappings[i]);
+                    data5bodywriter.Write((byte)tileset.ColorImportStyle);
+                    if (tileset.ColorImportStyle == J2TFile.ColorImportStyles.alternatePalette24bit)
+                        data5bodywriter.Write(tileset.AlternatePaletteMappingID24Bit);
+                    else if (tileset.ColorImportStyle == J2TFile.ColorImportStyles.remapped8bit)
+                        for (int i = 0; i < tileset.ColorRemapping.Length; ++i) //should always be non-null if ColorImportStyle is remapped8bit
+                            data5bodywriter.Write(tileset.ColorRemapping[i]);
                 }
 
                 data5bodywriter.Write((uint)Layers.Count);
@@ -650,6 +651,7 @@ namespace MLLE
                     data5bodywriter.Write(layer.Texture);
                     if (layer.Texture < 0)
                     {
+                        data5bodywriter.Write(false); //8-bit
                         data5bodywriter.Write(layer.TextureWidth);
                         data5bodywriter.Write(layer.TextureImage.Length / layer.TextureWidth);
                         data5bodywriter.Write(layer.TextureImage);
@@ -835,11 +837,17 @@ namespace MLLE
                             var tileset = new J2TFile(tilesetFilepath);
                             tileset.FirstTile = data5bodyreader.ReadUInt16();
                             tileset.TileCount = data5bodyreader.ReadUInt16();
-                            if (data5bodyreader.ReadBoolean())
+                            switch (tileset.ColorImportStyle = (J2TFile.ColorImportStyles)data5bodyreader.ReadByte()) //was a boolean before MLLE-Include-1.8
                             {
-                                tileset.ColorRemapping = new byte[Palette.PaletteSize];
-                                for (uint i = 0; i < Palette.PaletteSize; ++i)
-                                    tileset.ColorRemapping[i] = data5bodyreader.ReadByte();
+                                case J2TFile.ColorImportStyles.normal8bit: //no need to read any additional bytes for this tileset
+                                case J2TFile.ColorImportStyles.normal24bit:
+                                    break;
+                                case J2TFile.ColorImportStyles.remapped8bit: //1, true for the boolean version
+                                    tileset.ColorRemapping = data5bodyreader.ReadBytes((int)(Palette.PaletteSize));
+                                    break;
+                                case J2TFile.ColorImportStyles.alternatePalette24bit:
+                                    tileset.AlternatePaletteMappingID24Bit = data5bodyreader.ReadByte();
+                                    break;
                             }
                             Tilesets.Add(tileset);
                         }
@@ -901,7 +909,7 @@ namespace MLLE
                                 layer.InnerY = data5bodyreader.ReadSingle();
                                 layer.InnerAutoX = data5bodyreader.ReadSingle();
                                 layer.InnerAutoY = data5bodyreader.ReadSingle();
-                                if (data5Version >= 0x107)
+                                if (data5Version >= 0x109)
                                 {
                                     layer.TextureColorZeroIsTransparent = data5bodyreader.ReadBoolean();
                                 }
@@ -910,8 +918,9 @@ namespace MLLE
                                 if (layer.Texture < 0)
                                 {
                                     int textureHeight;
-                                    if (data5Version >= 0x107) //MLLE-Include-1.7 allows textures of alternate sizes... JJ2+ can only currently use them for TEXTURE::STATIC, but the j2l files don't need to know that
+                                    if (data5Version >= 0x109) //MLLE-Include-1.9 allows textures of alternate sizes... JJ2+ can only currently use them for TEXTURE::STATIC, but the j2l files don't need to know that
                                     {
+                                        data5bodyreader.ReadBoolean(); //32-bit?
                                         layer.TextureWidth = data5bodyreader.ReadInt32();
                                         textureHeight = data5bodyreader.ReadInt32();
                                     }
@@ -938,7 +947,7 @@ namespace MLLE
                                 for (int i = 0; i < numberOfImages; ++i)
                                 {
                                     int tileID = data5bodyreader.ReadUInt16();
-                                    images[tileID] = data5bodyreader.ReadBytes(32 * 32);
+                                    images[tileID & (0x2000 - 1)] = data5bodyreader.ReadBytes(((tileID & 0x2000) != 0) ? (32 * 32 * 4) : (32 * 32)); //32-bit tiles were added in MLLE-Include-1.8 but earlier data5s would never use this pattern so there's no need to do an extra test
                                 }
                             }
 

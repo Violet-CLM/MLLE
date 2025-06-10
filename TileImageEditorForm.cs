@@ -421,7 +421,7 @@ namespace MLLE
                 if (allowResizing)
                 {
                     DimensionX = DimensionY = 256;
-                    ResizeCanvas(new Size(textureWidth, originalImage.Length / textureWidth));
+                    ResizeCanvas(new Size(textureWidth, (image ?? originalImage).Length / textureWidth));
                 }
                 else
                 {
@@ -431,6 +431,7 @@ namespace MLLE
                 PrimaryColor = SecondaryColor = 0;
 
                 FormTitle = "Edit Tile Image";
+                resetToolStripMenuItem.Enabled = originalImage != null;
             }
             else //mask
             {
@@ -467,7 +468,7 @@ namespace MLLE
 
             if (result) { //clicked OK
                 bool changed = !Image.SequenceEqual(image ?? originalImage);
-                if (Image.SequenceEqual(originalImage))
+                if (originalImage != null && Image.SequenceEqual(originalImage))
                     image = null;
                 else
                     image = Image;

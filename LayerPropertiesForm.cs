@@ -115,16 +115,19 @@ namespace MLLE
             Param3.Value = layer.TexturParam3;
             try
             {
+                ParamDropdown1.SelectedIndex = 0;
                 ParamDropdown1.SelectedIndex = (int)Param1.Value;
             }
             catch { }
             try
             {
+                ParamDropdown2.SelectedIndex = 0;
                 ParamDropdown2.SelectedIndex = (int)Param2.Value;
             }
             catch { }
             try
             {
+                ParamDropdown3.SelectedIndex = 0;
                 ParamDropdown3.SelectedIndex = (int)Param3.Value;
             }
             catch { }
@@ -283,6 +286,11 @@ namespace MLLE
                                         : (ushort)0;
                                 }
                             SourceForm.J2L.EventMap = newEventMap;
+
+                            foreach (var offGrid in SourceForm.J2L.PlusPropertyList.OffGridObjects) {
+                                offGrid.location.X -= newrectangle[2] * 32;
+                                offGrid.location.Y -= newrectangle[0] * 32;
+                            }
                         }
                     }
                     DataSource.TileMap = newTileMap;
@@ -343,6 +351,7 @@ namespace MLLE
                 dropdown.Items.AddRange(match.Groups[2].Value.Split(','));
                 try
                 {
+                    dropdown.SelectedIndex = 0;
                     dropdown.SelectedIndex = (int)number.Value;
                 }
                 catch { }
