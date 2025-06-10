@@ -50,6 +50,7 @@
             this.TileWidth = new System.Windows.Forms.CheckBox();
             this.HeightLabel = new System.Windows.Forms.Label();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.TextureColorZeroIsTransparent = new System.Windows.Forms.CheckBox();
             this.TintColor = new System.Windows.Forms.NumericUpDown();
             this.TextureSourceDraw = new System.Windows.Forms.Button();
             this.TintColorLabel = new System.Windows.Forms.Label();
@@ -104,7 +105,9 @@
             this.InnerAutoY = new System.Windows.Forms.TextBox();
             this.InnerAutoXLabel = new System.Windows.Forms.Label();
             this.InnerAutoX = new System.Windows.Forms.TextBox();
-            this.TextureColorZeroIsTransparent = new System.Windows.Forms.CheckBox();
+            this.ParamDropdown1 = new System.Windows.Forms.ComboBox();
+            this.ParamDropdown2 = new System.Windows.Forms.ComboBox();
+            this.ParamDropdown3 = new System.Windows.Forms.ComboBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -125,10 +128,9 @@
             // OKButton
             // 
             this.OKButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.OKButton.Location = new System.Drawing.Point(1456, 29);
-            this.OKButton.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.OKButton.Location = new System.Drawing.Point(546, 12);
             this.OKButton.Name = "OKButton";
-            this.OKButton.Size = new System.Drawing.Size(200, 55);
+            this.OKButton.Size = new System.Drawing.Size(75, 23);
             this.OKButton.TabIndex = 0;
             this.OKButton.Text = "OK";
             this.OKButton.UseVisualStyleBackColor = true;
@@ -138,10 +140,9 @@
             // 
             this.ButtonCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.ButtonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.ButtonCancel.Location = new System.Drawing.Point(1456, 98);
-            this.ButtonCancel.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.ButtonCancel.Location = new System.Drawing.Point(546, 41);
             this.ButtonCancel.Name = "ButtonCancel";
-            this.ButtonCancel.Size = new System.Drawing.Size(200, 55);
+            this.ButtonCancel.Size = new System.Drawing.Size(75, 23);
             this.ButtonCancel.TabIndex = 1;
             this.ButtonCancel.Text = "Cancel";
             this.ButtonCancel.UseVisualStyleBackColor = true;
@@ -150,11 +151,9 @@
             // groupBox1
             // 
             this.groupBox1.Controls.Add(this.LayerSelect);
-            this.groupBox1.Location = new System.Drawing.Point(35, 29);
-            this.groupBox1.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.groupBox1.Location = new System.Drawing.Point(13, 12);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Padding = new System.Windows.Forms.Padding(8, 7, 8, 7);
-            this.groupBox1.Size = new System.Drawing.Size(691, 124);
+            this.groupBox1.Size = new System.Drawing.Size(259, 52);
             this.groupBox1.TabIndex = 2;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Layer";
@@ -163,10 +162,9 @@
             // 
             this.LayerSelect.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.LayerSelect.FormattingEnabled = true;
-            this.LayerSelect.Location = new System.Drawing.Point(19, 48);
-            this.LayerSelect.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.LayerSelect.Location = new System.Drawing.Point(7, 20);
             this.LayerSelect.Name = "LayerSelect";
-            this.LayerSelect.Size = new System.Drawing.Size(649, 39);
+            this.LayerSelect.Size = new System.Drawing.Size(246, 21);
             this.LayerSelect.TabIndex = 4;
             this.LayerSelect.SelectedIndexChanged += new System.EventHandler(this.LayerSelect_SelectedIndexChanged);
             // 
@@ -180,11 +178,9 @@
             this.groupBox2.Controls.Add(this.XSpeed);
             this.groupBox2.Controls.Add(this.AutoXSpeed);
             this.groupBox2.Controls.Add(this.AutoXLabel);
-            this.groupBox2.Location = new System.Drawing.Point(35, 167);
-            this.groupBox2.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.groupBox2.Location = new System.Drawing.Point(13, 70);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Padding = new System.Windows.Forms.Padding(8, 7, 8, 7);
-            this.groupBox2.Size = new System.Drawing.Size(691, 174);
+            this.groupBox2.Size = new System.Drawing.Size(259, 73);
             this.groupBox2.TabIndex = 3;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Relative Movement";
@@ -192,20 +188,18 @@
             // YLabel
             // 
             this.YLabel.AutoSize = true;
-            this.YLabel.Location = new System.Drawing.Point(16, 117);
-            this.YLabel.Margin = new System.Windows.Forms.Padding(8, 0, 8, 0);
+            this.YLabel.Location = new System.Drawing.Point(6, 49);
             this.YLabel.Name = "YLabel";
-            this.YLabel.Size = new System.Drawing.Size(126, 32);
+            this.YLabel.Size = new System.Drawing.Size(48, 13);
             this.YLabel.TabIndex = 7;
             this.YLabel.Text = "Y-Speed";
             // 
             // YSpeed
             // 
             this.YSpeed.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.YSpeed.Location = new System.Drawing.Point(160, 110);
-            this.YSpeed.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.YSpeed.Location = new System.Drawing.Point(60, 46);
             this.YSpeed.Name = "YSpeed";
-            this.YSpeed.Size = new System.Drawing.Size(127, 38);
+            this.YSpeed.Size = new System.Drawing.Size(50, 20);
             this.YSpeed.TabIndex = 6;
             this.YSpeed.Text = "0";
             this.YSpeed.TextChanged += new System.EventHandler(this.GenericInputChanged);
@@ -213,20 +207,18 @@
             // AutoYLabel
             // 
             this.AutoYLabel.AutoSize = true;
-            this.AutoYLabel.Location = new System.Drawing.Point(331, 117);
-            this.AutoYLabel.Margin = new System.Windows.Forms.Padding(8, 0, 8, 0);
+            this.AutoYLabel.Location = new System.Drawing.Point(124, 49);
             this.AutoYLabel.Name = "AutoYLabel";
-            this.AutoYLabel.Size = new System.Drawing.Size(192, 32);
+            this.AutoYLabel.Size = new System.Drawing.Size(73, 13);
             this.AutoYLabel.TabIndex = 5;
             this.AutoYLabel.Text = "Auto Y-Speed";
             // 
             // AutoYSpeed
             // 
             this.AutoYSpeed.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.AutoYSpeed.Location = new System.Drawing.Point(541, 110);
-            this.AutoYSpeed.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.AutoYSpeed.Location = new System.Drawing.Point(203, 46);
             this.AutoYSpeed.Name = "AutoYSpeed";
-            this.AutoYSpeed.Size = new System.Drawing.Size(127, 38);
+            this.AutoYSpeed.Size = new System.Drawing.Size(50, 20);
             this.AutoYSpeed.TabIndex = 8;
             this.AutoYSpeed.Text = "0";
             this.AutoYSpeed.TextChanged += new System.EventHandler(this.GenericInputChanged);
@@ -234,20 +226,18 @@
             // XLabel
             // 
             this.XLabel.AutoSize = true;
-            this.XLabel.Location = new System.Drawing.Point(16, 55);
-            this.XLabel.Margin = new System.Windows.Forms.Padding(8, 0, 8, 0);
+            this.XLabel.Location = new System.Drawing.Point(6, 23);
             this.XLabel.Name = "XLabel";
-            this.XLabel.Size = new System.Drawing.Size(126, 32);
+            this.XLabel.Size = new System.Drawing.Size(48, 13);
             this.XLabel.TabIndex = 3;
             this.XLabel.Text = "X-Speed";
             // 
             // XSpeed
             // 
             this.XSpeed.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.XSpeed.Location = new System.Drawing.Point(160, 48);
-            this.XSpeed.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.XSpeed.Location = new System.Drawing.Point(60, 20);
             this.XSpeed.Name = "XSpeed";
-            this.XSpeed.Size = new System.Drawing.Size(127, 38);
+            this.XSpeed.Size = new System.Drawing.Size(50, 20);
             this.XSpeed.TabIndex = 5;
             this.XSpeed.Text = "0";
             this.XSpeed.TextChanged += new System.EventHandler(this.GenericInputChanged);
@@ -255,10 +245,9 @@
             // AutoXSpeed
             // 
             this.AutoXSpeed.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.AutoXSpeed.Location = new System.Drawing.Point(541, 48);
-            this.AutoXSpeed.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.AutoXSpeed.Location = new System.Drawing.Point(203, 20);
             this.AutoXSpeed.Name = "AutoXSpeed";
-            this.AutoXSpeed.Size = new System.Drawing.Size(127, 38);
+            this.AutoXSpeed.Size = new System.Drawing.Size(50, 20);
             this.AutoXSpeed.TabIndex = 7;
             this.AutoXSpeed.Text = "0";
             this.AutoXSpeed.TextChanged += new System.EventHandler(this.GenericInputChanged);
@@ -266,20 +255,18 @@
             // AutoXLabel
             // 
             this.AutoXLabel.AutoSize = true;
-            this.AutoXLabel.Location = new System.Drawing.Point(331, 55);
-            this.AutoXLabel.Margin = new System.Windows.Forms.Padding(8, 0, 8, 0);
+            this.AutoXLabel.Location = new System.Drawing.Point(124, 23);
             this.AutoXLabel.Name = "AutoXLabel";
-            this.AutoXLabel.Size = new System.Drawing.Size(192, 32);
+            this.AutoXLabel.Size = new System.Drawing.Size(73, 13);
             this.AutoXLabel.TabIndex = 1;
             this.AutoXLabel.Text = "Auto X-Speed";
             // 
             // WidthLabel
             // 
             this.WidthLabel.AutoSize = true;
-            this.WidthLabel.Location = new System.Drawing.Point(16, 55);
-            this.WidthLabel.Margin = new System.Windows.Forms.Padding(8, 0, 8, 0);
+            this.WidthLabel.Location = new System.Drawing.Point(6, 23);
             this.WidthLabel.Name = "WidthLabel";
-            this.WidthLabel.Size = new System.Drawing.Size(88, 32);
+            this.WidthLabel.Size = new System.Drawing.Size(35, 13);
             this.WidthLabel.TabIndex = 3;
             this.WidthLabel.Text = "Width";
             // 
@@ -292,19 +279,16 @@
             this.groupBox3.Controls.Add(this.TileWidth);
             this.groupBox3.Controls.Add(this.WidthLabel);
             this.groupBox3.Controls.Add(this.HeightLabel);
-            this.groupBox3.Location = new System.Drawing.Point(741, 41);
-            this.groupBox3.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.groupBox3.Location = new System.Drawing.Point(278, 17);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Padding = new System.Windows.Forms.Padding(8, 7, 8, 7);
-            this.groupBox3.Size = new System.Drawing.Size(691, 222);
+            this.groupBox3.Size = new System.Drawing.Size(259, 93);
             this.groupBox3.TabIndex = 8;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Properties";
             // 
             // WidthBox
             // 
-            this.WidthBox.Location = new System.Drawing.Point(160, 45);
-            this.WidthBox.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.WidthBox.Location = new System.Drawing.Point(60, 19);
             this.WidthBox.Maximum = new decimal(new int[] {
             1023,
             0,
@@ -316,7 +300,7 @@
             0,
             0});
             this.WidthBox.Name = "WidthBox";
-            this.WidthBox.Size = new System.Drawing.Size(133, 38);
+            this.WidthBox.Size = new System.Drawing.Size(50, 20);
             this.WidthBox.TabIndex = 17;
             this.WidthBox.Value = new decimal(new int[] {
             1,
@@ -327,8 +311,7 @@
             // 
             // HeightBox
             // 
-            this.HeightBox.Location = new System.Drawing.Point(541, 48);
-            this.HeightBox.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.HeightBox.Location = new System.Drawing.Point(203, 20);
             this.HeightBox.Maximum = new decimal(new int[] {
             1023,
             0,
@@ -340,7 +323,7 @@
             0,
             0});
             this.HeightBox.Name = "HeightBox";
-            this.HeightBox.Size = new System.Drawing.Size(133, 38);
+            this.HeightBox.Size = new System.Drawing.Size(50, 20);
             this.HeightBox.TabIndex = 18;
             this.HeightBox.Value = new decimal(new int[] {
             1,
@@ -352,10 +335,9 @@
             // LimitVisibleRegion
             // 
             this.LimitVisibleRegion.AutoSize = true;
-            this.LimitVisibleRegion.Location = new System.Drawing.Point(24, 167);
-            this.LimitVisibleRegion.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.LimitVisibleRegion.Location = new System.Drawing.Point(9, 70);
             this.LimitVisibleRegion.Name = "LimitVisibleRegion";
-            this.LimitVisibleRegion.Size = new System.Drawing.Size(289, 36);
+            this.LimitVisibleRegion.Size = new System.Drawing.Size(111, 17);
             this.LimitVisibleRegion.TabIndex = 21;
             this.LimitVisibleRegion.Text = "Limit visible region";
             this.LimitVisibleRegion.UseVisualStyleBackColor = true;
@@ -364,10 +346,9 @@
             // TileHeight
             // 
             this.TileHeight.AutoSize = true;
-            this.TileHeight.Location = new System.Drawing.Point(339, 117);
-            this.TileHeight.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.TileHeight.Location = new System.Drawing.Point(127, 49);
             this.TileHeight.Name = "TileHeight";
-            this.TileHeight.Size = new System.Drawing.Size(186, 36);
+            this.TileHeight.Size = new System.Drawing.Size(75, 17);
             this.TileHeight.TabIndex = 20;
             this.TileHeight.Text = "Tile height";
             this.TileHeight.UseVisualStyleBackColor = true;
@@ -376,10 +357,9 @@
             // TileWidth
             // 
             this.TileWidth.AutoSize = true;
-            this.TileWidth.Location = new System.Drawing.Point(24, 117);
-            this.TileWidth.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.TileWidth.Location = new System.Drawing.Point(9, 49);
             this.TileWidth.Name = "TileWidth";
-            this.TileWidth.Size = new System.Drawing.Size(174, 36);
+            this.TileWidth.Size = new System.Drawing.Size(71, 17);
             this.TileWidth.TabIndex = 19;
             this.TileWidth.Text = "Tile width";
             this.TileWidth.UseVisualStyleBackColor = true;
@@ -388,15 +368,17 @@
             // HeightLabel
             // 
             this.HeightLabel.AutoSize = true;
-            this.HeightLabel.Location = new System.Drawing.Point(331, 55);
-            this.HeightLabel.Margin = new System.Windows.Forms.Padding(8, 0, 8, 0);
+            this.HeightLabel.Location = new System.Drawing.Point(124, 23);
             this.HeightLabel.Name = "HeightLabel";
-            this.HeightLabel.Size = new System.Drawing.Size(98, 32);
+            this.HeightLabel.Size = new System.Drawing.Size(38, 13);
             this.HeightLabel.TabIndex = 1;
             this.HeightLabel.Text = "Height";
             // 
             // groupBox4
             // 
+            this.groupBox4.Controls.Add(this.ParamDropdown3);
+            this.groupBox4.Controls.Add(this.ParamDropdown2);
+            this.groupBox4.Controls.Add(this.ParamDropdown1);
             this.groupBox4.Controls.Add(this.TextureColorZeroIsTransparent);
             this.groupBox4.Controls.Add(this.TintColor);
             this.groupBox4.Controls.Add(this.TextureSourceDraw);
@@ -419,35 +401,44 @@
             this.groupBox4.Controls.Add(this.Stars);
             this.groupBox4.Controls.Add(this.ColorBox);
             this.groupBox4.Controls.Add(this.TextureMode);
-            this.groupBox4.Location = new System.Drawing.Point(741, 355);
-            this.groupBox4.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.groupBox4.Location = new System.Drawing.Point(278, 149);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Padding = new System.Windows.Forms.Padding(8, 7, 8, 7);
-            this.groupBox4.Size = new System.Drawing.Size(691, 407);
+            this.groupBox4.Size = new System.Drawing.Size(259, 171);
             this.groupBox4.TabIndex = 9;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "                    ";
             // 
+            // TextureColorZeroIsTransparent
+            // 
+            this.TextureColorZeroIsTransparent.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.TextureColorZeroIsTransparent.AutoSize = true;
+            this.TextureColorZeroIsTransparent.Enabled = false;
+            this.TextureColorZeroIsTransparent.Location = new System.Drawing.Point(9, 145);
+            this.TextureColorZeroIsTransparent.Name = "TextureColorZeroIsTransparent";
+            this.TextureColorZeroIsTransparent.Size = new System.Drawing.Size(83, 17);
+            this.TextureColorZeroIsTransparent.TabIndex = 35;
+            this.TextureColorZeroIsTransparent.Text = "Skip Color 0";
+            this.TextureColorZeroIsTransparent.UseVisualStyleBackColor = true;
+            this.TextureColorZeroIsTransparent.CheckedChanged += new System.EventHandler(this.GenericInputChanged);
+            // 
             // TintColor
             // 
-            this.TintColor.Location = new System.Drawing.Point(541, 98);
-            this.TintColor.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.TintColor.Location = new System.Drawing.Point(203, 41);
             this.TintColor.Maximum = new decimal(new int[] {
             255,
             0,
             0,
             0});
             this.TintColor.Name = "TintColor";
-            this.TintColor.Size = new System.Drawing.Size(133, 38);
+            this.TintColor.Size = new System.Drawing.Size(50, 20);
             this.TintColor.TabIndex = 34;
             // 
             // TextureSourceDraw
             // 
             this.TextureSourceDraw.Enabled = false;
-            this.TextureSourceDraw.Location = new System.Drawing.Point(325, 100);
-            this.TextureSourceDraw.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.TextureSourceDraw.Location = new System.Drawing.Point(122, 42);
             this.TextureSourceDraw.Name = "TextureSourceDraw";
-            this.TextureSourceDraw.Size = new System.Drawing.Size(107, 50);
+            this.TextureSourceDraw.Size = new System.Drawing.Size(40, 21);
             this.TextureSourceDraw.TabIndex = 32;
             this.TextureSourceDraw.Text = "Draw";
             this.TextureSourceDraw.UseVisualStyleBackColor = true;
@@ -456,10 +447,9 @@
             // TintColorLabel
             // 
             this.TintColorLabel.AutoSize = true;
-            this.TintColorLabel.Location = new System.Drawing.Point(424, 105);
-            this.TintColorLabel.Margin = new System.Windows.Forms.Padding(8, 0, 8, 0);
+            this.TintColorLabel.Location = new System.Drawing.Point(159, 44);
             this.TintColorLabel.Name = "TintColorLabel";
-            this.TintColorLabel.Size = new System.Drawing.Size(100, 32);
+            this.TintColorLabel.Size = new System.Drawing.Size(38, 13);
             this.TintColorLabel.TabIndex = 33;
             this.TintColorLabel.Text = "TColor";
             // 
@@ -485,10 +475,9 @@
             "WTF",
             "Muckamok Night",
             "Desolation"});
-            this.TextureSource.Location = new System.Drawing.Point(24, 98);
-            this.TextureSource.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.TextureSource.Location = new System.Drawing.Point(9, 41);
             this.TextureSource.Name = "TextureSource";
-            this.TextureSource.Size = new System.Drawing.Size(289, 39);
+            this.TextureSource.Size = new System.Drawing.Size(111, 21);
             this.TextureSource.TabIndex = 31;
             this.TextureSource.SelectedIndexChanged += new System.EventHandler(this.TextureSource_SelectedIndexChanged);
             // 
@@ -496,10 +485,9 @@
             // 
             this.Fade.AutoSize = true;
             this.Fade.Enabled = false;
-            this.Fade.Location = new System.Drawing.Point(541, 98);
-            this.Fade.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.Fade.Location = new System.Drawing.Point(203, 41);
             this.Fade.Name = "Fade";
-            this.Fade.Size = new System.Drawing.Size(118, 36);
+            this.Fade.Size = new System.Drawing.Size(50, 17);
             this.Fade.TabIndex = 30;
             this.Fade.Text = "Fade";
             this.Fade.UseVisualStyleBackColor = true;
@@ -509,10 +497,9 @@
             // 
             this.XFadeLabel.AutoSize = true;
             this.XFadeLabel.Enabled = false;
-            this.XFadeLabel.Location = new System.Drawing.Point(16, 167);
-            this.XFadeLabel.Margin = new System.Windows.Forms.Padding(8, 0, 8, 0);
+            this.XFadeLabel.Location = new System.Drawing.Point(6, 70);
             this.XFadeLabel.Name = "XFadeLabel";
-            this.XFadeLabel.Size = new System.Drawing.Size(108, 32);
+            this.XFadeLabel.Size = new System.Drawing.Size(41, 13);
             this.XFadeLabel.TabIndex = 22;
             this.XFadeLabel.Text = "X-Fade";
             // 
@@ -526,10 +513,9 @@
             "Fullscreen",
             "Inner Window",
             "Inner Layer"});
-            this.TextureSurfaceSelect.Location = new System.Drawing.Point(24, 36);
-            this.TextureSurfaceSelect.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.TextureSurfaceSelect.Location = new System.Drawing.Point(9, 15);
             this.TextureSurfaceSelect.Name = "TextureSurfaceSelect";
-            this.TextureSurfaceSelect.Size = new System.Drawing.Size(305, 39);
+            this.TextureSurfaceSelect.Size = new System.Drawing.Size(117, 21);
             this.TextureSurfaceSelect.TabIndex = 29;
             this.TextureSurfaceSelect.SelectedIndexChanged += new System.EventHandler(this.TextureSurfaceSelect_SelectedIndexChanged);
             // 
@@ -537,25 +523,23 @@
             // 
             this.XFade.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.XFade.Enabled = false;
-            this.XFade.Location = new System.Drawing.Point(229, 160);
-            this.XFade.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.XFade.Location = new System.Drawing.Point(86, 67);
             this.XFade.Name = "XFade";
-            this.XFade.Size = new System.Drawing.Size(127, 38);
+            this.XFade.Size = new System.Drawing.Size(50, 20);
             this.XFade.TabIndex = 23;
             this.XFade.Text = "0";
             this.XFade.TextChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // Param1
             // 
-            this.Param1.Location = new System.Drawing.Point(541, 222);
-            this.Param1.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.Param1.Location = new System.Drawing.Point(203, 93);
             this.Param1.Maximum = new decimal(new int[] {
             255,
             0,
             0,
             0});
             this.Param1.Name = "Param1";
-            this.Param1.Size = new System.Drawing.Size(133, 38);
+            this.Param1.Size = new System.Drawing.Size(50, 20);
             this.Param1.TabIndex = 26;
             this.Param1.ValueChanged += new System.EventHandler(this.GenericInputChanged);
             // 
@@ -563,25 +547,23 @@
             // 
             this.YFade.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.YFade.Enabled = false;
-            this.YFade.Location = new System.Drawing.Point(541, 160);
-            this.YFade.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.YFade.Location = new System.Drawing.Point(203, 67);
             this.YFade.Name = "YFade";
-            this.YFade.Size = new System.Drawing.Size(127, 38);
+            this.YFade.Size = new System.Drawing.Size(50, 20);
             this.YFade.TabIndex = 24;
             this.YFade.Text = "0";
             this.YFade.TextChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // Param2
             // 
-            this.Param2.Location = new System.Drawing.Point(229, 284);
-            this.Param2.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.Param2.Location = new System.Drawing.Point(86, 119);
             this.Param2.Maximum = new decimal(new int[] {
             255,
             0,
             0,
             0});
             this.Param2.Name = "Param2";
-            this.Param2.Size = new System.Drawing.Size(133, 38);
+            this.Param2.Size = new System.Drawing.Size(50, 20);
             this.Param2.TabIndex = 27;
             this.Param2.ValueChanged += new System.EventHandler(this.GenericInputChanged);
             // 
@@ -589,24 +571,22 @@
             // 
             this.YFadeLabel.AutoSize = true;
             this.YFadeLabel.Enabled = false;
-            this.YFadeLabel.Location = new System.Drawing.Point(381, 167);
-            this.YFadeLabel.Margin = new System.Windows.Forms.Padding(8, 0, 8, 0);
+            this.YFadeLabel.Location = new System.Drawing.Point(143, 70);
             this.YFadeLabel.Name = "YFadeLabel";
-            this.YFadeLabel.Size = new System.Drawing.Size(108, 32);
+            this.YFadeLabel.Size = new System.Drawing.Size(41, 13);
             this.YFadeLabel.TabIndex = 21;
             this.YFadeLabel.Text = "Y-Fade";
             // 
             // Param3
             // 
-            this.Param3.Location = new System.Drawing.Point(541, 284);
-            this.Param3.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.Param3.Location = new System.Drawing.Point(203, 119);
             this.Param3.Maximum = new decimal(new int[] {
             255,
             0,
             0,
             0});
             this.Param3.Name = "Param3";
-            this.Param3.Size = new System.Drawing.Size(133, 38);
+            this.Param3.Size = new System.Drawing.Size(50, 20);
             this.Param3.TabIndex = 28;
             this.Param3.ValueChanged += new System.EventHandler(this.GenericInputChanged);
             // 
@@ -614,10 +594,9 @@
             // 
             this.RedLabel.AutoSize = true;
             this.RedLabel.Enabled = false;
-            this.RedLabel.Location = new System.Drawing.Point(381, 227);
-            this.RedLabel.Margin = new System.Windows.Forms.Padding(8, 0, 8, 0);
+            this.RedLabel.Location = new System.Drawing.Point(143, 95);
             this.RedLabel.Name = "RedLabel";
-            this.RedLabel.Size = new System.Drawing.Size(139, 32);
+            this.RedLabel.Size = new System.Drawing.Size(54, 13);
             this.RedLabel.TabIndex = 13;
             this.RedLabel.Text = "Fade Red";
             // 
@@ -625,10 +604,9 @@
             // 
             this.GreenLabel.AutoSize = true;
             this.GreenLabel.Enabled = false;
-            this.GreenLabel.Location = new System.Drawing.Point(16, 291);
-            this.GreenLabel.Margin = new System.Windows.Forms.Padding(8, 0, 8, 0);
+            this.GreenLabel.Location = new System.Drawing.Point(6, 122);
             this.GreenLabel.Name = "GreenLabel";
-            this.GreenLabel.Size = new System.Drawing.Size(166, 32);
+            this.GreenLabel.Size = new System.Drawing.Size(63, 13);
             this.GreenLabel.TabIndex = 11;
             this.GreenLabel.Text = "Fade Green";
             // 
@@ -636,10 +614,9 @@
             // 
             this.BlueLabel.AutoSize = true;
             this.BlueLabel.Enabled = false;
-            this.BlueLabel.Location = new System.Drawing.Point(379, 291);
-            this.BlueLabel.Margin = new System.Windows.Forms.Padding(8, 0, 8, 0);
+            this.BlueLabel.Location = new System.Drawing.Point(142, 122);
             this.BlueLabel.Name = "BlueLabel";
-            this.BlueLabel.Size = new System.Drawing.Size(145, 32);
+            this.BlueLabel.Size = new System.Drawing.Size(55, 13);
             this.BlueLabel.TabIndex = 9;
             this.BlueLabel.Text = "Fade Blue";
             // 
@@ -648,10 +625,9 @@
             this.TextureModeSelect.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.TextureModeSelect.Enabled = false;
             this.TextureModeSelect.FormattingEnabled = true;
-            this.TextureModeSelect.Location = new System.Drawing.Point(363, 36);
-            this.TextureModeSelect.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.TextureModeSelect.Location = new System.Drawing.Point(136, 15);
             this.TextureModeSelect.Name = "TextureModeSelect";
-            this.TextureModeSelect.Size = new System.Drawing.Size(305, 39);
+            this.TextureModeSelect.Size = new System.Drawing.Size(117, 21);
             this.TextureModeSelect.TabIndex = 23;
             this.TextureModeSelect.SelectedIndexChanged += new System.EventHandler(this.TextureModeSelect_SelectedIndexChanged);
             // 
@@ -659,10 +635,9 @@
             // 
             this.ColorLabel.AutoSize = true;
             this.ColorLabel.Enabled = false;
-            this.ColorLabel.Location = new System.Drawing.Point(451, 231);
-            this.ColorLabel.Margin = new System.Windows.Forms.Padding(8, 0, 8, 0);
+            this.ColorLabel.Location = new System.Drawing.Point(169, 97);
             this.ColorLabel.Name = "ColorLabel";
-            this.ColorLabel.Size = new System.Drawing.Size(155, 32);
+            this.ColorLabel.Size = new System.Drawing.Size(58, 13);
             this.ColorLabel.TabIndex = 3;
             this.ColorLabel.Text = "Fade Color";
             this.ColorLabel.Visible = false;
@@ -671,10 +646,9 @@
             // 
             this.Stars.AutoSize = true;
             this.Stars.Enabled = false;
-            this.Stars.Location = new System.Drawing.Point(24, 224);
-            this.Stars.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.Stars.Location = new System.Drawing.Point(9, 94);
             this.Stars.Name = "Stars";
-            this.Stars.Size = new System.Drawing.Size(264, 36);
+            this.Stars.Size = new System.Drawing.Size(102, 17);
             this.Stars.TabIndex = 24;
             this.Stars.Text = "Parallaxing stars";
             this.Stars.UseVisualStyleBackColor = true;
@@ -685,10 +659,9 @@
             this.ColorBox.BackColor = System.Drawing.Color.Black;
             this.ColorBox.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.ColorBox.Enabled = false;
-            this.ColorBox.Location = new System.Drawing.Point(387, 224);
-            this.ColorBox.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.ColorBox.Location = new System.Drawing.Point(145, 94);
             this.ColorBox.Name = "ColorBox";
-            this.ColorBox.Size = new System.Drawing.Size(47, 42);
+            this.ColorBox.Size = new System.Drawing.Size(20, 20);
             this.ColorBox.TabIndex = 25;
             this.ColorBox.Visible = false;
             this.ColorBox.Click += new System.EventHandler(this.panel1_Click);
@@ -696,10 +669,9 @@
             // TextureMode
             // 
             this.TextureMode.AutoSize = true;
-            this.TextureMode.Location = new System.Drawing.Point(24, -2);
-            this.TextureMode.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.TextureMode.Location = new System.Drawing.Point(9, -1);
             this.TextureMode.Name = "TextureMode";
-            this.TextureMode.Size = new System.Drawing.Size(227, 36);
+            this.TextureMode.Size = new System.Drawing.Size(91, 17);
             this.TextureMode.TabIndex = 22;
             this.TextureMode.Text = "Texture mode";
             this.TextureMode.UseVisualStyleBackColor = true;
@@ -713,10 +685,9 @@
             // Copy4
             // 
             this.Copy4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.Copy4.Location = new System.Drawing.Point(1456, 815);
-            this.Copy4.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.Copy4.Location = new System.Drawing.Point(546, 342);
             this.Copy4.Name = "Copy4";
-            this.Copy4.Size = new System.Drawing.Size(200, 55);
+            this.Copy4.Size = new System.Drawing.Size(75, 23);
             this.Copy4.TabIndex = 3;
             this.Copy4.Text = "Copy Layer4";
             this.Copy4.UseVisualStyleBackColor = true;
@@ -744,11 +715,9 @@
             this.groupBoxPlus.Controls.Add(this.LabelSpriteParam);
             this.groupBoxPlus.Controls.Add(this.YOffset);
             this.groupBoxPlus.Controls.Add(this.OffsetYLabel);
-            this.groupBoxPlus.Location = new System.Drawing.Point(35, 355);
-            this.groupBoxPlus.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.groupBoxPlus.Location = new System.Drawing.Point(13, 149);
             this.groupBoxPlus.Name = "groupBoxPlus";
-            this.groupBoxPlus.Padding = new System.Windows.Forms.Padding(8, 7, 8, 7);
-            this.groupBoxPlus.Size = new System.Drawing.Size(691, 407);
+            this.groupBoxPlus.Size = new System.Drawing.Size(259, 171);
             this.groupBoxPlus.TabIndex = 8;
             this.groupBoxPlus.TabStop = false;
             this.groupBoxPlus.Text = "JJ2+ Properties";
@@ -758,11 +727,10 @@
             this.SpriteParamMapping.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.SpriteParamMapping.DropDownWidth = 175;
             this.SpriteParamMapping.FormattingEnabled = true;
-            this.SpriteParamMapping.Location = new System.Drawing.Point(541, 227);
-            this.SpriteParamMapping.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.SpriteParamMapping.Location = new System.Drawing.Point(203, 95);
             this.SpriteParamMapping.MaxDropDownItems = 10;
             this.SpriteParamMapping.Name = "SpriteParamMapping";
-            this.SpriteParamMapping.Size = new System.Drawing.Size(129, 39);
+            this.SpriteParamMapping.Size = new System.Drawing.Size(51, 21);
             this.SpriteParamMapping.TabIndex = 21;
             this.SpriteParamMapping.SelectedIndexChanged += new System.EventHandler(this.GenericInputChanged);
             // 
@@ -778,11 +746,10 @@
             "From Start",
             "Fit Level",
             "Speed Multipliers"});
-            this.YSModel.Location = new System.Drawing.Point(541, 110);
-            this.YSModel.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.YSModel.Location = new System.Drawing.Point(203, 46);
             this.YSModel.MaxDropDownItems = 10;
             this.YSModel.Name = "YSModel";
-            this.YSModel.Size = new System.Drawing.Size(129, 39);
+            this.YSModel.Size = new System.Drawing.Size(51, 21);
             this.YSModel.TabIndex = 20;
             this.YSModel.SelectedIndexChanged += new System.EventHandler(this.YSModel_SelectedIndexChanged);
             // 
@@ -798,45 +765,41 @@
             "From Start",
             "Fit Level",
             "Speed Multipliers"});
-            this.XSModel.Location = new System.Drawing.Point(160, 110);
-            this.XSModel.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.XSModel.Location = new System.Drawing.Point(60, 46);
             this.XSModel.MaxDropDownItems = 10;
             this.XSModel.Name = "XSModel";
-            this.XSModel.Size = new System.Drawing.Size(129, 39);
+            this.XSModel.Size = new System.Drawing.Size(51, 21);
             this.XSModel.TabIndex = 19;
             this.XSModel.SelectedIndexChanged += new System.EventHandler(this.XSModel_SelectedIndexChanged);
             // 
             // OffsetXSModel
             // 
             this.OffsetXSModel.AutoSize = true;
-            this.OffsetXSModel.Location = new System.Drawing.Point(16, 117);
-            this.OffsetXSModel.Margin = new System.Windows.Forms.Padding(8, 0, 8, 0);
+            this.OffsetXSModel.Location = new System.Drawing.Point(6, 49);
             this.OffsetXSModel.Name = "OffsetXSModel";
-            this.OffsetXSModel.Size = new System.Drawing.Size(148, 32);
+            this.OffsetXSModel.Size = new System.Drawing.Size(56, 13);
             this.OffsetXSModel.TabIndex = 18;
             this.OffsetXSModel.Text = "X-S.Model";
             // 
             // LabelYSModel
             // 
             this.LabelYSModel.AutoSize = true;
-            this.LabelYSModel.Location = new System.Drawing.Point(331, 117);
-            this.LabelYSModel.Margin = new System.Windows.Forms.Padding(8, 0, 8, 0);
+            this.LabelYSModel.Location = new System.Drawing.Point(124, 49);
             this.LabelYSModel.Name = "LabelYSModel";
-            this.LabelYSModel.Size = new System.Drawing.Size(148, 32);
+            this.LabelYSModel.Size = new System.Drawing.Size(56, 13);
             this.LabelYSModel.TabIndex = 17;
             this.LabelYSModel.Text = "Y-S.Model";
             // 
             // SpriteParam
             // 
-            this.SpriteParam.Location = new System.Drawing.Point(544, 227);
-            this.SpriteParam.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.SpriteParam.Location = new System.Drawing.Point(204, 95);
             this.SpriteParam.Maximum = new decimal(new int[] {
             255,
             0,
             0,
             0});
             this.SpriteParam.Name = "SpriteParam";
-            this.SpriteParam.Size = new System.Drawing.Size(133, 38);
+            this.SpriteParam.Size = new System.Drawing.Size(50, 20);
             this.SpriteParam.TabIndex = 14;
             this.SpriteParam.ValueChanged += new System.EventHandler(this.GenericInputChanged);
             // 
@@ -847,8 +810,7 @@
             0,
             0,
             0});
-            this.RotationAngle.Location = new System.Drawing.Point(163, 286);
-            this.RotationAngle.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.RotationAngle.Location = new System.Drawing.Point(61, 120);
             this.RotationAngle.Maximum = new decimal(new int[] {
             1024,
             0,
@@ -860,14 +822,13 @@
             0,
             -2147483648});
             this.RotationAngle.Name = "RotationAngle";
-            this.RotationAngle.Size = new System.Drawing.Size(133, 38);
+            this.RotationAngle.Size = new System.Drawing.Size(50, 20);
             this.RotationAngle.TabIndex = 15;
             this.RotationAngle.ValueChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // RotationRadiusMultiplier
             // 
-            this.RotationRadiusMultiplier.Location = new System.Drawing.Point(544, 289);
-            this.RotationRadiusMultiplier.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.RotationRadiusMultiplier.Location = new System.Drawing.Point(204, 121);
             this.RotationRadiusMultiplier.Maximum = new decimal(new int[] {
             10,
             0,
@@ -879,7 +840,7 @@
             0,
             -2147483648});
             this.RotationRadiusMultiplier.Name = "RotationRadiusMultiplier";
-            this.RotationRadiusMultiplier.Size = new System.Drawing.Size(133, 38);
+            this.RotationRadiusMultiplier.Size = new System.Drawing.Size(50, 20);
             this.RotationRadiusMultiplier.TabIndex = 16;
             this.RotationRadiusMultiplier.ValueChanged += new System.EventHandler(this.GenericInputChanged);
             // 
@@ -939,31 +900,28 @@
             "Chroma Key",
             "Mapping",
             "Translucent Mapping"});
-            this.SpriteMode.Location = new System.Drawing.Point(160, 227);
-            this.SpriteMode.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.SpriteMode.Location = new System.Drawing.Point(60, 95);
             this.SpriteMode.MaxDropDownItems = 10;
             this.SpriteMode.Name = "SpriteMode";
-            this.SpriteMode.Size = new System.Drawing.Size(129, 39);
+            this.SpriteMode.Size = new System.Drawing.Size(51, 21);
             this.SpriteMode.TabIndex = 13;
             this.SpriteMode.SelectedIndexChanged += new System.EventHandler(this.SpriteMode_SelectedIndexChanged);
             // 
             // LabelRotationAngle
             // 
             this.LabelRotationAngle.AutoSize = true;
-            this.LabelRotationAngle.Location = new System.Drawing.Point(16, 296);
-            this.LabelRotationAngle.Margin = new System.Windows.Forms.Padding(8, 0, 8, 0);
+            this.LabelRotationAngle.Location = new System.Drawing.Point(6, 124);
             this.LabelRotationAngle.Name = "LabelRotationAngle";
-            this.LabelRotationAngle.Size = new System.Drawing.Size(141, 32);
+            this.LabelRotationAngle.Size = new System.Drawing.Size(54, 13);
             this.LabelRotationAngle.TabIndex = 14;
             this.LabelRotationAngle.Text = "Rot.Angle";
             // 
             // Hidden
             // 
             this.Hidden.AutoSize = true;
-            this.Hidden.Location = new System.Drawing.Point(541, 172);
-            this.Hidden.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.Hidden.Location = new System.Drawing.Point(203, 72);
             this.Hidden.Name = "Hidden";
-            this.Hidden.Size = new System.Drawing.Size(112, 36);
+            this.Hidden.Size = new System.Drawing.Size(48, 17);
             this.Hidden.TabIndex = 12;
             this.Hidden.Text = "Hide";
             this.Hidden.UseVisualStyleBackColor = true;
@@ -972,60 +930,54 @@
             // NameBox
             // 
             this.NameBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.NameBox.Location = new System.Drawing.Point(160, 167);
-            this.NameBox.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.NameBox.Location = new System.Drawing.Point(60, 70);
             this.NameBox.Name = "NameBox";
-            this.NameBox.Size = new System.Drawing.Size(359, 38);
+            this.NameBox.Size = new System.Drawing.Size(137, 20);
             this.NameBox.TabIndex = 11;
             this.NameBox.TextChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // LabelRotationRadiusMultiplier
             // 
             this.LabelRotationRadiusMultiplier.AutoSize = true;
-            this.LabelRotationRadiusMultiplier.Location = new System.Drawing.Point(331, 296);
-            this.LabelRotationRadiusMultiplier.Margin = new System.Windows.Forms.Padding(8, 0, 8, 0);
+            this.LabelRotationRadiusMultiplier.Location = new System.Drawing.Point(124, 124);
             this.LabelRotationRadiusMultiplier.Name = "LabelRotationRadiusMultiplier";
-            this.LabelRotationRadiusMultiplier.Size = new System.Drawing.Size(188, 32);
+            this.LabelRotationRadiusMultiplier.Size = new System.Drawing.Size(72, 13);
             this.LabelRotationRadiusMultiplier.TabIndex = 12;
             this.LabelRotationRadiusMultiplier.Text = "Rot.Rad.Multi";
             // 
             // NameLabel
             // 
             this.NameLabel.AutoSize = true;
-            this.NameLabel.Location = new System.Drawing.Point(16, 174);
-            this.NameLabel.Margin = new System.Windows.Forms.Padding(8, 0, 8, 0);
+            this.NameLabel.Location = new System.Drawing.Point(6, 73);
             this.NameLabel.Name = "NameLabel";
-            this.NameLabel.Size = new System.Drawing.Size(90, 32);
+            this.NameLabel.Size = new System.Drawing.Size(35, 13);
             this.NameLabel.TabIndex = 4;
             this.NameLabel.Text = "Name";
             // 
             // OffsetXLabel
             // 
             this.OffsetXLabel.AutoSize = true;
-            this.OffsetXLabel.Location = new System.Drawing.Point(16, 55);
-            this.OffsetXLabel.Margin = new System.Windows.Forms.Padding(8, 0, 8, 0);
+            this.OffsetXLabel.Location = new System.Drawing.Point(6, 23);
             this.OffsetXLabel.Name = "OffsetXLabel";
-            this.OffsetXLabel.Size = new System.Drawing.Size(119, 32);
+            this.OffsetXLabel.Size = new System.Drawing.Size(45, 13);
             this.OffsetXLabel.TabIndex = 3;
             this.OffsetXLabel.Text = "X-Offset";
             // 
             // LabelSpriteMode
             // 
             this.LabelSpriteMode.AutoSize = true;
-            this.LabelSpriteMode.Location = new System.Drawing.Point(16, 234);
-            this.LabelSpriteMode.Margin = new System.Windows.Forms.Padding(8, 0, 8, 0);
+            this.LabelSpriteMode.Location = new System.Drawing.Point(6, 98);
             this.LabelSpriteMode.Name = "LabelSpriteMode";
-            this.LabelSpriteMode.Size = new System.Drawing.Size(113, 32);
+            this.LabelSpriteMode.Size = new System.Drawing.Size(44, 13);
             this.LabelSpriteMode.TabIndex = 10;
             this.LabelSpriteMode.Text = "S.Mode";
             // 
             // XOffset
             // 
             this.XOffset.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.XOffset.Location = new System.Drawing.Point(160, 48);
-            this.XOffset.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.XOffset.Location = new System.Drawing.Point(60, 20);
             this.XOffset.Name = "XOffset";
-            this.XOffset.Size = new System.Drawing.Size(127, 38);
+            this.XOffset.Size = new System.Drawing.Size(50, 20);
             this.XOffset.TabIndex = 9;
             this.XOffset.Text = "0";
             this.XOffset.TextChanged += new System.EventHandler(this.GenericInputChanged);
@@ -1033,20 +985,18 @@
             // LabelSpriteParam
             // 
             this.LabelSpriteParam.AutoSize = true;
-            this.LabelSpriteParam.Location = new System.Drawing.Point(331, 234);
-            this.LabelSpriteParam.Margin = new System.Windows.Forms.Padding(8, 0, 8, 0);
+            this.LabelSpriteParam.Location = new System.Drawing.Point(124, 98);
             this.LabelSpriteParam.Name = "LabelSpriteParam";
-            this.LabelSpriteParam.Size = new System.Drawing.Size(174, 32);
+            this.LabelSpriteParam.Size = new System.Drawing.Size(65, 13);
             this.LabelSpriteParam.TabIndex = 9;
             this.LabelSpriteParam.Text = "S.Parameter";
             // 
             // YOffset
             // 
             this.YOffset.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.YOffset.Location = new System.Drawing.Point(541, 48);
-            this.YOffset.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.YOffset.Location = new System.Drawing.Point(203, 20);
             this.YOffset.Name = "YOffset";
-            this.YOffset.Size = new System.Drawing.Size(127, 38);
+            this.YOffset.Size = new System.Drawing.Size(50, 20);
             this.YOffset.TabIndex = 10;
             this.YOffset.Text = "0";
             this.YOffset.TextChanged += new System.EventHandler(this.GenericInputChanged);
@@ -1054,20 +1004,18 @@
             // OffsetYLabel
             // 
             this.OffsetYLabel.AutoSize = true;
-            this.OffsetYLabel.Location = new System.Drawing.Point(331, 55);
-            this.OffsetYLabel.Margin = new System.Windows.Forms.Padding(8, 0, 8, 0);
+            this.OffsetYLabel.Location = new System.Drawing.Point(124, 23);
             this.OffsetYLabel.Name = "OffsetYLabel";
-            this.OffsetYLabel.Size = new System.Drawing.Size(119, 32);
+            this.OffsetYLabel.Size = new System.Drawing.Size(45, 13);
             this.OffsetYLabel.TabIndex = 1;
             this.OffsetYLabel.Text = "Y-Offset";
             // 
             // ButtonApply
             // 
             this.ButtonApply.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.ButtonApply.Location = new System.Drawing.Point(1456, 167);
-            this.ButtonApply.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.ButtonApply.Location = new System.Drawing.Point(546, 70);
             this.ButtonApply.Name = "ButtonApply";
-            this.ButtonApply.Size = new System.Drawing.Size(200, 55);
+            this.ButtonApply.Size = new System.Drawing.Size(75, 23);
             this.ButtonApply.TabIndex = 2;
             this.ButtonApply.Text = "Apply";
             this.ButtonApply.UseVisualStyleBackColor = true;
@@ -1084,11 +1032,9 @@
             this.groupBoxInner.Controls.Add(this.InnerAutoY);
             this.groupBoxInner.Controls.Add(this.InnerAutoXLabel);
             this.groupBoxInner.Controls.Add(this.InnerAutoX);
-            this.groupBoxInner.Location = new System.Drawing.Point(35, 761);
-            this.groupBoxInner.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.groupBoxInner.Location = new System.Drawing.Point(13, 319);
             this.groupBoxInner.Name = "groupBoxInner";
-            this.groupBoxInner.Padding = new System.Windows.Forms.Padding(8, 7, 8, 7);
-            this.groupBoxInner.Size = new System.Drawing.Size(1397, 124);
+            this.groupBoxInner.Size = new System.Drawing.Size(524, 52);
             this.groupBoxInner.TabIndex = 5;
             this.groupBoxInner.TabStop = false;
             this.groupBoxInner.Text = "Texture Inner Movement";
@@ -1096,20 +1042,18 @@
             // InnerYLabel
             // 
             this.InnerYLabel.AutoSize = true;
-            this.InnerYLabel.Location = new System.Drawing.Point(723, 55);
-            this.InnerYLabel.Margin = new System.Windows.Forms.Padding(8, 0, 8, 0);
+            this.InnerYLabel.Location = new System.Drawing.Point(271, 23);
             this.InnerYLabel.Name = "InnerYLabel";
-            this.InnerYLabel.Size = new System.Drawing.Size(126, 32);
+            this.InnerYLabel.Size = new System.Drawing.Size(48, 13);
             this.InnerYLabel.TabIndex = 11;
             this.InnerYLabel.Text = "Y-Speed";
             // 
             // InnerY
             // 
             this.InnerY.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.InnerY.Location = new System.Drawing.Point(867, 48);
-            this.InnerY.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.InnerY.Location = new System.Drawing.Point(325, 20);
             this.InnerY.Name = "InnerY";
-            this.InnerY.Size = new System.Drawing.Size(127, 38);
+            this.InnerY.Size = new System.Drawing.Size(50, 20);
             this.InnerY.TabIndex = 10;
             this.InnerY.Text = "0";
             this.InnerY.TextChanged += new System.EventHandler(this.GenericInputChanged);
@@ -1117,30 +1061,27 @@
             // InnerXLabel
             // 
             this.InnerXLabel.AutoSize = true;
-            this.InnerXLabel.Location = new System.Drawing.Point(16, 55);
-            this.InnerXLabel.Margin = new System.Windows.Forms.Padding(8, 0, 8, 0);
+            this.InnerXLabel.Location = new System.Drawing.Point(6, 23);
             this.InnerXLabel.Name = "InnerXLabel";
-            this.InnerXLabel.Size = new System.Drawing.Size(126, 32);
+            this.InnerXLabel.Size = new System.Drawing.Size(48, 13);
             this.InnerXLabel.TabIndex = 10;
             this.InnerXLabel.Text = "X-Speed";
             // 
             // InnerAutoYLabel
             // 
             this.InnerAutoYLabel.AutoSize = true;
-            this.InnerAutoYLabel.Location = new System.Drawing.Point(1037, 55);
-            this.InnerAutoYLabel.Margin = new System.Windows.Forms.Padding(8, 0, 8, 0);
+            this.InnerAutoYLabel.Location = new System.Drawing.Point(389, 23);
             this.InnerAutoYLabel.Name = "InnerAutoYLabel";
-            this.InnerAutoYLabel.Size = new System.Drawing.Size(192, 32);
+            this.InnerAutoYLabel.Size = new System.Drawing.Size(73, 13);
             this.InnerAutoYLabel.TabIndex = 9;
             this.InnerAutoYLabel.Text = "Auto Y-Speed";
             // 
             // InnerX
             // 
             this.InnerX.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.InnerX.Location = new System.Drawing.Point(160, 48);
-            this.InnerX.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.InnerX.Location = new System.Drawing.Point(60, 20);
             this.InnerX.Name = "InnerX";
-            this.InnerX.Size = new System.Drawing.Size(127, 38);
+            this.InnerX.Size = new System.Drawing.Size(50, 20);
             this.InnerX.TabIndex = 11;
             this.InnerX.Text = "0";
             this.InnerX.TextChanged += new System.EventHandler(this.GenericInputChanged);
@@ -1148,10 +1089,9 @@
             // InnerAutoY
             // 
             this.InnerAutoY.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.InnerAutoY.Location = new System.Drawing.Point(1248, 48);
-            this.InnerAutoY.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.InnerAutoY.Location = new System.Drawing.Point(468, 20);
             this.InnerAutoY.Name = "InnerAutoY";
-            this.InnerAutoY.Size = new System.Drawing.Size(127, 38);
+            this.InnerAutoY.Size = new System.Drawing.Size(50, 20);
             this.InnerAutoY.TabIndex = 12;
             this.InnerAutoY.Text = "0";
             this.InnerAutoY.TextChanged += new System.EventHandler(this.GenericInputChanged);
@@ -1159,45 +1099,65 @@
             // InnerAutoXLabel
             // 
             this.InnerAutoXLabel.AutoSize = true;
-            this.InnerAutoXLabel.Location = new System.Drawing.Point(331, 55);
-            this.InnerAutoXLabel.Margin = new System.Windows.Forms.Padding(8, 0, 8, 0);
+            this.InnerAutoXLabel.Location = new System.Drawing.Point(124, 23);
             this.InnerAutoXLabel.Name = "InnerAutoXLabel";
-            this.InnerAutoXLabel.Size = new System.Drawing.Size(192, 32);
+            this.InnerAutoXLabel.Size = new System.Drawing.Size(73, 13);
             this.InnerAutoXLabel.TabIndex = 9;
             this.InnerAutoXLabel.Text = "Auto X-Speed";
             // 
             // InnerAutoX
             // 
             this.InnerAutoX.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.InnerAutoX.Location = new System.Drawing.Point(541, 48);
-            this.InnerAutoX.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
+            this.InnerAutoX.Location = new System.Drawing.Point(203, 20);
             this.InnerAutoX.Name = "InnerAutoX";
-            this.InnerAutoX.Size = new System.Drawing.Size(127, 38);
+            this.InnerAutoX.Size = new System.Drawing.Size(50, 20);
             this.InnerAutoX.TabIndex = 12;
             this.InnerAutoX.Text = "0";
             this.InnerAutoX.TextChanged += new System.EventHandler(this.GenericInputChanged);
             // 
-            // TextureColorZeroIsTransparent
+            // ParamDropdown1
             // 
-            this.TextureColorZeroIsTransparent.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.TextureColorZeroIsTransparent.AutoSize = true;
-            this.TextureColorZeroIsTransparent.Enabled = false;
-            this.TextureColorZeroIsTransparent.Location = new System.Drawing.Point(24, 351);
-            this.TextureColorZeroIsTransparent.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
-            this.TextureColorZeroIsTransparent.Name = "TextureColorZeroIsTransparent";
-            this.TextureColorZeroIsTransparent.Size = new System.Drawing.Size(207, 36);
-            this.TextureColorZeroIsTransparent.TabIndex = 35;
-            this.TextureColorZeroIsTransparent.Text = "Skip Color 0";
-            this.TextureColorZeroIsTransparent.UseVisualStyleBackColor = true;
-            this.TextureColorZeroIsTransparent.CheckedChanged += new System.EventHandler(this.GenericInputChanged);
+            this.ParamDropdown1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.ParamDropdown1.DropDownWidth = 175;
+            this.ParamDropdown1.FormattingEnabled = true;
+            this.ParamDropdown1.Location = new System.Drawing.Point(202, 92);
+            this.ParamDropdown1.MaxDropDownItems = 10;
+            this.ParamDropdown1.Name = "ParamDropdown1";
+            this.ParamDropdown1.Size = new System.Drawing.Size(51, 21);
+            this.ParamDropdown1.TabIndex = 22;
+            this.ParamDropdown1.SelectedIndexChanged += new System.EventHandler(this.GenericInputChanged);
+            // 
+            // ParamDropdown2
+            // 
+            this.ParamDropdown2.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.ParamDropdown2.DropDownWidth = 175;
+            this.ParamDropdown2.FormattingEnabled = true;
+            this.ParamDropdown2.Location = new System.Drawing.Point(85, 118);
+            this.ParamDropdown2.MaxDropDownItems = 10;
+            this.ParamDropdown2.Name = "ParamDropdown2";
+            this.ParamDropdown2.Size = new System.Drawing.Size(51, 21);
+            this.ParamDropdown2.TabIndex = 36;
+            this.ParamDropdown2.SelectedIndexChanged += new System.EventHandler(this.GenericInputChanged);
+            // 
+            // ParamDropdown3
+            // 
+            this.ParamDropdown3.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.ParamDropdown3.DropDownWidth = 175;
+            this.ParamDropdown3.FormattingEnabled = true;
+            this.ParamDropdown3.Location = new System.Drawing.Point(203, 118);
+            this.ParamDropdown3.MaxDropDownItems = 10;
+            this.ParamDropdown3.Name = "ParamDropdown3";
+            this.ParamDropdown3.Size = new System.Drawing.Size(51, 21);
+            this.ParamDropdown3.TabIndex = 37;
+            this.ParamDropdown3.SelectedIndexChanged += new System.EventHandler(this.GenericInputChanged);
             // 
             // LayerPropertiesForm
             // 
             this.AcceptButton = this.OKButton;
-            this.AutoScaleDimensions = new System.Drawing.SizeF(16F, 31F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.ButtonCancel;
-            this.ClientSize = new System.Drawing.Size(1688, 882);
+            this.ClientSize = new System.Drawing.Size(633, 370);
             this.Controls.Add(this.groupBoxInner);
             this.Controls.Add(this.ButtonApply);
             this.Controls.Add(this.groupBoxPlus);
@@ -1209,7 +1169,6 @@
             this.Controls.Add(this.ButtonCancel);
             this.Controls.Add(this.OKButton);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-            this.Margin = new System.Windows.Forms.Padding(8, 7, 8, 7);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "LayerPropertiesForm";
@@ -1320,5 +1279,8 @@
         private System.Windows.Forms.Label TintColorLabel;
         private System.Windows.Forms.ComboBox SpriteParamMapping;
         private System.Windows.Forms.CheckBox TextureColorZeroIsTransparent;
+        private System.Windows.Forms.ComboBox ParamDropdown3;
+        private System.Windows.Forms.ComboBox ParamDropdown2;
+        private System.Windows.Forms.ComboBox ParamDropdown1;
     }
 }

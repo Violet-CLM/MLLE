@@ -113,6 +113,21 @@ namespace MLLE
             Param1.Value = layer.TexturParam1;
             Param2.Value = layer.TexturParam2;
             Param3.Value = layer.TexturParam3;
+            try
+            {
+                ParamDropdown1.SelectedIndex = (int)Param1.Value;
+            }
+            catch { }
+            try
+            {
+                ParamDropdown2.SelectedIndex = (int)Param2.Value;
+            }
+            catch { }
+            try
+            {
+                ParamDropdown3.SelectedIndex = (int)Param3.Value;
+            }
+            catch { }
             //PHASEParam1.Text = layer.TexturParam1.ToString();
             //PHASEParam2.Text = layer.TexturParam2.ToString();
             //PHASEParam3.Text = layer.TexturParam3.ToString();
@@ -284,9 +299,9 @@ namespace MLLE
                 DataSource.LimitVisibleRegion = LimitVisibleRegion.Checked;
                 DataSource.TextureSurface = (byte)(TextureMode.Visible ? (TextureMode.Checked ? 1 : 0) : TextureSurfaceSelect.SelectedIndex);
                 DataSource.HasStars = Stars.Checked;
-                DataSource.TexturParam1 = (byte)Param1.Value;
-                DataSource.TexturParam2 = (byte)Param2.Value;
-                DataSource.TexturParam3 = (byte)Param3.Value;
+                DataSource.TexturParam1 = (byte)(ParamDropdown1.Visible ? ParamDropdown1.SelectedIndex : Param1.Value);
+                DataSource.TexturParam2 = (byte)(ParamDropdown2.Visible ? ParamDropdown2.SelectedIndex : Param2.Value);
+                DataSource.TexturParam3 = (byte)(ParamDropdown3.Visible ? ParamDropdown3.SelectedIndex : Param3.Value);
                 DataSource.TextureMode = (byte)TextureModeSelect.SelectedIndex;
                 DataSource.Name = NameBox.Text;
                 DataSource.Hidden = Hidden.Checked;
@@ -316,17 +331,42 @@ namespace MLLE
             return true;
         }
 
+        private void DecideBetweenDropdownAndNumber(Label label, ComboBox dropdown, NumericUpDown number)
+        {
+            label.Visible = true;
+            var match = System.Text.RegularExpressions.Regex.Match(label.Text, "(.+)\\{(.+)\\}");
+            if (match.Success)
+            {
+                label.Text = match.Groups[1].Value;
+                dropdown.Visible = true;
+                dropdown.Items.Clear();
+                dropdown.Items.AddRange(match.Groups[2].Value.Split(','));
+                try
+                {
+                    dropdown.SelectedIndex = (int)number.Value;
+                }
+                catch { }
+            }
+            else
+            {
+                number.Visible = true;
+            }
+        }
+
         private void TextureModeSelect_SelectedIndexChanged(object sender, EventArgs e)
         {
             string[] properties = SourceForm.TextureTypes[TextureModeSelect.SelectedIndex];
             if (properties.Length >= 3)
             {
                 Stars.Text = properties[2].Trim();
-                Stars.Visible = true;
+                Stars.Visible = Stars.Text.Length > 0;
             }
             else { Stars.Visible = false; }
 
-            Param1.Visible = Param2.Visible = Param3.Visible = RedLabel.Visible = GreenLabel.Visible = BlueLabel.Visible = false;
+            Param1.Visible = Param2.Visible = Param3.Visible =
+            ParamDropdown1.Visible = ParamDropdown2.Visible = ParamDropdown3.Visible =
+            RedLabel.Visible = GreenLabel.Visible = BlueLabel.Visible =
+                false;
             if (properties.Length > 1 && properties[1] == "+")
             {
                 ColorLabel.Text = properties[3].Trim();
@@ -334,10 +374,18 @@ namespace MLLE
             }
             else
             {
-                if (properties.Length >= 4) { Param1.Visible = RedLabel.Visible = true; RedLabel.Text = properties[3].Trim(); }
-                if (properties.Length >= 5) { Param2.Visible = GreenLabel.Visible = true; GreenLabel.Text = properties[4].Trim(); }
+                if (properties.Length >= 4)  {
+
+                    RedLabel.Text = properties[3].Trim();
+                    DecideBetweenDropdownAndNumber(RedLabel, ParamDropdown1, Param1);
+                }
+                if (properties.Length >= 5) {
+                    GreenLabel.Text = properties[4].Trim();
+                    DecideBetweenDropdownAndNumber(GreenLabel, ParamDropdown2, Param2);
+                }
                 if (properties.Length >= 6) {
-                    Param3.Visible = BlueLabel.Visible = true; BlueLabel.Text = properties[5].Trim();
+                    BlueLabel.Text = properties[5].Trim();
+                    DecideBetweenDropdownAndNumber(BlueLabel, ParamDropdown3, Param3);
                     if (TextureModeSelect.SelectedIndex != 4)
                     {
                         Param3.Minimum = 0;
