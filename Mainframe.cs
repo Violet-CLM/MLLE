@@ -1121,7 +1121,7 @@ void main() {
             if (MouseTile > 0 && MouseTile < J2L.TileCount)
                 automaskTile((uint)MouseTile);
         }
-        private void copyImageToolStripMenuItem_Click(object sender, EventArgs e)
+        private Bitmap getSelectedTilesAsBitmap()
         {
             Bitmap result = new Bitmap(
                 (BottomRightSelectionCorner.X - UpperLeftSelectionCorner.X) * 32,
@@ -1152,7 +1152,7 @@ void main() {
                                 _suspendEvent.Reset();
                                 MessageBox.Show("Copying 32-bit tile images is not currently supported.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                                 _suspendEvent.Set();
-                                return;
+                                return null;
                             }
                             int firstResultByteIndex = (x - UpperLeftSelectionCorner.X) * 32 + (y - UpperLeftSelectionCorner.Y) * 32 * result.Width;
                             for (int b = 0; b < 32 * 32; ++b)
@@ -1161,12 +1161,31 @@ void main() {
                     }
             BitmapStuff.ByteArrayToBitmap(resultAsBytes, result, true);
             J2L.Palette.Apply(result);
-            BitmapStuff.CopyBitmapToClipboard(result);
+            return result;
         }
-
-        private void pasteImageToolStripMenuItem_Click(object sender, EventArgs e)
+        private void copyImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Bitmap clipboardBitmap = BitmapStuff.GetBitmapFromClipboard(null);
+            Bitmap image = getSelectedTilesAsBitmap();
+            if (image != null)
+                BitmapStuff.CopyBitmapToClipboard(image);
+        }
+        private void saveImageToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _suspendEvent.Reset();
+            var levelImageSaveDialog = new SaveFileDialog();
+            levelImageSaveDialog.DefaultExt = "png";
+            levelImageSaveDialog.Filter = "Portable Network Graphics|*.png";
+            levelImageSaveDialog.FileName = Path.GetFileNameWithoutExtension(J2L.Tilesets[0].FilenameOnly) + "-tiles.png";
+            if (levelImageSaveDialog.ShowDialog() == DialogResult.OK)
+            {
+                Bitmap image = getSelectedTilesAsBitmap();
+                if (image != null)
+                    image.Save(Path.ChangeExtension(levelImageSaveDialog.FileName, "png"), System.Drawing.Imaging.ImageFormat.Png);
+            }
+            _suspendEvent.Set();
+        }
+        private void putBitmapToSelectedTiles(Bitmap clipboardBitmap)
+        {
             if (clipboardBitmap != null)
             {
                 int selectionWidth = (BottomRightSelectionCorner.X - UpperLeftSelectionCorner.X) * 32;
@@ -1215,6 +1234,27 @@ void main() {
                 }
                 _suspendEvent.Set();
             }
+        }
+        private void loadImageToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+            _suspendEvent.Reset();
+            var tilesetOpenDialog = new OpenFileDialog();
+            tilesetOpenDialog.DefaultExt = "png";
+            tilesetOpenDialog.Filter = "Portable Network Graphics|*.png";
+            if (tilesetOpenDialog.ShowDialog() == DialogResult.OK)
+            {
+                var loadedBitmap = new Bitmap(tilesetOpenDialog.FileName);
+                if (loadedBitmap.PixelFormat == System.Drawing.Imaging.PixelFormat.Format8bppIndexed)
+                    putBitmapToSelectedTiles(loadedBitmap);
+                else
+                    MessageBox.Show("Loading 32-bit tile images is not currently supported.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            _suspendEvent.Set();
+        }
+        private void pasteImageToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            putBitmapToSelectedTiles(BitmapStuff.GetBitmapFromClipboard(null));
         }
         private void resetImagesToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -4519,7 +4559,7 @@ void main() {
 
             //JJ2+ tile options
             imageToolStripMenuItem.Visible = maskToolStripMenuItem.Visible = automaskToolStripMenuItem.Visible = toolStripSeparator14.Visible =
-            copyImageToolStripMenuItem.Visible = pasteImageToolStripMenuItem.Visible = resetImagesToolStripMenuItem.Visible = toolStripSeparator26.Visible =
+            loadImageToolStripMenuItem.Visible = pasteImageToolStripMenuItem.Visible = resetImagesToolStripMenuItem.Visible = toolStripSeparator26.Visible =
                 !AnimationSettings.Visible && EnableableBools[J2L.VersionType][EnableableTitles.BoolDevelopingForPlus];
 
             OverSmartTiles.Enabled = !AnimationSettings.Visible; //may not always be Visible, though, depending on tileset/s
