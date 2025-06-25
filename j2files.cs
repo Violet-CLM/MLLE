@@ -671,7 +671,7 @@ partial class J2TFile : J2File
                                     sourceIndex *= (image32.PixelFormat == PixelFormat.Format24bppRgb) ? 3 : 4;
                                     uint channelSum = 0;
                                     for (int ch = 0; ch < 3; ++ch)
-                                        channelSum += (image32Array[tileIndex | ch] = image32Indices[sourceIndex | ch]);
+                                        channelSum += (image32Array[tileIndex | (2 - ch)] = image32Indices[sourceIndex + ch]); //reverse BGR to RGB
                                     if (channelSum == 0)
                                         AlphaSpread[tileID] = 0;
                                     else
