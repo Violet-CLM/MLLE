@@ -51,7 +51,7 @@ namespace MLLE
                 string iniText = Settings.IniReadValue("Tilesets", (iniTilesetIndex++).ToString());
                 if (string.IsNullOrWhiteSpace(iniText)) //run out of subsequently numbered ini lines
                     break;
-                var match = System.Text.RegularExpressions.Regex.Match(iniText, "\\s*\"([^\"]+)\",\\s*\"([^\"]+)\",\\s*\"([^\"]+)\",\\s*\"([^\"]*)\",(?:\\s*\"([^\"]+)\",)?\\s*(TSF|JJ2|BC|AGA|GorH)\\s*");
+                var match = System.Text.RegularExpressions.Regex.Match(iniText, "\\s*\"([^\"]+)\",\\s*\"([^\"]+)\",\\s*\"([^\"]*)\",\\s*\"([^\"]*)\",(?:\\s*\"([^\"]+)\",)?\\s*(TSF|JJ2|BC|AGA|GorH)\\s*");
                 if (!match.Success) //something went wrong
                     continue; //oh well!
                 ListViewItem newRecord = new ListViewItem(match.Groups[2].Value);
@@ -142,7 +142,7 @@ namespace MLLE
                 var record = listView1.SelectedItems[0];
                 var J2T = new J2TFile();
                 J2T.VersionType = VersionType;
-                Bitmap image = null, image32 = null, mask = new Bitmap(1, 1);
+                Bitmap image = null, image32 = null, mask = null;
                 string sourceFilepath = "";
                 try
                 {
@@ -153,10 +153,12 @@ namespace MLLE
                     if (sourceFilename.Length > 0)
                         image32 = (Bitmap)Bitmap.FromFile(sourceFilepath = Path.Combine(TileDirectory, sourceFilename));
                     sourceFilename = record.SubItems[4].Text;
-                    //if (true) //always a mask
+                    if (sourceFilename.Length > 0)
                         mask = (Bitmap)Bitmap.FromFile(sourceFilepath = Path.Combine(TileDirectory, sourceFilename));
 
-                    switch (J2T.Build(image, image32, mask, record.Text, VersionIsPlusCompatible))
+                    Palette backupPalette = null;
+                    Build:
+                    switch (J2T.Build(image, image32, mask, record.Text, VersionIsPlusCompatible, backupPalette))
                     {
                         case BuildResults.DifferentDimensions:
                             if (image32 != null)
@@ -180,7 +182,15 @@ namespace MLLE
                             MessageBox.Show(String.Format("Your tileset images are too big. The tile limit for a {0} tileset is {1} tiles, but your tileset contains {2}.", J2File.FullVersionNames[J2T.VersionType], J2T.MaxTiles, ((image ?? image32).Height / 32 * 10)), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             break;
                         case BuildResults.MaskNeedsPaletteFor32BitImages:
-                            MessageBox.Show("When building a tileset with a 32-bit image but no 8-bit image, the mask image must define the tileset's palette instead, using 8-bit color with no transparency (color 0 is used for transparency instead).", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            if (MessageBox.Show("None of your images define an 8-bit palette. Use a generic Jazz-2-styled 8-bit palette instead?", "Error", MessageBoxButtons.OKCancel, MessageBoxIcon.Error) == DialogResult.OK)
+                            {
+                                using (BinaryReader binreader = new BinaryReader(new MemoryStream(MLLE.Properties.Resources.GenericPalette), J2File.FileEncoding))
+                                {
+                                    binreader.BaseStream.Seek(4, SeekOrigin.Begin); //"Color Table" header
+                                    backupPalette = new Palette(binreader);
+                                }
+                                goto Build;
+                            }
                             break;
                         case BuildResults.Success:
                             string fullFilePath = Path.Combine(Directory.GetParent(TileDirectory).ToString(), record.SubItems[1].Text);
@@ -208,7 +218,8 @@ namespace MLLE
                         image.Dispose();
                     if (image32 != null)
                         image32.Dispose();
-                    mask.Dispose();
+                    if (mask != null)
+                        mask.Dispose();
                 }
             }
         }

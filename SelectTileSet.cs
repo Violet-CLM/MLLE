@@ -51,13 +51,13 @@ namespace MLLE
 
         private void OK_Click(object sender, EventArgs e)
         {
-            if ((boxImage.SelectedIndex > 0 || (box32.SelectedIndex > 0 && boxMask.SelectedIndex > 0)) && boxName.Text.Trim() != string.Empty && boxFilename.Text.Trim() != string.Empty)
+            if ((boxImage.SelectedIndex > 0 || box32.SelectedIndex > 0) && boxName.Text.Trim() != string.Empty && boxFilename.Text.Trim() != string.Empty)
             {
                 Record.Text = boxName.Text;
                 Record.SubItems[1].Text = Path.ChangeExtension(boxFilename.Text, FileExtension);
                 Record.SubItems[2].Text = (boxImage.SelectedIndex > 0) ? boxImage.SelectedItem.ToString() : "";
                 Record.SubItems[3].Text = (box32.SelectedIndex > 0) ? box32.SelectedItem.ToString() : "";
-                Record.SubItems[4].Text = (boxMask.SelectedIndex > 0) ? boxMask.SelectedItem.ToString() : Record.SubItems[2].Text;
+                Record.SubItems[4].Text = (boxMask.SelectedIndex > 0) ? boxMask.SelectedItem.ToString() : "";
                 result = true;
                 Close();
             }

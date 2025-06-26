@@ -543,13 +543,18 @@ partial class J2TFile : J2File
     //public byte[] GetMask(ushort id) { return Masks[MaskAddress[id]]; }
     //public byte[] GetFMask(ushort id) { return Masks[FlippedMaskAddress[id]]; }
 
-    public BuildResults Build(Bitmap image, Bitmap image32, Bitmap mask, string name, bool versionIsPlusCompatible)
+    public BuildResults Build(Bitmap image, Bitmap image32, Bitmap mask, string name, bool versionIsPlusCompatible, Palette backupPalette)
     {
         if (image != null && image32 != null && (image.Width != image32.Width || image.Height != image32.Height))
             return BuildResults.DifferentDimensions;
         Bitmap mainImage = image ?? image32;
-        if (mainImage.Width != mask.Width || mainImage.Height != mask.Height)
-            return BuildResults.DifferentDimensions;
+        if (mask != null)
+        {
+            if (mainImage.Width != mask.Width || mainImage.Height != mask.Height)
+                return BuildResults.DifferentDimensions;
+            if (!mask.PixelFormat.HasFlag(PixelFormat.Indexed))
+                return BuildResults.MaskWrongFormat;
+        }
         if (mainImage.Width != 320 || mainImage.Height % 32 != 0)
             return BuildResults.BadDimensions;
         if (image != null && image.PixelFormat != PixelFormat.Format8bppIndexed)
@@ -559,12 +564,8 @@ partial class J2TFile : J2File
                 return BuildResults.VersionDoesNotSupport32BitImage;
             if (!(image32.PixelFormat == PixelFormat.Format32bppArgb || image32.PixelFormat == PixelFormat.Format32bppRgb || image32.PixelFormat == PixelFormat.Format24bppRgb))
                 return BuildResults.Image32WrongFormat;
-            if (image == null && mask.PixelFormat != PixelFormat.Format8bppIndexed)
-                return BuildResults.MaskNeedsPaletteFor32BitImages;
             VersionType = Version.Plus;
         }
-        if (!mask.PixelFormat.HasFlag(PixelFormat.Indexed))
-            return BuildResults.MaskWrongFormat;
         TileCount = (uint)mainImage.Height / 32 * 10;
         if (TileCount > MaxTiles)
         {
@@ -575,6 +576,19 @@ partial class J2TFile : J2File
         }
         else if (TileCount <= 1020 && VersionType == Version.TSF)
             VersionType = Version.JJ2; //increase accessibility
+        if (image == null && image32 != null && (mask == null || mask.PixelFormat != PixelFormat.Format8bppIndexed))
+        {
+            if (backupPalette != null)
+                Palette = backupPalette;
+            else
+                return BuildResults.MaskNeedsPaletteFor32BitImages;
+        }
+        else
+        {
+            Palette = new Palette((image ?? mask).Palette);
+        }
+        Palette.Colors[0] = new byte[] { 0, 0, 0, 0 }; //transparency must always be black, for MMX reasons
+        Palette.Colors[15] = Palette.Colors[255] = new byte[] { 255, 255, 255, 255 }; //these colors are both always white
 
         Header = (VersionType == Version.JJ2 || VersionType == Version.TSF || VersionType == Version.Plus) ? StandardHeader : "";
         Magic = "TILE";
@@ -586,14 +600,10 @@ partial class J2TFile : J2File
         AlphaSpread = new byte[MaxTiles];
         TransparencyMaskJCS_Style = new byte[MaxTiles][];
 
-        Palette = new Palette((image ?? mask).Palette);
-        Palette.Colors[0] = new byte[] { 0, 0, 0, 0 }; //transparency must always be black, for MMX reasons
-        Palette.Colors[15] = Palette.Colors[255] = new byte[] { 255, 255, 255, 255 }; //these colors are both always white
-
         {
             var imageIndices = image != null ? new byte[image.Width * image.Height] : null;
             var image32Indices = image32 != null ? new byte[image32.Width * image32.Height * 4] : null;
-            var maskIndices = new byte[mask.Width * mask.Height];
+            var maskIndices = mask != null ? new byte[mask.Width * mask.Height] : null;
             var allBmps = new Bitmap[] { image, image32, mask };
             var allIndices = new byte[][] { imageIndices, image32Indices, maskIndices };
 
@@ -629,7 +639,8 @@ partial class J2TFile : J2File
                     {
                         int tileIndex = xx | (yy << 5);
                         int sourceIndex = (x | xx) + (y | yy) * 320;
-                        maskArray[tileIndex] = (byte)(maskIndices[sourceIndex] != 0 ? 1 : 0);
+                        if (maskIndices != null) //mask provided
+                            maskArray[tileIndex] = (byte)(maskIndices[sourceIndex] != 0 ? 1 : 0);
                         if (image != null)
                         {
                             byte color = imageIndices[sourceIndex];
@@ -686,8 +697,14 @@ partial class J2TFile : J2File
                 if (VersionType != Version.Plus || image32Array.SequenceEqual(empty32BitTile)) { //only use the 8-bit image if the 32-bit image is empty/nonexistent
                     Images[tileID] = imageArray;
                     AlphaSpread[tileID] = (byte)(fullyOpaque8Bit ? 1 : 0);
+                    if (maskIndices == null) //automask
+                        for (int i = 0; i < 32 * 32; ++i)
+                            maskArray[i] = (byte)(imageArray[i] == 0 ? 0 : 1);
                 } else {
                     Images[tileID] = image32Array;
+                    if (maskIndices == null) //automask
+                        for (int i = 0; i < 32 * 32; ++i)
+                            maskArray[i] = (byte)(image32Array[3 + i * 4] < 128 ? 0 : 1); //arbitrary 128 alpha threshold
                 }
                 TransparencyMaskJCS_Style[tileID] = transpArray;
             }
