@@ -1121,14 +1121,38 @@ void main() {
             if (MouseTile > 0 && MouseTile < J2L.TileCount)
                 automaskTile((uint)MouseTile);
         }
+        private bool atLeastOneSelectedTileIs32Bit()
+        {
+            for (int x = UpperLeftSelectionCorner.X; x < BottomRightSelectionCorner.X; ++x)
+                for (int y = UpperLeftSelectionCorner.Y; y < BottomRightSelectionCorner.Y; ++y)
+                    if (IsEachTileSelected[x + 1][y + 1])
+                    {
+                        uint tileID = (uint)(y * 10 + x);
+                        if (tileID < J2L.TileCount)
+                        {
+                            byte[] tileImageAsBytes = J2L.PlusPropertyList.TileImages[tileID];
+                            if (tileImageAsBytes == null)
+                            {
+                                J2TFile J2T;
+                                uint tileInTilesetID = J2L.getTileInTilesetID(tileID, out J2T);
+                                tileImageAsBytes = J2T.Images[J2T.ImageAddress[tileInTilesetID]];
+                            }
+                            if (tileImageAsBytes.Length == 32 * 32 * 4)
+                                return true;
+                        }
+                    }
+            return false;
+        }
         private Bitmap getSelectedTilesAsBitmap()
         {
             Bitmap result = new Bitmap(
                 (BottomRightSelectionCorner.X - UpperLeftSelectionCorner.X) * 32,
                 (BottomRightSelectionCorner.Y - UpperLeftSelectionCorner.Y) * 32,
-                System.Drawing.Imaging.PixelFormat.Format8bppIndexed
+                atLeastOneSelectedTileIs32Bit() ?
+                    System.Drawing.Imaging.PixelFormat.Format32bppArgb :
+                    System.Drawing.Imaging.PixelFormat.Format8bppIndexed
             );
-            byte[] resultAsBytes = new byte[result.Width * result.Height];
+            byte[] resultAsBytes = new byte[result.Width * result.Height * (result.PixelFormat == System.Drawing.Imaging.PixelFormat.Format8bppIndexed ? 1 : 4)];
             for (int x = UpperLeftSelectionCorner.X; x < BottomRightSelectionCorner.X; ++x)
                 for (int y = UpperLeftSelectionCorner.Y; y < BottomRightSelectionCorner.Y; ++y)
                     if (IsEachTileSelected[x + 1][y + 1])
@@ -1147,20 +1171,37 @@ void main() {
                                     tileImageAsBytes = tileImageAsBytes.Select(c => J2T.ColorRemapping[c]).ToArray();
                                 }
                             }
-                            if (tileImageAsBytes.Length != 32 * 32) //32-bit tile
-                            {
-                                _suspendEvent.Reset();
-                                MessageBox.Show("Copying 32-bit tile images is not currently supported.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                _suspendEvent.Set();
-                                return null;
-                            }
                             int firstResultByteIndex = (x - UpperLeftSelectionCorner.X) * 32 + (y - UpperLeftSelectionCorner.Y) * 32 * result.Width;
-                            for (int b = 0; b < 32 * 32; ++b)
-                                resultAsBytes[firstResultByteIndex + (b & 31) + (b >> 5) * result.Width] = tileImageAsBytes[b];
+                            if (result.PixelFormat == System.Drawing.Imaging.PixelFormat.Format8bppIndexed)
+                            {
+                                for (int b = 0; b < 32 * 32; ++b)
+                                    resultAsBytes[firstResultByteIndex + (b & 31) + (b >> 5) * result.Width] = tileImageAsBytes[b];
+                            }
+                            else
+                            {
+                                firstResultByteIndex *= 4;
+                                if (tileImageAsBytes.Length == 32 * 32) //8-bit tile
+                                {
+                                    for (int b = 0; b < 32 * 32 * 4; b += 4)
+                                    {
+                                        var index = tileImageAsBytes[b / 4];
+                                        var color = J2L.Palette.Colors[index].Clone() as byte[];
+                                        (color[0], color[2], color[3]) = (color[2], color[0], (byte)(index == 0 ? 0 : 255)); //RGB to BGR
+                                        for (int ch = 0; ch < 4; ++ch)
+                                            resultAsBytes[firstResultByteIndex + (b & 127) + ch + (b >> 7) * result.Width * 4] = color[ch];
+                                    }
+                                }
+                                else //32-bit tile
+                                {
+                                    for (int b = 0; b < 32 * 32 * 4; ++b)
+                                        resultAsBytes[firstResultByteIndex + (b & 127) + (b >> 7) * result.Width * 4] = tileImageAsBytes[(b & 1) == 1 ? b : b ^ 2]; //RGB to BGR
+                                }
+                            }
                         }
                     }
-            BitmapStuff.ByteArrayToBitmap(resultAsBytes, result, true);
-            J2L.Palette.Apply(result);
+            BitmapStuff.ByteArrayToBitmap(resultAsBytes, result, result.PixelFormat == System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
+            if (result.PixelFormat == System.Drawing.Imaging.PixelFormat.Format8bppIndexed)
+                J2L.Palette.Apply(result);
             return result;
         }
         private void copyImageToolStripMenuItem_Click(object sender, EventArgs e)

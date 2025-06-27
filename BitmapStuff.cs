@@ -83,13 +83,16 @@ namespace MLLE
 
         static public bool ByteArrayToBitmap(byte[] byteArray, Bitmap bitmap, bool flipV = false)
         {
-            if (byteArray.Length == bitmap.Width * bitmap.Height)
+            int bytesPerRow = bitmap.Width;
+            if (bitmap.PixelFormat != PixelFormat.Format8bppIndexed)
+                bytesPerRow *= 4;
+            if (byteArray.Length == bytesPerRow * bitmap.Height)
             {
                 if (flipV)
                 {
-                    byteArray = Enumerable.Range(0, bitmap.Height).Select(y => byteArray.Skip((bitmap.Height-1-y) * bitmap.Width).Take(bitmap.Width)).SelectMany(r => r).ToArray();
+                    byteArray = Enumerable.Range(0, bitmap.Height).Select(y => byteArray.Skip((bitmap.Height-1-y) * bytesPerRow).Take(bytesPerRow)).SelectMany(r => r).ToArray();
                 }
-                var data = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.WriteOnly, PixelFormat.Format8bppIndexed);
+                var data = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.WriteOnly, bitmap.PixelFormat);
                 Marshal.Copy(byteArray, 0, data.Scan0, byteArray.Length);
                 bitmap.UnlockBits(data);
                 return true;
