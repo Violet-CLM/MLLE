@@ -1207,8 +1207,15 @@ void main() {
         private void copyImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Bitmap image = getSelectedTilesAsBitmap();
-            if (image != null)
+            if (image != null && image.PixelFormat == System.Drawing.Imaging.PixelFormat.Format8bppIndexed)
                 BitmapStuff.CopyBitmapToClipboard(image);
+            else
+            {
+                _suspendEvent.Reset();
+                if (MessageBox.Show("Copying 32-bit tiles is not currently supported. Would you like to save them instead?", "Error", MessageBoxButtons.OKCancel, MessageBoxIcon.Error) == DialogResult.OK)
+                    saveImageToolStripMenuItem_Click(sender, e);
+                _suspendEvent.Set();
+            }
         }
         private void saveImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -1311,7 +1318,15 @@ void main() {
         }
         private void pasteImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            putBitmapToSelectedTiles(BitmapStuff.GetBitmapFromClipboard(null));
+            Bitmap image = BitmapStuff.GetBitmapFromClipboard(null);
+            if (image != null && image.PixelFormat == System.Drawing.Imaging.PixelFormat.Format8bppIndexed)
+                putBitmapToSelectedTiles(image);
+            else
+            {
+                _suspendEvent.Reset();
+                MessageBox.Show("Pasting this image is not currently supported.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                _suspendEvent.Set();
+            }
         }
         private void resetImagesToolStripMenuItem_Click(object sender, EventArgs e)
         {
