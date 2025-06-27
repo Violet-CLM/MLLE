@@ -601,28 +601,12 @@ partial class J2TFile : J2File
         TransparencyMaskJCS_Style = new byte[MaxTiles][];
 
         {
-            var imageIndices = image != null ? new byte[image.Width * image.Height] : null;
-            var image32Indices = image32 != null ? new byte[image32.Width * image32.Height * 4] : null;
-            var maskIndices = mask != null ? new byte[mask.Width * mask.Height] : null;
+            byte[] imageIndices = null, image32Indices = null, maskIndices = null;
             var allBmps = new Bitmap[] { image, image32, mask };
             var allIndices = new byte[][] { imageIndices, image32Indices, maskIndices };
 
             for (int i = 0; i < 3; ++i)
-                if (allBmps[i] != null)
-                {
-                    var data = allBmps[i].LockBits(new Rectangle(0, 0, allBmps[i].Width, allBmps[i].Height), ImageLockMode.ReadOnly, allBmps[i].PixelFormat);
-                    int width = allBmps[i].Width;
-                    if (i == 1)
-                    {
-                        if (allBmps[1].PixelFormat == PixelFormat.Format24bppRgb)
-                            width *= 3;
-                        else
-                            width *= 4;
-                    }
-                    for (int y = 0; y < allBmps[i].Height; ++y)
-                        Marshal.Copy(new IntPtr((int)data.Scan0 + data.Stride * y), allIndices[i], width * y, width);
-                    allBmps[i].UnlockBits(data);
-                }
+                allIndices[i] = MLLE.BitmapStuff.BitmapToByteArray(allBmps[i]);
 
             var empty32BitTile = new byte[32 * 32 * 4];
             for (int tileID = 0; tileID < (int)TileCount; ++tileID)
@@ -653,44 +637,25 @@ partial class J2TFile : J2File
                         }
                         else
                             fullyOpaque8Bit = false;
-                        if (VersionType == Version.Plus)
+                        if (image32 != null)
                         {
                             tileIndex <<= 2;
-                            switch (image32.PixelFormat)
+                            sourceIndex <<= 2;
+                            for (int ch = 0; ch < 4; ++ch)
+                                image32Array[tileIndex | ch] = image32Indices[sourceIndex | ch];
+                            byte alpha = image32Array[tileIndex | 3];
+                            if (alpha == 0)
                             {
-                                case PixelFormat.Format32bppArgb:
-                                    sourceIndex <<= 2;
-                                    for (int ch = 0; ch < 3; ++ch)
-                                        image32Array[tileIndex | (2 - ch)] = image32Indices[sourceIndex | ch]; //reverse BGR to RGB
-                                    byte alpha = image32Array[tileIndex | 3] = image32Indices[sourceIndex | 3]; //...A
-                                    if (alpha == 0)
-                                    {
-                                        if (AlphaSpread[tileID] == 1)
-                                            AlphaSpread[tileID] = 0;
-                                    }
-                                    else
-                                    {
-                                        transpArray[tileIndex >> 2] = 1;
-                                        if (alpha < 255) //anything from 1-254, inclusive, is partial opacity
-                                        {
-                                            AlphaSpread[tileID] = 2;
-                                        }
-                                    }
-                                    break;
-                                case PixelFormat.Format32bppRgb:
-                                case PixelFormat.Format24bppRgb:
-                                    sourceIndex *= (image32.PixelFormat == PixelFormat.Format24bppRgb) ? 3 : 4;
-                                    uint channelSum = 0;
-                                    for (int ch = 0; ch < 3; ++ch)
-                                        channelSum += (image32Array[tileIndex | (2 - ch)] = image32Indices[sourceIndex + ch]); //reverse BGR to RGB
-                                    if (channelSum == 0)
-                                        AlphaSpread[tileID] = 0;
-                                    else
-                                    {
-                                        image32Array[tileIndex | 3] = 255; //transparent is color 0,0,0
-                                        transpArray[tileIndex >> 2] = 1;
-                                    }
-                                    break;
+                                if (AlphaSpread[tileID] == 1)
+                                    AlphaSpread[tileID] = 0;
+                            }
+                            else
+                            {
+                                transpArray[tileIndex >> 2] = 1;
+                                if (alpha < 255) //anything from 1-254, inclusive, is partial opacity
+                                {
+                                    AlphaSpread[tileID] = 2;
+                                }
                             }
                         }
                     }

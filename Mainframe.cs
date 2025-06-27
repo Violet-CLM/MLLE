@@ -1208,29 +1208,49 @@ void main() {
                     }
                 }
                 byte[] colorRemappings = null;
-                if (new SpriteRecolorForm().ShowForm(J2L.Palette, clipboardBitmap.Clone() as Bitmap, ref colorRemappings, HotKolors[1]))
+                if (clipboardBitmap.PixelFormat != System.Drawing.Imaging.PixelFormat.Format8bppIndexed || new SpriteRecolorForm().ShowForm(J2L.Palette, clipboardBitmap.Clone() as Bitmap, ref colorRemappings, HotKolors[1]))
                 {
                     byte[] clipboardBytes = BitmapStuff.BitmapToByteArray(clipboardBitmap);
-                    //nearest neighbor the pasted image into the selected tiles
-                    for (int x = UpperLeftSelectionCorner.X; x < BottomRightSelectionCorner.X; ++x)
-                        for (int y = UpperLeftSelectionCorner.Y; y < BottomRightSelectionCorner.Y; ++y)
-                            if (IsEachTileSelected[x + 1][y + 1])
-                            {
-                                uint tileID = (uint)(x + y * 10);
-                                byte[] newTileImage = new byte[32 * 32];
-                                for (int xx = 0; xx < 32; ++xx)
+                    if (clipboardBytes != null) //valid PixelFormat
+                        //nearest neighbor the pasted image into the selected tiles
+                        for (int x = UpperLeftSelectionCorner.X; x < BottomRightSelectionCorner.X; ++x)
+                            for (int y = UpperLeftSelectionCorner.Y; y < BottomRightSelectionCorner.Y; ++y)
+                                if (IsEachTileSelected[x + 1][y + 1])
                                 {
-                                    int xxx = ((x - UpperLeftSelectionCorner.X) * 32 + xx) * clipboardBitmap.Width / selectionWidth;
-                                    for (int yy = 0; yy < 32; ++yy)
-                                        newTileImage[xx + yy * 32] = colorRemappings[clipboardBytes[xxx + (((y - UpperLeftSelectionCorner.Y) * 32 + yy) * clipboardBitmap.Height / selectionHeight) * clipboardBitmap.Width]];
+                                    uint tileID = (uint)(x + y * 10);
+                                    byte[] newTileImage;
+                                    if (clipboardBitmap.PixelFormat == System.Drawing.Imaging.PixelFormat.Format8bppIndexed) //8-bit
+                                    {
+                                        newTileImage = new byte[32 * 32];
+                                        for (int xx = 0; xx < 32; ++xx)
+                                        {
+                                            int xxx = ((x - UpperLeftSelectionCorner.X) * 32 + xx) * clipboardBitmap.Width / selectionWidth;
+                                            for (int yy = 0; yy < 32; ++yy)
+                                                newTileImage[xx + yy * 32] = colorRemappings[clipboardBytes[xxx + (((y - UpperLeftSelectionCorner.Y) * 32 + yy) * clipboardBitmap.Height / selectionHeight) * clipboardBitmap.Width]];
+                                        }
+                                    }
+                                    else //32-bit
+                                    {
+                                        newTileImage = new byte[32 * 32 * 4];
+                                        for (int xx = 0; xx < 32; ++xx)
+                                        {
+                                            int xxx = ((x - UpperLeftSelectionCorner.X) * 32 + xx) * clipboardBitmap.Width / selectionWidth;
+                                            for (int yy = 0; yy < 32; ++yy)
+                                            {
+                                                int destIndex = (xx + yy * 32) * 4;
+                                                int srcIndex = (xxx + (((y - UpperLeftSelectionCorner.Y) * 32 + yy) * clipboardBitmap.Height / selectionHeight) * clipboardBitmap.Width) * 4;
+                                                for (int ch = 0; ch < 4; ++ch)
+                                                    newTileImage[destIndex | ch] = clipboardBytes[srcIndex | ch];
+                                            }
+                                        }
+                                    }
+                                    J2TFile J2T;
+                                    uint tileInTilesetID = J2L.getTileInTilesetID(tileID, out J2T);
+                                    if (newTileImage.SequenceEqual(J2T.Images[J2T.ImageAddress[tileInTilesetID]]))
+                                        newTileImage = null;
+                                    J2L.PlusPropertyList.TileImages[tileID] = newTileImage;
+                                    RerenderTile(tileID);
                                 }
-                                J2TFile J2T;
-                                uint tileInTilesetID = J2L.getTileInTilesetID(tileID, out J2T);
-                                if (newTileImage.SequenceEqual(J2T.Images[J2T.ImageAddress[tileInTilesetID]]))
-                                    newTileImage = null;
-                                J2L.PlusPropertyList.TileImages[tileID] = newTileImage;
-                                RerenderTile(tileID);
-                            }
                 }
                 _suspendEvent.Set();
             }
@@ -1244,11 +1264,7 @@ void main() {
             tilesetOpenDialog.Filter = "Portable Network Graphics|*.png";
             if (tilesetOpenDialog.ShowDialog() == DialogResult.OK)
             {
-                var loadedBitmap = new Bitmap(tilesetOpenDialog.FileName);
-                if (loadedBitmap.PixelFormat == System.Drawing.Imaging.PixelFormat.Format8bppIndexed)
-                    putBitmapToSelectedTiles(loadedBitmap);
-                else
-                    MessageBox.Show("Loading 32-bit tile images is not currently supported.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                putBitmapToSelectedTiles(new Bitmap(tilesetOpenDialog.FileName));
             }
             _suspendEvent.Set();
         }

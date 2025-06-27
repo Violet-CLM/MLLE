@@ -662,7 +662,7 @@ namespace MLLE
                             byte[] image = images[i];
                             if (image != null)
                             {
-                                data5bodywriter.Write((ushort)i);
+                                data5bodywriter.Write((ushort)(i | (image.Length == 32*32 ? 0 : 0x2000)));
                                 data5bodywriter.Write(image);
                             }
                         }

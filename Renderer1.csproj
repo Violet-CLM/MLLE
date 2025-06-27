@@ -348,7 +348,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\GenericPalette.bmp" />
     <None Include="Resources\GenericPalette.pal" />
     <None Include="Resources\RuleGrid.png" />
     <None Include="app.config" />

@@ -98,10 +98,46 @@ namespace MLLE
         }
         static public byte[] BitmapToByteArray(Bitmap bitmap)
         {
-            byte[] byteArray = new byte[bitmap.Width * bitmap.Height];
-            var data = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly, PixelFormat.Format8bppIndexed);
+            if (bitmap == null)
+                return null;
+            int byteArraySize = bitmap.Width * bitmap.Height;
+            switch (bitmap.PixelFormat)
+            {
+                case PixelFormat.Format8bppIndexed:
+                    break; //normal
+                case PixelFormat.Format32bppArgb:
+                case PixelFormat.Format32bppRgb:
+                case PixelFormat.Format24bppRgb:
+                    byteArraySize *= 4;
+                    break;
+                default:
+                    return null;
+            }
+            byte[] byteArray = new byte[byteArraySize];
+            var data = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly, bitmap.PixelFormat);
             Marshal.Copy(data.Scan0, byteArray, 0, byteArray.Length);
             bitmap.UnlockBits(data);
+            switch (bitmap.PixelFormat)
+            {
+                case PixelFormat.Format8bppIndexed:
+                    break; //normal
+                //else we will need to, at minimum, reverse BGR to RGB
+                case PixelFormat.Format32bppArgb:
+                    for (int i = 0; i < byteArraySize; i += 4)
+                        (byteArray[i], byteArray[i + 2]) =
+                            (byteArray[i + 2], byteArray[i]);
+                    break;
+                case PixelFormat.Format32bppRgb: //need to create an alpha too
+                    for (int i = 0; i < byteArraySize; i += 4)
+                        (byteArray[i], byteArray[i + 1], byteArray[i + 2], byteArray[i + 3]) =
+                            (byteArray[i + 2], byteArray[i + 1], byteArray[i], (byte)((byteArray[i] + byteArray[i + 1] + byteArray[i + 2] == 0) ? 0 : 255));
+                    break;
+                case PixelFormat.Format24bppRgb:
+                    for ((int sourceI, int destI) = (byteArraySize * 3 - 3, byteArraySize * 4 - 4); sourceI >= 0; sourceI -=3, destI -= 4)
+                        (byteArray[destI], byteArray[destI + 1], byteArray[destI + 2], byteArray[destI + 3]) =
+                            (byteArray[sourceI + 2], byteArray[sourceI + 1], byteArray[sourceI], (byte)((byteArray[sourceI] + byteArray[sourceI + 1] + byteArray[sourceI + 2] == 0) ? 0 : 255));
+                    break;
+            }
             return byteArray;
         }
 
