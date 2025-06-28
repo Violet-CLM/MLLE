@@ -103,10 +103,12 @@ namespace MLLE
         {
             if (bitmap == null)
                 return null;
-            int byteArraySize = bitmap.Width * bitmap.Height;
+            int imageSize = bitmap.Width * bitmap.Height;
+            int byteArraySize = imageSize;
             switch (bitmap.PixelFormat)
             {
                 case PixelFormat.Format8bppIndexed:
+                case PixelFormat.Format1bppIndexed:
                     break; //normal
                 case PixelFormat.Format32bppArgb:
                 case PixelFormat.Format32bppRgb:
@@ -117,12 +119,13 @@ namespace MLLE
                     return null;
             }
             byte[] byteArray = new byte[byteArraySize];
-            var data = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly, bitmap.PixelFormat);
-            Marshal.Copy(data.Scan0, byteArray, 0, byteArray.Length);
+            var data = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly, bitmap.PixelFormat == PixelFormat.Format1bppIndexed ? PixelFormat.Format8bppIndexed : bitmap.PixelFormat);
+            Marshal.Copy(data.Scan0, byteArray, 0, bitmap.PixelFormat == PixelFormat.Format24bppRgb ? imageSize * 3 : byteArray.Length);
             bitmap.UnlockBits(data);
             switch (bitmap.PixelFormat)
             {
                 case PixelFormat.Format8bppIndexed:
+                case PixelFormat.Format1bppIndexed:
                     break; //normal
                 //else we will need to, at minimum, reverse BGR to RGB
                 case PixelFormat.Format32bppArgb:
@@ -136,7 +139,7 @@ namespace MLLE
                             (byteArray[i + 2], byteArray[i + 1], byteArray[i], (byte)((byteArray[i] + byteArray[i + 1] + byteArray[i + 2] == 0) ? 0 : 255));
                     break;
                 case PixelFormat.Format24bppRgb:
-                    for ((int sourceI, int destI) = (byteArraySize * 3 - 3, byteArraySize * 4 - 4); sourceI >= 0; sourceI -=3, destI -= 4)
+                    for ((int sourceI, int destI) = (imageSize * 3 - 3, byteArraySize - 4); sourceI >= 0; sourceI -=3, destI -= 4)
                         (byteArray[destI], byteArray[destI + 1], byteArray[destI + 2], byteArray[destI + 3]) =
                             (byteArray[sourceI + 2], byteArray[sourceI + 1], byteArray[sourceI], (byte)((byteArray[sourceI] + byteArray[sourceI + 1] + byteArray[sourceI + 2] == 0) ? 0 : 255));
                     break;

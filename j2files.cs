@@ -552,9 +552,9 @@ partial class J2TFile : J2File
         {
             if (mainImage.Width != mask.Width || mainImage.Height != mask.Height)
                 return BuildResults.DifferentDimensions;
-            if (!mask.PixelFormat.HasFlag(PixelFormat.Indexed))
-                return BuildResults.MaskWrongFormat;
         }
+        else
+            mask = mainImage; //automask
         if (mainImage.Width != 320 || mainImage.Height % 32 != 0)
             return BuildResults.BadDimensions;
         if (image != null && image.PixelFormat != PixelFormat.Format8bppIndexed)
@@ -576,7 +576,7 @@ partial class J2TFile : J2File
         }
         else if (TileCount <= 1020 && VersionType == Version.TSF)
             VersionType = Version.JJ2; //increase accessibility
-        if (image == null && image32 != null && (mask == null || mask.PixelFormat != PixelFormat.Format8bppIndexed))
+        if (image == null && image32 != null && mask.PixelFormat != PixelFormat.Format8bppIndexed)
         {
             if (backupPalette != null)
                 Palette = backupPalette;
@@ -601,19 +601,17 @@ partial class J2TFile : J2File
         TransparencyMaskJCS_Style = new byte[MaxTiles][];
 
         {
-            byte[] imageIndices = null, image32Indices = null, maskIndices = null;
-            var allBmps = new Bitmap[] { image, image32, mask };
-            var allIndices = new byte[][] { imageIndices, image32Indices, maskIndices };
-
-            for (int i = 0; i < 3; ++i)
-                allIndices[i] = MLLE.BitmapStuff.BitmapToByteArray(allBmps[i]);
+            byte[]
+                imageIndices = MLLE.BitmapStuff.BitmapToByteArray(image),
+                image32Indices = MLLE.BitmapStuff.BitmapToByteArray(image32),
+                maskIndices = MLLE.BitmapStuff.BitmapToByteArray(mask);
 
             var empty32BitTile = new byte[32 * 32 * 4];
             for (int tileID = 0; tileID < (int)TileCount; ++tileID)
             {
                 var imageArray = new byte[32*32];
                 var image32Array = new byte[32*32 * 4];
-                var transpArray = new byte[32*32];
+                var transpArray = TransparencyMaskJCS_Style[tileID] = new byte[32*32];
                 var maskArray = Masks[tileID] = new byte[32*32];
                 bool fullyOpaque8Bit = true;
                 AlphaSpread[tileID] = 1; //fully opaque, by default
@@ -623,8 +621,10 @@ partial class J2TFile : J2File
                     {
                         int tileIndex = xx | (yy << 5);
                         int sourceIndex = (x | xx) + (y | yy) * 320;
-                        if (maskIndices != null) //mask provided
+                        if (mask.PixelFormat.HasFlag(PixelFormat.Indexed))
                             maskArray[tileIndex] = (byte)(maskIndices[sourceIndex] != 0 ? 1 : 0);
+                        else
+                            maskArray[tileIndex] = (byte)(maskIndices[sourceIndex * 4 + 3] >= 128 ? 1 : 0); //arbitary 128 threshold
                         if (image != null)
                         {
                             byte color = imageIndices[sourceIndex];
@@ -662,16 +662,9 @@ partial class J2TFile : J2File
                 if (VersionType != Version.Plus || image32Array.SequenceEqual(empty32BitTile)) { //only use the 8-bit image if the 32-bit image is empty/nonexistent
                     Images[tileID] = imageArray;
                     AlphaSpread[tileID] = (byte)(fullyOpaque8Bit ? 1 : 0);
-                    if (maskIndices == null) //automask
-                        for (int i = 0; i < 32 * 32; ++i)
-                            maskArray[i] = (byte)(imageArray[i] == 0 ? 0 : 1);
                 } else {
                     Images[tileID] = image32Array;
-                    if (maskIndices == null) //automask
-                        for (int i = 0; i < 32 * 32; ++i)
-                            maskArray[i] = (byte)(image32Array[3 + i * 4] < 128 ? 0 : 1); //arbitrary 128 alpha threshold
                 }
-                TransparencyMaskJCS_Style[tileID] = transpArray;
             }
         }
 
