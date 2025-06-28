@@ -147,6 +147,21 @@ namespace MLLE
                     {
                         if (binreader.BaseStream.Length < 1024)
                             return;
+                        else if (binreader.PeekChar() == 'J') //short for JASC
+                        {
+                            binreader.ReadBytes(21); //skip to colors
+                            var pal = new Palette();
+                            int colorID = 0;
+                            foreach (System.Text.RegularExpressions.Match match in System.Text.RegularExpressions.Regex.Matches(
+                                new string(binreader.ReadChars((int)(binreader.BaseStream.Length - binreader.BaseStream.Position))),
+                                "(\\d+) (\\d+) (\\d+)"
+                            ))
+                                pal.Colors[colorID++] = new byte[4] {
+                                    byte.Parse(match.Groups[1].Value), byte.Parse(match.Groups[2].Value), byte.Parse(match.Groups[3].Value), byte.MaxValue
+                                };
+                            PaletteImage.Palette = pal;
+                            return;
+                        }
                         else if (binreader.BaseStream.Length == 1032) //"color table" palette
                             binreader.BaseStream.Seek(4, SeekOrigin.Begin);
                         PaletteImage.Palette = new Palette(binreader);
@@ -184,16 +199,25 @@ namespace MLLE
 
             var levelImageSaveDialog = new SaveFileDialog();
             levelImageSaveDialog.DefaultExt = "png";
-            levelImageSaveDialog.Filter = "Color Table|*.pal";
+            levelImageSaveDialog.Filter = "Color Table|*.pal|Paint Shop Pro|*.pal";
             levelImageSaveDialog.FileName = "My Awesome Palette.pal";
             if (levelImageSaveDialog.ShowDialog() == DialogResult.OK)
             {
                 using (BinaryWriter binwriter = new BinaryWriter(File.Open(Path.ChangeExtension(levelImageSaveDialog.FileName, "pal"), FileMode.Create, FileAccess.Write), J2TFile.FileEncoding))
                 {
-                    binwriter.Write(new byte[] { 0x0, 0x3, 0x0, 0x1 }); //don't really know what these mean... maybe number of channels per color (3), and number of colors (256)? but that would be switching endianness...
-                    foreach (var color in PaletteImage.Palette.Colors)
-                        binwriter.Write(color);
-                    binwriter.Write((UInt32)0); //don't know what this means at all
+                    if (levelImageSaveDialog.FilterIndex == 0) //color table
+                    {
+                        binwriter.Write(new byte[] { 0x0, 0x3, 0x0, 0x1 }); //don't really know what these mean... maybe number of channels per color (3), and number of colors (256)? but that would be switching endianness...
+                        foreach (var color in PaletteImage.Palette.Colors)
+                            binwriter.Write(color);
+                        binwriter.Write((UInt32)0); //don't know what this means at all
+                    }
+                    else //JASC
+                    {
+                        binwriter.Write("JASC-PAL\r\n0100\r\n256\r\n".ToCharArray()); //fixed header, surely it's based on the palette being 256-colors long but we don't care about other-length palettes around here
+                        foreach (var color in PaletteImage.Palette.Colors)
+                            binwriter.Write((color[0].ToString() + " " + color[1].ToString() + " " + color[2].ToString() + "\r\n").ToCharArray());
+                    }
                 }
             }
         }

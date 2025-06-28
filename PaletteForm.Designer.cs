@@ -219,7 +219,7 @@
             // openFileDialog1
             // 
             this.openFileDialog1.DefaultExt = "j2t";
-            this.openFileDialog1.Filter = "Tilesets|*.j2t|Color Tables|*.pal|All files|*.*";
+            this.openFileDialog1.Filter = "Tilesets|*.j2t|Palettes|*.pal|All files|*.*";
             // 
             // SaveButton
             // 
