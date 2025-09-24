@@ -97,6 +97,12 @@
     <Compile Include="Arguments.Designer.cs">
       <DependentUpon>Arguments.cs</DependentUpon>
     </Compile>
+    <Compile Include="HotkeysDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="HotkeysDialog.Designer.cs">
+      <DependentUpon>HotkeysDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="LayerOrderForm.cs">
       <SubType>Form</SubType>
     </Compile>

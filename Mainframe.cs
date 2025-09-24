@@ -4707,6 +4707,10 @@ void main() {
             }
         }
 
+        private void hotkeysToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            new HotkeysDialog().ShowDialog();
+        }
     }
 
     class Program

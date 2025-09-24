@@ -103,6 +103,7 @@
             this.setDeadspaceColorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.readmeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.hotkeysToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.levelmakingTipsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.angelScriptAPIToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -814,6 +815,7 @@
             this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.readmeToolStripMenuItem,
             this.toolStripSeparator4,
+            this.hotkeysToolStripMenuItem,
             this.levelmakingTipsToolStripMenuItem,
             this.angelScriptAPIToolStripMenuItem,
             this.angelScriptSyntaxToolStripMenuItem,
@@ -829,12 +831,19 @@
             this.readmeToolStripMenuItem.Name = "readmeToolStripMenuItem";
             this.readmeToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
             this.readmeToolStripMenuItem.Text = "Contents";
-            // 
+            //
+            // hotkeysToolStripMenuItem
+            //
+            this.hotkeysToolStripMenuItem.Name = "hotkeysToolStripMenuItem";
+            this.hotkeysToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
+            this.hotkeysToolStripMenuItem.Text = "Hotkeys";
+            this.hotkeysToolStripMenuItem.Click += new System.EventHandler(this.hotkeysToolStripMenuItem_Click);
+            //
             // toolStripSeparator4
-            // 
+            //
             this.toolStripSeparator4.Name = "toolStripSeparator4";
             this.toolStripSeparator4.Size = new System.Drawing.Size(170, 6);
-            // 
+            //
             // levelmakingTipsToolStripMenuItem
             // 
             this.levelmakingTipsToolStripMenuItem.Name = "levelmakingTipsToolStripMenuItem";
@@ -2045,6 +2054,7 @@
         private System.Windows.Forms.ToolStripMenuItem editToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem readmeToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem hotkeysToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem aboutMLLEToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem levelPropertiesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem passwordToolStripMenuItem;
