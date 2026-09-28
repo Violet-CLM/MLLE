@@ -141,11 +141,11 @@ namespace MLLE
         private bool PreviewHelpStringColors = true;
         private bool BDisablesSmartTiles = false;
         private bool stijnVision = false;
-        private int DifficultyShaderHandle;
         internal uint PlusTriggerZone = 0;
         private bool KeyXPressed = false;
         private bool KeyYPressed = false;
         private bool KeyTabPressed = false;
+        
 
         private CultureInfo DefaultCulture;
 
@@ -609,26 +609,7 @@ namespace MLLE
                         break;
                 }
 
-            DifficultyShaderHandle = GL.CreateProgram();
-            int fragmentShader = GL.CreateShader(ShaderType.FragmentShader);
-            GL.ShaderSource(fragmentShader, @"
-out vec4 outputColor;
-uniform sampler2D texture0;
-
-void main() {
-    vec4 pixel = texture2D(texture0, gl_TexCoord[0].xy);
-    float grayscale = dot(pixel.rgb, vec3(0.299, 0.587, 0.114));
-    outputColor = vec4((gl_Color * grayscale).rgb, pixel.a);
-}
-");
-            GL.CompileShader(fragmentShader);
-            GL.AttachShader(DifficultyShaderHandle, fragmentShader);
-            GL.LinkProgram(DifficultyShaderHandle);
-            //int param;
-            //GL.GetShader(fragmentShader, ShaderParameter.CompileStatus, out param);
-            //MessageBox.Show(GL.GetShaderInfoLog(fragmentShader), param.ToString());
-            GL.DetachShader(DifficultyShaderHandle, fragmentShader);
-            GL.DeleteShader(fragmentShader);
+            LoadShaders();
 
             sw.Start();
             DrawThread = new Thread(TimePasses);
@@ -3080,7 +3061,7 @@ void main() {
                 y -= TileSize / 2;
                 TileSize *= 2;
                 if (difficulty != 0)
-                    GL.UseProgram(DifficultyShaderHandle);
+                    GL.UseProgram(ShaderHandle_StijnVisionDifficulty);
             }
             GL.Begin(BeginMode.Quads);
             GL.TexCoord2(xFrac, yFrac + 0.0625F); GL.Vertex2(x, y + TileSize);
