@@ -150,6 +150,7 @@ class TexturedJ2L : J2LFile
         }
         return tileInTilesetID + J2T.FirstTile;
     }
+    private int LastPaletteTexture = 0;
     public void Generate_Textures(TransparencySource source = TransparencySource.JJ2_Style, bool includeMasks = false, Palette palette = null)
     {
         byte[] usedColor = Palette.Convert(Tile0Color);
@@ -157,6 +158,21 @@ class TexturedJ2L : J2LFile
         var transformation = TileTypeColorTransformations[VersionType];
         if (palette == null)
             palette = Palette;
+
+        GL.ActiveTexture(TextureUnit.Texture1);
+        GL.DeleteTexture(LastPaletteTexture);
+        var colorByteArray = palette.Colors.SelectMany(x => x).ToArray(); //flatten into a single 256*4 byte array
+        colorByteArray[3] = byte.MinValue; //alpha for color 0
+        for (int index = 7; index < colorByteArray.Length; index += 4)
+            colorByteArray[index] = byte.MaxValue; //alpha for every color except color 0
+        LastPaletteTexture = TexUtil.CreateRGBATexture((int)Palette.PaletteSize, 1, colorByteArray);
+        GL.BindTexture(TextureTarget.Texture2D, LastPaletteTexture);
+        //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapS, (int)TextureWrapMode.ClampToEdge);
+        //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureWrapT, (int)TextureWrapMode.ClampToEdge);
+        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMagFilter.Nearest);
+        GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
+        GL.ActiveTexture(TextureUnit.Texture0); //cleanup
+
         byte[][] workingAtlases = new byte[2][];
         for (byte i = 0; i < 5; i++)
             if (TileCount < 16 << (i * 2)) {
@@ -196,6 +212,7 @@ class TexturedJ2L : J2LFile
                     }
                     else
                     {
+                        /*
                         switch (customTileImage ? J2TFile.ColorImportStyles.normal8bit : J2T.ColorImportStyle)
                         {
                             case J2TFile.ColorImportStyles.normal8bit:
@@ -212,7 +229,8 @@ class TexturedJ2L : J2LFile
                                 color = PlusPropertyList.NamedPalettes[J2T.AlternatePaletteMappingID24Bit].Palette[tile[j / 4]];
                                 break;
                         }
-                        color = Palette.Convert(transformation(color, TileTypes[tileInLevelID], byte.MaxValue), true);
+                        color = Palette.Convert(transformation(color, TileTypes[tileInLevelID], byte.MaxValue), true);*/
+                        color = new byte[4] { tile[j / 4], 0, 0, 255 }; //red is index
                     }
                 }
                 else //32-bit

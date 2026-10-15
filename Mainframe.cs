@@ -553,7 +553,7 @@ namespace MLLE
             GL.Disable(EnableCap.DepthTest);
             GL.Disable(EnableCap.CullFace);
             SelectionOverlay = TexUtil.CreateTextureFromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "SelectionRectangles.png"));
-            GL.BindTexture(TextureTarget.Texture2D, J2L.ImageAtlas);
+            SetTextureTo(AtlasID.Image, true);
             GL.ClearColor(HotKolors[0]);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
             LevelDisplay.SwapBuffers();
@@ -2127,7 +2127,7 @@ namespace MLLE
                 SetTitle(J2L.Name, J2L.FilenameOnly);
                 AddFilepathToRecentLevels(filename);
                 J2L.Generate_Textures(TransparencySource.JJ2_Style, true);
-                GL.BindTexture(TextureTarget.Texture2D, J2L.ImageAtlas);
+                SetTextureTo(AtlasID.Image, true);
                 Undoable.Clear();
                 Redoable.Clear();
                 SafeToDisplay = true;
@@ -2157,7 +2157,7 @@ namespace MLLE
             CheckCurrentVersion();
             ProcessIni(J2L.VersionType);
             J2L.Generate_Blank_Tile_Texture();
-            GL.BindTexture(TextureTarget.Texture2D, J2L.ImageAtlas);
+            SetTextureTo(AtlasID.Image, true);
             SafeToDisplay = true;
             LevelHasBeenModified = false;
             Undoable.Clear();
@@ -2530,11 +2530,12 @@ namespace MLLE
         }
         private void LevelDisplay_Resize(object sender, EventArgs e) { ResizeDisplay(); }
 
-        private void SetTextureTo(AtlasID nuAtlas)
+        private void SetTextureTo(AtlasID nuAtlas, bool forceRebind = false)
         {
-            if (PrevAtlas != nuAtlas)
+            if (PrevAtlas != nuAtlas || forceRebind)
             {
                 int nuInt = 0;
+                GL.UseProgram(0);
                 switch (nuAtlas)
                 {
                     case AtlasID.Mask:
@@ -2542,6 +2543,7 @@ namespace MLLE
                         break;
                     case AtlasID.Image:
                         nuInt = J2L.ImageAtlas;
+                        GL.UseProgram(ShaderHandle_NormalPaletted);
                         break;
                     case AtlasID.EventNames:
                         nuInt = TexturedJ2L.EventAtlas[J2L.VersionType];
@@ -2558,6 +2560,7 @@ namespace MLLE
                     default:
                         return;
                 }
+                GL.ActiveTexture(TextureUnit.Texture0);
                 GL.BindTexture(TextureTarget.Texture2D, nuInt);
                 PrevAtlas = nuAtlas;
             }
