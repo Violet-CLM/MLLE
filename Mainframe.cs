@@ -2543,7 +2543,6 @@ namespace MLLE
                         break;
                     case AtlasID.Image:
                         nuInt = J2L.ImageAtlas;
-                        GL.UseProgram(ShaderHandle_NormalPaletted);
                         break;
                     case AtlasID.EventNames:
                         nuInt = TexturedJ2L.EventAtlas[J2L.VersionType];
@@ -2630,12 +2629,15 @@ namespace MLLE
                     else
                     {
                         if (EventDisplayMode != 0 || ParallaxButton.Checked) GL.Disable(EnableCap.Blend);
-                        if (!(
-                            (PrevAtlas == AtlasID.Image && CurrentTilesetOverlay != TilesetOverlay.Masks)
-                            ||
-                            (PrevAtlas == AtlasID.Mask && CurrentTilesetOverlay == TilesetOverlay.Masks)
-                            ))
-                            SetTextureTo((CurrentTilesetOverlay == TilesetOverlay.Masks) ? AtlasID.Mask : AtlasID.Image);
+                        if (CurrentTilesetOverlay == TilesetOverlay.Masks)
+                        {
+                            SetTextureTo(AtlasID.Mask);
+                        }
+                        else
+                        {
+                            SetTextureTo(AtlasID.Image);
+                            GL.UseProgram(ShaderHandle_NormalPaletted);
+                        }
                         int tile = TilesetScrollbar.Value / 32 * 10;
                         if (CurrentTilesetOverlay != TilesetOverlay.SmartTiles)
                         {
@@ -2815,12 +2817,12 @@ namespace MLLE
                 //GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
                 GL.TexParameter(TextureTarget.Texture2D, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
                 if (ParallaxDisplayMode != ParallaxMode.NoParallax && MaskDisplayMode != MaskMode.FullMask)
-                {
+                { //drawing multiple layers
                     bool applyWavePropertiesAsOffsets = EnableableBools[J2L.VersionType][EnableableTitles.BoolDevelopingForPlus];
                     speedParallax.X = (CurrentLayer.XSpeed == 0) ? 0 : (int)((LDScrollH.Value + widthreduced - (applyWavePropertiesAsOffsets ? (int)CurrentLayer.WaveX : 0)) / CurrentLayer.XSpeed) - widthreduced;
                     speedParallax.Y = (CurrentLayer.YSpeed == 0) ? 0 : (int)((LDScrollV.Value + (CurrentLayer.LimitVisibleRegion ? heightreduced * 2 : heightreduced) - (applyWavePropertiesAsOffsets ? (int)CurrentLayer.WaveY : 0)) / CurrentLayer.YSpeed) - heightreduced;
                     Size levelSize = J2L.SpriteLayer.GetSizeTimes32();
-                    SetTextureTo(AtlasID.Image);
+                    SetTextureTo(AtlasID.Image); //draw tiles first
                     GL.Enable(EnableCap.Blend);
                     if (ParallaxDisplayMode == ParallaxMode.TemporaryParallax) GL.Color4((byte)255, (byte)255, (byte)255, (byte)64);
                     for (int l = J2L.AllLayers.Count - 1; l >= 0; l--)
@@ -2829,44 +2831,57 @@ namespace MLLE
                         if (l == CurrentLayerID)
                         {
                             GL.Color4((byte)255, (byte)255, (byte)255, (byte)255);
-                            if (DrawingLayer.HasTiles) Reindeer(DrawingLayer, levelSize);
+                            if (DrawingLayer.HasTiles)
+                                Reindeer(DrawingLayer, levelSize);
                             if (MaskDisplayMode == MaskMode.TemporaryMask)
                             {
-                                SetTextureTo(AtlasID.Mask);
-                                NoParallaxReindeer(DrawingLayer);
-                                if (DrawingLayer == J2L.SpriteLayer && ParallaxEventDisplayType == 0 && EventDisplayMode != 0) EventReindeer();
-                                SetTextureTo(AtlasID.Image);
+                                NoParallaxReindeer(DrawingLayer, true);
+                                if (DrawingLayer == J2L.SpriteLayer && ParallaxEventDisplayType == 0)
+                                    EventReindeer();
+                                SetTextureTo(AtlasID.Image); //return to drawing tiles after that sidetrack drawing events
                             }
-                            else if (DrawingLayer == J2L.SpriteLayer && ParallaxEventDisplayType == 0 && EventDisplayMode != 0) { EventReindeer(); SetTextureTo(AtlasID.Image); }
-                            if (ParallaxDisplayMode == ParallaxMode.TemporaryParallax) GL.Color4((byte)255, (byte)255, (byte)255, (byte)64);
+                            else if (DrawingLayer == J2L.SpriteLayer && ParallaxEventDisplayType == 0) {
+                                EventReindeer();
+                                SetTextureTo(AtlasID.Image); //return to drawing tiles after that sidetrack drawing masks
+                            }
+                            if (ParallaxDisplayMode == ParallaxMode.TemporaryParallax)
+                                GL.Color4((byte)255, (byte)255, (byte)255, (byte)64);
                         }
                         else
                         {
-                            if (DrawingLayer.HasTiles && !DrawingLayer.Hidden && (DrawingLayer.TextureSurface == 0 || l == J2L.AllLayers.Count - 1)) Reindeer(DrawingLayer, levelSize);
-                            if (DrawingLayer == J2L.SpriteLayer && ParallaxEventDisplayType == 0 && EventDisplayMode != 0) { EventReindeer(); SetTextureTo(AtlasID.Image); }
+                            if (DrawingLayer.HasTiles && !DrawingLayer.Hidden && (DrawingLayer.TextureSurface == 0 || l == J2L.AllLayers.Count - 1))
+                                Reindeer(DrawingLayer, levelSize);
+                            if (DrawingLayer == J2L.SpriteLayer && ParallaxEventDisplayType == 0) {
+                                EventReindeer();
+                                SetTextureTo(AtlasID.Image);
+                            }
                         }
                     }
-                    if (ParallaxEventDisplayType == 1 && EventDisplayMode != 0) EventReindeer();
+                    if (ParallaxEventDisplayType == 1)
+                        EventReindeer();
                 }
-                else
+                else //drawing only one single layer
                 {
                     speedParallax.X = LDScrollH.Value;
                     speedParallax.Y = LDScrollV.Value;
                     GL.Disable(EnableCap.Blend);
                     if (MaskDisplayMode == MaskMode.TemporaryMask)
                     {
-                        SetTextureTo(AtlasID.Image);
-                        NoParallaxReindeer(CurrentLayer);
-                        SetTextureTo(AtlasID.Mask);
+                        NoParallaxReindeer(CurrentLayer, false);
                         GL.Enable(EnableCap.Blend);
-                        NoParallaxReindeer(CurrentLayer);
-                        if (CurrentLayer == J2L.SpriteLayer && EventDisplayMode != 0) EventReindeer();
+                        NoParallaxReindeer(CurrentLayer, true);
+                        if (CurrentLayer == J2L.SpriteLayer)
+                            EventReindeer();
                     }
                     else
                     {
-                        SetTextureTo((MaskDisplayMode == MaskMode.FullMask) ? AtlasID.Mask : AtlasID.Image);
-                        NoParallaxReindeer(CurrentLayer);
-                        if (CurrentLayer == J2L.SpriteLayer && EventDisplayMode != 0) { GL.Enable(EnableCap.Blend); EventReindeer(); }
+                        if (MaskDisplayMode == MaskMode.NoMask)
+                            SetTextureTo(AtlasID.Image);
+                        NoParallaxReindeer(CurrentLayer, MaskDisplayMode == MaskMode.FullMask);
+                        if (CurrentLayer == J2L.SpriteLayer) {
+                            GL.Enable(EnableCap.Blend);
+                            EventReindeer();
+                        }
                     }
                 }
                 #endregion reindeer
@@ -3102,6 +3117,7 @@ namespace MLLE
 
         internal void Reindeer(Layer currentlayer, Size levelSize)
         {
+            UseShaderHandle(currentlayer);
             currentlayer.GetFixedCornerOriginNumbers(speedParallax, LevelDisplayViewport, levelSize, ref origin, ref upperLeft, ZoomTileSize, EnableableBools[J2L.VersionType][EnableableTitles.BoolDevelopingForPlus]);
             tempOrigin.X = origin.X; tempUpperLeft.X = upperLeft.X;
             if (currentlayer.TileWidth)
@@ -3177,8 +3193,16 @@ namespace MLLE
                 }
             }
         }
-        internal void NoParallaxReindeer(Layer currentlayer)
+        internal void NoParallaxReindeer(Layer currentlayer, bool drawAsMask)
         {
+            if (drawAsMask)
+            {
+                SetTextureTo(AtlasID.Mask);
+            }
+            else
+            {
+                UseShaderHandle(currentlayer);
+            }
             //currentlayer.GetOriginNumbers(LDScrollH.Value, LDScrollV.Value, ref widthreduced, ref heightreduced, ref origin.X, ref origin.Y, ref upperLeft.X, ref upperLeft.Y);
             upperLeft.X = LDScrollH.Value /*- widthreduced*/ - ZoomTileSize;
             upperLeft.Y = LDScrollV.Value /*- heightreduced*/ - ZoomTileSize;
@@ -3205,6 +3229,9 @@ namespace MLLE
         }
         internal void EventReindeer()
         {
+            if (EventDisplayMode == 0) //don't display ANY events
+                return;
+
             Layer currentlayer = J2L.SpriteLayer;
             SetTextureTo(!stijnVision ? AtlasID.EventNames : AtlasID.EventSprites);
             //upperLeft.X = speedParallax.X - /*widthreduced -*/ ZoomTileSize;
