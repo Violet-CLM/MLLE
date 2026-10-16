@@ -19,7 +19,15 @@ namespace MLLE
 
             handle = GL.CreateProgram();
             int fragmentShader = GL.CreateShader(ShaderType.FragmentShader);
-            GL.ShaderSource(fragmentShader, "  #version 130\n" + src);
+            if (standardUniforms)
+                src = @"
+uniform sampler2D currentTexture;
+uniform sampler2D palette;
+" + src;
+            src = @"  #version 130
+out vec4 outputColor;
+" + src;
+            GL.ShaderSource(fragmentShader, src);
             GL.CompileShader(fragmentShader);
             GL.AttachShader(handle, fragmentShader);
             GL.LinkProgram(handle);
@@ -52,7 +60,6 @@ namespace MLLE
         private void LoadShaders()
         {
             LoadShader(ref ShaderHandle_StijnVisionDifficulty, @"
-out vec4 outputColor;
 uniform sampler2D currentTexture;
 
 void main() {
@@ -60,28 +67,30 @@ void main() {
     float grayscale = dot(pixel.rgb, vec3(0.299, 0.587, 0.114));
     outputColor = vec4((gl_Color * grayscale).rgb, pixel.a);
 }
-");
+", false);
             LoadShader(ref ShaderHandle_NormalPaletted, @"
-out vec4 outputColor;
-uniform sampler2D currentTexture;
-uniform sampler2D palette;
 		
 void main() {
 	vec4 index = texture2D(currentTexture, gl_TexCoord[0].xy);
-	vec4 pixel = texture2D(palette, vec2(index.r, 0)); 
-	outputColor = vec4(pixel.r, pixel.g, pixel.b, index.a);
+    if (index.a == 0) {
+        outputColor = index;
+        return;
+    }
+	vec4 pixel = texture2D(palette, vec2(index.r, 0));
+	outputColor = vec4(pixel.r, pixel.g, pixel.b, index.a * gl_Color.a);
 }
 ");
             LoadShader(ref ShaderHandle_PalShift, @"
-out vec4 outputColor;
-uniform sampler2D currentTexture;
-uniform sampler2D palette;
 uniform float param;
 		
 void main() {
 	vec4 index = texture2D(currentTexture, gl_TexCoord[0].xy);
+    if (index.a == 0) {
+        outputColor = index;
+        return;
+    }
 	vec4 pixel = texture2D(palette, vec2(mod(index.r + param, 1.0), 0));
-	outputColor = vec4(pixel.r, pixel.g, pixel.b, index.a);
+	outputColor = vec4(pixel.r, pixel.g, pixel.b, index.a * gl_Color.a);
 }
 ");
         }
