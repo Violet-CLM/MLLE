@@ -1102,6 +1102,17 @@ namespace MLLE
             if (MouseTile > 0 && MouseTile < J2L.TileCount)
                 automaskTile((uint)MouseTile);
         }
+        private bool tileIDIs32Bit(uint tileID)
+        {
+            byte[] tileImageAsBytes = J2L.PlusPropertyList.TileImages[tileID];
+            if (tileImageAsBytes == null)
+            {
+                J2TFile J2T;
+                uint tileInTilesetID = J2L.getTileInTilesetID(tileID, out J2T);
+                tileImageAsBytes = J2T.Images[J2T.ImageAddress[tileInTilesetID]];
+            }
+            return tileImageAsBytes.Length == 32 * 32 * 4;
+        }
         private bool atLeastOneSelectedTileIs32Bit()
         {
             for (int x = UpperLeftSelectionCorner.X; x < BottomRightSelectionCorner.X; ++x)
@@ -1110,17 +1121,8 @@ namespace MLLE
                     {
                         uint tileID = (uint)(y * 10 + x);
                         if (tileID < J2L.TileCount)
-                        {
-                            byte[] tileImageAsBytes = J2L.PlusPropertyList.TileImages[tileID];
-                            if (tileImageAsBytes == null)
-                            {
-                                J2TFile J2T;
-                                uint tileInTilesetID = J2L.getTileInTilesetID(tileID, out J2T);
-                                tileImageAsBytes = J2T.Images[J2T.ImageAddress[tileInTilesetID]];
-                            }
-                            if (tileImageAsBytes.Length == 32 * 32 * 4)
+                            if (tileIDIs32Bit(tileID))
                                 return true;
-                        }
                     }
             return false;
         }
@@ -2636,7 +2638,8 @@ namespace MLLE
                         else
                         {
                             SetTextureTo(AtlasID.Image);
-                            GL.UseProgram(ShaderHandle_NormalPaletted);
+                            GL.UseProgram(CurrentLayerShaderHandles.Paletted);
+                            LastShaderTileWas32Bit = false;
                         }
                         int tile = TilesetScrollbar.Value / 32 * 10;
                         if (CurrentTilesetOverlay != TilesetOverlay.SmartTiles)
@@ -3036,6 +3039,12 @@ namespace MLLE
                     if (staticid == 0 && !DrawTileZero) return;
                     prevtotaltileid = id;
                     prevstaticid = staticid;
+                    
+                    if (tileIDIs32Bit(staticid) != LastShaderTileWas32Bit)
+                    {
+                        LastShaderTileWas32Bit = !LastShaderTileWas32Bit;
+                        GL.UseProgram(LastShaderTileWas32Bit ? CurrentLayerShaderHandles.TrueColor : CurrentLayerShaderHandles.Paletted);
+                    }
                 }
                 double startAtRatioX = prevstaticid % J2L.AtlasLength * J2L.AtlasFraction;
                 double startAtRatioY = prevstaticid / J2L.AtlasLength;
